@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Unified changelog system for website and email communications
+- Email templates for AutoCrate update notifications
+- TODO.md for centralized task tracking
+- Automated email generation script from CHANGELOG.md
+- npm script `email:generate` for creating update emails
 - GitHub Actions CI/CD pipeline for automated testing and deployment
 - Dependabot configuration for automated dependency updates
 - Conventional commits with commitlint for standardized commit messages
