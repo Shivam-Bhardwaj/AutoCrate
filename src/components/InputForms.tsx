@@ -1,0 +1,456 @@
+'use client';
+
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useCrateStore } from '@/store/crate-store';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+export default function InputForms() {
+  const {
+    configuration,
+    updateDimensions,
+    updateBase,
+    updatePanel,
+    updateFasteners,
+    updateVinyl,
+    updateWeight,
+    updateProjectName,
+  } = useCrateStore();
+
+  return (
+    <div className="h-full overflow-y-auto p-4">
+      <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Project Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label htmlFor="projectName">Project Name</Label>
+              <Input
+                id="projectName"
+                value={configuration.projectName}
+                onChange={(e) => updateProjectName(e.target.value)}
+                placeholder="Enter project name"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Tabs defaultValue="dimensions" className="w-full">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="dimensions">Dimensions</TabsTrigger>
+            <TabsTrigger value="base">Base</TabsTrigger>
+            <TabsTrigger value="panels">Panels</TabsTrigger>
+            <TabsTrigger value="fasteners">Fasteners</TabsTrigger>
+            <TabsTrigger value="vinyl">Vinyl</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="dimensions" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Crate Dimensions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="length">Length</Label>
+                    <Input
+                      id="length"
+                      type="number"
+                      value={configuration.dimensions.length}
+                      onChange={(e) => updateDimensions({ length: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="width">Width</Label>
+                    <Input
+                      id="width"
+                      type="number"
+                      value={configuration.dimensions.width}
+                      onChange={(e) => updateDimensions({ width: Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="height">Height</Label>
+                    <Input
+                      id="height"
+                      type="number"
+                      value={configuration.dimensions.height}
+                      onChange={(e) => updateDimensions({ height: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="unit">Unit</Label>
+                    <Select
+                      value={configuration.dimensions.unit}
+                      onValueChange={(value: 'mm' | 'inch') => updateDimensions({ unit: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="mm">Millimeters</SelectItem>
+                        <SelectItem value="inch">Inches</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="productWeight">Product Weight (kg)</Label>
+                    <Input
+                      id="productWeight"
+                      type="number"
+                      value={configuration.weight.product}
+                      onChange={(e) => updateWeight({ product: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="maxWeight">Max Gross Weight (kg)</Label>
+                    <Input
+                      id="maxWeight"
+                      type="number"
+                      value={configuration.weight.maxGross}
+                      onChange={(e) => updateWeight({ maxGross: Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="base" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Shipping Base Configuration</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="baseType">Base Type</Label>
+                  <Select
+                    value={configuration.base.type}
+                    onValueChange={(value: 'standard' | 'heavy-duty' | 'export') =>
+                      updateBase({ type: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="standard">Standard</SelectItem>
+                      <SelectItem value="heavy-duty">Heavy Duty</SelectItem>
+                      <SelectItem value="export">Export Grade</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="floorThickness">Floorboard Thickness</Label>
+                    <Input
+                      id="floorThickness"
+                      type="number"
+                      value={configuration.base.floorboardThickness}
+                      onChange={(e) => updateBase({ floorboardThickness: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="skidHeight">Skid Height</Label>
+                    <Input
+                      id="skidHeight"
+                      type="number"
+                      value={configuration.base.skidHeight}
+                      onChange={(e) => updateBase({ skidHeight: Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="skidWidth">Skid Width</Label>
+                    <Input
+                      id="skidWidth"
+                      type="number"
+                      value={configuration.base.skidWidth}
+                      onChange={(e) => updateBase({ skidWidth: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="skidCount">Number of Skids</Label>
+                    <Input
+                      id="skidCount"
+                      type="number"
+                      value={configuration.base.skidCount}
+                      onChange={(e) => updateBase({ skidCount: Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="baseMaterial">Material</Label>
+                  <Select
+                    value={configuration.base.material}
+                    onValueChange={(value: 'pine' | 'oak' | 'plywood' | 'osb') =>
+                      updateBase({ material: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pine">Pine</SelectItem>
+                      <SelectItem value="oak">Oak</SelectItem>
+                      <SelectItem value="plywood">Plywood</SelectItem>
+                      <SelectItem value="osb">OSB</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="panels" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Panel Configuration</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="top" className="w-full">
+                  <TabsList className="grid w-full grid-cols-5">
+                    <TabsTrigger value="top">Top</TabsTrigger>
+                    <TabsTrigger value="front">Front</TabsTrigger>
+                    <TabsTrigger value="back">Back</TabsTrigger>
+                    <TabsTrigger value="left">Left</TabsTrigger>
+                    <TabsTrigger value="right">Right</TabsTrigger>
+                  </TabsList>
+                  {['topPanel', 'frontPanel', 'backPanel', 'leftPanel', 'rightPanel'].map(
+                    (panelKey) => (
+                      <TabsContent
+                        key={panelKey}
+                        value={panelKey.replace('Panel', '')}
+                        className="space-y-4"
+                      >
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label>Thickness</Label>
+                            <Input
+                              type="number"
+                              value={
+                                configuration.cap[panelKey as keyof typeof configuration.cap]
+                                  .thickness
+                              }
+                              onChange={(e) =>
+                                updatePanel(panelKey as keyof typeof configuration.cap, {
+                                  thickness: Number(e.target.value),
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Material</Label>
+                            <Select
+                              value={
+                                configuration.cap[panelKey as keyof typeof configuration.cap]
+                                  .material
+                              }
+                              onValueChange={(value: 'plywood' | 'osb' | 'solid-wood') =>
+                                updatePanel(panelKey as keyof typeof configuration.cap, {
+                                  material: value,
+                                })
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="plywood">Plywood</SelectItem>
+                                <SelectItem value="osb">OSB</SelectItem>
+                                <SelectItem value="solid-wood">Solid Wood</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              checked={
+                                configuration.cap[panelKey as keyof typeof configuration.cap]
+                                  .reinforcement
+                              }
+                              onCheckedChange={(checked) =>
+                                updatePanel(panelKey as keyof typeof configuration.cap, {
+                                  reinforcement: checked,
+                                })
+                              }
+                            />
+                            <Label>Reinforcement</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              checked={
+                                configuration.cap[panelKey as keyof typeof configuration.cap]
+                                  .ventilation.enabled
+                              }
+                              onCheckedChange={(checked) =>
+                                updatePanel(panelKey as keyof typeof configuration.cap, {
+                                  ventilation: {
+                                    ...configuration.cap[panelKey as keyof typeof configuration.cap]
+                                      .ventilation,
+                                    enabled: checked,
+                                  },
+                                })
+                              }
+                            />
+                            <Label>Ventilation</Label>
+                          </div>
+                        </div>
+                      </TabsContent>
+                    )
+                  )}
+                </Tabs>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="fasteners" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Fastener Configuration</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Fastener Type</Label>
+                  <Select
+                    value={configuration.fasteners.type}
+                    onValueChange={(value: 'klimp' | 'nails' | 'screws' | 'bolts') =>
+                      updateFasteners({ type: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="klimp">Klimp Connector</SelectItem>
+                      <SelectItem value="nails">Nails</SelectItem>
+                      <SelectItem value="screws">Screws</SelectItem>
+                      <SelectItem value="bolts">Bolts</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Size</Label>
+                    <Input
+                      value={configuration.fasteners.size}
+                      onChange={(e) => updateFasteners({ size: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Spacing (mm)</Label>
+                    <Input
+                      type="number"
+                      value={configuration.fasteners.spacing}
+                      onChange={(e) => updateFasteners({ spacing: Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Material</Label>
+                  <Select
+                    value={configuration.fasteners.material}
+                    onValueChange={(value: 'steel' | 'stainless' | 'galvanized') =>
+                      updateFasteners({ material: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="steel">Steel</SelectItem>
+                      <SelectItem value="stainless">Stainless Steel</SelectItem>
+                      <SelectItem value="galvanized">Galvanized</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="vinyl" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Vinyl Configuration</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={configuration.vinyl.enabled}
+                    onCheckedChange={(checked) => updateVinyl({ enabled: checked })}
+                  />
+                  <Label>Enable Vinyl Wrapping</Label>
+                </div>
+                {configuration.vinyl.enabled && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Vinyl Type</Label>
+                      <Select
+                        value={configuration.vinyl.type}
+                        onValueChange={(value: 'waterproof' | 'vapor-barrier' | 'cushion') =>
+                          updateVinyl({ type: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="waterproof">Waterproof</SelectItem>
+                          <SelectItem value="vapor-barrier">Vapor Barrier</SelectItem>
+                          <SelectItem value="cushion">Cushion</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Thickness (mm)</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          value={configuration.vinyl.thickness}
+                          onChange={(e) => updateVinyl({ thickness: Number(e.target.value) })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Coverage</Label>
+                        <Select
+                          value={configuration.vinyl.coverage}
+                          onValueChange={(value: 'full' | 'partial') =>
+                            updateVinyl({ coverage: value })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="full">Full Coverage</SelectItem>
+                            <SelectItem value="partial">Partial Coverage</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
