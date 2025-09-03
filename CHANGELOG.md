@@ -5,6 +5,23 @@ All notable changes to AutoCrate will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2025-09-03
+
+### Added
+- **Automatic Skid Sizing System**: Intelligent skid configuration based on crate weight
+  - Automatically selects skid dimensions (3x4" to 8x8") based on total loaded weight
+  - Dynamic spacing calculation optimized for load distribution
+  - Minimum 3 skids with automatic count calculation based on crate length
+  - Rub strip requirement detection for crates longer than 96 inches
+- **Skid Calculation Utilities**: New comprehensive calculation engine for skid specifications
+- **Enhanced 3D Visualization**: Individual skid rendering with accurate spacing and rub strips
+- **Real-time Configuration Updates**: Automatic recalculation when weight or dimensions change
+
+### Improved
+- Base configuration UI now shows calculated values instead of manual inputs
+- More accurate 3D representation of crate base structure
+- Better weight-based engineering calculations for structural integrity
+
 ## [2.1.0] - 2025-09-03
 
 ### Added

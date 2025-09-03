@@ -1,9 +1,15 @@
 'use client';
 
 import { motion, useAnimation } from 'framer-motion';
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 
-export function SwipeableCard({ children, onSwipeLeft, onSwipeRight }) {
+interface SwipeableCardProps {
+  children: ReactNode;
+  onSwipeLeft?: () => void;
+  onSwipeRight?: () => void;
+}
+
+export function SwipeableCard({ children, onSwipeLeft, onSwipeRight }: SwipeableCardProps) {
   const controls = useAnimation();
   const [isDragging, setIsDragging] = useState(false);
 
@@ -36,6 +42,6 @@ export function SwipeableCard({ children, onSwipeLeft, onSwipeRight }) {
 }
 
 const swipeConfidenceThreshold = 10000;
-const swipePower = (offset, velocity) => {
+const swipePower = (offset: number, velocity: number): number => {
   return Math.abs(offset) * velocity;
 };

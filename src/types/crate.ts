@@ -11,6 +11,8 @@ export interface ShippingBase {
   skidHeight: number;
   skidWidth: number;
   skidCount: number;
+  skidSpacing: number; // Center-to-center spacing
+  requiresRubStrips: boolean;
   material: 'pine' | 'oak' | 'plywood' | 'osb';
 }
 

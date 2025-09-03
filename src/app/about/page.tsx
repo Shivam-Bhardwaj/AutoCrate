@@ -141,8 +141,15 @@ export default function AboutPage() {
         <div className="mt-12 text-center">
           <p className="text-gray-500">AutoCrate - Engineering Excellence in Shipping Solutions</p>
           <p className="text-gray-400 text-sm mt-2">
-            Version 1.0.0 | Powered by Next.js and Three.js
+            Version 2.2.0 | Powered by Next.js and Three.js
           </p>
+          <div className="mt-4 p-4 bg-green-50 rounded-lg max-w-2xl mx-auto">
+            <p className="text-green-800 text-sm font-semibold">Latest Update (v2.2.0)</p>
+            <p className="text-green-700 text-xs mt-1">
+              Automatic skid sizing based on crate weight • Dynamic spacing calculations • 
+              Rub strip detection for long crates • Enhanced 3D visualization with individual skids
+            </p>
+          </div>
         </div>
       </div>
     </div>

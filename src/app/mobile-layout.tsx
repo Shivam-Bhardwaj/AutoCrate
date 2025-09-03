@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MobileWrapper } from '@/components/mobile/MobileWrapper';
 import { BottomNavigation } from '@/components/mobile/BottomNavigation';
 import { SwipeableCard } from '@/components/mobile/SwipeableCard';
+import { useCrateStore } from '@/store/crate-store';
 import dynamic from 'next/dynamic';
 
 // Dynamic imports for better code splitting
@@ -23,6 +24,7 @@ const OutputSection = dynamic(() => import('@/components/OutputSection'), {
 export default function MobileLayout() {
   const [activeTab, setActiveTab] = useState('home');
   const [isScrolled, setIsScrolled] = useState(false);
+  const { configuration } = useCrateStore();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -78,7 +80,10 @@ export default function MobileLayout() {
           >
             {activeTab === 'home' && (
               <div className="p-4 space-y-4">
-                <SwipeableCard>
+                <SwipeableCard 
+                  onSwipeLeft={() => {}} 
+                  onSwipeRight={() => {}}
+                >
                   <div className="mobile-card">
                     <h2 className="text-lg font-semibold mb-3">Quick Actions</h2>
                     <div className="grid grid-cols-2 gap-3">
@@ -124,7 +129,7 @@ export default function MobileLayout() {
               <div className="p-4">
                 <div className="mobile-card p-0 overflow-hidden">
                   <div className="h-[60vh]">
-                    <CrateViewer3D />
+                    <CrateViewer3D configuration={configuration} />
                   </div>
                 </div>
               </div>

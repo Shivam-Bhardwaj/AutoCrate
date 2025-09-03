@@ -68,11 +68,18 @@ export default function Home() {
             >
               AutoCrate
             </h1>
-            <span
-              className={`hidden sm:inline text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
-            >
-              NX CAD Expression Generator
-            </span>
+            <div className="flex flex-col">
+              <span
+                className={`hidden sm:inline text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
+              >
+                NX CAD Expression Generator
+              </span>
+              <span
+                className={`hidden sm:inline text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}
+              >
+                v2.2.0 - Now with automatic skid sizing
+              </span>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Button

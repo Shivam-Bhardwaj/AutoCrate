@@ -1,26 +1,30 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export function MobileWrapper({ children }) {
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
+interface MobileWrapperProps {
+  children: ReactNode;
+}
+
+export function MobileWrapper({ children }: MobileWrapperProps) {
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [isPullToRefresh, setIsPullToRefresh] = useState(false);
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
 
-  const onTouchStart = (e) => {
+  const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientY);
   };
 
-  const onTouchMove = (e) => {
+  const onTouchMove = (e: React.TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientY);
 
     // Pull to refresh logic
-    if (touchStart - e.targetTouches[0].clientY < -100 && window.scrollY === 0) {
+    if (touchStart !== null && touchStart - e.targetTouches[0].clientY < -100 && window.scrollY === 0) {
       setIsPullToRefresh(true);
     }
   };

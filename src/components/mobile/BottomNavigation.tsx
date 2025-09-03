@@ -3,7 +3,12 @@
 import { motion } from 'framer-motion';
 import { Home, Settings, Eye, FileOutput, Menu } from 'lucide-react';
 
-export function BottomNavigation({ activeTab, onTabChange }) {
+interface BottomNavigationProps {
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+}
+
+export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
   const tabs = [
     { id: 'home', icon: Home, label: 'Home' },
     { id: 'config', icon: Settings, label: 'Config' },

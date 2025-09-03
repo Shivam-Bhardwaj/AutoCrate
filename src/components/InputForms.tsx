@@ -155,45 +155,62 @@ export default function InputForms() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="floorThickness">Floorboard Thickness</Label>
-                    <Input
-                      id="floorThickness"
-                      type="number"
-                      value={configuration.base.floorboardThickness}
-                      onChange={(e) => updateBase({ floorboardThickness: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="skidHeight">Skid Height</Label>
-                    <Input
-                      id="skidHeight"
-                      type="number"
-                      value={configuration.base.skidHeight}
-                      onChange={(e) => updateBase({ skidHeight: Number(e.target.value) })}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="floorThickness">Floorboard Thickness</Label>
+                  <Input
+                    id="floorThickness"
+                    type="number"
+                    value={configuration.base.floorboardThickness}
+                    onChange={(e) => updateBase({ floorboardThickness: Number(e.target.value) })}
+                  />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="skidWidth">Skid Width</Label>
-                    <Input
-                      id="skidWidth"
-                      type="number"
-                      value={configuration.base.skidWidth}
-                      onChange={(e) => updateBase({ skidWidth: Number(e.target.value) })}
-                    />
+                
+                <div className="space-y-4">
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-semibold mb-2">Automatically Calculated Skid Configuration</h4>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Skid dimensions and spacing are automatically determined based on crate weight
+                    </p>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="skidCount">Number of Skids</Label>
-                    <Input
-                      id="skidCount"
-                      type="number"
-                      value={configuration.base.skidCount}
-                      onChange={(e) => updateBase({ skidCount: Number(e.target.value) })}
-                    />
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Skid Size (H x W)</Label>
+                      <div className="p-2 bg-muted rounded text-sm">
+                        {configuration.base.skidHeight} x {configuration.base.skidWidth} {configuration.dimensions.unit}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Number of Skids</Label>
+                      <div className="p-2 bg-muted rounded text-sm">
+                        {configuration.base.skidCount}
+                      </div>
+                    </div>
                   </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Skid Spacing</Label>
+                      <div className="p-2 bg-muted rounded text-sm">
+                        {configuration.base.skidSpacing} {configuration.dimensions.unit} (center-to-center)
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Rub Strips Required</Label>
+                      <div className="p-2 bg-muted rounded text-sm">
+                        {configuration.base.requiresRubStrips ? 'Yes' : 'No'}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {configuration.base.requiresRubStrips && (
+                    <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
+                      <p className="text-xs text-yellow-800 dark:text-yellow-200">
+                        Rub strips are required for crate bases longer than 96 inches. 
+                        These must extend the width of the crate and be beveled at 45-60 degrees for half their height.
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="baseMaterial">Material</Label>

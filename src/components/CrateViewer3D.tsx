@@ -17,14 +17,50 @@ function CrateModel({ config }: { config: CrateConfiguration }) {
   const height = (dimensions.height * scaleFactor) / 1000;
 
   const skidHeight = (base.skidHeight * scaleFactor) / 1000;
+  const skidWidth = (base.skidWidth * scaleFactor) / 1000;
+  const skidSpacing = (base.skidSpacing * scaleFactor) / 1000;
   const panelThickness = (cap.topPanel.thickness * scaleFactor) / 1000;
+  const floorThickness = (base.floorboardThickness * scaleFactor) / 1000;
+
+  // Calculate skid positions
+  const skidPositions = [];
+  const totalSpan = (base.skidCount - 1) * skidSpacing;
+  const startX = -totalSpan / 2;
+  
+  for (let i = 0; i < base.skidCount; i++) {
+    skidPositions.push(startX + i * skidSpacing);
+  }
 
   return (
     <group>
-      {/* Base/Skids */}
-      <Box args={[length, skidHeight, width]} position={[0, skidHeight / 2, 0]}>
-        <meshStandardMaterial color="#8B4513" />
-      </Box>
+      {/* Individual Skids */}
+      {skidPositions.map((xPos, index) => (
+        <Box 
+          key={`skid-${index}`}
+          args={[skidWidth, skidHeight, width]} 
+          position={[xPos, skidHeight / 2, 0]}
+        >
+          <meshStandardMaterial color="#8B4513" />
+        </Box>
+      ))}
+      
+      {/* Rub Strips if required */}
+      {base.requiresRubStrips && (
+        <>
+          <Box 
+            args={[length, skidHeight * 0.3, skidWidth * 0.5]} 
+            position={[0, skidHeight * 0.15, width / 2 - skidWidth * 0.25]}
+          >
+            <meshStandardMaterial color="#6B3410" />
+          </Box>
+          <Box 
+            args={[length, skidHeight * 0.3, skidWidth * 0.5]} 
+            position={[0, skidHeight * 0.15, -width / 2 + skidWidth * 0.25]}
+          >
+            <meshStandardMaterial color="#6B3410" />
+          </Box>
+        </>
+      )}
 
       {/* Floor */}
       <Box
