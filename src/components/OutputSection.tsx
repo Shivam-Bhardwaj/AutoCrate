@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCrateStore } from '@/store/crate-store';
+import { useLogsStore } from '@/store/logs-store';
 import { NXExpressionGenerator } from '@/services/nx-generator';
 import { Download, Copy, Check } from 'lucide-react';
 
 export default function OutputSection() {
   const configuration = useCrateStore((state) => state.configuration);
+  const addLog = useLogsStore((state) => state.addLog);
   const [nxCode, setNxCode] = useState('');
   const [variables, setVariables] = useState<Record<string, any>>({});
   const [copied, setCopied] = useState(false);
@@ -22,22 +24,36 @@ export default function OutputSection() {
   }, [configuration]);
 
   const handleDownload = () => {
-    const generator = new NXExpressionGenerator(configuration);
-    const blob = generator.exportToFile();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${configuration.projectName.replace(/\s+/g, '_')}_NX_Expression.exp`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+      const generator = new NXExpressionGenerator(configuration);
+      const blob = generator.exportToFile();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const filename = `${configuration.projectName.replace(/\s+/g, '_')}_NX_Expression.exp`;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      // Log successful download
+      addLog('success', 'NX Expression downloaded', filename);
+    } catch (error: any) {
+      // Log error
+      addLog('error', 'Download failed', error?.message || 'Unknown error');
+    }
   };
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(nxCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(nxCode);
+      setCopied(true);
+      addLog('success', 'NX Expression copied to clipboard');
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error: any) {
+      addLog('error', 'Failed to copy to clipboard', error?.message);
+    }
   };
 
   const calculateMaterialCost = () => {

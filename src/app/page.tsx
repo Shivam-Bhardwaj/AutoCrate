@@ -1,50 +1,76 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import InputForms from '@/components/InputForms';
 import CrateViewer3D from '@/components/CrateViewer3D';
 import OutputSection from '@/components/OutputSection';
+import LogsSection from '@/components/LogsSection';
 import { Button } from '@/components/ui/button';
 import { useCrateStore } from '@/store/crate-store';
-import { LogIn, User, Menu, X } from 'lucide-react';
+import { useThemeStore } from '@/store/theme-store';
+import { useLogsStore } from '@/store/logs-store';
+import { Menu, X, Sun, Moon, RotateCcw } from 'lucide-react';
 
 export default function Home() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const configuration = useCrateStore((state) => state.configuration);
   const resetConfiguration = useCrateStore((state) => state.resetConfiguration);
+  const { isDarkMode, toggleTheme } = useThemeStore();
+  const addLog = useLogsStore((state) => state.addLog);
 
-  const handleLogin = () => {
-    // Placeholder for authentication logic
-    setIsLoggedIn(true);
+  useEffect(() => {
+    // Apply dark mode class to html element
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
+  const handleReset = () => {
+    resetConfiguration();
+    addLog('info', 'New project created', 'Configuration reset to defaults');
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className={`h-screen flex flex-col ${isDarkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3">
+      <header
+        className={`border-b px-4 py-3 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-gray-900">AutoCrate</h1>
-            <span className="text-sm text-gray-500">NX CAD Expression Generator</span>
+            <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+              AutoCrate
+            </h1>
+            <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              NX CAD Expression Generator
+            </span>
           </div>
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" onClick={resetConfiguration}>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReset}
+              className={isDarkMode ? 'border-gray-600 hover:bg-gray-700' : ''}
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
               New Project
             </Button>
-            {isLoggedIn ? (
-              <div className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                <span className="text-sm">Engineer</span>
-              </div>
-            ) : (
-              <Button size="sm" onClick={handleLogin}>
-                <LogIn className="h-4 w-4 mr-2" />
-                Login
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleTheme}
+              className={isDarkMode ? 'border-gray-600 hover:bg-gray-700' : ''}
+            >
+              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
             <button className="lg:hidden" onClick={() => setShowMobileMenu(!showMobileMenu)}>
-              {showMobileMenu ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {showMobileMenu ? (
+                <X className={`h-6 w-6 ${isDarkMode ? 'text-gray-100' : ''}`} />
+              ) : (
+                <Menu className={`h-6 w-6 ${isDarkMode ? 'text-gray-100' : ''}`} />
+              )}
             </button>
           </div>
         </div>
@@ -54,11 +80,15 @@ export default function Home() {
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Input Section */}
         <div
-          className={`w-full lg:w-1/4 border-r border-gray-200 bg-white ${showMobileMenu ? 'block' : 'hidden lg:block'}`}
+          className={`w-full lg:w-1/4 border-r ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} ${showMobileMenu ? 'block' : 'hidden lg:block'}`}
         >
           <div className="h-full flex flex-col">
-            <div className="p-4 border-b border-gray-200 bg-gray-50">
-              <h2 className="font-semibold text-gray-700">Input Section</h2>
+            <div
+              className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}
+            >
+              <h2 className={`font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Input Section
+              </h2>
             </div>
             <div className="flex-1 overflow-hidden">
               <InputForms />
@@ -69,10 +99,14 @@ export default function Home() {
         {/* Center Panel - 3D Rendering */}
         <div className="flex-1 flex flex-col">
           {/* Top - 3D Viewer */}
-          <div className="flex-1 border-b border-gray-200">
+          <div className={`flex-1 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
             <div className="h-full flex flex-col">
-              <div className="p-4 border-b border-gray-200 bg-gray-50">
-                <h2 className="font-semibold text-gray-700">3D Rendering</h2>
+              <div
+                className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}
+              >
+                <h2 className={`font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  3D Rendering
+                </h2>
               </div>
               <div className="flex-1 p-4">
                 <CrateViewer3D configuration={configuration} />
@@ -80,36 +114,34 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Bottom - Login Section (if not logged in) */}
-          {!isLoggedIn && (
-            <div className="h-1/3 bg-white">
-              <div className="h-full flex flex-col">
-                <div className="p-4 border-b border-gray-200 bg-gray-50">
-                  <h2 className="font-semibold text-gray-700">Login Section</h2>
-                </div>
-                <div className="flex-1 flex items-center justify-center p-4">
-                  <div className="text-center space-y-4">
-                    <p className="text-gray-600">
-                      Sign in to access advanced features and save your projects
-                    </p>
-                    <Button onClick={handleLogin}>
-                      <LogIn className="h-4 w-4 mr-2" />
-                      Login with Company Account
-                    </Button>
-                  </div>
-                </div>
+          {/* Bottom - Logs Section */}
+          <div className={`h-1/3 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className="h-full flex flex-col">
+              <div
+                className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}
+              >
+                <h2 className={`font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  System Logs
+                </h2>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <LogsSection />
               </div>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Right Panel - Output Section */}
         <div
-          className={`w-full lg:w-1/4 border-l border-gray-200 bg-white ${showMobileMenu ? 'hidden' : 'block'}`}
+          className={`w-full lg:w-1/4 border-l ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} ${showMobileMenu ? 'hidden' : 'block'}`}
         >
           <div className="h-full flex flex-col">
-            <div className="p-4 border-b border-gray-200 bg-gray-50">
-              <h2 className="font-semibold text-gray-700">Output Section</h2>
+            <div
+              className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}
+            >
+              <h2 className={`font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Output Section
+              </h2>
             </div>
             <div className="flex-1 overflow-hidden">
               <OutputSection />

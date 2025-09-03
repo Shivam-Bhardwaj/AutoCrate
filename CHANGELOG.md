@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Dark/Light mode toggle with persistent user preference
+- System logs section for tracking user actions and configuration changes
+- Real-time activity logging for all operations
 - Unified changelog system for website and email communications
 - Email templates for AutoCrate update notifications
 - TODO.md for centralized task tracking
@@ -18,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Conventional commits with commitlint for standardized commit messages
 - Automated changelog generation using standard-version
 - Release workflow for automated GitHub releases
+
+### Changed
+- Replaced non-functional login section with system logs
+- Updated UI to support dark mode throughout the application
+
+### Removed
+- Non-functional login button and authentication placeholder
+- Unused login section under 3D viewer
 
 ## [1.0.0] - 2025-09-03
 

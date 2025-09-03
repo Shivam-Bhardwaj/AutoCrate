@@ -1,1 +1,13 @@
+#!/usr/bin/env sh
+
+# Run lint-staged for code formatting and linting
 npx lint-staged
+
+# Note: Consistency checkers are available but not enforced
+# To run them manually:
+# - node scripts/consistency-checkers/color-palette-checker.js
+# - node scripts/consistency-checkers/gui-consistency-linter.js
+# - node scripts/consistency-checkers/accessibility-checker.js
+# - node scripts/consistency-checkers/security-scanner.js
+
+echo "Pre-commit checks passed!"
