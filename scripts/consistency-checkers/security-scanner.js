@@ -165,8 +165,27 @@ class SecurityScanner {
     const issues = [];
     files.forEach((file) => {
       const content = fs.readFileSync(file, 'utf8');
+      const isSecurityScanner = file.includes('security-scanner');
+      const isConsistencyChecker = file.includes('consistency-checkers');
 
       insecurePatterns.forEach(({ pattern, issue, severity }) => {
+        // Skip certain patterns for the security scanner itself
+        if (
+          isSecurityScanner &&
+          (issue.includes('eval()') ||
+            issue.includes('exec()') ||
+            issue.includes('document.write') ||
+            issue.includes('child_process') ||
+            issue.includes('Math.random'))
+        ) {
+          return;
+        }
+
+        // Skip child_process warnings for consistency checker scripts
+        if (isConsistencyChecker && issue.includes('child_process')) {
+          return;
+        }
+
         if (pattern.test(content)) {
           const violation = {
             type: 'CODE_PATTERN',

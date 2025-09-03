@@ -26,6 +26,9 @@
     "release:patch": "standard-version --release-as patch",
     "release:major": "standard-version --release-as major",
     "email:generate": "node scripts/generate-email.js",
+    "deploy": "vercel --prod",
+    "deploy:preview": "vercel",
+    "deploy:build": "npm run build && vercel --prod --yes",
     "prepare": "husky"
   },
   "dependencies": {
@@ -58,6 +61,8 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
+    "@babel/parser": "^7.28.3",
+    "@babel/traverse": "^7.28.3",
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@playwright/test": "^1.55.0",
@@ -77,6 +82,7 @@
     "axe-core": "^4.10.3",
     "eslint": "^8.55.0",
     "eslint-config-next": "14.0.4",
+    "glob": "^11.0.3",
     "happy-dom": "^18.0.1",
     "husky": "^9.1.7",
     "license-checker": "^25.0.1",

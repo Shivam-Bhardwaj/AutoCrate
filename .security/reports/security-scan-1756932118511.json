@@ -1,0 +1,38 @@
+{
+  "timestamp": "2025-09-03T20:41:58.510Z",
+  "summary": {
+    "violations": 0,
+    "warnings": 4,
+    "passed": 3
+  },
+  "violations": [],
+  "warnings": [
+    {
+      "type": "DEPENDENCY",
+      "issue": "Unable to complete dependency scan",
+      "details": "Run \"npm audit\" manually for details"
+    },
+    {
+      "type": "CODE_PATTERN",
+      "file": "playwright.config.ts",
+      "issue": "Insecure HTTP protocol used",
+      "severity": "medium"
+    },
+    {
+      "type": "CODE_PATTERN",
+      "file": "scripts\\consistency-checkers\\security-scanner.js",
+      "issue": "ESLint rule disabled",
+      "severity": "low"
+    },
+    {
+      "type": "HEADERS",
+      "issue": "Missing security headers",
+      "details": "X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Strict-Transport-Security, Content-Security-Policy"
+    }
+  ],
+  "passed": [
+    "No hardcoded secrets detected",
+    "No environment variable exposure detected",
+    "All external resources use HTTPS"
+  ]
+}
