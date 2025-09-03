@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import InputForms from '@/components/InputForms';
 import CrateViewer3D from '@/components/CrateViewer3D';
 import OutputSection from '@/components/OutputSection';
@@ -9,22 +10,37 @@ import { Button } from '@/components/ui/button';
 import { useCrateStore } from '@/store/crate-store';
 import { useThemeStore } from '@/store/theme-store';
 import { useLogsStore } from '@/store/logs-store';
-import { Menu, X, Sun, Moon, RotateCcw } from 'lucide-react';
+import { Menu, X, Sun, Moon, RotateCcw, Settings, Eye, FileOutput, ScrollText } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+// Dynamically import mobile page for better code splitting
+const MobileHome = dynamic(() => import('./mobile-page'), { ssr: false });
 
 export default function Home() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const configuration = useCrateStore((state) => state.configuration);
   const resetConfiguration = useCrateStore((state) => state.resetConfiguration);
   const { isDarkMode, toggleTheme } = useThemeStore();
   const addLog = useLogsStore((state) => state.addLog);
 
   useEffect(() => {
+    // Check if mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
     // Apply dark mode class to html element
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
+
+    return () => window.removeEventListener('resize', checkMobile);
   }, [isDarkMode]);
 
   const handleReset = () => {
@@ -32,18 +48,29 @@ export default function Home() {
     addLog('info', 'New project created', 'Configuration reset to defaults');
   };
 
+  // Return mobile layout for small screens
+  if (isMobile) {
+    return <MobileHome />;
+  }
+
   return (
-    <div className={`h-screen flex flex-col ${isDarkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
+    <div
+      className={`min-h-screen md:h-screen flex flex-col ${isDarkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}
+    >
       {/* Header */}
       <header
-        className={`border-b px-4 py-3 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
+        className={`border-b px-4 py-2 md:py-3 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+            <h1
+              className={`text-xl md:text-2xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}
+            >
               AutoCrate
             </h1>
-            <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            <span
+              className={`hidden sm:inline text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
+            >
               NX CAD Expression Generator
             </span>
           </div>
@@ -76,11 +103,11 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Layout */}
+      {/* Main Layout - Desktop Only */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Input Section */}
         <div
-          className={`w-full lg:w-1/4 border-r ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} ${showMobileMenu ? 'block' : 'hidden lg:block'}`}
+          className={`w-full md:w-1/3 lg:w-1/4 border-r ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} ${showMobileMenu ? 'block' : 'hidden md:block'}`}
         >
           <div className="h-full flex flex-col">
             <div
@@ -133,7 +160,7 @@ export default function Home() {
 
         {/* Right Panel - Output Section */}
         <div
-          className={`w-full lg:w-1/4 border-l ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} ${showMobileMenu ? 'hidden' : 'block'}`}
+          className={`w-full md:w-1/3 lg:w-1/4 border-l ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} hidden md:block`}
         >
           <div className="h-full flex flex-col">
             <div
