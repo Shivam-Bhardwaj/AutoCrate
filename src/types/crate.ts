@@ -2,7 +2,6 @@ export interface CrateDimensions {
   length: number;
   width: number;
   height: number;
-  unit: 'mm' | 'inch';
 }
 
 export interface ShippingBase {

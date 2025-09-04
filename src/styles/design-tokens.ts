@@ -246,11 +246,14 @@ export const designTokens = {
 // Type-safe token getter functions
 export const getColor = (path: string): string => {
   const keys = path.split('.');
-  let value: any = designTokens.colors;
+  let value: unknown = designTokens.colors;
 
   for (const key of keys) {
-    value = value[key];
-    if (!value) return '#000000';
+    if (typeof value === 'object' && value !== null && key in value) {
+      value = (value as Record<string, unknown>)[key];
+    } else {
+      return '#000000';
+    }
   }
 
   return value as string;

@@ -8,23 +8,34 @@ import { useCrateStore } from '@/store/crate-store';
 import { useLogsStore } from '@/store/logs-store';
 import { NXExpressionGenerator } from '@/services/nx-generator';
 import { Download, Copy, Check } from 'lucide-react';
+import NXInstructions from '@/components/NXInstructions';
+import NXVisualGuide from '@/components/NXVisualGuide';
+import { formatInches } from '@/utils/format-inches';
 
 export default function OutputSection() {
   const configuration = useCrateStore((state) => state.configuration);
-  const addLog = useLogsStore((state) => state.addLog);
+  const { logSuccess, logError, logInfo, logUser } = useLogsStore();
   const [nxCode, setNxCode] = useState('');
-  const [variables, setVariables] = useState<Record<string, any>>({});
+  const [variables, setVariables] = useState<Record<string, number | string>>({});
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    logInfo('calculation', 'Generating NX expression code', undefined, 'OutputSection');
     const generator = new NXExpressionGenerator(configuration);
     const expression = generator.generateExpression();
     setNxCode(expression.code);
     setVariables(expression.variables);
-  }, [configuration]);
+    logSuccess(
+      'calculation',
+      'NX expression generated',
+      `${expression.code.length} characters`,
+      'OutputSection'
+    );
+  }, [configuration, logInfo, logSuccess]);
 
   const handleDownload = () => {
     try {
+      logUser('export', 'Initiating NX expression download', undefined, 'OutputSection');
       const generator = new NXExpressionGenerator(configuration);
       const blob = generator.exportToFile();
       const url = URL.createObjectURL(blob);
@@ -38,21 +49,37 @@ export default function OutputSection() {
       URL.revokeObjectURL(url);
 
       // Log successful download
-      addLog('success', 'NX Expression downloaded', filename);
-    } catch (error: any) {
+      logSuccess('export', 'NX Expression downloaded successfully', filename, 'OutputSection');
+    } catch (error: unknown) {
       // Log error
-      addLog('error', 'Download failed', error?.message || 'Unknown error');
+      logError(
+        'export',
+        'Download failed',
+        error instanceof Error ? error.message : 'Unknown error',
+        'OutputSection'
+      );
     }
   };
 
   const handleCopy = async () => {
     try {
+      logUser('export', 'Copying NX expression to clipboard', undefined, 'OutputSection');
       await navigator.clipboard.writeText(nxCode);
       setCopied(true);
-      addLog('success', 'NX Expression copied to clipboard');
+      logSuccess(
+        'export',
+        'NX Expression copied to clipboard',
+        `${nxCode.length} characters`,
+        'OutputSection'
+      );
       setTimeout(() => setCopied(false), 2000);
-    } catch (error: any) {
-      addLog('error', 'Failed to copy to clipboard', error?.message);
+    } catch (error: unknown) {
+      logError(
+        'export',
+        'Failed to copy to clipboard',
+        error instanceof Error ? error.message : 'Unknown error',
+        'OutputSection'
+      );
     }
   };
 
@@ -60,7 +87,8 @@ export default function OutputSection() {
     const woodVolume = Object.entries(variables)
       .filter(([key]) => key.includes('volume'))
       .reduce(
-        (sum: number, [, val]: [string, any]) => sum + (typeof val === 'number' ? val : 0),
+        (sum: number, [, val]: [string, number | string]) =>
+          sum + (typeof val === 'number' ? val : 0),
         0
       );
 
@@ -86,11 +114,19 @@ export default function OutputSection() {
             </div>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="expression" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="expression">NX Expression</TabsTrigger>
+            <Tabs
+              defaultValue="expression"
+              className="w-full"
+              onValueChange={(value) => {
+                logUser('navigation', `Switched to ${value} tab`, undefined, 'OutputSection');
+              }}
+            >
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="expression">Expression</TabsTrigger>
+                <TabsTrigger value="instructions">Instructions</TabsTrigger>
+                <TabsTrigger value="visual">Visual Guide</TabsTrigger>
                 <TabsTrigger value="summary">Summary</TabsTrigger>
-                <TabsTrigger value="bom">Bill of Materials</TabsTrigger>
+                <TabsTrigger value="bom">BOM</TabsTrigger>
               </TabsList>
 
               <TabsContent value="expression">
@@ -112,25 +148,32 @@ export default function OutputSection() {
                         <div className="flex justify-between">
                           <dt className="text-muted-foreground">External:</dt>
                           <dd className="font-medium">
-                            {configuration.dimensions.length} x {configuration.dimensions.width} x{' '}
-                            {configuration.dimensions.height} {configuration.dimensions.unit}
+                            {formatInches(configuration.dimensions.length)} x{' '}
+                            {formatInches(configuration.dimensions.width)} x{' '}
+                            {formatInches(configuration.dimensions.height)} inches
                           </dd>
                         </div>
                         <div className="flex justify-between">
                           <dt className="text-muted-foreground">Internal:</dt>
                           <dd className="font-medium">
-                            {configuration.dimensions.length -
-                              configuration.cap.leftPanel.thickness -
-                              configuration.cap.rightPanel.thickness}{' '}
+                            {formatInches(
+                              configuration.dimensions.length -
+                                configuration.cap.leftPanel.thickness -
+                                configuration.cap.rightPanel.thickness
+                            )}{' '}
                             x{' '}
-                            {configuration.dimensions.width -
-                              configuration.cap.frontPanel.thickness -
-                              configuration.cap.backPanel.thickness}{' '}
+                            {formatInches(
+                              configuration.dimensions.width -
+                                configuration.cap.frontPanel.thickness -
+                                configuration.cap.backPanel.thickness
+                            )}{' '}
                             x{' '}
-                            {configuration.dimensions.height -
-                              configuration.base.floorboardThickness -
-                              configuration.cap.topPanel.thickness}{' '}
-                            {configuration.dimensions.unit}
+                            {formatInches(
+                              configuration.dimensions.height -
+                                configuration.base.floorboardThickness -
+                                configuration.cap.topPanel.thickness
+                            )}{' '}
+                            inches
                           </dd>
                         </div>
                       </dl>
@@ -271,6 +314,14 @@ export default function OutputSection() {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="instructions">
+                <NXInstructions />
+              </TabsContent>
+
+              <TabsContent value="visual">
+                <NXVisualGuide />
               </TabsContent>
             </Tabs>
           </CardContent>

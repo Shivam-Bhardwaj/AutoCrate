@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useCrateStore } from '@/store/crate-store';
+import { useLogsStore } from '@/store/logs-store';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +27,8 @@ export default function InputForms() {
     updateProjectName,
   } = useCrateStore();
 
+  const { logUser } = useLogsStore();
+
   return (
     <div className="h-full overflow-y-auto p-4">
       <div className="space-y-4">
@@ -39,7 +42,10 @@ export default function InputForms() {
               <Input
                 id="projectName"
                 value={configuration.projectName}
-                onChange={(e) => updateProjectName(e.target.value)}
+                onChange={(e) => {
+                  updateProjectName(e.target.value);
+                  logUser('ui', `Project renamed to: ${e.target.value}`, undefined, 'InputForms');
+                }}
                 placeholder="Enter project name"
               />
             </div>
@@ -63,49 +69,62 @@ export default function InputForms() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="length">Length</Label>
+                    <Label htmlFor="length">Length (inches)</Label>
                     <Input
                       id="length"
                       type="number"
+                      step="0.125"
                       value={configuration.dimensions.length}
-                      onChange={(e) => updateDimensions({ length: Number(e.target.value) })}
+                      onChange={(e) => {
+                        const newLength = Number(e.target.value);
+                        updateDimensions({ length: newLength });
+                        logUser(
+                          'dimension',
+                          `Length changed to ${newLength} inches`,
+                          undefined,
+                          'InputForms'
+                        );
+                      }}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="width">Width</Label>
+                    <Label htmlFor="width">Width (inches)</Label>
                     <Input
                       id="width"
                       type="number"
+                      step="0.125"
                       value={configuration.dimensions.width}
-                      onChange={(e) => updateDimensions({ width: Number(e.target.value) })}
+                      onChange={(e) => {
+                        const newWidth = Number(e.target.value);
+                        updateDimensions({ width: newWidth });
+                        logUser(
+                          'dimension',
+                          `Width changed to ${newWidth} inches`,
+                          undefined,
+                          'InputForms'
+                        );
+                      }}
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="height">Height</Label>
-                    <Input
-                      id="height"
-                      type="number"
-                      value={configuration.dimensions.height}
-                      onChange={(e) => updateDimensions({ height: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="unit">Unit</Label>
-                    <Select
-                      value={configuration.dimensions.unit}
-                      onValueChange={(value: 'mm' | 'inch') => updateDimensions({ unit: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="mm">Millimeters</SelectItem>
-                        <SelectItem value="inch">Inches</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="height">Height (inches)</Label>
+                  <Input
+                    id="height"
+                    type="number"
+                    step="0.125"
+                    value={configuration.dimensions.height}
+                    onChange={(e) => {
+                      const newHeight = Number(e.target.value);
+                      updateDimensions({ height: newHeight });
+                      logUser(
+                        'dimension',
+                        `Height changed to ${newHeight} inches`,
+                        undefined,
+                        'InputForms'
+                      );
+                    }}
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -164,20 +183,22 @@ export default function InputForms() {
                     onChange={(e) => updateBase({ floorboardThickness: Number(e.target.value) })}
                   />
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="border-t pt-4">
-                    <h4 className="text-sm font-semibold mb-2">Automatically Calculated Skid Configuration</h4>
+                    <h4 className="text-sm font-semibold mb-2">
+                      Automatically Calculated Skid Configuration
+                    </h4>
                     <p className="text-xs text-muted-foreground mb-3">
                       Skid dimensions and spacing are automatically determined based on crate weight
                     </p>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Skid Size (H x W)</Label>
                       <div className="p-2 bg-muted rounded text-sm">
-                        {configuration.base.skidHeight} x {configuration.base.skidWidth} {configuration.dimensions.unit}
+                        {configuration.base.skidHeight} x {configuration.base.skidWidth} inches
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -187,12 +208,12 @@ export default function InputForms() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Skid Spacing</Label>
                       <div className="p-2 bg-muted rounded text-sm">
-                        {configuration.base.skidSpacing} {configuration.dimensions.unit} (center-to-center)
+                        {configuration.base.skidSpacing} inches (center-to-center)
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -202,12 +223,13 @@ export default function InputForms() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {configuration.base.requiresRubStrips && (
                     <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
                       <p className="text-xs text-yellow-800 dark:text-yellow-200">
-                        Rub strips are required for crate bases longer than 96 inches. 
-                        These must extend the width of the crate and be beveled at 45-60 degrees for half their height.
+                        Rub strips are required for crate bases longer than 96 inches. These must
+                        extend the width of the crate and be beveled at 45-60 degrees for half their
+                        height.
                       </p>
                     </div>
                   )}

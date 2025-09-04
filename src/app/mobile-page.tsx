@@ -17,7 +17,7 @@ export default function MobileHome() {
   const configuration = useCrateStore((state) => state.configuration);
   const resetConfiguration = useCrateStore((state) => state.resetConfiguration);
   const { isDarkMode, toggleTheme } = useThemeStore();
-  const addLog = useLogsStore((state) => state.addLog);
+  const { logInfo } = useLogsStore();
 
   useEffect(() => {
     // Apply dark mode class to html element
@@ -30,7 +30,7 @@ export default function MobileHome() {
 
   const handleReset = () => {
     resetConfiguration();
-    addLog('info', 'New project created', 'Configuration reset to defaults');
+    logInfo('system', 'New project created', 'Configuration reset to defaults', 'MobilePage');
   };
 
   return (

@@ -10,8 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useCrateStore } from '@/store/crate-store';
 import { useThemeStore } from '@/store/theme-store';
 import { useLogsStore } from '@/store/logs-store';
-import { Menu, X, Sun, Moon, RotateCcw, Settings, Eye, FileOutput, ScrollText } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Menu, X, Sun, Moon, RotateCcw } from 'lucide-react';
 
 // Dynamically import mobile page for better code splitting
 const MobileHome = dynamic(() => import('./mobile-page'), { ssr: false });
@@ -22,7 +21,7 @@ export default function Home() {
   const configuration = useCrateStore((state) => state.configuration);
   const resetConfiguration = useCrateStore((state) => state.resetConfiguration);
   const { isDarkMode, toggleTheme } = useThemeStore();
-  const addLog = useLogsStore((state) => state.addLog);
+  const { logInfo } = useLogsStore();
 
   useEffect(() => {
     // Check if mobile
@@ -45,7 +44,7 @@ export default function Home() {
 
   const handleReset = () => {
     resetConfiguration();
-    addLog('info', 'New project created', 'Configuration reset to defaults');
+    logInfo('system', 'New project created', 'Configuration reset to defaults', 'MainPage');
   };
 
   // Return mobile layout for small screens

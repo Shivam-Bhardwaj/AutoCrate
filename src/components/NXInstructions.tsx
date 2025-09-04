@@ -16,8 +16,8 @@ export default function NXInstructions() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            This guide explains how to import and use the generated expression file in NX CAD software
-            using a simplified two-point box construction method.
+            This guide explains how to import and use the generated expression file in NX CAD
+            software using a simplified two-point box construction method.
           </p>
         </CardContent>
       </Card>
@@ -47,7 +47,8 @@ export default function NXInstructions() {
                   <div>
                     <h4 className="font-medium">Download Expression File</h4>
                     <p className="text-sm text-muted-foreground">
-                      Click the "Download" button in the Output section to save the .exp file
+                      Click the &quot;Download&quot; button in the Output section to save the .exp
+                      file
                     </p>
                   </div>
                 </div>
@@ -297,8 +298,8 @@ export default function NXInstructions() {
                     Missing Features
                   </h4>
                   <p className="text-sm text-muted-foreground">
-                    Execute blocks in sequence: Base → Skids → Panels → Top.
-                    Check expression values are properly loaded.
+                    Execute blocks in sequence: Base → Skids → Panels → Top. Check expression values
+                    are properly loaded.
                   </p>
                 </div>
 
@@ -308,15 +309,14 @@ export default function NXInstructions() {
                     Dimension Errors
                   </h4>
                   <p className="text-sm text-muted-foreground">
-                    Verify units match between AutoCrate and NX. 
-                    Default is millimeters.
+                    Verify units match between AutoCrate and NX. Default is millimeters.
                   </p>
                 </div>
               </div>
 
               <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg mt-4">
                 <p className="text-sm">
-                  <strong>Pro Tip:</strong> Use NX's Expression Editor (Tools → Expression) to
+                  <strong>Pro Tip:</strong> Use NX&apos;s Expression Editor (Tools → Expression) to
                   modify parameters after import for quick design iterations.
                 </p>
               </div>

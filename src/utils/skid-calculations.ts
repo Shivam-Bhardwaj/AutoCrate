@@ -8,31 +8,24 @@ export interface SkidDimensions {
 export interface SkidConfiguration {
   dimensions: SkidDimensions;
   count: number;
-  spacing: number; // Center-to-center spacing in mm
+  spacing: number; // Center-to-center spacing in inches
   requiresRubStrips: boolean;
 }
 
 // Convert kg to lbs
 const kgToLbs = (kg: number): number => kg * 2.20462;
 
-// Convert inches to mm
-const inchesToMm = (inches: number): number => inches * 25.4;
-
-// Convert mm to inches
-const mmToInches = (mm: number): number => mm / 25.4;
-
 /**
  * Determines the appropriate skid size based on total loaded crate weight
  * @param weightKg Total loaded crate weight in kg
- * @param unit The unit system being used
- * @returns Skid dimensions in the specified unit
+ * @returns Skid dimensions in inches
  */
-export function getSkidSize(weightKg: number, unit: 'mm' | 'inch'): SkidDimensions {
+export function getSkidSize(weightKg: number): SkidDimensions {
   const weightLbs = kgToLbs(weightKg);
-  
+
   let heightInches: number;
   let widthInches: number;
-  
+
   if (weightLbs <= 500) {
     heightInches = 3;
     widthInches = 4;
@@ -53,22 +46,15 @@ export function getSkidSize(weightKg: number, unit: 'mm' | 'inch'): SkidDimensio
     heightInches = 8;
     widthInches = 8;
   }
-  
+
   // All skids must have minimum height of 3.5 inches
   if (heightInches < 3.5) {
     heightInches = 3.5;
   }
-  
-  if (unit === 'mm') {
-    return {
-      height: Math.round(inchesToMm(heightInches)),
-      width: Math.round(inchesToMm(widthInches))
-    };
-  }
-  
+
   return {
     height: heightInches,
-    width: widthInches
+    width: widthInches,
   };
 }
 
@@ -76,22 +62,17 @@ export function getSkidSize(weightKg: number, unit: 'mm' | 'inch'): SkidDimensio
  * Determines the appropriate skid spacing based on skid size and crate weight
  * @param skidDimensions The dimensions of the skids
  * @param weightKg Total loaded crate weight in kg
- * @param unit The unit system being used
- * @returns Center-to-center spacing in the specified unit
+ * @returns Center-to-center spacing in inches
  */
-export function getSkidSpacing(
-  skidDimensions: SkidDimensions, 
-  weightKg: number, 
-  unit: 'mm' | 'inch'
-): number {
+export function getSkidSpacing(skidDimensions: SkidDimensions, weightKg: number): number {
   const weightLbs = kgToLbs(weightKg);
-  
-  // Convert dimensions to inches for comparison
-  const heightInches = unit === 'mm' ? mmToInches(skidDimensions.height) : skidDimensions.height;
-  const widthInches = unit === 'mm' ? mmToInches(skidDimensions.width) : skidDimensions.width;
-  
+
+  // Dimensions already in inches
+  const heightInches = skidDimensions.height;
+  const widthInches = skidDimensions.width;
+
   let spacingInches: number;
-  
+
   // Check skid sizes and apply appropriate spacing rules
   if ((heightInches === 3 && widthInches === 4) || (heightInches === 4 && widthInches === 4)) {
     spacingInches = 30;
@@ -115,51 +96,47 @@ export function getSkidSpacing(
     // Default spacing for any non-standard sizes
     spacingInches = 24;
   }
-  
-  if (unit === 'mm') {
-    return Math.round(inchesToMm(spacingInches));
-  }
-  
+
   return spacingInches;
 }
 
 /**
  * Calculates the optimal number of skids based on crate length and spacing requirements
- * @param crateLength Length of the crate in the specified unit
- * @param spacing Center-to-center spacing in the specified unit
- * @param skidWidth Width of individual skid in the specified unit
+ * @param crateLength Length of the crate in inches
+ * @param spacing Center-to-center spacing in inches
+ * @param skidWidth Width of individual skid in inches
  * @returns Number of skids needed (minimum 3)
  */
 export function calculateSkidCount(
-  crateLength: number, 
+  crateLength: number,
   spacing: number,
   skidWidth: number
 ): number {
-  // Convert to mm for calculation if needed
-  const lengthMm = crateLength;
-  const spacingMm = spacing;
-  const skidWidthMm = skidWidth;
-  
+  // All values in inches
+  const lengthInches = crateLength;
+  const spacingInches = spacing;
+  const skidWidthInches = skidWidth;
+
   // Start with minimum 3 skids
   let skidCount = 3;
-  
+
   // Calculate how many skids we can fit with the given spacing
   // For uniform distribution: (n-1) * spacing + skidWidth <= length
   // Where n is number of skids
-  
+
   // Calculate maximum skids that can fit
-  const maxSkids = Math.floor((lengthMm - skidWidthMm) / spacingMm) + 1;
-  
+  const maxSkids = Math.floor((lengthInches - skidWidthInches) / spacingInches) + 1;
+
   // Use the maximum that fits, but at least 3
   skidCount = Math.max(3, maxSkids);
-  
+
   // For very long crates, we might need more skids for proper support
-  // Add a skid for every 1200mm (about 4 feet) of length
-  const recommendedByLength = Math.max(3, Math.ceil(lengthMm / 1200));
-  
+  // Add a skid for every 48 inches (4 feet) of length
+  const recommendedByLength = Math.max(3, Math.ceil(lengthInches / 48));
+
   // Use the greater of the two calculations
   skidCount = Math.max(skidCount, recommendedByLength);
-  
+
   return skidCount;
 }
 
@@ -169,10 +146,9 @@ export function calculateSkidCount(
  * @returns true if rub strips are required
  */
 export function requiresRubStrips(crateDimensions: CrateDimensions): boolean {
-  const lengthInInches = crateDimensions.unit === 'mm' 
-    ? mmToInches(crateDimensions.length) 
-    : crateDimensions.length;
-  
+  // Length already in inches
+  const lengthInInches = crateDimensions.length;
+
   // Rub strips required for bases longer than 96 inches
   return lengthInInches > 96;
 }
@@ -187,16 +163,16 @@ export function calculateSkidConfiguration(
   crateDimensions: CrateDimensions,
   weightKg: number
 ): SkidConfiguration {
-  const skidDimensions = getSkidSize(weightKg, crateDimensions.unit);
-  const spacing = getSkidSpacing(skidDimensions, weightKg, crateDimensions.unit);
+  const skidDimensions = getSkidSize(weightKg);
+  const spacing = getSkidSpacing(skidDimensions, weightKg);
   const count = calculateSkidCount(crateDimensions.length, spacing, skidDimensions.width);
   const requiresRubStripsFlag = requiresRubStrips(crateDimensions);
-  
+
   return {
     dimensions: skidDimensions,
     count,
     spacing,
-    requiresRubStrips: requiresRubStripsFlag
+    requiresRubStrips: requiresRubStripsFlag,
   };
 }
 
@@ -207,18 +183,18 @@ export function calculateSkidConfiguration(
  */
 export function validateSkidConfiguration(config: SkidConfiguration): string[] {
   const errors: string[] = [];
-  
+
   // Check minimum skid count
   if (config.count < 3) {
     errors.push('At least 3 skids are required');
   }
-  
-  // Check minimum skid height (converted to inches for validation)
+
+  // Check minimum skid height
   const minHeightInches = 3.5;
-  const heightInches = config.dimensions.height / 25.4; // Assuming dimensions in mm
+  const heightInches = config.dimensions.height; // Already in inches
   if (heightInches < minHeightInches) {
     errors.push(`Skid height must be at least ${minHeightInches} inches`);
   }
-  
+
   return errors;
 }

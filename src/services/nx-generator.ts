@@ -1,4 +1,4 @@
-import { CrateConfiguration, NXExpression } from '@/types/crate';
+import { CrateConfiguration, NXExpression, VentilationConfig } from '@/types/crate';
 
 export class NXExpressionGenerator {
   private config: CrateConfiguration;
@@ -15,7 +15,6 @@ export class NXExpressionGenerator {
       crate_length: dimensions.length,
       crate_width: dimensions.width,
       crate_height: dimensions.height,
-      dimension_unit: dimensions.unit,
 
       // Base configuration
       base_type: base.type,
@@ -103,7 +102,7 @@ export class NXExpressionGenerator {
     return features;
   }
 
-  private generateVentilationFeature(panel: string, ventConfig: any): string {
+  private generateVentilationFeature(panel: string, ventConfig: VentilationConfig): string {
     const { type, count, size } = ventConfig;
     if (type === 'holes') {
       return `HOLE/${panel}_VENT = SIMPLE_HOLE(${size}, ${count}, PATTERN=RECTANGULAR)`;
@@ -115,7 +114,7 @@ export class NXExpressionGenerator {
 
   private generateConstraints(): string[] {
     const constraints: string[] = [];
-    const { dimensions, weight } = this.config;
+    const { weight } = this.config;
 
     constraints.push(`CONSTRAINT/MIN_WALL_THICKNESS = 12`);
     constraints.push(`CONSTRAINT/MAX_WEIGHT = ${weight.maxGross}`);
@@ -136,11 +135,26 @@ export class NXExpressionGenerator {
 // Generated for: ${this.config.projectName}
 // Date: ${new Date().toISOString()}
 
+// ===============================================================
+// IMPLEMENTATION GUIDE:
+// 1. Import this file in NX: Tools -> Expression -> Import
+// 2. Create components using Insert -> Design Feature -> Block
+// 3. Use the two-point diagonal method for each component:
+//    Point 1: Lower-left-back corner (x1, y1, z1)
+//    Point 2: Upper-right-front corner (x2, y2, z2)
+// 
+// COORDINATE SYSTEM:
+// Origin (0,0,0): Lower-left corner at base level
+// X-axis: Length direction (left to right)
+// Y-axis: Height direction (bottom to top)  
+// Z-axis: Width direction (back to front)
+// ===============================================================
+
 // ===== PARAMETERS =====
-// Dimensions
-p0 = ${dimensions.length} // Length (${dimensions.unit})
-p1 = ${dimensions.width} // Width (${dimensions.unit})
-p2 = ${dimensions.height} // Height (${dimensions.unit})
+// Dimensions (inches)
+p0 = ${dimensions.length} // Length (inches)
+p1 = ${dimensions.width} // Width (inches)
+p2 = ${dimensions.height} // Height (inches)
 
 // Base Configuration
 p10 = ${base.skidHeight} // Skid Height
@@ -173,7 +187,12 @@ panel_volume = (2 * p0 * p2 * p21) + (2 * p1 * p2 * p23) + (p0 * p1 * p20)
 total_wood_volume = base_volume + skid_volume + panel_volume
 
 // ===== FEATURE CREATION =====
-// Create Base
+// Each component is defined by two diagonal corner points for uniform construction
+// This minimizes parameters and simplifies modifications
+
+// Create Base (Floorboard)
+// Point 1: (0, skid_height, 0) - Lower corner
+// Point 2: (length, skid_height + floor_thickness, width) - Upper corner
 BLOCK/CREATE_BASE
   HEIGHT = p13
   WIDTH = p1
@@ -181,7 +200,10 @@ BLOCK/CREATE_BASE
   POSITION = (0, p10, 0)
 END_BLOCK
 
-// Create Skids
+// Create Skids (Support beams under base)
+// Each skid uses two-point definition
+// Point 1: (0, 0, skid_position) - Ground level
+// Point 2: (length, skid_height, skid_position + skid_width)
 FOR i = 1 TO p12
   BLOCK/CREATE_SKID_#i
     HEIGHT = p10
@@ -191,7 +213,10 @@ FOR i = 1 TO p12
   END_BLOCK
 END_FOR
 
-// Create Panels
+// Create Panels using Two-Point Box Method
+// Each panel is a box defined by diagonal corners
+
+// Front Panel - Faces user/operator
 BLOCK/CREATE_FRONT_PANEL
   HEIGHT = p2
   WIDTH = p21
@@ -199,6 +224,9 @@ BLOCK/CREATE_FRONT_PANEL
   POSITION = (0, p10 + p13, p1 - p21)
 END_BLOCK
 
+// Back Panel - Opposite to front
+// Point 1: (0, base_height, 0)
+// Point 2: (length, total_height, back_thickness)
 BLOCK/CREATE_BACK_PANEL
   HEIGHT = p2
   WIDTH = p22
@@ -206,6 +234,9 @@ BLOCK/CREATE_BACK_PANEL
   POSITION = (0, p10 + p13, 0)
 END_BLOCK
 
+// Left Panel - When facing front
+// Point 1: (0, base_height, 0)
+// Point 2: (left_thickness, total_height, width)
 BLOCK/CREATE_LEFT_PANEL
   HEIGHT = p2
   WIDTH = p1
@@ -213,6 +244,9 @@ BLOCK/CREATE_LEFT_PANEL
   POSITION = (0, p10 + p13, 0)
 END_BLOCK
 
+// Right Panel - When facing front
+// Point 1: (length - right_thickness, base_height, 0)
+// Point 2: (length, total_height, width)
 BLOCK/CREATE_RIGHT_PANEL
   HEIGHT = p2
   WIDTH = p1
@@ -220,6 +254,9 @@ BLOCK/CREATE_RIGHT_PANEL
   POSITION = (p0 - p24, p10 + p13, 0)
 END_BLOCK
 
+// Top Panel - Lid/Cover
+// Point 1: (0, total_height - top_thickness, 0)
+// Point 2: (length, total_height, width)
 BLOCK/CREATE_TOP_PANEL
   HEIGHT = p20
   WIDTH = p1
@@ -264,6 +301,13 @@ PATTERN/FASTENER_LAYOUT
   APPLY_TO = ALL_EDGES
 END_PATTERN
 
+// ===== ASSEMBLY NOTES =====
+// 1. Components automatically align due to parametric relationships
+// 2. Modify parameters p0-p30 to adjust dimensions
+// 3. All dimensions in inches
+// 4. Use Expression Editor for quick iterations
+// 
+// For detailed instructions, see the Instructions tab in AutoCrate
 // ===== END OF EXPRESSION FILE =====`;
 
     return code;

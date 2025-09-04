@@ -3,6 +3,8 @@
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Box, Text } from '@react-three/drei';
 import { CrateConfiguration } from '@/types/crate';
+import { useLogsStore } from '@/store/logs-store';
+import { useEffect } from 'react';
 
 interface CrateViewer3DProps {
   configuration: CrateConfiguration | null;
@@ -11,7 +13,8 @@ interface CrateViewer3DProps {
 function CrateModel({ config }: { config: CrateConfiguration }) {
   const { dimensions, base, cap } = config;
 
-  const scaleFactor = dimensions.unit === 'inch' ? 25.4 : 1;
+  // Convert inches to meters for 3D display
+  const scaleFactor = 25.4;
   const length = (dimensions.length * scaleFactor) / 1000;
   const width = (dimensions.width * scaleFactor) / 1000;
   const height = (dimensions.height * scaleFactor) / 1000;
@@ -20,13 +23,13 @@ function CrateModel({ config }: { config: CrateConfiguration }) {
   const skidWidth = (base.skidWidth * scaleFactor) / 1000;
   const skidSpacing = (base.skidSpacing * scaleFactor) / 1000;
   const panelThickness = (cap.topPanel.thickness * scaleFactor) / 1000;
-  const floorThickness = (base.floorboardThickness * scaleFactor) / 1000;
+  // const floorThickness = (base.floorboardThickness * scaleFactor) / 1000;
 
   // Calculate skid positions
   const skidPositions = [];
   const totalSpan = (base.skidCount - 1) * skidSpacing;
   const startX = -totalSpan / 2;
-  
+
   for (let i = 0; i < base.skidCount; i++) {
     skidPositions.push(startX + i * skidSpacing);
   }
@@ -35,26 +38,26 @@ function CrateModel({ config }: { config: CrateConfiguration }) {
     <group>
       {/* Individual Skids */}
       {skidPositions.map((xPos, index) => (
-        <Box 
+        <Box
           key={`skid-${index}`}
-          args={[skidWidth, skidHeight, width]} 
+          args={[skidWidth, skidHeight, width]}
           position={[xPos, skidHeight / 2, 0]}
         >
           <meshStandardMaterial color="#8B4513" />
         </Box>
       ))}
-      
+
       {/* Rub Strips if required */}
       {base.requiresRubStrips && (
         <>
-          <Box 
-            args={[length, skidHeight * 0.3, skidWidth * 0.5]} 
+          <Box
+            args={[length, skidHeight * 0.3, skidWidth * 0.5]}
             position={[0, skidHeight * 0.15, width / 2 - skidWidth * 0.25]}
           >
             <meshStandardMaterial color="#6B3410" />
           </Box>
-          <Box 
-            args={[length, skidHeight * 0.3, skidWidth * 0.5]} 
+          <Box
+            args={[length, skidHeight * 0.3, skidWidth * 0.5]}
             position={[0, skidHeight * 0.15, -width / 2 + skidWidth * 0.25]}
           >
             <meshStandardMaterial color="#6B3410" />
@@ -114,12 +117,47 @@ function CrateModel({ config }: { config: CrateConfiguration }) {
 }
 
 export default function CrateViewer3D({ configuration }: CrateViewer3DProps) {
+  const { logInfo, logDebug, logWarning } = useLogsStore();
+
+  useEffect(() => {
+    if (configuration) {
+      logDebug(
+        'render',
+        '3D scene updated',
+        `Rendering crate: ${configuration.dimensions.length}x${configuration.dimensions.width}x${configuration.dimensions.height} inches`,
+        'CrateViewer3D'
+      );
+    } else {
+      logWarning('render', 'No configuration provided for 3D viewer', undefined, 'CrateViewer3D');
+    }
+  }, [configuration, logDebug, logWarning]);
   return (
     <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg">
-      <Canvas camera={{ position: [5, 5, 5], fov: 50 }} shadows>
+      <Canvas
+        camera={{ position: [5, 5, 5], fov: 50 }}
+        shadows
+        onCreated={() => {
+          logInfo('render', '3D canvas initialized', 'WebGL renderer ready', 'CrateViewer3D');
+        }}
+        onPointerMissed={() => {
+          logDebug('ui', 'User clicked outside 3D model', undefined, 'CrateViewer3D');
+        }}
+      >
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
-        <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
+        <OrbitControls
+          enablePan={true}
+          enableZoom={true}
+          enableRotate={true}
+          onChange={() => {
+            logDebug(
+              'ui',
+              'Camera view changed',
+              'User interacting with 3D controls',
+              'CrateViewer3D'
+            );
+          }}
+        />
         <Grid args={[20, 20]} />
 
         {configuration ? (

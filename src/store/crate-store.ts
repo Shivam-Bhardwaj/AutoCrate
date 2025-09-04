@@ -23,34 +23,33 @@ interface CrateStore {
 }
 
 const defaultPanelConfig: PanelConfig = {
-  thickness: 18,
+  thickness: 0.75,
   material: 'plywood',
   reinforcement: false,
   ventilation: {
     enabled: false,
     type: 'holes',
     count: 4,
-    size: 50,
+    size: 2,
   },
 };
 
 // Calculate initial skid configuration
 const initialSkidConfig = calculateSkidConfiguration(
-  { length: 1200, width: 1000, height: 1000, unit: 'mm' },
+  { length: 48, width: 40, height: 40 },
   1000 // Default max gross weight
 );
 
 const defaultConfiguration: CrateConfiguration = {
   projectName: 'New Crate Project',
   dimensions: {
-    length: 1200,
-    width: 1000,
-    height: 1000,
-    unit: 'mm',
+    length: 48,
+    width: 40,
+    height: 40,
   },
   base: {
     type: 'standard',
-    floorboardThickness: 18,
+    floorboardThickness: 0.75,
     skidHeight: initialSkidConfig.dimensions.height,
     skidWidth: initialSkidConfig.dimensions.width,
     skidCount: initialSkidConfig.count,
@@ -67,14 +66,14 @@ const defaultConfiguration: CrateConfiguration = {
   },
   fasteners: {
     type: 'nails',
-    size: '3.5mm',
-    spacing: 150,
+    size: '1/8 inch',
+    spacing: 6,
     material: 'steel',
   },
   vinyl: {
     enabled: false,
     type: 'waterproof',
-    thickness: 0.2,
+    thickness: 0.008,
     coverage: 'full',
   },
   weight: {
@@ -113,7 +112,14 @@ export const useCrateStore = create<CrateStore>((set) => ({
   updateBase: (base) =>
     set((state) => {
       // Don't allow manual override of calculated skid values
-      const { skidHeight, skidWidth, skidCount, skidSpacing, requiresRubStrips, ...allowedUpdates } = base as any;
+      const {
+        skidHeight: _skidHeight,
+        skidWidth: _skidWidth,
+        skidCount: _skidCount,
+        skidSpacing: _skidSpacing,
+        requiresRubStrips: _requiresRubStrips,
+        ...allowedUpdates
+      } = base;
       return {
         configuration: {
           ...state.configuration,

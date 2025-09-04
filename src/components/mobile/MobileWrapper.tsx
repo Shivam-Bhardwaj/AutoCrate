@@ -24,7 +24,11 @@ export function MobileWrapper({ children }: MobileWrapperProps) {
     setTouchEnd(e.targetTouches[0].clientY);
 
     // Pull to refresh logic
-    if (touchStart !== null && touchStart - e.targetTouches[0].clientY < -100 && window.scrollY === 0) {
+    if (
+      touchStart !== null &&
+      touchStart - e.targetTouches[0].clientY < -100 &&
+      window.scrollY === 0
+    ) {
       setIsPullToRefresh(true);
     }
   };
@@ -33,8 +37,8 @@ export function MobileWrapper({ children }: MobileWrapperProps) {
     if (!touchStart || !touchEnd) return;
 
     const distance = touchStart - touchEnd;
-    const isUpSwipe = distance > minSwipeDistance;
-    const isDownSwipe = distance < -minSwipeDistance;
+    // const isUpSwipe = distance > minSwipeDistance;
+    // const isDownSwipe = distance < -minSwipeDistance;
 
     if (isPullToRefresh) {
       window.location.reload();
