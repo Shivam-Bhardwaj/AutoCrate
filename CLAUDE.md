@@ -7,18 +7,18 @@ Live URL: https://autocrate-5xoh6cft1-shivams-projects-1d3fe872.vercel.app
 ## Simplified Deployment Workflow
 
 ### Three-Step Process:
-1. **Local Development** (`.\a local` or Option 1)
+1. **Local Development** (`.\\autocrate local` or Option 1)
    - Starts dev server
    - Runs tests
    - Use for active development
 
-2. **Prepare for Production** (`.\a prepare` or Option 2)
+2. **Prepare for Production** (`.\\autocrate prepare` or Option 2)
    - Runs all quality checks (lint, type-check, format)
    - Builds production bundle
    - Runs all tests
    - Ensures code is production-ready
 
-3. **Deploy to Production** (`.\a deploy` or Option 3)
+3. **Deploy to Production** (`.\\autocrate deploy` or Option 3)
    - Git add, commit, and push
    - GitHub Actions automatically deploys to Vercel
    - No manual Vercel CLI needed
@@ -85,13 +85,13 @@ All test commands are configured in package.json:
 ## File Management Policy
 
 ### Clean Codebase Principles
-- **ONE SCRIPT RULE**: Use `a.bat` for all operations (no duplicate scripts)
+- **ONE SCRIPT RULE**: Use `autocrate.bat` for all operations (no duplicate scripts)
 - **NO TEMPORARY FILES**: Don't create scripts that won't be reused
 - **NO PLATFORM DUPLICATES**: No .sh/.bat/.ps1 versions of the same script
 - **ESSENTIAL ONLY**: Only keep files necessary for production
 
 ### Files to Keep
-- `a.bat` - Master control script
+- `autocrate.bat` - Master control script
 - Configuration files (package.json, tsconfig.json, etc.)
 - Source code in /src
 - Tests in /tests
@@ -124,7 +124,7 @@ All test commands are configured in package.json:
 ### Default Port Configuration
 - Development server runs on port 3000 by default
 - If port 3000 is busy, Next.js automatically tries 3001, 3002, etc.
-- Use `.\a ports` to view/manage active ports
+- Use `.\\autocrate ports` to view/manage active ports
 
 ### Environment Variables
 - Vercel deployment credentials are stored as GitHub secrets (see above)
@@ -135,8 +135,8 @@ All test commands are configured in package.json:
 A unified script for all development tasks is available (named 'a.bat' for quick tab completion):
 
 ### Usage
-- **Interactive Menu**: `.\a` or `.\a.bat` (no arguments)
-- **Direct Commands**: `.\a [command]`
+- **Interactive Menu**: `.\\autocrate` or `.\\autocrate.bat` (no arguments)
+- **Direct Commands**: `.\\autocrate [command]`
 
 ### Available Commands
 - `dev` - Start development server
@@ -164,14 +164,14 @@ A unified script for all development tasks is available (named 'a.bat' for quick
 2. Use existing components from @/components/ui
 3. Add appropriate logging with useLogsStore
 4. Ensure dark mode support is included
-5. Run tests before committing: `.\a test`
+5. Run tests before committing: `.\\autocrate test`
 
 ### Fixing issues
-1. Test locally with `.\a dev`
-2. Build test with `.\a build`
-3. Run linting: `.\a lint`
-4. Fix formatting: `.\a format`
-5. Deploy only after successful build: `.\a deploy`
+1. Test locally with `.\\autocrate dev`
+2. Build test with `.\\autocrate build`
+3. Run linting: `.\\autocrate lint`
+4. Fix formatting: `.\\autocrate format`
+5. Deploy only after successful build: `.\\autocrate deploy`
 
 ### Updating changelog
 1. Update CHANGELOG.md in Unreleased section
@@ -179,13 +179,13 @@ A unified script for all development tasks is available (named 'a.bat' for quick
 3. Follow conventional commit format
 
 ### Code quality checks
-- Quick check all: `.\a check`
+- Quick check all: `.\\autocrate check`
 - Security: `node scripts/consistency-checkers/security-scanner.js`
 - Accessibility: `node scripts/consistency-checkers/accessibility-checker.js`
 - Individual checks:
-  - Linting: `.\a lint`
-  - Type checking: `.\a typecheck`
-  - Formatting: `.\a format`
+  - Linting: `.\\autocrate lint`
+  - Type checking: `.\\autocrate typecheck`
+  - Formatting: `.\\autocrate format`
 
 ## File Structure
 - `/src/app` - Next.js app router pages
