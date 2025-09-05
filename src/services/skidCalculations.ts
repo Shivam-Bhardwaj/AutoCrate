@@ -1,16 +1,23 @@
+import {
+  MEDIUM_WEIGHT_THRESHOLD,
+  HEAVY_WEIGHT_THRESHOLD,
+  EXTRA_HEAVY_WEIGHT_THRESHOLD,
+  SKID_SPECS,
+} from '@/lib/constants';
+
 // Skid sizing calculations
 export function calculateSkidSize(weight: number) {
   // Determine skid size based on weight thresholds
-  if (weight <= 500) {
-    return { width: 4, height: 4, quantity: 2 };
-  } else if (weight <= 1000) {
-    return { width: 4, height: 6, quantity: 2 };
-  } else if (weight <= 2000) {
-    return { width: 6, height: 6, quantity: 2 };
+  if (weight <= MEDIUM_WEIGHT_THRESHOLD) {
+    return SKID_SPECS.LIGHT;
+  } else if (weight <= HEAVY_WEIGHT_THRESHOLD) {
+    return SKID_SPECS.MEDIUM;
+  } else if (weight <= EXTRA_HEAVY_WEIGHT_THRESHOLD) {
+    return SKID_SPECS.HEAVY;
   } else if (weight <= 5000) {
-    return { width: 6, height: 8, quantity: 3 };
+    return SKID_SPECS.EXTRA_HEAVY_ONE;
   } else {
-    return { width: 8, height: 8, quantity: 4 };
+    return SKID_SPECS.EXTRA_HEAVY_TWO;
   }
 }
 

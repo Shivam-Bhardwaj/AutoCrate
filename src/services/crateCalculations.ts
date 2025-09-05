@@ -1,3 +1,13 @@
+import {
+  SURFACE_AREA_COEFFICIENT,
+  LIGHT_WEIGHT_THRESHOLD,
+  MEDIUM_WEIGHT_THRESHOLD,
+  HEAVY_WEIGHT_THRESHOLD,
+  LIGHT_PANEL_THICKNESS,
+  PANEL_THICKNESS,
+  HEAVY_PANEL_THICKNESS,
+} from '@/lib/constants';
+
 // Crate dimension calculations
 export function calculateCrateDimensions(length: number, width: number, height: number) {
   // Validate inputs
@@ -6,7 +16,8 @@ export function calculateCrateDimensions(length: number, width: number, height: 
   }
 
   const volume = length * width * height;
-  const surfaceArea = 2 * (length * width + width * height + height * length);
+  const surfaceArea =
+    SURFACE_AREA_COEFFICIENT * (length * width + width * height + height * length);
 
   return {
     volume,
@@ -17,8 +28,8 @@ export function calculateCrateDimensions(length: number, width: number, height: 
 
 export function calculatePanelThickness(weight: number) {
   // Calculate panel thickness based on weight
-  if (weight < 100) return 0.5;
-  if (weight < 500) return 0.75;
-  if (weight < 1000) return 1.0;
-  return 1.5;
+  if (weight < LIGHT_WEIGHT_THRESHOLD) return LIGHT_PANEL_THICKNESS;
+  if (weight < MEDIUM_WEIGHT_THRESHOLD) return PANEL_THICKNESS;
+  if (weight < HEAVY_WEIGHT_THRESHOLD) return 1.0;
+  return HEAVY_PANEL_THICKNESS;
 }

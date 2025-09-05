@@ -1,5 +1,6 @@
 import { CrateDimensions } from '@/types/crate';
 import { SkidConfiguration } from './skid-calculations';
+import { MIN_EDGE_DISTANCE, FLOORBOARD_THICKNESS } from '@/lib/constants';
 
 // Standard nominal lumber widths (actual dimensions in inches)
 const STANDARD_LUMBER_WIDTHS = {
@@ -27,7 +28,7 @@ export interface NailPattern {
   nailsPerSkid: number; // Number of nails per skid intersection
   totalNails: number; // Total nails for this board
   spacing: number; // Spacing between nails in inches
-  edgeDistance: number; // Distance from edge in inches (min 0.75")
+  edgeDistance: number; // Distance from edge in inches (min 3/4")
 }
 
 export interface FloorboardConfiguration {
@@ -37,7 +38,7 @@ export interface FloorboardConfiguration {
   narrowBoardWidth?: number;
   nailPatterns: Map<number, NailPattern>; // Key is board position
   totalNails: number;
-  floorboardThickness: number; // Always 2" nominal (1.5" actual)
+  floorboardThickness: number; // Always 2" nominal (actual thickness from constants)
   warnings: string[];
   errors: string[];
 }
@@ -185,7 +186,7 @@ function findOptimalLayout(
  * Calculate nail pattern for a floorboard based on its width and skid configuration
  * ISPM-15 Requirements:
  * - Minimum 10d (3") nails
- * - At least 0.75" from edges
+ * - At least 3/4" from edges
  * - Staggered pattern
  * - For 4x4 and 4x6 skids: specific patterns
  * - For wider skids: 3 rows of nails
@@ -195,7 +196,6 @@ export function calculateNailPattern(
   skidWidth: number,
   skidCount: number
 ): NailPattern {
-  const MIN_EDGE_DISTANCE = 0.75; // inches
   let rows: number;
   let nailsPerSkid: number;
 
@@ -306,7 +306,7 @@ export function calculateFloorboardConfiguration(
       narrowBoardWidth: hasNarrowBoard ? narrowBoards[0].width : undefined,
       nailPatterns,
       totalNails,
-      floorboardThickness: 1.5, // 2" nominal = 1.5" actual
+      floorboardThickness: FLOORBOARD_THICKNESS,
       warnings,
       errors,
     };
@@ -319,7 +319,7 @@ export function calculateFloorboardConfiguration(
       hasNarrowBoard: false,
       nailPatterns: new Map(),
       totalNails: 0,
-      floorboardThickness: 1.5,
+      floorboardThickness: FLOORBOARD_THICKNESS,
       warnings,
       errors,
     };
@@ -375,10 +375,10 @@ export function validateFloorboardConfiguration(
 
   // Check nail patterns
   config.nailPatterns.forEach((pattern, position) => {
-    if (pattern.edgeDistance < 0.75) {
+    if (pattern.edgeDistance < MIN_EDGE_DISTANCE) {
       errors.push(
         `Nail pattern for board ${position} has insufficient edge distance ` +
-          `(${pattern.edgeDistance}" < 0.75" minimum).`
+          `(${pattern.edgeDistance}" < ${MIN_EDGE_DISTANCE}" minimum).`
       );
     }
   });

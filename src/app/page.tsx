@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import InputForms from '@/components/InputForms';
-import CrateViewer3D from '@/components/CrateViewer3D';
 import OutputSection from '@/components/OutputSection';
 import LogsSection from '@/components/LogsSection';
 import { Button } from '@/components/ui/button';
@@ -16,6 +15,19 @@ import { TechStackDisplay } from '@/components/TechStackDisplay';
 
 // Dynamically import mobile page for better code splitting
 const MobileHome = dynamic(() => import('./mobile-page'), { ssr: false });
+
+// Dynamically import CrateViewer3D to avoid SSR issues with Three.js
+const CrateViewer3D = dynamic(() => import('@/components/CrateViewer3D'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg">
+      <div className="text-center">
+        <p className="text-gray-600 mb-2">Loading 3D Viewer...</p>
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+      </div>
+    </div>
+  ),
+});
 
 export default function Home() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
