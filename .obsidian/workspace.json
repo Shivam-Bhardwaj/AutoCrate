@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "1aeb530c82328796",
+        "id": "72d4c845c79d5721",
         "type": "tabs",
         "children": [
           {
-            "id": "f02351fae8aad65f",
+            "id": "3daaf68e0b141cf8",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "CHANGELOG.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "CHANGELOG"
+              "title": "New tab"
             }
           }
         ]
@@ -169,8 +165,11 @@
       "bases:Create new base": false
     }
   },
-  "active": "f02351fae8aad65f",
+  "active": "51257d097c274b80",
   "lastOpenFiles": [
+    "Untitled.canvas",
+    "Untitled.base",
+    "CHANGELOG.md",
     "src/components/NXVisualGuide.tsx",
     "src/components/NXInstructions.tsx",
     "node_modules/@puppeteer/browsers/package.json",
@@ -180,8 +179,6 @@
     "node_modules/@puppeteer/browsers/lib/esm/main.d.ts.map",
     "node_modules/@puppeteer/browsers/lib/esm/main.d.ts",
     "node_modules/@puppeteer/browsers/lib/esm/main-cli.js.map",
-    "node_modules/@puppeteer/browsers/lib/esm/main-cli.js",
-    "node_modules/@puppeteer/browsers/lib/esm/main-cli.d.ts.map",
     "node_modules/@puppeteer/browsers/README.md",
     "node_modules/@isaacs/brace-expansion/README.md",
     "node_modules/@isaacs/balanced-match/README.md",
@@ -206,7 +203,6 @@
     "node_modules/kleur/readme.md",
     "node_modules/jsonpath/README.md",
     "node_modules/is/CHANGELOG.md",
-    "node_modules/is/LICENSE.md",
     "node_modules/html_codesniffer/build/Images/summaryLoader-warning.gif",
     "node_modules/html_codesniffer/build/Images/summaryLoader-notice.gif",
     "node_modules/html_codesniffer/build/Images/summaryLoader-error.gif",
