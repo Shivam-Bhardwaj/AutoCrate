@@ -10,20 +10,34 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
+    --primary: 29 78 216; /* #1d4ed8 - Premium blue */
+    --primary-dark: 30 64 175; /* #1e40af - Deeper blue */
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
+    --accent: 16 185 129; /* #10b981 - Emerald */
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
+    --border: 226 232 240; /* Light border */
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 29 78 216; /* Primary color */
     --radius: 0.5rem;
+
+    /* Professional color system */
+    --surface: 255 255 255; /* White */
+    --surface-elevated: 248 250 252; /* Slight gray */
+    --text-primary: 15 23 42; /* Near black */
+    --text-secondary: 100 116 139; /* Muted */
+    --shadow-color: 0 0 0; /* For shadows */
+
+    /* Glass morphism variables */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    --backdrop-blur: 12px;
   }
 
   .dark {
@@ -79,4 +93,28 @@
       font-size: 16px;
     }
   }
+}
+
+/* Premium glass panel style */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel:hover {
+  box-shadow: 0 12px 48px 0 rgba(31, 38, 135, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Professional gradients */
+.gradient-primary {
+  background: linear-gradient(135deg, rgb(var(--primary)) 0%, rgb(var(--primary-dark)) 100%);
+}
+
+.gradient-surface {
+  background: linear-gradient(135deg, rgb(var(--surface)) 0%, rgb(var(--surface-elevated)) 100%);
 }

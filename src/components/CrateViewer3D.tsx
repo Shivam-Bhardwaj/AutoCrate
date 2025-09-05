@@ -1,13 +1,82 @@
 'use client';
 
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid, Box, Text } from '@react-three/drei';
+import { OrbitControls, Grid, Box, Text, Html } from '@react-three/drei';
 import { CrateConfiguration } from '@/types/crate';
 import { useLogsStore } from '@/store/logs-store';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { calculateFloorboardConfiguration } from '@/utils/floorboard-calculations';
+import { calculateSkidConfiguration } from '@/utils/skid-calculations';
+import { CoordinateAxes } from './CoordinateAxes';
 
 interface CrateViewer3DProps {
   configuration: CrateConfiguration | null;
+}
+
+function FloorboardsGroup({ config }: { config: CrateConfiguration }) {
+  const skidConfig = calculateSkidConfiguration(config.dimensions, config.weight.maxGross);
+  const floorboardConfig = calculateFloorboardConfiguration(config.dimensions, skidConfig);
+
+  const scaleFactor = 25.4; // inches to mm
+  const [hoveredBoard, setHoveredBoard] = useState<number | null>(null);
+
+  const skidHeight = (config.base.skidHeight * scaleFactor) / 1000;
+  const thickness = (floorboardConfig.floorboardThickness * scaleFactor) / 1000;
+  const boardLength = (config.dimensions.length * scaleFactor) / 1000;
+
+  return (
+    <group name="floorboards">
+      {floorboardConfig.floorboards.map((board, index) => {
+        const boardWidth = (board.width * scaleFactor) / 1000;
+
+        // Calculate X position based on board position and width
+        const xOffset = floorboardConfig.floorboards
+          .slice(0, index)
+          .reduce((sum, b) => sum + b.width, 0);
+        const xPos =
+          ((xOffset + board.width / 2 - config.dimensions.width / 2) * scaleFactor) / 1000;
+
+        return (
+          <group key={`floorboard-${index}`}>
+            <Box
+              args={[boardWidth, thickness, boardLength]}
+              position={[xPos, skidHeight + thickness / 2, 0]}
+              onPointerOver={() => setHoveredBoard(index)}
+              onPointerOut={() => setHoveredBoard(null)}
+            >
+              <meshStandardMaterial
+                color={board.isNarrowBoard ? '#6B3410' : '#8B4513'}
+                roughness={0.9}
+                metalness={0.05}
+                emissive={hoveredBoard === index ? '#ff6600' : '#000000'}
+                emissiveIntensity={hoveredBoard === index ? 0.2 : 0}
+              />
+            </Box>
+
+            {/* Add gap between boards (1/8 inch) */}
+            {index < floorboardConfig.floorboards.length - 1 && (
+              <Box
+                args={[0.003, thickness, boardLength]}
+                position={[xPos + boardWidth / 2 + 0.0015, skidHeight + thickness / 2, 0]}
+              >
+                <meshBasicMaterial color="#000000" opacity={0.3} transparent />
+              </Box>
+            )}
+
+            {/* Show dimensions on hover */}
+            {hoveredBoard === index && (
+              <Html position={[xPos, skidHeight + 0.2, 0]}>
+                <div className="bg-black/80 text-white px-2 py-1 rounded text-xs">
+                  {board.nominalSize} ({board.width.toFixed(2)}&quot;)
+                  {board.isNarrowBoard && ' - Narrow Board'}
+                </div>
+              </Html>
+            )}
+          </group>
+        );
+      })}
+    </group>
+  );
 }
 
 function CrateModel({ config }: { config: CrateConfiguration }) {
@@ -65,13 +134,8 @@ function CrateModel({ config }: { config: CrateConfiguration }) {
         </>
       )}
 
-      {/* Floor */}
-      <Box
-        args={[length, panelThickness, width]}
-        position={[0, skidHeight + panelThickness / 2, 0]}
-      >
-        <meshStandardMaterial color="#D2691E" />
-      </Box>
+      {/* Individual Floorboards */}
+      <FloorboardsGroup config={config} />
 
       {/* Front Panel */}
       <Box
@@ -131,8 +195,36 @@ export default function CrateViewer3D({ configuration }: CrateViewer3DProps) {
       logWarning('render', 'No configuration provided for 3D viewer', undefined, 'CrateViewer3D');
     }
   }, [configuration, logDebug, logWarning]);
+
+  // Generate ISPM-15 warnings if configuration exists
+  const ispmWarnings = configuration
+    ? (() => {
+        const skidConfig = calculateSkidConfiguration(
+          configuration.dimensions,
+          configuration.weight.maxGross
+        );
+        const floorboardConfig = calculateFloorboardConfiguration(
+          configuration.dimensions,
+          skidConfig
+        );
+        return floorboardConfig.warnings;
+      })()
+    : [];
+
   return (
-    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg">
+    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg relative">
+      {/* ISPM-15 Compliance Warnings */}
+      {ispmWarnings.length > 0 && (
+        <div className="absolute top-4 right-4 bg-yellow-500/90 backdrop-blur-sm p-3 rounded-lg max-w-xs z-10">
+          <h4 className="font-semibold text-yellow-900 mb-1">ISPM-15 Notice</h4>
+          {ispmWarnings.map((warning, idx) => (
+            <p key={idx} className="text-sm text-yellow-800">
+              {warning}
+            </p>
+          ))}
+        </div>
+      )}
+
       <Canvas
         camera={{ position: [5, 5, 5], fov: 50 }}
         shadows
@@ -144,6 +236,7 @@ export default function CrateViewer3D({ configuration }: CrateViewer3DProps) {
         <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
         <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
         <Grid args={[20, 20]} />
+        <CoordinateAxes size={3} />
 
         {configuration ? (
           <CrateModel config={configuration} />
