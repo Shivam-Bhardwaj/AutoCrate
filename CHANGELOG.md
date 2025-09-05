@@ -1,10 +1,11 @@
-## 2.2.9 (2025-09-05)
+## 2.2.10 (2025-09-05)
 
 
 ### Bug Fixes
 
 * configure direct Vercel CLI deployment ([1bcc6f9](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/1bcc6f9891688c213921e3bbef11c403a59e0601))
 * disable E2E tests in CI to stabilize pipeline ([f97e30e](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/f97e30ee309c61915d687c325268897a68c04f25))
+* prevent duplicate workflows on main push ([a16ab68](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/a16ab6833fdf5397240a27be8334aa7ebb84844e))
 * resolve ESLint errors and warnings for successful build ([f2ef6a6](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/f2ef6a63d4c0c5f2bf1262b1734402aec67a2988))
 * resolve formatting and CI/CD issues ([3c5d612](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/3c5d6129fda9c9f6dfa8b6a289e8204b3a94c6f4))
 * simplify E2E tests to fix CI pipeline failures ([3cd052c](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/3cd052c23f4f9c1878d7210af7d2a197caa4cf9b))
