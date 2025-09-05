@@ -221,7 +221,7 @@ echo.
 echo Running Integration Tests...
 call npm run test:integration
 echo.
-echo Running E2E Tests (this may take a moment)...
+echo Running E2E Tests (will auto-start dev server if needed)...
 call npm run e2e
 echo.
 echo All tests completed!
@@ -249,15 +249,17 @@ echo            E2E TESTS (PUPPETEER)
 echo ========================================================
 echo.
 echo Select mode:
-echo 1. Headless (faster)
-echo 2. Headed (see browser)
-echo 3. Debug mode
+echo 1. Headless (auto-start server)
+echo 2. Headed (see browser, auto-start server)
+echo 3. Debug mode (verbose output)
+echo 4. No server (assumes server already running)
 echo.
-set /p e2e_choice="Select [1-3]: "
+set /p e2e_choice="Select [1-4]: "
 
 if "!e2e_choice!"=="1" npm run e2e
 if "!e2e_choice!"=="2" npm run e2e:headed
 if "!e2e_choice!"=="3" npm run e2e:debug
+if "!e2e_choice!"=="4" npm run e2e:no-server
 
 pause
 goto :menu

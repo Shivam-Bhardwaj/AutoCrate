@@ -22,7 +22,7 @@
     "e2e": "node tests/e2e/run-e2e.js",
     "e2e:headed": "node tests/e2e/run-e2e.js --headed",
     "e2e:debug": "node tests/e2e/run-e2e.js --debug",
-    "e2e:dev": "npm run dev & wait-on http://localhost:3000 && npm run e2e",
+    "e2e:no-server": "node tests/e2e/run-e2e.js --no-server",
     "test:all": "npm run test:unit && npm run test:integration",
     "release": "standard-version",
     "release:minor": "standard-version --release-as minor",
