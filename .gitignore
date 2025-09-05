@@ -34,4 +34,47 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Obsidian IDE files
+.obsidian/
+
+# Build logs
+build-logs/
+
+# Security reports
+.security/
+
+# Test results
+test-results/
+*.xml
+*.html
+
+# Queue system
+.queue/
+
+# PDF files (except documentation PDFs if needed)
+*.pdf
+docs/*.pdf
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.old
+
+# Log files
+*.log
+
+# IDE specific
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specific
+Thumbs.db
+Desktop.ini
+
+# Vercel
 .vercel

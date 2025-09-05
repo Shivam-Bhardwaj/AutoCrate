@@ -71,7 +71,7 @@ if "!choice!"=="18" goto :queue_execute
 if "!choice!"=="0" goto :end
 
 echo Invalid option. Try again.
-timeout /t 2 >nul
+ping -n 3 127.0.0.1 >nul 2>&1
 goto :menu
 
 :direct_command
@@ -106,7 +106,7 @@ echo ========================================================
 echo.
 echo Starting development server in new window...
 start cmd /k "npm run dev"
-timeout /t 3 >nul
+ping -n 4 127.0.0.1 >nul 2>&1
 echo.
 echo Running all tests...
 call npm run test:unit
