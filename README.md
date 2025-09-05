@@ -1,5 +1,7 @@
 # AutoCrate - NX CAD Expression Generator
 
+<!-- GitHub Actions Test - CI/CD Pipeline Active -->
+
 AutoCrate is a professional mobile-first web application for designing industrial shipping crates and generating NX CAD expressions. The system provides real-time 3D visualization, comprehensive testing infrastructure, and automated generation of parametric CAD models compatible with Siemens NX.
 
 ## Features
