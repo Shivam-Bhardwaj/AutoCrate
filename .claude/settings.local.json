@@ -44,7 +44,12 @@
       "Bash(done)",
       "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\tests\\e2e/**)",
       "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\.github\\workflows/**)",
-      "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\.github\\workflows/**)"
+      "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\.github\\workflows/**)",
+      "Bash(npm run build:*)",
+      "Bash(npm run deploy:*)",
+      "Bash(npm install:*)",
+      "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate/**)",
+      "Bash(npm run monitor:prod:*)"
     ],
     "deny": [],
     "ask": []
