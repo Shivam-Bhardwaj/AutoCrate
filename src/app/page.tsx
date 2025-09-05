@@ -12,7 +12,7 @@ import { useThemeStore } from '@/store/theme-store';
 import { useLogsStore } from '@/store/logs-store';
 import { Menu, X, Sun, Moon, RotateCcw } from 'lucide-react';
 import { APP_VERSION } from '@/utils/version';
-import { getTechStackString } from '@/utils/tech-stack';
+import { TechStackDisplay } from '@/components/TechStackDisplay';
 
 // Dynamically import mobile page for better code splitting
 const MobileHome = dynamic(() => import('./mobile-page'), { ssr: false });
@@ -175,15 +175,20 @@ export default function Home() {
 
       {/* Footer with version and tech stack */}
       <footer
-        className={`border-t px-4 py-2 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
+        className={`border-t px-4 py-3 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
       >
         <div className="flex items-center justify-between">
-          <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-            Built with {getTechStackString(true)}
-          </span>
-          <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-            v{APP_VERSION}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              Built with
+            </span>
+            <TechStackDisplay />
+          </div>
+          <div className="flex items-center gap-4">
+            <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              v{APP_VERSION}
+            </span>
+          </div>
         </div>
       </footer>
     </div>

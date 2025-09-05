@@ -1,60 +1,46 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCrateStore } from '@/store/crate-store';
 import { useLogsStore } from '@/store/logs-store';
-import { NXExpressionGenerator } from '@/services/nx-generator';
 import { Download, Copy, Check } from 'lucide-react';
-import NXInstructions from '@/components/NXInstructions';
-import NXVisualGuide from '@/components/NXVisualGuide';
 import { formatInches } from '@/utils/format-inches';
 
 export default function OutputSection() {
   const configuration = useCrateStore((state) => state.configuration);
-  const { logSuccess, logError, logInfo, logUser } = useLogsStore();
-  const [nxCode, setNxCode] = useState('');
-  const [variables, setVariables] = useState<Record<string, number | string>>({});
+  const { logSuccess, logError, logUser } = useLogsStore();
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    logInfo('calculation', 'Generating NX expression code', undefined, 'OutputSection');
-    const generator = new NXExpressionGenerator(configuration);
-    const expression = generator.generateExpression();
-    setNxCode(expression.code);
-    setVariables(expression.variables);
-    logSuccess(
-      'calculation',
-      'NX expression generated',
-      `${expression.code.length} characters`,
-      'OutputSection'
-    );
-  }, [configuration, logInfo, logSuccess]);
-
-  const handleDownload = () => {
+  const handleExport = () => {
     try {
-      logUser('export', 'Initiating NX expression download', undefined, 'OutputSection');
-      const generator = new NXExpressionGenerator(configuration);
-      const blob = generator.exportToFile();
+      logUser('export', 'Exporting crate design', undefined, 'OutputSection');
+      // Create a simple design summary for export
+      const designData = {
+        projectName: configuration.projectName,
+        dimensions: configuration.dimensions,
+        weight: configuration.weight,
+        timestamp: new Date().toISOString(),
+      };
+
+      const blob = new Blob([JSON.stringify(designData, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      const filename = `${configuration.projectName.replace(/\s+/g, '_')}_NX_Expression.exp`;
+      const filename = `${configuration.projectName.replace(/\s+/g, '_')}_Design.json`;
       a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      // Log successful download
-      logSuccess('export', 'NX Expression downloaded successfully', filename, 'OutputSection');
+      logSuccess('export', 'Design exported successfully', filename, 'OutputSection');
     } catch (error: unknown) {
-      // Log error
       logError(
         'export',
-        'Download failed',
+        'Export failed',
         error instanceof Error ? error.message : 'Unknown error',
         'OutputSection'
       );
@@ -63,15 +49,11 @@ export default function OutputSection() {
 
   const handleCopy = async () => {
     try {
-      logUser('export', 'Copying NX expression to clipboard', undefined, 'OutputSection');
-      await navigator.clipboard.writeText(nxCode);
+      logUser('export', 'Copying design summary to clipboard', undefined, 'OutputSection');
+      const summary = `${configuration.projectName}\nDimensions: ${configuration.dimensions.length}x${configuration.dimensions.width}x${configuration.dimensions.height} inches\nWeight: ${configuration.weight.product} kg (Max: ${configuration.weight.maxGross} kg)`;
+      await navigator.clipboard.writeText(summary);
       setCopied(true);
-      logSuccess(
-        'export',
-        'NX Expression copied to clipboard',
-        `${nxCode.length} characters`,
-        'OutputSection'
-      );
+      logSuccess('export', 'Design summary copied to clipboard', undefined, 'OutputSection');
       setTimeout(() => setCopied(false), 2000);
     } catch (error: unknown) {
       logError(
@@ -84,15 +66,13 @@ export default function OutputSection() {
   };
 
   const calculateMaterialCost = () => {
-    const woodVolume = Object.entries(variables)
-      .filter(([key]) => key.includes('volume'))
-      .reduce(
-        (sum: number, [, val]: [string, number | string]) =>
-          sum + (typeof val === 'number' ? val : 0),
-        0
-      );
-
-    const estimatedCost = (woodVolume / 1000000) * 450; // $450 per cubic meter estimate
+    // Rough estimate based on crate dimensions
+    const volume =
+      (configuration.dimensions.length *
+        configuration.dimensions.width *
+        configuration.dimensions.height) /
+      1728; // cubic feet
+    const estimatedCost = volume * 15; // $15 per cubic foot estimate for lumber
     return estimatedCost.toFixed(2);
   };
 
@@ -107,7 +87,7 @@ export default function OutputSection() {
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 {copied ? 'Copied' : 'Copy'}
               </Button>
-              <Button size="sm" onClick={handleDownload}>
+              <Button size="sm" onClick={handleExport}>
                 <Download className="h-4 w-4 mr-2" />
                 Download
               </Button>
@@ -115,25 +95,145 @@ export default function OutputSection() {
           </CardHeader>
           <CardContent>
             <Tabs
-              defaultValue="expression"
+              defaultValue="engineering"
               className="w-full"
               onValueChange={(value) => {
                 logUser('navigation', `Switched to ${value} tab`, undefined, 'OutputSection');
               }}
             >
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="expression">Expression</TabsTrigger>
-                <TabsTrigger value="instructions">Instructions</TabsTrigger>
-                <TabsTrigger value="visual">Visual Guide</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="engineering">Engineering</TabsTrigger>
+                <TabsTrigger value="formulas">Formulas</TabsTrigger>
                 <TabsTrigger value="summary">Summary</TabsTrigger>
                 <TabsTrigger value="bom">BOM</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="expression">
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
-                  <pre className="text-xs font-mono whitespace-pre">
-                    <code>{nxCode}</code>
-                  </pre>
+              <TabsContent value="engineering">
+                <div className="space-y-4">
+                  <Card className="glass-panel">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        Load Capacity Analysis
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm text-gray-600">Maximum Load</label>
+                          <p className="text-2xl font-bold text-blue-600">
+                            {configuration.weight.maxGross} kg
+                          </p>
+                        </div>
+                        <div>
+                          <label className="text-sm text-gray-600">Safety Factor</label>
+                          <p className="text-2xl font-bold text-green-600">
+                            {(configuration.weight.maxGross / configuration.weight.product).toFixed(
+                              1
+                            )}
+                            x
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="glass-panel">
+                    <CardHeader>
+                      <CardTitle>Structural Analysis</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div>
+                            <p className="font-medium">Corner joints</p>
+                            <p className="text-sm text-gray-600">
+                              Reinforce with brackets for heavy loads
+                            </p>
+                          </div>
+                          <span className="px-2 py-1 bg-yellow-200 text-yellow-800 rounded text-sm">
+                            Medium
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div>
+                            <p className="font-medium">Center floor</p>
+                            <p className="text-sm text-gray-600">
+                              Add center support for loads &gt; 1000kg
+                            </p>
+                          </div>
+                          <span className="px-2 py-1 bg-green-200 text-green-800 rounded text-sm">
+                            Low
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="formulas">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <Card className="glass-panel hover:scale-105 transition-transform">
+                      <CardHeader>
+                        <CardTitle className="text-lg">Load Distribution</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-center py-4">
+                          <p className="font-mono text-lg">W = F / A</p>
+                        </div>
+                        <p className="text-sm text-gray-600">Where W is weight per unit area</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="glass-panel hover:scale-105 transition-transform">
+                      <CardHeader>
+                        <CardTitle className="text-lg">Safety Factor</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-center py-4">
+                          <p className="font-mono text-lg">SF = Max Load / Working Load</p>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Minimum safety factor of 2.0 recommended
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <Card className="glass-panel">
+                    <CardHeader>
+                      <CardTitle>ISPM-15 Compliance Checklist</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                          </div>
+                          <span className="text-sm">Heat treatment (56°C for 30 min)</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                          </div>
+                          <span className="text-sm">Moisture content &lt; 20%</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                          </div>
+                          <span className="text-sm">Debarked wood</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center">
+                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                          </div>
+                          <span className="text-sm">IPPC marking required</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </TabsContent>
 
@@ -314,14 +414,6 @@ export default function OutputSection() {
                     </div>
                   </CardContent>
                 </Card>
-              </TabsContent>
-
-              <TabsContent value="instructions">
-                <NXInstructions />
-              </TabsContent>
-
-              <TabsContent value="visual">
-                <NXVisualGuide />
               </TabsContent>
             </Tabs>
           </CardContent>

@@ -6,7 +6,10 @@ export interface MaterialItem {
   totalPrice: number;
 }
 
-export function calculateBOM(dimensions: any, weight: number): MaterialItem[] {
+export function calculateBOM(
+  dimensions: { length: number; width: number; height: number },
+  _weight: number
+): MaterialItem[] {
   const materials: MaterialItem[] = [];
 
   // Calculate plywood panels
