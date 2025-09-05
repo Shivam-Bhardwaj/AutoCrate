@@ -1,0 +1,6 @@
+{
+  "prompt": "remove any logs generated when I use the viewer. Like a lot of logs are created when I pan or zoom the crate. Remove that",
+  "type": "code",
+  "title": "remove any logs generated when I use the viewer L",
+  "created": "2025-09-05T10:25:02.368Z"
+}

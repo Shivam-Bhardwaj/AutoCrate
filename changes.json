@@ -1,6 +1,14 @@
 {
-  "queue": [],
-  "processing": false,
+  "queue": [
+    {
+      "id": 1757067902367,
+      "title": "remove any logs generated when I use the viewer L",
+      "description": "remove any logs generated when I use the viewer. Like a lot of logs are created when I pan or zoom the crate. Remove that",
+      "type": "code",
+      "created": "2025-09-05T10:25:02.370Z"
+    }
+  ],
+  "processing": true,
   "lastProcessed": "2025-09-05T10:19:45.150Z",
   "config": {
     "autoProcess": true,
