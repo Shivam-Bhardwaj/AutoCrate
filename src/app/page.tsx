@@ -179,7 +179,7 @@ export default function Home() {
       >
         <div className="flex items-center justify-between">
           <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-            Built with {getTechStackString()}
+            Built with {getTechStackString(true)}
           </span>
           <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
             v{APP_VERSION}

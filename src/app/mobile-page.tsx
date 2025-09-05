@@ -172,7 +172,7 @@ export default function MobileHome() {
       >
         <div className="flex flex-col items-center gap-1">
           <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-            {getTechStackString()}
+            {getTechStackString(true)}
           </span>
           <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
             v{APP_VERSION}
