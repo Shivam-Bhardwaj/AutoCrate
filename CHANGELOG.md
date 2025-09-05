@@ -1,4 +1,4 @@
-## 2.2.1 (2025-09-05)
+## 2.2.2 (2025-09-05)
 
 
 ### Bug Fixes
@@ -6,6 +6,7 @@
 * configure direct Vercel CLI deployment ([1bcc6f9](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/1bcc6f9891688c213921e3bbef11c403a59e0601))
 * resolve ESLint errors and warnings for successful build ([f2ef6a6](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/f2ef6a63d4c0c5f2bf1262b1734402aec67a2988))
 * resolve formatting and CI/CD issues ([3c5d612](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/3c5d6129fda9c9f6dfa8b6a289e8204b3a94c6f4))
+* simplify E2E tests to fix CI pipeline failures ([3cd052c](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/3cd052c23f4f9c1878d7210af7d2a197caa4cf9b))
 * update upload-artifact action from v3 to v4 ([8519130](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/8519130f0517ca7db87551885530efc0149b2231))
 * update version display to match package.json v2.2.1 ([5342d60](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/5342d60a4e8daa9196124617c82ceafb7189e726))
 
