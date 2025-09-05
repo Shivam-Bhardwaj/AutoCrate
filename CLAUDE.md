@@ -27,6 +27,14 @@
 AutoCrate is a Next.js 14 application for designing shipping crates with 3D visualization and NX CAD expression generation.
 Live URL: https://autocrate-5xoh6cft1-shivams-projects-1d3fe872.vercel.app
 
+## CRITICAL: Coordinate System Convention (Z-up)
+**The application MUST use NX CAD's Z-up coordinate system throughout:**
+- **X-axis (Red)**: Length - horizontal, typically the longest dimension
+- **Y-axis (Green)**: Width - horizontal, perpendicular to X
+- **Z-axis (Blue)**: Height - vertical, pointing upward
+
+This convention ensures compatibility with NX CAD and standard engineering practices. All 3D components, calculations, and visualizations must follow this Z-up system.
+
 ## Simplified Deployment Workflow
 
 ### Three-Step Process:

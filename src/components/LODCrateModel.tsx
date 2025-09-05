@@ -30,6 +30,7 @@ export const LODCrateModel = memo(function LODCrateModel({ config, children }: L
 
   // PERFORMANCE: Monitor camera distance every frame but throttle LOD updates
   useFrame(() => {
+    // Z-up coordinate system: crate center remains at origin but oriented with Z as height
     const crateCenter = new Vector3(0, 0, 0);
     const distance = camera.position.distanceTo(crateCenter);
     setCameraDistance(distance);

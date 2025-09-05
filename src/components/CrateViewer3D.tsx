@@ -4,7 +4,7 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Box, Text, Html } from '@react-three/drei';
 import { CrateConfiguration } from '@/types/crate';
 import { useLogsStore } from '@/store/logs-store';
-import { useEffect, useState, useMemo, useCallback, memo } from 'react';
+import { useEffect, useState, useMemo, useCallback, memo, Suspense } from 'react';
 import { calculateFloorboardConfiguration } from '@/utils/floorboard-calculations';
 import { calculateSkidConfiguration } from '@/utils/skid-calculations';
 import { CoordinateAxes } from './CoordinateAxes';
@@ -58,17 +58,17 @@ const FloorboardsGroup = memo(function FloorboardsGroup({
   const boardData = useMemo(() => {
     return floorboardConfig.floorboards.map((board, index) => {
       const boardWidth = (board.width * scaleFactor) / MM_TO_METERS;
-      // Floorboards run along the length (X axis), arranged across the width (Z axis)
-      const zOffset = floorboardConfig.floorboards
+      // Floorboards run along the length (X axis), arranged across the width (Y axis in Z-up)
+      const yOffset = floorboardConfig.floorboards
         .slice(0, index)
         .reduce((sum, b) => sum + b.width, 0);
-      const zPos =
-        ((zOffset + board.width / 2 - config.dimensions.width / 2) * scaleFactor) / MM_TO_METERS;
+      const yPos =
+        ((yOffset + board.width / 2 - config.dimensions.width / 2) * scaleFactor) / MM_TO_METERS;
 
       return {
         ...board,
         boardWidth,
-        zPos,
+        yPos,
         index,
       };
     });
@@ -117,8 +117,8 @@ const FloorboardMesh = memo(function FloorboardMesh({
   return (
     <group>
       <Box
-        args={[boardLength, thickness, board.boardWidth]}
-        position={[0, skidHeight + thickness / 2, board.zPos]}
+        args={[boardLength, board.boardWidth, thickness]}
+        position={[0, board.yPos, skidHeight + thickness / 2]}
         onPointerOver={onPointerOver}
         onPointerOut={onPointerOut}
         material={createHoverableMaterial(getFloorboardMaterial(board.isNarrowBoard), isHovered)}
@@ -127,15 +127,15 @@ const FloorboardMesh = memo(function FloorboardMesh({
       {/* Add gap between boards (1/8 inch) */}
       {board.index < boardData.length - 1 && (
         <Box
-          args={[boardLength, thickness, 0.003]}
-          position={[0, skidHeight + thickness / 2, board.zPos + board.boardWidth / 2 + 0.0015]}
+          args={[boardLength, 0.003, thickness]}
+          position={[0, board.yPos + board.boardWidth / 2 + 0.0015, skidHeight + thickness / 2]}
           material={SHARED_MATERIALS.BOARD_GAP}
         />
       )}
 
       {/* Show dimensions on hover */}
       {isHovered && (
-        <Html position={[0, skidHeight + 0.2, board.zPos]}>
+        <Html position={[0, board.yPos, skidHeight + 0.2]}>
           <div className="bg-black/80 text-white px-2 py-1 rounded text-xs">
             {board.nominalSize} ({board.width.toFixed(2)}&quot;)
             {board.isNarrowBoard && ' - Narrow Board'}
@@ -162,12 +162,12 @@ const CrateModel = memo(function CrateModel({ config }: { config: CrateConfigura
     const skidSpacing = (base.skidSpacing * scaleFactor) / MM_TO_METERS;
     const panelThickness = (cap.topPanel.thickness * scaleFactor) / MM_TO_METERS;
 
-    // Pre-calculate skid positions (skids run along length, spaced across width)
+    // Pre-calculate skid positions (skids run along length, spaced across width in Y axis for Z-up)
     const skidPositions = [];
     const totalSpan = (base.skidCount - 1) * skidSpacing;
-    const startZ = -totalSpan / 2;
+    const startY = -totalSpan / 2;
     for (let i = 0; i < base.skidCount; i++) {
-      skidPositions.push(startZ + i * skidSpacing);
+      skidPositions.push(startY + i * skidSpacing);
     }
 
     return {
@@ -234,11 +234,11 @@ const SkidsGroup = memo(function SkidsGroup({
 }) {
   return (
     <>
-      {skidPositions.map((zPos, index) => (
+      {skidPositions.map((yPos, index) => (
         <Box
           key={`skid-${index}`}
-          args={[crateLength, skidHeight, skidWidth]}
-          position={[0, skidHeight / 2, zPos]}
+          args={[crateLength, skidWidth, skidHeight]}
+          position={[0, yPos, skidHeight / 2]}
           material={SHARED_MATERIALS.SKID_WOOD}
         />
       ))}
@@ -260,13 +260,13 @@ const RubStripsGroup = memo(function RubStripsGroup({
   return (
     <>
       <Box
-        args={[crateWidth, skidHeight * 0.3, skidWidth * 0.5]}
-        position={[length / 2 - skidWidth * 0.25, skidHeight * 0.15, 0]}
+        args={[skidWidth * 0.5, crateWidth, skidHeight * 0.3]}
+        position={[length / 2 - skidWidth * 0.25, 0, skidHeight * 0.15]}
         material={SHARED_MATERIALS.RUB_STRIP}
       />
       <Box
-        args={[crateWidth, skidHeight * 0.3, skidWidth * 0.5]}
-        position={[-length / 2 + skidWidth * 0.25, skidHeight * 0.15, 0]}
+        args={[skidWidth * 0.5, crateWidth, skidHeight * 0.3]}
+        position={[-length / 2 + skidWidth * 0.25, 0, skidHeight * 0.15]}
         material={SHARED_MATERIALS.RUB_STRIP}
       />
     </>
@@ -290,36 +290,36 @@ const CratePanelsGroup = memo(function CratePanelsGroup({
     <>
       {/* Front Panel */}
       <Box
-        args={[length, height, panelThickness]}
-        position={[0, skidHeight + height / 2, width / 2 - panelThickness / 2]}
+        args={[length, panelThickness, height]}
+        position={[0, width / 2 - panelThickness / 2, skidHeight + height / 2]}
         material={SHARED_MATERIALS.SIDE_PANEL}
       />
 
       {/* Back Panel */}
       <Box
-        args={[length, height, panelThickness]}
-        position={[0, skidHeight + height / 2, -width / 2 + panelThickness / 2]}
+        args={[length, panelThickness, height]}
+        position={[0, -width / 2 + panelThickness / 2, skidHeight + height / 2]}
         material={SHARED_MATERIALS.SIDE_PANEL}
       />
 
       {/* Left Panel */}
       <Box
-        args={[panelThickness, height, width]}
-        position={[-length / 2 + panelThickness / 2, skidHeight + height / 2, 0]}
+        args={[panelThickness, width, height]}
+        position={[-length / 2 + panelThickness / 2, 0, skidHeight + height / 2]}
         material={SHARED_MATERIALS.SIDE_PANEL}
       />
 
       {/* Right Panel */}
       <Box
-        args={[panelThickness, height, width]}
-        position={[length / 2 - panelThickness / 2, skidHeight + height / 2, 0]}
+        args={[panelThickness, width, height]}
+        position={[length / 2 - panelThickness / 2, 0, skidHeight + height / 2]}
         material={SHARED_MATERIALS.SIDE_PANEL}
       />
 
       {/* Top Panel */}
       <Box
-        args={[length, panelThickness, width]}
-        position={[0, skidHeight + height - panelThickness / 2, 0]}
+        args={[length, width, panelThickness]}
+        position={[0, 0, skidHeight + height - panelThickness / 2]}
         material={SHARED_MATERIALS.TOP_PANEL}
       />
     </>
@@ -407,9 +407,7 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
         </div>
       )}
 
-      <Canvas
-        camera={{ position: [5, 5, 5], fov: 50 }}
-        shadows
+      <Suspense
         fallback={
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -418,37 +416,49 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
             </div>
           </div>
         }
-        onCreated={(_state) => {
-          // PERFORMANCE: Enable better performance and compatibility
-          // Target: 60 FPS rendering with automatic fallback for low-end devices
-          try {
-            // Enable performance monitoring in development
-            if (process.env.NODE_ENV === 'development') {
-              console.log('3D Performance Target: 60 FPS (<16.67ms per frame)');
-            }
-            logInfo('render', '3D canvas initialized', 'WebGL renderer ready', 'CrateViewer3D');
-          } catch (error) {
-            console.warn('WebGL initialization warning:', error);
-          }
-        }}
       >
-        {/* PERFORMANCE: Real-time performance monitoring */}
-        <PerformanceTracker />
+        <Canvas
+          camera={{ position: [5, -5, 5], fov: 50, up: [0, 0, 1] }}
+          shadows
+          gl={{ preserveDrawingBuffer: true }}
+          onCreated={(_state) => {
+            // PERFORMANCE: Enable better performance and compatibility
+            // Target: 60 FPS rendering with automatic fallback for low-end devices
+            try {
+              // Enable performance monitoring in development
+              if (process.env.NODE_ENV === 'development') {
+                console.log('3D Performance Target: 60 FPS (<16.67ms per frame)');
+              }
+              logInfo('render', '3D canvas initialized', 'WebGL renderer ready', 'CrateViewer3D');
+            } catch (error) {
+              console.warn('WebGL initialization warning:', error);
+            }
+          }}
+        >
+          {/* PERFORMANCE: Real-time performance monitoring */}
+          <PerformanceTracker />
 
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
-        <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
-        <Grid args={[20, 20]} />
-        <CoordinateAxes size={3} />
+          <ambientLight intensity={0.5} />
+          <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
+          <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
+          <Grid args={[20, 20]} rotation={[-Math.PI / 2, 0, 0]} />
+          <CoordinateAxes size={3} />
 
-        {validatedConfig && canRender ? (
-          <CrateModel config={validatedConfig} />
-        ) : (
-          <Text position={[0, 2, 0]} fontSize={0.5} color="gray" anchorX="center" anchorY="middle">
-            Configure crate to see 3D preview
-          </Text>
-        )}
-      </Canvas>
+          {validatedConfig && canRender ? (
+            <CrateModel config={validatedConfig} />
+          ) : (
+            <Text
+              position={[0, 0, 2]}
+              fontSize={0.5}
+              color="gray"
+              anchorX="center"
+              anchorY="middle"
+            >
+              Configure crate to see 3D preview
+            </Text>
+          )}
+        </Canvas>
+      </Suspense>
     </div>
   );
 });

@@ -25,7 +25,7 @@ export const CoordinateAxes = memo(function CoordinateAxes({ size = 5 }: Coordin
         X (Length)
       </Text>
 
-      {/* Y Axis - Green - Height (vertical) */}
+      {/* Y Axis - Green - Width (horizontal perpendicular to X) */}
       <Line
         points={[
           [0, 0, 0],
@@ -35,10 +35,10 @@ export const CoordinateAxes = memo(function CoordinateAxes({ size = 5 }: Coordin
         lineWidth={2}
       />
       <Text position={[0, size + 0.5, 0]} color="green" fontSize={0.3}>
-        Y (Height)
+        Y (Width)
       </Text>
 
-      {/* Z Axis - Blue - Width/Depth (horizontal towards camera) */}
+      {/* Z Axis - Blue - Height (vertical up) */}
       <Line
         points={[
           [0, 0, 0],
@@ -48,7 +48,7 @@ export const CoordinateAxes = memo(function CoordinateAxes({ size = 5 }: Coordin
         lineWidth={2}
       />
       <Text position={[0, 0, size + 0.5]} color="blue" fontSize={0.3}>
-        Z (Width)
+        Z (Height)
       </Text>
     </group>
   );
