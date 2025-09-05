@@ -1,3 +1,40 @@
+# Changelog
+
+## 1.1.0 (2025-01-05) - Pre-Redesign Stable
+
+### Summary
+Stable version before professional UI redesign. This release marks the baseline functionality before implementing comprehensive UI/UX improvements based on client feedback.
+
+### Current Features
+- **3D Crate Visualization**: Full Three.js rendering with React Three Fiber
+- **NX CAD Expression Generator**: Complete expression output for manufacturing
+- **Skid Calculation System**: Automatic sizing based on weight requirements
+- **ISPM-15 Compliance**: Floorboard calculations (calculated but not yet visualized)
+- **Dark Mode Support**: Persistent theme switching
+- **System Logging**: Comprehensive action tracking
+- **Mobile Responsive**: Separate mobile layout with tabbed navigation
+- **Bill of Materials**: Dynamic BOM generation with cost estimates
+- **Testing Infrastructure**: Vitest + Puppeteer with 80% coverage target
+
+### Known Issues (To Be Fixed in Redesign)
+- Floorboard visualization not rendering individual boards
+- UI appears generic/AI-generated (client feedback)
+- Missing world coordinate system in 3D view
+- Single camera view only
+- No exploded view capability
+- NX expressions not relevant to team needs
+
+### Technical Stack
+- Next.js 14.0.4 with App Router
+- TypeScript (strict mode)
+- Three.js + React Three Fiber
+- Zustand state management
+- Tailwind CSS
+- Radix UI components
+- Vitest + Puppeteer testing
+
+---
+
 ## 2.2.10 (2025-09-05)
 
 
