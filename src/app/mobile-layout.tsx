@@ -80,10 +80,7 @@ export default function MobileLayout() {
           >
             {activeTab === 'home' && (
               <div className="p-4 space-y-4">
-                <SwipeableCard 
-                  onSwipeLeft={() => {}} 
-                  onSwipeRight={() => {}}
-                >
+                <SwipeableCard onSwipeLeft={() => {}} onSwipeRight={() => {}}>
                   <div className="mobile-card">
                     <h2 className="text-lg font-semibold mb-3">Quick Actions</h2>
                     <div className="grid grid-cols-2 gap-3">

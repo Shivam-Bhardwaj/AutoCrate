@@ -12,11 +12,7 @@ export default function NXVisualGuide() {
         <div className="space-y-4">
           {/* 3D Coordinate System Diagram */}
           <div className="bg-muted rounded-lg p-4">
-            <svg
-              viewBox="0 0 400 300"
-              className="w-full h-auto"
-              xmlns="http://www.w3.org/2000/svg"
-            >
+            <svg viewBox="0 0 400 300" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
               {/* Grid */}
               <defs>
                 <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -130,7 +126,7 @@ export default function NXVisualGuide() {
                   strokeWidth="1"
                   opacity="0.3"
                 />
-                
+
                 {/* Front face */}
                 <rect
                   x="30"
@@ -141,7 +137,7 @@ export default function NXVisualGuide() {
                   stroke="currentColor"
                   strokeWidth="2"
                 />
-                
+
                 {/* Connecting lines */}
                 <line x1="0" y1="20" x2="30" y2="0" stroke="currentColor" strokeWidth="1" />
                 <line x1="100" y1="20" x2="130" y2="0" stroke="currentColor" strokeWidth="1" />

@@ -146,8 +146,8 @@ export default function AboutPage() {
           <div className="mt-4 p-4 bg-green-50 rounded-lg max-w-2xl mx-auto">
             <p className="text-green-800 text-sm font-semibold">Latest Update (v2.2.0)</p>
             <p className="text-green-700 text-xs mt-1">
-              Automatic skid sizing based on crate weight • Dynamic spacing calculations • 
-              Rub strip detection for long crates • Enhanced 3D visualization with individual skids
+              Automatic skid sizing based on crate weight • Dynamic spacing calculations • Rub strip
+              detection for long crates • Enhanced 3D visualization with individual skids
             </p>
           </div>
         </div>
