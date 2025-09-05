@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "72d4c845c79d5721",
+        "id": "38add18704c66170",
         "type": "tabs",
         "children": [
           {
-            "id": "3daaf68e0b141cf8",
+            "id": "d333c5775eb980a0",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "docs/emails/STAKEHOLDER_UPDATES.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "STAKEHOLDER_UPDATES"
             }
           }
         ]
@@ -165,11 +169,14 @@
       "bases:Create new base": false
     }
   },
-  "active": "51257d097c274b80",
+  "active": "d333c5775eb980a0",
   "lastOpenFiles": [
-    "Untitled.canvas",
-    "Untitled.base",
+    "src/utils/version.ts",
+    "README.md",
+    "0251-70054.pdf",
     "CHANGELOG.md",
+    "Untitled.base",
+    "Untitled.canvas",
     "src/components/NXVisualGuide.tsx",
     "src/components/NXInstructions.tsx",
     "node_modules/@puppeteer/browsers/package.json",
@@ -178,7 +185,6 @@
     "node_modules/@puppeteer/browsers/lib/esm/main.js",
     "node_modules/@puppeteer/browsers/lib/esm/main.d.ts.map",
     "node_modules/@puppeteer/browsers/lib/esm/main.d.ts",
-    "node_modules/@puppeteer/browsers/lib/esm/main-cli.js.map",
     "node_modules/@puppeteer/browsers/README.md",
     "node_modules/@isaacs/brace-expansion/README.md",
     "node_modules/@isaacs/balanced-match/README.md",
@@ -202,7 +208,6 @@
     "node_modules/mitt/README.md",
     "node_modules/kleur/readme.md",
     "node_modules/jsonpath/README.md",
-    "node_modules/is/CHANGELOG.md",
     "node_modules/html_codesniffer/build/Images/summaryLoader-warning.gif",
     "node_modules/html_codesniffer/build/Images/summaryLoader-notice.gif",
     "node_modules/html_codesniffer/build/Images/summaryLoader-error.gif",

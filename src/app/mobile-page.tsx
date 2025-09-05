@@ -11,6 +11,7 @@ import { useCrateStore } from '@/store/crate-store';
 import { useThemeStore } from '@/store/theme-store';
 import { useLogsStore } from '@/store/logs-store';
 import { Sun, Moon, RotateCcw, Settings, Eye, FileOutput, ScrollText } from 'lucide-react';
+import { APP_VERSION } from '@/utils/version';
 
 export default function MobileHome() {
   const [activeTab, setActiveTab] = useState('input');
@@ -169,7 +170,9 @@ export default function MobileHome() {
       <footer
         className={`border-t px-4 py-2 text-center ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
       >
-        <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>v2.2.1</span>
+        <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+          v{APP_VERSION}
+        </span>
       </footer>
     </div>
   );

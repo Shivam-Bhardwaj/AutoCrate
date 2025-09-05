@@ -50,7 +50,10 @@
       "Bash(npm install:*)",
       "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate/**)",
       "Bash(npm run monitor:prod:*)",
-      "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\.github\\workflows/**)"
+      "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\.github\\workflows/**)",
+      "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate/**)",
+      "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\src\\app/**)",
+      "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate/**)"
     ],
     "deny": [],
     "ask": []

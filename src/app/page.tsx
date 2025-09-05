@@ -11,6 +11,7 @@ import { useCrateStore } from '@/store/crate-store';
 import { useThemeStore } from '@/store/theme-store';
 import { useLogsStore } from '@/store/logs-store';
 import { Menu, X, Sun, Moon, RotateCcw } from 'lucide-react';
+import { APP_VERSION } from '@/utils/version';
 
 // Dynamically import mobile page for better code splitting
 const MobileHome = dynamic(() => import('./mobile-page'), { ssr: false });
@@ -76,7 +77,7 @@ export default function Home() {
               <span
                 className={`hidden sm:inline text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}
               >
-                v2.2.1 - Now with automatic skid sizing
+                v{APP_VERSION} - Now with automatic skid sizing
               </span>
             </div>
           </div>
@@ -187,7 +188,9 @@ export default function Home() {
       <footer
         className={`border-t px-4 py-2 text-center ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
       >
-        <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>v2.2.1</span>
+        <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+          v{APP_VERSION}
+        </span>
       </footer>
     </div>
   );
