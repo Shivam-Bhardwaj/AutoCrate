@@ -37,10 +37,16 @@ echo   Port Management:
 echo   11. View Active Ports
 echo   12. Kill Port Process
 echo.
+echo   Smart Development:
+echo   13. Submit Changes (parallel queue)
+echo   14. Update Documentation (Gemini)
+echo   15. Process Change Queue
+echo   16. View Queue Status
+echo.
 echo   0. Exit
 echo.
 echo ==========================================
-set /p choice="Select option [0-12]: "
+set /p choice="Select option [0-16]: "
 
 if "!choice!"=="1" goto :local_dev
 if "!choice!"=="2" goto :prepare_prod
@@ -54,6 +60,10 @@ if "!choice!"=="9" goto :build_logged
 if "!choice!"=="10" goto :dev_logged
 if "!choice!"=="11" goto :view_ports
 if "!choice!"=="12" goto :kill_port
+if "!choice!"=="13" goto :submit_changes
+if "!choice!"=="14" goto :update_docs
+if "!choice!"=="15" goto :process_queue
+if "!choice!"=="16" goto :queue_status
 if "!choice!"=="0" goto :end
 
 echo Invalid option. Try again.
@@ -75,6 +85,10 @@ if /i "%~1"=="ports" goto :view_ports
 if /i "%~1"=="killport" goto :kill_port
 if /i "%~1"=="build:logged" goto :build_logged
 if /i "%~1"=="dev:logged" goto :dev_logged
+if /i "%~1"=="changes" goto :submit_changes
+if /i "%~1"=="docs" goto :update_docs
+if /i "%~1"=="queue" goto :queue_status
+if /i "%~1"=="process" goto :process_queue
 if /i "%~1"=="help" goto :help
 
 echo Unknown command: %~1
@@ -434,6 +448,85 @@ echo.
 pause
 goto :menu
 
+:submit_changes
+echo.
+echo ==========================================
+echo     SMART CHANGE SUBMISSION
+echo ==========================================
+echo.
+echo Enter your changes (separate multiple with ---)
+echo Or provide numbered list (1. change 1, 2. change 2)
+echo.
+echo Claude will handle code changes
+echo Gemini will handle documentation
+echo.
+node scripts/smart-prompt.js
+echo.
+pause
+goto :menu
+
+:update_docs
+echo.
+echo ==========================================
+echo     UPDATE DOCUMENTATION WITH GEMINI
+echo ==========================================
+echo.
+echo Select documentation to update:
+echo.
+echo 1. README.md
+echo 2. CHANGELOG.md
+echo 3. API Documentation
+echo 4. Architecture Docs
+echo 5. All Documentation
+echo.
+set /p docchoice="Select [1-5]: "
+
+if "!docchoice!"=="1" node scripts/gemini-docs.js update readme
+if "!docchoice!"=="2" node scripts/gemini-docs.js update changelog
+if "!docchoice!"=="3" node scripts/gemini-docs.js update api
+if "!docchoice!"=="4" node scripts/gemini-docs.js update architecture
+if "!docchoice!"=="5" node scripts/gemini-docs.js all
+
+echo.
+echo Documentation updated!
+echo.
+pause
+goto :menu
+
+:process_queue
+echo.
+echo ==========================================
+echo     PROCESSING CHANGE QUEUE
+echo ==========================================
+echo.
+node scripts/process-changes.js process
+echo.
+pause
+goto :menu
+
+:queue_status
+echo.
+echo ==========================================
+echo     CHANGE QUEUE STATUS
+echo ==========================================
+echo.
+node scripts/process-changes.js status
+echo.
+echo Options:
+echo 1. Process queue now
+echo 2. Clear queue
+echo 3. Return to menu
+echo.
+set /p qchoice="Select [1-3]: "
+
+if "!qchoice!"=="1" goto :process_queue
+if "!qchoice!"=="2" (
+    node scripts/process-changes.js clear
+    echo Queue cleared!
+    pause
+)
+goto :menu
+
 :help
 echo.
 echo Usage: a [command]
@@ -453,6 +546,12 @@ echo.
 echo Utilities:
 echo   ports      - View active ports
 echo   killport   - Kill a port process
+echo.
+echo Smart Development:
+echo   changes    - Submit multiple changes (parallel processing)
+echo   docs       - Update documentation with Gemini
+echo   queue      - View change queue status
+echo   process    - Process pending changes
 echo   help       - Show this help
 echo.
 echo Recommended workflow: local -> prepare -> deploy

@@ -1,0 +1,22 @@
+{
+  "queue": [
+    {
+      "id": 1757067567414,
+      "title": "No logs needed when we rotate the 3d view",
+      "description": "No logs needed when we rotate the 3d view.",
+      "type": "code",
+      "created": "2025-09-05T10:19:27.417Z"
+    }
+  ],
+  "processing": true,
+  "lastProcessed": null,
+  "config": {
+    "autoProcess": true,
+    "parallelBranches": true,
+    "autoMerge": true,
+    "useLLMs": {
+      "claude": "code",
+      "gemini": "documentation"
+    }
+  }
+}

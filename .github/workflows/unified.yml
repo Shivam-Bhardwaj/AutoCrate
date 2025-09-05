@@ -1,0 +1,119 @@
+name: Unified Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Deploy to production'
+        required: false
+        default: false
+        type: boolean
+
+# Single source of truth for all CI/CD
+jobs:
+  # Quick validation for all changes
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Quick checks
+        id: check
+        run: |
+          # Run all checks in parallel
+          npm run lint &
+          npm run type-check &
+          npm run test:unit &
+          wait
+          
+          # Determine if we should deploy
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ inputs.deploy }}" == "true" ]]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Auto-fix issues
+        if: failure() && github.event_name == 'pull_request'
+        run: |
+          npm run format
+          npm run lint -- --fix || true
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add -A
+          git diff --staged --quiet || git commit -m "fix: auto-fix linting and formatting"
+          git push
+
+  # Build and deploy in one step
+  deploy:
+    name: Build & Deploy
+    needs: validate
+    if: needs.validate.outputs.should_deploy == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install and build
+        run: |
+          npm ci
+          npm run build
+      
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./
+      
+      - name: Update documentation
+        if: success()
+        run: |
+          # Check if Gemini CLI is needed for docs
+          if [ -f "changes.json" ]; then
+            NEEDS_DOCS=$(jq -r '.queue[] | select(.type == "documentation") | .id' changes.json)
+            if [ -n "$NEEDS_DOCS" ]; then
+              echo "Documentation updates queued for Gemini processing"
+            fi
+          fi
+
+  # Auto-merge for validated PRs
+  auto-merge:
+    name: Auto Merge
+    needs: validate
+    if: |
+      github.event_name == 'pull_request' && 
+      contains(github.event.pull_request.labels.*.name, 'auto-merge')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Auto-merge PR
+        uses: pascalgn/merge-action@v0.15.6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          merge_method: squash

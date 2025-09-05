@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "docs/emails/STAKEHOLDER_UPDATES.md",
+                "file": "CHANGELOG.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "STAKEHOLDER_UPDATES"
+              "title": "CHANGELOG"
             }
           }
         ]
@@ -171,19 +171,25 @@
   },
   "active": "d333c5775eb980a0",
   "lastOpenFiles": [
+    "project_review.md",
+    "TODOs.md",
+    "WORKFLOW.md",
+    "ui_review.md",
+    "CHANGELOG.md",
+    "scripts/gemini-docs.js",
+    "CLAUDE.md",
+    "gemini.md",
+    "docs/emails/STAKEHOLDER_UPDATES.md",
+    "scripts/smart-prompt.js",
+    "scripts/process-changes.js",
+    "changes.json",
     "build-logs/build-2025-09-05T09-51-26-788Z.log",
     "tests/unit/crate-store-simple.test.ts",
     "build-logs/build-2025-09-05T09-47-09-089Z.log",
     "tests/integration/components/InputForms-simple.test.tsx",
     "tests/integration/components/InputForms.test.tsx.tmp.36524.1757065440088",
     "build-logs/build-2025-09-05T09-38-11-681Z.log",
-    "build-logs/dev-2025-09-05T09-37-12-867Z.log",
-    "node_modules/flat-cache/node_modules/minimatch/minimatch.js",
-    "node_modules/flat-cache/node_modules/glob/glob.js",
-    "build-logs/dev-2025-09-05T09-36-30-495Z.log",
-    "node_modules/rimraf/dist/esm/use-native.js.map",
     "README.md",
-    "CHANGELOG.md",
     "Untitled.canvas",
     "node_modules/@puppeteer/browsers/README.md",
     "node_modules/@isaacs/brace-expansion/README.md",
@@ -202,12 +208,6 @@
     "node_modules/node.extend/History.md",
     "node_modules/node.extend/Readme.md",
     "node_modules/netmask/CREDITS.md",
-    "node_modules/netmask/README.md",
-    "node_modules/motion-utils/LICENSE.md",
-    "node_modules/motion-dom/LICENSE.md",
-    "node_modules/mitt/README.md",
-    "node_modules/kleur/readme.md",
-    "node_modules/jsonpath/README.md",
     "node_modules/html_codesniffer/build/Images/summaryLoader-warning.gif",
     "node_modules/html_codesniffer/build/Images/summaryLoader-notice.gif",
     "node_modules/html_codesniffer/build/Images/summaryLoader-error.gif",

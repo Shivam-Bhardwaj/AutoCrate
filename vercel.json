@@ -1,4 +1,11 @@
 {
+  "github": {
+    "enabled": false,
+    "silent": true
+  },
+  "git": {
+    "deploymentEnabled": false
+  },
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
