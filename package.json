@@ -29,6 +29,12 @@
     "deploy": "vercel --prod",
     "deploy:preview": "vercel",
     "deploy:build": "npm run build && vercel --prod --yes",
+    "auto:develop": "node scripts/auto-develop.js",
+    "auto:deploy": "npm run build && npm run deploy",
+    "auto:fix": "npm run format && npm run lint -- --fix",
+    "auto:pr": "gh pr create --fill --base main",
+    "auto:merge": "gh pr merge --auto --squash --delete-branch",
+    "auto:complete": "npm run auto:fix && git add -A && git commit -m 'auto: apply changes' && git push && npm run auto:pr && npm run auto:merge && npm run auto:deploy",
     "prepare": "husky"
   },
   "dependencies": {

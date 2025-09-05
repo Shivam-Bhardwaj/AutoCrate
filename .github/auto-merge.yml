@@ -1,0 +1,78 @@
+# Auto-merge configuration for hands-off development
+
+# Enable auto-merge for PRs that meet criteria
+autoMerge:
+  enabled: true
+  
+  # Merge when all checks pass
+  requiredChecks:
+    - "Lint & Format"
+    - "Test Suite"
+    - "Build"
+  
+  # Auto-merge strategy
+  mergeMethod: squash
+  
+  # Delete branch after merge
+  deleteBranch: true
+  
+  # Auto-merge for these branch patterns
+  branchPatterns:
+    - "feature/auto-*"
+    - "fix/auto-*"
+    - "dependabot/*"
+  
+  # Skip manual review for automated PRs
+  skipReview:
+    authors:
+      - "github-actions[bot]"
+      - "dependabot[bot]"
+    
+# Branch protection rules
+branchProtection:
+  main:
+    # Require PR before merging
+    requirePullRequest: true
+    
+    # But allow auto-merge
+    allowAutoMerge: true
+    
+    # Dismiss stale reviews on new commits
+    dismissStaleReviews: true
+    
+    # Required status checks
+    requiredStatusChecks:
+      - "lint"
+      - "test"
+      - "build"
+    
+    # Allow force pushes for rollback
+    allowForcePush: false
+    
+    # Allow deletions
+    allowDeletions: false
+
+# Automated PR labels
+labels:
+  autoMerge: "auto-merge"
+  inProgress: "in-progress"
+  readyForReview: "ready"
+  deployed: "deployed"
+
+# Deployment rules
+deployment:
+  # Auto-deploy on merge to main
+  autoDeployBranches:
+    - main
+  
+  # Preview deployments for PRs
+  previewDeployments: true
+  
+  # Rollback on failure
+  autoRollback: true
+  
+  # Notification settings
+  notifications:
+    slack: false
+    email: false
+    github: true
