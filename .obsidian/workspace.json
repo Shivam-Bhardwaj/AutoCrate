@@ -171,6 +171,7 @@
   },
   "active": "d333c5775eb980a0",
   "lastOpenFiles": [
+    "build-logs/build-2025-09-05T10-21-36-417Z.log",
     "project_review.md",
     "TODOs.md",
     "WORKFLOW.md",
@@ -207,7 +208,6 @@
     "node_modules/pac-proxy-agent/README.md",
     "node_modules/node.extend/History.md",
     "node_modules/node.extend/Readme.md",
-    "node_modules/netmask/CREDITS.md",
     "node_modules/html_codesniffer/build/Images/summaryLoader-warning.gif",
     "node_modules/html_codesniffer/build/Images/summaryLoader-notice.gif",
     "node_modules/html_codesniffer/build/Images/summaryLoader-error.gif",
