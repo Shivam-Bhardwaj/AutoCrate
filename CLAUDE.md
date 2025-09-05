@@ -1,5 +1,28 @@
 # AutoCrate Project Instructions
 
+## CRITICAL DEPLOYMENT RULES - MUST FOLLOW
+**Claude will ONLY make local changes. NO automatic commits or pushes to GitHub.**
+
+### Deployment Workflow (User Controlled):
+1. **Option 1 (Local Test)**: User tests locally after Claude makes changes
+2. **Option 2 (Prepare)**: User validates with all checks and tests
+3. **Option 3 (Deploy)**: User pushes to GitHub ONLY when ready
+
+**Claude is FORBIDDEN from:**
+- Running `git commit` without explicit user request
+- Running `git push` without explicit user request  
+- Using Option 3 of autocrate.bat without user permission
+- Automatically deploying or pushing code
+- Making changes to files that are NOT directly related to the requested task
+- Modifying configuration files, documentation, or tests unless specifically asked
+- Creating new files unless absolutely necessary for the requested feature
+
+**STRICT RULES:**
+- Only modify files that are DIRECTLY relevant to the user's request
+- Do NOT change unrelated files, configs, or documentation
+- Do NOT proactively update or "improve" code that wasn't mentioned
+- All changes remain LOCAL until user explicitly approves deployment
+
 ## Project Overview
 AutoCrate is a Next.js 14 application for designing shipping crates with 3D visualization and NX CAD expression generation.
 Live URL: https://autocrate-5xoh6cft1-shivams-projects-1d3fe872.vercel.app

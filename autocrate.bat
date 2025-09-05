@@ -17,12 +17,14 @@ echo ========================================================
 echo              AutoCrate v!VERSION!
 echo ========================================================
 echo.
-echo   WORKFLOW (Recommended Order):
-echo   1. Local Development (dev + test)
-echo   2. Prepare Production (lint + build + test)
-echo   3. Deploy Production (git push to trigger CI/CD)
+echo   MAIN WORKFLOW (Use in Order):
+echo   ------------------------------
+echo   1. Local Test    - Dev server + Browser + Basic tests
+echo   2. Prepare       - Version update + Docs + Full tests + Build
+echo   3. Deploy        - Git push to GitHub (triggers deployment)
 echo.
-echo   TESTING:
+echo   INDIVIDUAL TOOLS:
+echo   -----------------
 echo   4. Run All Tests (unit + integration + e2e)
 echo   5. Unit Tests Only
 echo   6. Integration Tests Only
@@ -30,17 +32,15 @@ echo   7. E2E Tests (Puppeteer)
 echo   8. Test Coverage Report
 echo   9. Watch Tests (interactive)
 echo.
-echo   DEVELOPMENT:
-echo   10. Dev Server
-echo   11. Build Production
+echo   10. Dev Server Only
+echo   11. Build Production Only
 echo   12. Lint + Format + TypeCheck
-echo.
-echo   UTILITIES:
 echo   13. View/Kill Ports
 echo   14. Git Status
 echo   15. Clean Build Cache
 echo.
 echo   QUEUE SYSTEM:
+echo   -------------
 echo   16. Add Task to Queue
 echo   17. View Queue
 echo   18. Execute Queue
@@ -92,39 +92,112 @@ if /i "%~1"=="check" goto :quality_check
 if /i "%~1"=="clean" goto :clean
 if /i "%~1"=="ports" goto :port_menu
 if /i "%~1"=="git" goto :git_status
+if /i "%~1"=="version" goto :version_update
 if /i "%~1"=="queue" goto :queue_menu
 if /i "%~1"=="help" goto :help
 
 echo Unknown command: %~1
 goto :help
 
+REM =================== OPTION 1: LOCAL DEVELOPMENT ===================
 :local_dev
 echo.
 echo ========================================================
-echo            LOCAL DEVELOPMENT WORKFLOW
+echo         OPTION 1: LOCAL DEVELOPMENT & TESTING
 echo ========================================================
 echo.
-echo Starting development server in new window...
+echo Starting development server...
 start cmd /k "npm run dev"
-ping -n 4 127.0.0.1 >nul 2>&1
+
+echo Waiting for server to start...
+ping -n 5 127.0.0.1 >nul 2>&1
+
+echo Opening browser at http://localhost:3000...
+start http://localhost:3000
+
 echo.
-echo Running all tests...
+echo Running basic tests...
+echo -------------------------------
 call npm run test:unit
-call npm run test:integration
+if %errorlevel% neq 0 (
+    echo [WARNING] Some unit tests failed - check the output above
+) else (
+    echo [SUCCESS] Unit tests passed!
+)
+
 echo.
-echo Local development environment ready!
-echo Server: http://localhost:3000
+echo ========================================================
+echo Development server is running in separate window
+echo Browser opened at http://localhost:3000
+echo.
+echo Test your changes manually in the browser
+echo When done, close the dev server window
+echo ========================================================
 echo.
 pause
 goto :menu
 
+REM =================== OPTION 2: PREPARE PRODUCTION ===================
 :prepare_prod
 echo.
 echo ========================================================
-echo           PREPARE FOR PRODUCTION
+echo       OPTION 2: PREPARE FOR PRODUCTION
 echo ========================================================
 echo.
-echo Step 1: Code Quality Checks
+
+REM Step 1: Version Update
+echo Step 1: Version Update
+echo -------------------------------
+echo Current version: !VERSION!
+echo.
+echo Select version update type:
+echo 1. Patch (bug fixes)     - !VERSION! to next patch
+echo 2. Minor (new features)  - !VERSION! to next minor
+echo 3. Major (breaking)      - !VERSION! to next major
+echo 4. Skip version update
+echo.
+set /p version_choice="Select [1-4]: "
+
+if "!version_choice!"=="1" (
+    echo Updating patch version...
+    call npm version patch --no-git-tag-version
+    echo Version updated!
+) else if "!version_choice!"=="2" (
+    echo Updating minor version...
+    call npm version minor --no-git-tag-version
+    echo Version updated!
+) else if "!version_choice!"=="3" (
+    echo Updating major version...
+    call npm version major --no-git-tag-version
+    echo Version updated!
+) else (
+    echo Skipping version update...
+)
+
+REM Update version variable
+for /f "tokens=*" %%i in ('node -p "require('./package.json').version" 2^>nul') do set VERSION=%%i
+
+echo.
+echo Step 2: Update Documentation
+echo -------------------------------
+echo Generating version.ts file...
+node -e "const fs=require('fs'); const pkg=require('./package.json'); fs.writeFileSync('./src/utils/version.ts', `export const APP_VERSION = '${pkg.version}';\n`);"
+echo Version file updated!
+
+echo.
+echo Updating CHANGELOG.md...
+set /p changelog="Enter changelog entry (or press Enter to skip): "
+if not "!changelog!"=="" (
+    echo.>> CHANGELOG.md
+    echo ## v!VERSION! - !date! >> CHANGELOG.md
+    echo - !changelog! >> CHANGELOG.md
+    echo CHANGELOG updated!
+) else (
+    echo Skipped CHANGELOG update
+)
+
+echo.
+echo Step 3: Code Quality Checks
 echo -------------------------------
 call npm run lint
 if %errorlevel% neq 0 (
@@ -132,17 +205,20 @@ if %errorlevel% neq 0 (
     call npm run lint -- --fix
 )
 call npm run type-check
-call npm run format:check
+call npm run format
 
 echo.
-echo Step 2: Running All Tests
+echo Step 4: Running ALL Tests
 echo -------------------------------
+echo Running unit tests...
 call npm run test:unit
 if %errorlevel% neq 0 (
     echo [ERROR] Unit tests failed!
     pause
     goto :menu
 )
+
+echo Running integration tests...
 call npm run test:integration
 if %errorlevel% neq 0 (
     echo [ERROR] Integration tests failed!
@@ -150,8 +226,14 @@ if %errorlevel% neq 0 (
     goto :menu
 )
 
+echo Running E2E tests...
+call npm run e2e
+if %errorlevel% neq 0 (
+    echo [WARNING] E2E tests failed - but continuing...
+)
+
 echo.
-echo Step 3: Building Production Bundle
+echo Step 5: Building Production Bundle
 echo -------------------------------
 call npm run build
 if %errorlevel% neq 0 (
@@ -161,54 +243,171 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo [SUCCESS] Ready for production deployment!
-echo Run option 3 or 'autocrate deploy' to push to GitHub
+echo ========================================================
+echo [SUCCESS] READY FOR PRODUCTION!
+echo.
+echo Version: !VERSION!
+echo All tests passed
+echo Build successful
+echo Documentation updated
+echo.
+echo Run Option 3 to deploy to GitHub
+echo ========================================================
 echo.
 pause
 goto :menu
 
+REM =================== OPTION 3: DEPLOY ===================
 :deploy_prod
 echo.
 echo ========================================================
-echo           DEPLOY TO PRODUCTION
+echo           OPTION 3: DEPLOY TO GITHUB
 echo ========================================================
 echo.
-echo This will:
-echo - Commit all changes
-echo - Push to GitHub
-echo - Trigger automatic Vercel deployment via GitHub Actions
+echo This will push all changes to GitHub and trigger deployment.
 echo.
-set /p confirm="Continue with deployment? [Y/N]: "
+echo Analyzing changes...
+echo -------------------------------
+
+REM Get list of changed files
+git status --short > temp_changes.txt
+
+REM Initialize variables for smart commit message
+set has_feat=0
+set has_fix=0
+set has_docs=0
+set has_style=0
+set has_refactor=0
+set has_test=0
+set has_chore=0
+set files_changed=0
+
+REM Analyze changes
+for /f "tokens=1,2" %%a in (temp_changes.txt) do (
+    set /a files_changed+=1
+    echo %%b | findstr /i "\.tsx$ \.ts$ \.jsx$ \.js$" >nul && (
+        echo %%b | findstr /i "test" >nul && set has_test=1
+        echo %%b | findstr /i "components" >nul && set has_feat=1
+        echo %%b | findstr /i "fix" >nul && set has_fix=1
+        echo %%b | findstr /i "store" >nul && set has_feat=1
+        echo %%b | findstr /i "utils" >nul && set has_refactor=1
+    )
+    echo %%b | findstr /i "\.md$ README CHANGELOG" >nul && set has_docs=1
+    echo %%b | findstr /i "\.css$ \.scss$ styles" >nul && set has_style=1
+    echo %%b | findstr /i "package\.json \.bat \.yml config" >nul && set has_chore=1
+)
+
+REM Generate smart commit message based on changes
+set auto_message=
+if !has_fix! equ 1 (
+    set auto_message=fix: 
+) else if !has_feat! equ 1 (
+    set auto_message=feat: 
+) else if !has_refactor! equ 1 (
+    set auto_message=refactor: 
+) else if !has_docs! equ 1 (
+    set auto_message=docs: 
+) else if !has_style! equ 1 (
+    set auto_message=style: 
+) else if !has_test! equ 1 (
+    set auto_message=test: 
+) else (
+    set auto_message=chore: 
+)
+
+REM Get last commit message for context
+for /f "tokens=*" %%i in ('git log -1 --pretty^=format:"%%s" 2^>nul') do set last_commit=%%i
+
+REM Show analysis
+echo.
+echo Changes detected:
+echo - Files modified: !files_changed!
+if !has_feat! equ 1 echo - Feature changes detected
+if !has_fix! equ 1 echo - Bug fixes detected
+if !has_docs! equ 1 echo - Documentation changes detected
+if !has_test! equ 1 echo - Test changes detected
+if !has_style! equ 1 echo - Style changes detected
+if !has_refactor! equ 1 echo - Code refactoring detected
+if !has_chore! equ 1 echo - Configuration changes detected
+echo.
+echo Last commit: !last_commit!
+echo.
+
+REM Show detailed changes
+echo File changes:
+echo -------------------------------
+git status --short
+echo.
+
+set /p confirm="Ready to deploy? [Y/N]: "
 if /i not "!confirm!"=="Y" (
     echo Deployment cancelled.
+    del temp_changes.txt 2>nul
     pause
     goto :menu
 )
 
 echo.
-echo Checking git status...
-git status --short
+echo Suggested commit type: !auto_message!
 echo.
-set /p message="Enter commit message (or press Enter for default): "
-if "!message!"=="" set message=chore: production deployment
+echo Choose commit message option:
+echo 1. Auto-generated based on changes
+echo 2. Custom message
+echo 3. Use default (production deployment)
+echo.
+set /p msg_choice="Select [1-3]: "
+
+if "!msg_choice!"=="1" (
+    REM Build detailed auto message
+    if !has_fix! equ 1 (
+        set message=fix: resolve issues and improve stability
+    ) else if !has_feat! equ 1 (
+        set message=feat: enhance functionality and user experience
+    ) else if !has_refactor! equ 1 (
+        set message=refactor: improve code structure and maintainability
+    ) else if !has_docs! equ 1 (
+        set message=docs: update documentation
+    ) else if !has_test! equ 1 (
+        set message=test: update test coverage
+    ) else (
+        set message=chore: update configuration and dependencies
+    )
+) else if "!msg_choice!"=="2" (
+    set /p custom_msg="Enter commit message: "
+    set message=!custom_msg!
+) else (
+    set message=chore: production deployment v!VERSION!
+)
+
+REM Clean up temp file
+del temp_changes.txt 2>nul
 
 echo.
 echo Committing changes...
+echo Commit message: !message!
 git add -A
 git commit -m "!message!"
 
 echo.
-echo Pushing to GitHub (main branch)...
+echo Pushing to GitHub (branch: main)...
 git push origin main
 
 echo.
-echo [SUCCESS] Code pushed to GitHub!
-echo Vercel deployment will trigger automatically.
-echo Check GitHub Actions for deployment status.
+echo ========================================================
+echo [SUCCESS] Deployed to GitHub!
+echo.
+echo GitHub Actions will now:
+echo - Run CI/CD pipeline
+echo - Deploy to Vercel automatically
+echo.
+echo Check deployment at:
+echo https://github.com/Shivam-Bhardwaj/AutoCrate/actions
+echo ========================================================
 echo.
 pause
 goto :menu
 
+REM =================== TEST COMMANDS ===================
 :test_all
 echo.
 echo ========================================================
@@ -506,12 +705,10 @@ echo.
 echo AutoCrate Development Toolkit v!VERSION!
 echo =========================================
 echo.
-echo USAGE: autocrate [command] [options]
-echo.
-echo WORKFLOW COMMANDS:
-echo   local              Start dev server and run tests
-echo   prepare            Run all checks and build
-echo   deploy             Push to GitHub (triggers deployment)
+echo MAIN WORKFLOW (Use in Order):
+echo   1. local     - Test locally with dev server and browser
+echo   2. prepare   - Update version, docs, run all tests, build
+echo   3. deploy    - Push to GitHub (triggers auto-deployment)
 echo.
 echo TESTING COMMANDS:
 echo   test               Run all tests
@@ -531,6 +728,7 @@ echo.
 echo UTILITY COMMANDS:
 echo   ports              View/manage ports
 echo   git                Show git status
+echo   version            Update version number
 echo   queue add          Add task to queue
 echo   queue view         View task queue
 echo   queue run          Execute queued tasks

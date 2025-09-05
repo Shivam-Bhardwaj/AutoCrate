@@ -139,25 +139,10 @@ export default function CrateViewer3D({ configuration }: CrateViewer3DProps) {
         onCreated={() => {
           logInfo('render', '3D canvas initialized', 'WebGL renderer ready', 'CrateViewer3D');
         }}
-        onPointerMissed={() => {
-          logDebug('ui', 'User clicked outside 3D model', undefined, 'CrateViewer3D');
-        }}
       >
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
-        <OrbitControls
-          enablePan={true}
-          enableZoom={true}
-          enableRotate={true}
-          onChange={() => {
-            logDebug(
-              'ui',
-              'Camera view changed',
-              'User interacting with 3D controls',
-              'CrateViewer3D'
-            );
-          }}
-        />
+        <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
         <Grid args={[20, 20]} />
 
         {configuration ? (
