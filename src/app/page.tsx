@@ -22,7 +22,7 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
   const configuration = useCrateStore((state) => state.configuration);
   const resetConfiguration = useCrateStore((state) => state.resetConfiguration);
-  const { isDarkMode, toggleTheme } = useThemeStore();
+  const { isDarkMode, toggleTheme, isHydrated } = useThemeStore();
   const { logInfo } = useLogsStore();
 
   useEffect(() => {
@@ -52,6 +52,20 @@ export default function Home() {
   // Return mobile layout for small screens
   if (isMobile) {
     return <MobileHome />;
+  }
+
+  // Prevent hydration mismatch by waiting for theme to be hydrated
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen md:h-screen flex flex-col bg-gray-50">
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading AutoCrate...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

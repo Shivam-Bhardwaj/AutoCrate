@@ -228,8 +228,21 @@ export default function CrateViewer3D({ configuration }: CrateViewer3DProps) {
       <Canvas
         camera={{ position: [5, 5, 5], fov: 50 }}
         shadows
-        onCreated={() => {
-          logInfo('render', '3D canvas initialized', 'WebGL renderer ready', 'CrateViewer3D');
+        fallback={
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <p className="text-gray-600 mb-2">Loading 3D Viewer...</p>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+            </div>
+          </div>
+        }
+        onCreated={(_state) => {
+          // Enable better performance and compatibility
+          try {
+            logInfo('render', '3D canvas initialized', 'WebGL renderer ready', 'CrateViewer3D');
+          } catch (error) {
+            console.warn('WebGL initialization warning:', error);
+          }
         }}
       >
         <ambientLight intensity={0.5} />
