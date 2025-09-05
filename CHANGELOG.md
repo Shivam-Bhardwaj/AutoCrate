@@ -1,4 +1,4 @@
-## 2.2.5 (2025-09-05)
+## 2.2.6 (2025-09-05)
 
 
 ### Bug Fixes
@@ -21,6 +21,7 @@
 * add version display at bottom of page ([410f81c](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/410f81c932d4577ea2241002bbbfe055e3963598))
 * implement automatic skid sizing and spacing system (v2.2.0) ([0e495bc](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/0e495bcd6ac5d7b948a8e6d3255c64551b698f62))
 * implement complete hands-off automation system ([aeb9a8e](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/aeb9a8e7f813990ae4076c80098d70ee8a37adc7))
+* implement dynamic version display from package.json ([62555c9](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/62555c94966902ed9044119bbc72c7cfeb5ed4dc))
 * initial AutoCrate setup with CI/CD and changelog management ([2e5a8ef](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/2e5a8ef60caa80c3eec0616b1951b9e2de4f545f))
 
 
