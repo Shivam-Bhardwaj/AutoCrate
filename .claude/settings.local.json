@@ -35,7 +35,16 @@
       "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\src\\app/**)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\src\\app/**)",
+      "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\tests\\e2e/**)",
+      "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\tests\\e2e/**)",
+      "Bash(for pr in 14 13 12 11 10 9 8 7 6 5 4 3)",
+      "Bash(do gh pr close $pr)",
+      "Bash(done)",
+      "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\tests\\e2e/**)",
+      "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\.github\\workflows/**)",
+      "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\.github\\workflows/**)"
     ],
     "deny": [],
     "ask": []
