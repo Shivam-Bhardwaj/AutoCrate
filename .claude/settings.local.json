@@ -32,7 +32,10 @@
       "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\src\\app/**)",
       "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate/**)",
       "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\src\\app/**)",
-      "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\src\\app/**)"
+      "Read(/C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\AutoCrate\\src\\app/**)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

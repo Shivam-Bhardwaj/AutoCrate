@@ -76,7 +76,7 @@ export default function Home() {
               <span
                 className={`hidden sm:inline text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}
               >
-                v2.2.0 - Now with automatic skid sizing
+                v2.2.1 - Now with automatic skid sizing
               </span>
             </div>
           </div>
@@ -187,7 +187,7 @@ export default function Home() {
       <footer
         className={`border-t px-4 py-2 text-center ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
       >
-        <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>v2.2.0</span>
+        <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>v2.2.1</span>
       </footer>
     </div>
   );
