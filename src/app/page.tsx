@@ -123,8 +123,10 @@ export default function Home() {
             <div
               className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}
             >
-              <h2 className={`font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                Input Section
+              <h2
+                className={`font-semibold text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+              >
+                Product Configuration
               </h2>
             </div>
             <div className="flex-1 overflow-hidden">
@@ -141,8 +143,10 @@ export default function Home() {
               <div
                 className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}
               >
-                <h2 className={`font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  3D Rendering
+                <h2
+                  className={`font-semibold text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Crate Visualization
                 </h2>
               </div>
               <div className="flex-1 p-4">
@@ -157,7 +161,9 @@ export default function Home() {
               <div
                 className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}
               >
-                <h2 className={`font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                <h2
+                  className={`font-semibold text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                >
                   System Logs
                 </h2>
               </div>
@@ -176,8 +182,10 @@ export default function Home() {
             <div
               className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}
             >
-              <h2 className={`font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                Output Section
+              <h2
+                className={`font-semibold text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+              >
+                Design Analysis
               </h2>
             </div>
             <div className="flex-1 overflow-hidden">
@@ -191,14 +199,14 @@ export default function Home() {
       <footer
         className={`border-t px-4 py-3 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-              Built with
-            </span>
-            <TechStackDisplay />
-          </div>
+        <div className="flex items-center justify-center">
           <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                Built with
+              </span>
+              <TechStackDisplay />
+            </div>
             <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
               v{APP_VERSION}
             </span>

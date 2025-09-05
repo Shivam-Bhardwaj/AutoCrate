@@ -19,7 +19,7 @@ export function CoordinateAxes({ size = 5 }: CoordinateAxesProps) {
         lineWidth={2}
       />
       <Text position={[size + 0.5, 0, 0]} color="red" fontSize={0.3}>
-        X (Length)
+        X (Width)
       </Text>
 
       {/* Y Axis - Green */}
@@ -32,7 +32,7 @@ export function CoordinateAxes({ size = 5 }: CoordinateAxesProps) {
         lineWidth={2}
       />
       <Text position={[0, size + 0.5, 0]} color="green" fontSize={0.3}>
-        Y (Height)
+        Y (Depth)
       </Text>
 
       {/* Z Axis - Blue */}
@@ -45,7 +45,7 @@ export function CoordinateAxes({ size = 5 }: CoordinateAxesProps) {
         lineWidth={2}
       />
       <Text position={[0, 0, size + 0.5]} color="blue" fontSize={0.3}>
-        Z (Width)
+        Z (Height)
       </Text>
     </group>
   );

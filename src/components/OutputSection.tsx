@@ -95,47 +95,61 @@ export default function OutputSection() {
           </CardHeader>
           <CardContent>
             <Tabs
-              defaultValue="engineering"
+              defaultValue="summary"
               className="w-full"
               onValueChange={(value) => {
                 logUser('navigation', `Switched to ${value} tab`, undefined, 'OutputSection');
               }}
             >
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="engineering">Engineering</TabsTrigger>
-                <TabsTrigger value="formulas">Formulas</TabsTrigger>
                 <TabsTrigger value="summary">Summary</TabsTrigger>
                 <TabsTrigger value="bom">BOM</TabsTrigger>
+                <TabsTrigger value="analysis">Analysis</TabsTrigger>
+                <TabsTrigger value="nx-expression">NX Expression</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="engineering">
+              <TabsContent value="analysis">
                 <div className="space-y-4">
-                  <Card className="glass-panel">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        Load Capacity Analysis
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-sm text-gray-600">Maximum Load</label>
-                          <p className="text-2xl font-bold text-blue-600">
-                            {configuration.weight.maxGross} kg
-                          </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Card className="glass-panel">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          Load Capacity Analysis
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm text-gray-600">Maximum Load</label>
+                            <p className="text-2xl font-bold text-blue-600">
+                              {configuration.weight.maxGross} kg
+                            </p>
+                          </div>
+                          <div>
+                            <label className="text-sm text-gray-600">Safety Factor</label>
+                            <p className="text-2xl font-bold text-green-600">
+                              {(
+                                configuration.weight.maxGross / configuration.weight.product
+                              ).toFixed(1)}
+                              x
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <label className="text-sm text-gray-600">Safety Factor</label>
-                          <p className="text-2xl font-bold text-green-600">
-                            {(configuration.weight.maxGross / configuration.weight.product).toFixed(
-                              1
-                            )}
-                            x
-                          </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="glass-panel hover:scale-105 transition-transform">
+                      <CardHeader>
+                        <CardTitle className="text-lg">Load Distribution</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-center py-4">
+                          <p className="font-mono text-lg">W = F / A</p>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                        <p className="text-sm text-gray-600">Where W is weight per unit area</p>
+                      </CardContent>
+                    </Card>
+                  </div>
 
                   <Card className="glass-panel">
                     <CardHeader>
@@ -168,38 +182,6 @@ export default function OutputSection() {
                       </div>
                     </CardContent>
                   </Card>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="formulas">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <Card className="glass-panel hover:scale-105 transition-transform">
-                      <CardHeader>
-                        <CardTitle className="text-lg">Load Distribution</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-center py-4">
-                          <p className="font-mono text-lg">W = F / A</p>
-                        </div>
-                        <p className="text-sm text-gray-600">Where W is weight per unit area</p>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="glass-panel hover:scale-105 transition-transform">
-                      <CardHeader>
-                        <CardTitle className="text-lg">Safety Factor</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-center py-4">
-                          <p className="font-mono text-lg">SF = Max Load / Working Load</p>
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          Minimum safety factor of 2.0 recommended
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
 
                   <Card className="glass-panel">
                     <CardHeader>
@@ -414,6 +396,55 @@ export default function OutputSection() {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="nx-expression">
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">NX CAD Expression</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
+                          <p className="text-sm text-blue-800 dark:text-blue-200">
+                            Generate NX CAD expressions for parametric crate design. Import the
+                            generated .exp file into NX for automated crate construction.
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <h4 className="font-medium mb-2">Features Include:</h4>
+                            <ul className="text-sm text-muted-foreground space-y-1">
+                              <li>• Parametric dimensions</li>
+                              <li>• Two-point diagonal construction</li>
+                              <li>• Material specifications</li>
+                              <li>• Assembly instructions</li>
+                            </ul>
+                          </div>
+                          <div>
+                            <h4 className="font-medium mb-2">Export Details:</h4>
+                            <ul className="text-sm text-muted-foreground space-y-1">
+                              <li>• Filename includes dimensions</li>
+                              <li>• UTC timestamp for versioning</li>
+                              <li>• Product weight in filename</li>
+                              <li>• Ready for NX import</li>
+                            </ul>
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <Button size="lg" className="w-full" disabled>
+                            Generate NX Expression
+                            <span className="ml-2 text-xs">(Coming Soon)</span>
+                          </Button>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Filename format: ProductName_LxWxH_WeightLbs_YYYYMMDD_HHMMSS_UTC.exp
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </TabsContent>
             </Tabs>
           </CardContent>

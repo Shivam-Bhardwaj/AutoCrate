@@ -1,78 +1,57 @@
 # Project Suggestions
 
-This document provides suggestions for the prompts listed in `TODO.md`.
+This document provides suggestions to enhance the AutoCrate project's security, stability, and maintainability, based on the planned UI/feature overhaul.
 
-## High Priority
+## 🛡️ Security
 
-### Implement a secure user authentication system
+1.  **Dependency Auditing**:
+    *   **Suggestion**: Regularly run `npm audit` to check for vulnerabilities in the project's dependencies, especially after adding new ones like `katex`, `jspdf`, and `xlsx`.
+    *   **Reason**: New packages can introduce known vulnerabilities. Since `dependabot.yml` is already configured, ensure its alerts are monitored and addressed promptly.
 
-- **Recommendation:** Use the `next-auth` library, as it is already a dependency. Start with a `CredentialsProvider` for email and password authentication. You will need a database to store user credentials. For development, you could use a simple solution like SQLite. For production, a more robust database like PostgreSQL would be a better choice.
+2.  **Input Sanitization for Exporters**:
+    *   **Suggestion**: Before passing data to the `jspdf` and `xlsx` libraries for export, strictly validate and sanitize all user-provided inputs (e.g., crate dimensions, configuration details).
+    *   **Reason**: Maliciously crafted large inputs could potentially lead to denial-of-service (DoS) by crashing the user's browser tab. Implement size and value range limits on all inputs.
 
-### Add export functionality (PDF, STL)
+3.  **3D Scene Input Clamping**:
+    *   **Suggestion**: Clamp and validate any user-configurable values that directly influence the 3D scene rendering in `CrateViewer3D.tsx`.
+    *   **Reason**: Extreme or invalid values (e.g., negative dimensions, excessively large numbers) could cause rendering errors, performance degradation, or unexpected visual artifacts.
 
-- **PDF Export:** Use a library like `jspdf` or `react-pdf` to generate PDF documents. You can create a template that takes the crate design data and renders it into a PDF.
-- **STL Export:** Use the `STLExporter` from the Three.js examples to convert your 3D model's geometry into the STL format for 3D printing.
+4.  **Secure API Development Practices**:
+    *   **Suggestion**: For the future REST API, plan to use Next.js API Routes with input validation libraries like `zod`. Also, consider security middleware like `helmet` for setting secure HTTP headers.
+    *   **Reason**: Proactively planning for API security will prevent common vulnerabilities like XSS, CSRF, and insecure direct object references when you begin implementation.
 
-### Create RESTful API endpoints for design persistence
+## 🐛 Potential Bugs & Performance Issues
 
-- **Recommendation:** Use Next.js API routes to create your API. You will need endpoints for standard CRUD operations (`CREATE`, `READ`, `UPDATE`, `DELETE`). A database will be required to store the designs. You can start with a simple file-based database or a more scalable solution like MongoDB or PostgreSQL.
+1.  **3D Rendering Performance**:
+    *   **Suggestion**: Profile the `CrateViewer3D` component after adding the new features (individual floorboards, axes, hover effects, exploded views). Use the React DevTools Profiler and browser performance tools to ensure the 60 FPS target is met.
+    *   **Reason**: The complexity of the 3D scene is increasing significantly. This is a high-risk area for performance bottlenecks. Consider using `React.memo` on expensive components and dynamically importing parts of the 3D view with `next/dynamic` to reduce initial load.
 
-## Medium Priority
+2.  **State Management Consistency**:
+    *   **Suggestion**: As the UI is refactored, ensure that all new components correctly use the existing Zustand stores (`crate-store`, `theme-store`, `logs-store`). Be mindful of race conditions or inconsistent state when multiple actions are triggered.
+    *   **Reason**: Large refactors can easily lead to bugs where the UI and the state fall out of sync. Centralizing state logic in the stores and testing interactions thoroughly is crucial.
 
-### Expand material options
+3.  **Calculation Logic Integrity**:
+    *   **Suggestion**: Create comprehensive unit tests for the new `engineeringCalculations.ts` service. Add integration tests that verify its outputs work correctly with the `floorboard-calculations` and `skid-calculations` services.
+    *   **Reason**: The application's core value lies in its calculations. Bugs here can have significant consequences. Tests should cover edge cases (e.g., zero or extreme dimensions, heavy weights) to ensure robustness.
 
-- **Recommendation:** Create a configuration file (e.g., `materials.json`) to define the properties of each material (e.g., name, density, color, cost). The UI can then dynamically populate the material selection options from this file.
+4.  **Next.js Hydration Errors**:
+    *   **Suggestion**: Be vigilant for hydration mismatch errors, especially with the new client-side features like 3D view controls and the `react-katex` formulas. Use `useEffect` to run browser-only logic and `next/dynamic` with `ssr: false` for components that do not need to be server-rendered.
+    *   **Reason**: The `TODO.md` already notes a hydration-safe timestamp. This indicates it's a known area of concern. The new interactive features increase this risk.
 
-### Implement design templates and presets
+## ✨ General Good Practices
 
-- **Recommendation:** Store a set of predefined crate configurations in a JSON file. The UI can then present these templates to the user as starting points for their own designs.
+1.  **Centralize Constants**:
+    *   **Suggestion**: The code snippets in `TODO.md` contain "magic numbers" (e.g., `scaleFactor = 25.4`, `thickness = 0.038`). Move these to a central, well-documented file like `src/lib/constants.ts`.
+    *   **Reason**: This improves readability and makes the values easier to manage and update in the future, as they are defined in a single place.
 
-### Add weight calculation functionality
+2.  **Component Granularity**:
+    *   **Suggestion**: Break down the new, complex components outlined in the `TODO.md` (like `EngineeringTab.tsx` and `CrateViewer3D.tsx`) into smaller, single-purpose sub-components.
+    *   **Reason**: Smaller components are easier to understand, test, and reuse. This will improve the long-term maintainability of the codebase.
 
-- **Recommendation:** The weight calculation should be based on the volume of each part of the crate and the density of the selected material. You will need to calculate the volume of each `Box` in your Three.js scene and then use the material density from your configuration file.
+3.  **Enforce Type Safety**:
+    *   **Suggestion**: Continue the excellent practice of "No `any` type". Create detailed TypeScript interfaces in `src/types/` for all new data structures, including the return types for the `EngineeringCalculator` service and the props for the new UI components.
+    *   **Reason**: Strong typing is one of the project's main advantages. It prevents entire classes of bugs and makes the code self-documenting.
 
-### Create a print-friendly Bill of Materials (BOM) export
-
-- **Recommendation:** Similar to the design export, you can create a new PDF template for the BOM. The BOM should include a list of all parts, their dimensions, materials, and calculated weights.
-
-## Low Priority
-
-### Add animation for the crate assembly process
-
-- **Recommendation:** Use an animation library like `framer-motion` or `gsap` to animate the position and rotation of the crate components. You can create a timeline that shows the assembly sequence.
-
-### Implement design sharing functionality
-
-- **Recommendation:** When a user saves a design, generate a unique URL for it. This URL can then be shared, allowing others to view the design. You can also add social sharing buttons.
-
-### Add multi-language support
-
-- **Recommendation:** Use a library like `next-i18next` to manage your translations. You will need to create a separate JSON file for each language with the translations for all UI elements.
-
-### Create mobile-responsive controls for the 3D viewer
-
-- **Recommendation:** Use media queries to create a different layout for the controls on smaller screens. You should also implement touch-based camera controls for a better mobile experience.
-
-## Testing and Bug Fixes
-
-### Fix viewport resize issues
-
-- **Recommendation:** Add an event listener for the `resize` event on the window. In the event handler, you should update the camera's aspect ratio and the renderer's size to match the new dimensions of the viewport.
-
-### Optimize performance for complex crate designs
-
-- **Recommendation:** To improve performance, you can use techniques like instancing to reduce the number of draw calls for repeated geometries (like slats or screws). You can also implement Level of Detail (LOD) to use simpler models when they are far from the camera.
-
-## Documentation
-
-### Create a user guide
-
-- **Recommendation:** Create a new page in your Next.js application for the user guide. This guide should cover all the features of the application and include screenshots and examples.
-
-### Document all API endpoints
-
-- **Recommendation:** Use a tool like Swagger or OpenAPI to document your API. This will generate interactive documentation that will make it easier for developers to understand and use your API.
-
-### Add contribution guidelines
-
-- **Recommendation:** Create a `CONTRIBUTING.md` file in the root of your project. This file should explain how to set up the development environment, the coding standards, and the process for submitting pull requests.
+4.  **Establish Environment Variable Conventions**:
+    *   **Suggestion**: Create a `.env.example` file in the root directory to document the environment variables needed for local development, even if none are required right now.
+    *   **Reason**: As the project grows to include an API or other services, you will need environment variables. Establishing the convention now makes onboarding new developers easier.

@@ -54,7 +54,7 @@ export default function InputForms() {
 
         <Tabs defaultValue="dimensions" className="w-full">
           <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="dimensions">Dimensions</TabsTrigger>
+            <TabsTrigger value="dimensions">Product</TabsTrigger>
             <TabsTrigger value="base">Base</TabsTrigger>
             <TabsTrigger value="panels">Panels</TabsTrigger>
             <TabsTrigger value="fasteners">Fasteners</TabsTrigger>
@@ -64,12 +64,18 @@ export default function InputForms() {
           <TabsContent value="dimensions" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Crate Dimensions</CardTitle>
+                <CardTitle>Product Dimensions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded mb-4">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    Enter the dimensions of the product you want to ship. The crate will be
+                    automatically sized to accommodate your product with proper clearances.
+                  </p>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="length">Length (inches)</Label>
+                    <Label htmlFor="length">Product Width (inches)</Label>
                     <Input
                       id="length"
                       type="number"
@@ -80,15 +86,16 @@ export default function InputForms() {
                         updateDimensions({ length: newLength });
                         logUser(
                           'dimension',
-                          `Length changed to ${newLength} inches`,
+                          `Product width changed to ${newLength} inches`,
                           undefined,
                           'InputForms'
                         );
                       }}
+                      placeholder="Width from front view"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="width">Width (inches)</Label>
+                    <Label htmlFor="width">Product Depth (inches)</Label>
                     <Input
                       id="width"
                       type="number"
@@ -99,16 +106,17 @@ export default function InputForms() {
                         updateDimensions({ width: newWidth });
                         logUser(
                           'dimension',
-                          `Width changed to ${newWidth} inches`,
+                          `Product depth changed to ${newWidth} inches`,
                           undefined,
                           'InputForms'
                         );
                       }}
+                      placeholder="Depth from side view"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="height">Height (inches)</Label>
+                  <Label htmlFor="height">Product Height (inches)</Label>
                   <Input
                     id="height"
                     type="number"
@@ -119,31 +127,33 @@ export default function InputForms() {
                       updateDimensions({ height: newHeight });
                       logUser(
                         'dimension',
-                        `Height changed to ${newHeight} inches`,
+                        `Product height changed to ${newHeight} inches`,
                         undefined,
                         'InputForms'
                       );
                     }}
+                    placeholder="Vertical height"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="productWeight">Product Weight (kg)</Label>
-                    <Input
-                      id="productWeight"
-                      type="number"
-                      value={configuration.weight.product}
-                      onChange={(e) => updateWeight({ product: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="maxWeight">Max Gross Weight (kg)</Label>
-                    <Input
-                      id="maxWeight"
-                      type="number"
-                      value={configuration.weight.maxGross}
-                      onChange={(e) => updateWeight({ maxGross: Number(e.target.value) })}
-                    />
+                <div className="space-y-2">
+                  <Label htmlFor="productWeight">Product Weight (pounds)</Label>
+                  <Input
+                    id="productWeight"
+                    type="number"
+                    value={configuration.weight.product}
+                    onChange={(e) => updateWeight({ product: Number(e.target.value) })}
+                    placeholder="Weight of product to ship"
+                  />
+                </div>
+                <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded">
+                  <h4 className="text-sm font-semibold mb-2">Calculated Crate Dimensions</h4>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Crate size includes 2-4&quot; clearance on each side plus panel thickness
+                  </p>
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div>Width: {configuration.dimensions.length + 8}&quot; </div>
+                    <div>Depth: {configuration.dimensions.width + 8}&quot;</div>
+                    <div>Height: {configuration.dimensions.height + 8}&quot;</div>
                   </div>
                 </div>
               </CardContent>

@@ -7,12 +7,16 @@ describe('NX Expression Generator', () => {
 
   beforeEach(() => {
     mockConfig = {
+      projectName: 'Test Crate',
       dimensions: {
         length: 48,
         width: 40,
         height: 36,
       },
-      productWeight: 500,
+      weight: {
+        product: 500,
+        maxGross: 750,
+      },
       base: {
         type: 'standard' as const,
         floorboardThickness: 0.75,
@@ -24,54 +28,50 @@ describe('NX Expression Generator', () => {
         material: 'pine' as const,
       },
       cap: {
-        topPanel: { thickness: 0.75, material: 'plywood' as const },
-        frontPanel: { thickness: 0.5, material: 'plywood' as const },
-        backPanel: { thickness: 0.5, material: 'plywood' as const },
-        leftPanel: { thickness: 0.5, material: 'plywood' as const },
-        rightPanel: { thickness: 0.5, material: 'plywood' as const },
-        requiresCleats: true,
-        cleatThickness: 2,
-      },
-      sides: {
-        panelThickness: 0.5,
-        battenWidth: 2.5,
-        battenSpacing: 24,
-        requiresLiner: false,
-        linerType: 'none',
+        topPanel: {
+          thickness: 0.75,
+          material: 'plywood' as const,
+          reinforcement: false,
+          ventilation: { enabled: false, type: 'holes' as const, count: 0, size: 0 },
+        },
+        frontPanel: {
+          thickness: 0.5,
+          material: 'plywood' as const,
+          reinforcement: false,
+          ventilation: { enabled: false, type: 'holes' as const, count: 0, size: 0 },
+        },
+        backPanel: {
+          thickness: 0.5,
+          material: 'plywood' as const,
+          reinforcement: false,
+          ventilation: { enabled: false, type: 'holes' as const, count: 0, size: 0 },
+        },
+        leftPanel: {
+          thickness: 0.5,
+          material: 'plywood' as const,
+          reinforcement: false,
+          ventilation: { enabled: false, type: 'holes' as const, count: 0, size: 0 },
+        },
+        rightPanel: {
+          thickness: 0.5,
+          material: 'plywood' as const,
+          reinforcement: false,
+          ventilation: { enabled: false, type: 'holes' as const, count: 0, size: 0 },
+        },
       },
       fasteners: {
-        type: 'nail' as const,
+        type: 'klimp' as const,
         size: '8d',
         spacing: 6,
         material: 'steel' as const,
-        nailType: '8d Common',
-        nailSpacing: 6,
-        screwType: '3" Wood Screw',
-        screwSpacing: 12,
-        useStaples: false,
-      },
-      treatment: {
-        heatTreated: true,
-        fumigated: false,
-        kiln_dried: false,
-      },
-      documentation: {
-        includeDrawing: true,
-        includePackingList: true,
-        includeCertificates: true,
       },
       vinyl: {
         enabled: false,
+        type: 'waterproof' as const,
         thickness: 0,
-        type: 'none' as const,
-        color: 'clear' as const,
+        coverage: 'full' as const,
       },
-      ventilation: {
-        required: false,
-        type: 'none' as const,
-        count: 0,
-        size: 0,
-      },
+      specialRequirements: [],
     };
   });
 
@@ -123,7 +123,7 @@ describe('NX Expression Generator', () => {
     it('should include fastener configuration', () => {
       const generator = new NXExpressionGenerator(mockConfig);
       const result = generator.generateExpression();
-      expect(result.variables.fastener_type).toBe('nail');
+      expect(result.variables.fastener_type).toBe('klimp');
       expect(result.variables.fastener_size).toBe('8d');
       expect(result.variables.fastener_spacing).toBe(6);
       expect(result.variables.fastener_material).toBe('steel');
@@ -144,8 +144,7 @@ describe('NX Expression Generator', () => {
         vinyl: {
           enabled: true,
           thickness: 0.125,
-          type: 'standard' as const,
-          color: 'blue' as const,
+          type: 'waterproof' as const,
           coverage: 'full' as const,
         },
       };
@@ -276,7 +275,10 @@ describe('NX Expression Generator', () => {
     it('should handle heavy product weight', () => {
       const heavyConfig = {
         ...mockConfig,
-        productWeight: 5000,
+        weight: {
+          product: 5000,
+          maxGross: 6000,
+        },
         base: {
           ...mockConfig.base,
           skidCount: 5,
