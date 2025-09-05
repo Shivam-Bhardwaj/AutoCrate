@@ -12,6 +12,7 @@ import { useThemeStore } from '@/store/theme-store';
 import { useLogsStore } from '@/store/logs-store';
 import { Menu, X, Sun, Moon, RotateCcw } from 'lucide-react';
 import { APP_VERSION } from '@/utils/version';
+import { getTechStackString } from '@/utils/tech-stack';
 
 // Dynamically import mobile page for better code splitting
 const MobileHome = dynamic(() => import('./mobile-page'), { ssr: false });
@@ -62,24 +63,12 @@ export default function Home() {
         className={`border-b px-4 py-2 md:py-3 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex-1">
             <h1
-              className={`text-xl md:text-2xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}
+              className={`text-xl md:text-2xl font-bold text-center ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}
             >
               AutoCrate
             </h1>
-            <div className="flex flex-col">
-              <span
-                className={`hidden sm:inline text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
-              >
-                NX CAD Expression Generator
-              </span>
-              <span
-                className={`hidden sm:inline text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}
-              >
-                v{APP_VERSION} - Now with automatic skid sizing
-              </span>
-            </div>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -184,13 +173,18 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Footer with version */}
+      {/* Footer with version and tech stack */}
       <footer
-        className={`border-t px-4 py-2 text-center ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
+        className={`border-t px-4 py-2 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
       >
-        <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-          v{APP_VERSION}
-        </span>
+        <div className="flex items-center justify-between">
+          <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+            Built with {getTechStackString()}
+          </span>
+          <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+            v{APP_VERSION}
+          </span>
+        </div>
       </footer>
     </div>
   );

@@ -120,6 +120,10 @@ export const useCrateStore = create<CrateStore>((set) => ({
         requiresRubStrips: _requiresRubStrips,
         ...allowedUpdates
       } = base;
+
+      // Intentionally excluding skid-related fields from updates
+      // These are calculated automatically based on weight
+
       return {
         configuration: {
           ...state.configuration,

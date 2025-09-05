@@ -12,6 +12,7 @@ import { useThemeStore } from '@/store/theme-store';
 import { useLogsStore } from '@/store/logs-store';
 import { Sun, Moon, RotateCcw, Settings, Eye, FileOutput, ScrollText } from 'lucide-react';
 import { APP_VERSION } from '@/utils/version';
+import { getTechStackString } from '@/utils/tech-stack';
 
 export default function MobileHome() {
   const [activeTab, setActiveTab] = useState('input');
@@ -41,13 +42,12 @@ export default function MobileHome() {
         className={`sticky top-0 z-50 border-b px-4 py-3 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} shadow-sm`}
       >
         <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <h1 className={`text-xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+          <div className="flex-1">
+            <h1
+              className={`text-xl font-bold text-center ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}
+            >
               AutoCrate
             </h1>
-            <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              NX CAD Generator
-            </span>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -166,13 +166,18 @@ export default function MobileHome() {
         </Tabs>
       </div>
 
-      {/* Footer with version */}
+      {/* Footer with version and tech stack */}
       <footer
-        className={`border-t px-4 py-2 text-center ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
+        className={`border-t px-4 py-2 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
       >
-        <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-          v{APP_VERSION}
-        </span>
+        <div className="flex flex-col items-center gap-1">
+          <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+            {getTechStackString()}
+          </span>
+          <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+            v{APP_VERSION}
+          </span>
+        </div>
       </footer>
     </div>
   );

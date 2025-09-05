@@ -75,6 +75,48 @@ All test commands are configured in package.json:
 - NX expressions use two-point diagonal construction for simplicity
 - Hydration-safe timestamp rendering in LogsSection (client-only)
 
+## Configuration Management
+### Dynamic Values
+- Tech stack versions are read dynamically from `package.json` via `src/utils/tech-stack.ts`
+- Project version is imported from `src/utils/version.ts` (generated from package.json)
+- No hardcoded URLs or API endpoints in the codebase
+
+### Default Port Configuration
+- Development server runs on port 3000 by default
+- If port 3000 is busy, Next.js automatically tries 3001, 3002, etc.
+- Use `.\a ports` to view/manage active ports
+
+### Environment Variables
+- Vercel deployment credentials are stored as GitHub secrets (see above)
+- No `.env` file is required for basic functionality
+- All configuration is derived from package.json when possible
+
+## Master Script - a.bat
+A unified script for all development tasks is available (named 'a.bat' for quick tab completion):
+
+### Usage
+- **Interactive Menu**: `.\a` or `.\a.bat` (no arguments)
+- **Direct Commands**: `.\a [command]`
+
+### Available Commands
+- `dev` - Start development server
+- `build` - Build for production
+- `deploy` - Deploy to Vercel (builds first)
+- `test` - Run tests
+- `lint` - Run ESLint
+- `format` - Format code with Prettier
+- `typecheck` - Run TypeScript type check
+- `check` - Run all checks (lint + type + format)
+- `help` - Show help message
+
+### Examples
+```cmd
+.\a dev        # Start dev server
+.\a deploy     # Build and deploy to Vercel
+.\a check      # Run all code quality checks
+.\a            # Opens interactive menu
+```
+
 ## Common Tasks
 
 ### Adding new features
@@ -82,26 +124,28 @@ All test commands are configured in package.json:
 2. Use existing components from @/components/ui
 3. Add appropriate logging with useLogsStore
 4. Ensure dark mode support is included
-5. Run tests before committing: `npm run test:all`
+5. Run tests before committing: `.\a test`
 
 ### Fixing issues
-1. Test locally with `npm run dev`
-2. Build test with `npm run build`
-3. Run linting: `npm run lint`
-4. Fix formatting: `npm run format`
-5. Deploy only after successful build
+1. Test locally with `.\a dev`
+2. Build test with `.\a build`
+3. Run linting: `.\a lint`
+4. Fix formatting: `.\a format`
+5. Deploy only after successful build: `.\a deploy`
 
 ### Updating changelog
 1. Update CHANGELOG.md in Unreleased section
 2. Generate email update: `npm run email:generate`
 3. Follow conventional commit format
 
-### Code quality checks (manual)
+### Code quality checks
+- Quick check all: `.\a check`
 - Security: `node scripts/consistency-checkers/security-scanner.js`
 - Accessibility: `node scripts/consistency-checkers/accessibility-checker.js`
-- Linting: `npm run lint`
-- Type checking: `npm run type-check`
-- Formatting: `npm run format:check`
+- Individual checks:
+  - Linting: `.\a lint`
+  - Type checking: `.\a typecheck`
+  - Formatting: `.\a format`
 
 ## File Structure
 - `/src/app` - Next.js app router pages

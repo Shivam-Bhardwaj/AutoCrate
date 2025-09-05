@@ -12,9 +12,6 @@ export function MobileWrapper({ children }: MobileWrapperProps) {
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [isPullToRefresh, setIsPullToRefresh] = useState(false);
 
-  // Minimum swipe distance (in px)
-  const minSwipeDistance = 50;
-
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientY);
@@ -35,10 +32,6 @@ export function MobileWrapper({ children }: MobileWrapperProps) {
 
   const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
-
-    const distance = touchStart - touchEnd;
-    // const isUpSwipe = distance > minSwipeDistance;
-    // const isDownSwipe = distance < -minSwipeDistance;
 
     if (isPullToRefresh) {
       window.location.reload();
