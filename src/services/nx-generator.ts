@@ -114,11 +114,11 @@ export class NXExpressionGenerator {
 
   private generateConstraints(): string[] {
     const constraints: string[] = [];
-    const { productWeight } = this.config;
+    const { weight } = this.config;
 
     constraints.push(`CONSTRAINT/MIN_WALL_THICKNESS = 12`);
-    constraints.push(`CONSTRAINT/MAX_WEIGHT = ${productWeight * 1.5}`); // Max gross as 150% of product weight
-    constraints.push(`CONSTRAINT/PRODUCT_WEIGHT = ${productWeight}`);
+    constraints.push(`CONSTRAINT/MAX_WEIGHT = ${weight.maxGross}`);
+    constraints.push(`CONSTRAINT/PRODUCT_WEIGHT = ${weight.product}`);
 
     // Structural constraints
     constraints.push(`CONSTRAINT/MIN_SKID_HEIGHT = 75`);
