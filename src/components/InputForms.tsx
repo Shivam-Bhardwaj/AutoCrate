@@ -164,7 +164,7 @@ export default function InputForms() {
                       updateBase({ type: value })
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="baseType" aria-label="Base Type">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -175,9 +175,9 @@ export default function InputForms() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="floorThickness">Floorboard Thickness</Label>
+                  <Label htmlFor="floorboardThickness">Floorboard Thickness</Label>
                   <Input
-                    id="floorThickness"
+                    id="floorboardThickness"
                     type="number"
                     value={configuration.base.floorboardThickness}
                     onChange={(e) => updateBase({ floorboardThickness: Number(e.target.value) })}
@@ -242,7 +242,7 @@ export default function InputForms() {
                       updateBase({ material: value })
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="baseMaterial" aria-label="Material">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -365,14 +365,14 @@ export default function InputForms() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Fastener Type</Label>
+                  <Label htmlFor="fastenerType">Fastener Type</Label>
                   <Select
                     value={configuration.fasteners.type}
                     onValueChange={(value: 'klimp' | 'nails' | 'screws' | 'bolts') =>
                       updateFasteners({ type: value })
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="fastenerType" aria-label="Fastener Type">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -385,15 +385,17 @@ export default function InputForms() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Size</Label>
+                    <Label htmlFor="fastenerSize">Size</Label>
                     <Input
+                      id="fastenerSize"
                       value={configuration.fasteners.size}
                       onChange={(e) => updateFasteners({ size: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Spacing (mm)</Label>
+                    <Label htmlFor="fastenerSpacing">Spacing (mm)</Label>
                     <Input
+                      id="fastenerSpacing"
                       type="number"
                       value={configuration.fasteners.spacing}
                       onChange={(e) => updateFasteners({ spacing: Number(e.target.value) })}
@@ -430,22 +432,23 @@ export default function InputForms() {
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-2">
                   <Switch
+                    id="vinylEnabled"
                     checked={configuration.vinyl.enabled}
                     onCheckedChange={(checked) => updateVinyl({ enabled: checked })}
                   />
-                  <Label>Enable Vinyl Wrapping</Label>
+                  <Label htmlFor="vinylEnabled">Enable Vinyl Wrapping</Label>
                 </div>
                 {configuration.vinyl.enabled && (
                   <>
                     <div className="space-y-2">
-                      <Label>Vinyl Type</Label>
+                      <Label htmlFor="vinylType">Vinyl Type</Label>
                       <Select
                         value={configuration.vinyl.type}
                         onValueChange={(value: 'waterproof' | 'vapor-barrier' | 'cushion') =>
                           updateVinyl({ type: value })
                         }
                       >
-                        <SelectTrigger>
+                        <SelectTrigger id="vinylType" aria-label="Vinyl Type">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>

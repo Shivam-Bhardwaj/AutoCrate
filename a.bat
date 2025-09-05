@@ -29,14 +29,18 @@ echo   6. Run Tests
 echo   7. Lint and Format
 echo   8. Type Check
 echo.
+echo   Build with Logging:
+echo   9. Build with Detailed Logging
+echo   10. Dev Server with Logging
+echo.
 echo   Port Management:
-echo   9. View Active Ports
-echo   10. Kill Port Process
+echo   11. View Active Ports
+echo   12. Kill Port Process
 echo.
 echo   0. Exit
 echo.
 echo ==========================================
-set /p choice="Select option [0-10]: "
+set /p choice="Select option [0-12]: "
 
 if "!choice!"=="1" goto :local_dev
 if "!choice!"=="2" goto :prepare_prod
@@ -46,8 +50,10 @@ if "!choice!"=="5" goto :build
 if "!choice!"=="6" goto :test
 if "!choice!"=="7" goto :lint_format
 if "!choice!"=="8" goto :typecheck
-if "!choice!"=="9" goto :view_ports
-if "!choice!"=="10" goto :kill_port
+if "!choice!"=="9" goto :build_logged
+if "!choice!"=="10" goto :dev_logged
+if "!choice!"=="11" goto :view_ports
+if "!choice!"=="12" goto :kill_port
 if "!choice!"=="0" goto :end
 
 echo Invalid option. Try again.
@@ -67,6 +73,8 @@ if /i "%~1"=="typecheck" goto :typecheck
 if /i "%~1"=="check" goto :prepare_prod
 if /i "%~1"=="ports" goto :view_ports
 if /i "%~1"=="killport" goto :kill_port
+if /i "%~1"=="build:logged" goto :build_logged
+if /i "%~1"=="dev:logged" goto :dev_logged
 if /i "%~1"=="help" goto :help
 
 echo Unknown command: %~1
@@ -103,9 +111,9 @@ call npm run lint
 call npm run type-check
 call npm run format:check
 echo.
-echo Step 2: Building production bundle...
+echo Step 2: Building production bundle with logging...
 echo --------------------------------------
-call npm run build
+call npm run build:logged
 if %errorlevel% neq 0 (
     echo.
     echo [ERROR] Build failed! Fix issues before deploying.
@@ -180,6 +188,34 @@ if %errorlevel% neq 0 (
     echo [ERROR] Build failed!
     pause
 )
+goto :end
+
+:build_logged
+echo.
+echo ==========================================
+echo     BUILD WITH DETAILED LOGGING
+echo ==========================================
+echo.
+echo This will create a detailed build log file.
+echo.
+npm run build:logged
+if %errorlevel% neq 0 (
+    echo.
+    echo [ERROR] Build failed! Check the build-logs directory for details.
+    pause
+)
+goto :end
+
+:dev_logged
+echo.
+echo ==========================================
+echo     DEV SERVER WITH DETAILED LOGGING
+echo ==========================================
+echo.
+echo Starting development server with detailed logging...
+echo Logs will be saved to build-logs directory.
+echo.
+npm run dev:logged
 goto :end
 
 :deploy
