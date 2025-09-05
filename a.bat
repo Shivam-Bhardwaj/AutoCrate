@@ -17,17 +17,17 @@ echo ==========================================
 echo         AutoCrate v!VERSION!
 echo ==========================================
 echo.
-echo   Development:
-echo   1. Development Server (npm run dev)
-echo   2. Build Production (npm run build)
-echo   3. Deploy to Vercel (npm run deploy)
+echo   Workflow:
+echo   1. Local Development (dev server + test)
+echo   2. Prepare for Production (checks + docs)
+echo   3. Deploy to Production (git push)
 echo.
-echo   Testing:
-echo   4. Run Tests (npm test)
-echo   5. Lint Code (npm run lint)
-echo   6. Format Code (npm run format)
-echo   7. Type Check (npm run type-check)
-echo   8. Full Check (lint + type + format)
+echo   Individual Commands:
+echo   4. Dev Server Only
+echo   5. Build Only
+echo   6. Run Tests
+echo   7. Lint and Format
+echo   8. Type Check
 echo.
 echo   Port Management:
 echo   9. View Active Ports
@@ -38,14 +38,14 @@ echo.
 echo ==========================================
 set /p choice="Select option [0-10]: "
 
-if "!choice!"=="1" goto :dev
-if "!choice!"=="2" goto :build
-if "!choice!"=="3" goto :deploy
-if "!choice!"=="4" goto :test
-if "!choice!"=="5" goto :lint
-if "!choice!"=="6" goto :format
-if "!choice!"=="7" goto :typecheck
-if "!choice!"=="8" goto :fullcheck
+if "!choice!"=="1" goto :local_dev
+if "!choice!"=="2" goto :prepare_prod
+if "!choice!"=="3" goto :deploy_prod
+if "!choice!"=="4" goto :dev
+if "!choice!"=="5" goto :build
+if "!choice!"=="6" goto :test
+if "!choice!"=="7" goto :lint_format
+if "!choice!"=="8" goto :typecheck
 if "!choice!"=="9" goto :view_ports
 if "!choice!"=="10" goto :kill_port
 if "!choice!"=="0" goto :end
@@ -56,20 +56,112 @@ goto :menu
 
 :direct_command
 REM Handle command line arguments
+if /i "%~1"=="local" goto :local_dev
+if /i "%~1"=="prepare" goto :prepare_prod
+if /i "%~1"=="deploy" goto :deploy_prod
 if /i "%~1"=="dev" goto :dev
 if /i "%~1"=="build" goto :build
-if /i "%~1"=="deploy" goto :deploy
 if /i "%~1"=="test" goto :test
-if /i "%~1"=="lint" goto :lint
-if /i "%~1"=="format" goto :format
+if /i "%~1"=="lint" goto :lint_format
 if /i "%~1"=="typecheck" goto :typecheck
-if /i "%~1"=="check" goto :fullcheck
+if /i "%~1"=="check" goto :prepare_prod
 if /i "%~1"=="ports" goto :view_ports
 if /i "%~1"=="killport" goto :kill_port
 if /i "%~1"=="help" goto :help
 
 echo Unknown command: %~1
 goto :help
+
+:local_dev
+echo.
+echo ==========================================
+echo     LOCAL DEVELOPMENT WORKFLOW
+echo ==========================================
+echo.
+echo Starting development server and tests...
+echo.
+start cmd /k "npm run dev"
+echo Development server started in new window.
+echo.
+echo Running tests...
+call npm test
+echo.
+echo Local development ready!
+echo.
+pause
+goto :menu
+
+:prepare_prod
+echo.
+echo ==========================================
+echo     PREPARE FOR PRODUCTION
+echo ==========================================
+echo.
+echo Step 1: Running all quality checks...
+echo --------------------------------------
+call npm run lint
+call npm run type-check
+call npm run format:check
+echo.
+echo Step 2: Building production bundle...
+echo --------------------------------------
+call npm run build
+if %errorlevel% neq 0 (
+    echo.
+    echo [ERROR] Build failed! Fix issues before deploying.
+    pause
+    goto :menu
+)
+echo.
+echo Step 3: Running tests...
+echo --------------------------------------
+call npm test
+echo.
+echo [SUCCESS] Ready for production deployment!
+echo Run option 3 or 'a deploy' to push to production.
+echo.
+pause
+goto :menu
+
+:deploy_prod
+echo.
+echo ==========================================
+echo     DEPLOY TO PRODUCTION
+echo ==========================================
+echo.
+echo This will push to GitHub and trigger automatic deployment.
+echo.
+set /p confirm="Are you ready to deploy? [Y/N]: "
+if /i not "!confirm!"=="Y" (
+    echo Deployment cancelled.
+    pause
+    goto :menu
+)
+echo.
+echo Adding all changes...
+git add -A
+echo.
+echo Creating commit...
+git commit -m "chore: production deployment"
+echo.
+echo Pushing to GitHub (this triggers deployment)...
+git push origin main
+echo.
+echo [SUCCESS] Code pushed to GitHub!
+echo Deployment will be triggered automatically via GitHub Actions.
+echo.
+pause
+goto :menu
+
+:lint_format
+echo.
+echo Running ESLint and Prettier...
+echo ===============================
+call npm run lint
+call npm run format
+echo.
+echo Code linted and formatted!
+goto :end
 
 :dev
 echo.
@@ -310,19 +402,24 @@ goto :menu
 echo.
 echo Usage: a [command]
 echo.
-echo Commands:
-echo   dev        - Start development server
-echo   build      - Build for production
-echo   deploy     - Deploy to Vercel (builds first)
-echo   test       - Run tests
-echo   lint       - Run ESLint
-echo   format     - Format code with Prettier
-echo   typecheck  - Run TypeScript type check
-echo   check      - Run all checks (lint + type + format)
+echo Workflow Commands (Recommended):
+echo   local      - Local development (dev server + tests)
+echo   prepare    - Prepare for production (all checks + build)
+echo   deploy     - Deploy to production (git push triggers deployment)
+echo.
+echo Individual Commands:
+echo   dev        - Start development server only
+echo   build      - Build for production only
+echo   test       - Run tests only
+echo   lint       - Run linting and formatting
+echo   typecheck  - Run TypeScript type check only
+echo.
+echo Utilities:
 echo   ports      - View active ports
 echo   killport   - Kill a port process
 echo   help       - Show this help
 echo.
+echo Recommended workflow: local -> prepare -> deploy
 echo Run without arguments for interactive menu
 echo.
 goto :end

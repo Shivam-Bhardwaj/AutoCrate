@@ -4,12 +4,30 @@
 AutoCrate is a Next.js 14 application for designing shipping crates with 3D visualization and NX CAD expression generation.
 Live URL: https://autocrate-5xoh6cft1-shivams-projects-1d3fe872.vercel.app
 
-## Deployment Process
-ALWAYS use Vercel CLI for deployments, NOT GitHub Actions:
-- Build locally: `npm run build`
-- Deploy to production: `npm run deploy`
-- Deploy preview: `npm run deploy:preview`
-- Quick deploy: `npm run deploy:build` (builds and deploys)
+## Simplified Deployment Workflow
+
+### Three-Step Process:
+1. **Local Development** (`.\a local` or Option 1)
+   - Starts dev server
+   - Runs tests
+   - Use for active development
+
+2. **Prepare for Production** (`.\a prepare` or Option 2)
+   - Runs all quality checks (lint, type-check, format)
+   - Builds production bundle
+   - Runs all tests
+   - Ensures code is production-ready
+
+3. **Deploy to Production** (`.\a deploy` or Option 3)
+   - Git add, commit, and push
+   - GitHub Actions automatically deploys to Vercel
+   - No manual Vercel CLI needed
+
+### Why This Workflow?
+- GitHub push triggers automatic deployment
+- Single source of truth (GitHub)
+- Version control integrated with deployment
+- Simplified process: develop → prepare → deploy
 
 ## GitHub Actions CI/CD
 The project uses GitHub Actions for continuous integration (NOT for deployment):
@@ -63,6 +81,28 @@ All test commands are configured in package.json:
 - Vercel for hosting
 - Vitest for testing
 - Playwright for E2E testing
+
+## File Management Policy
+
+### Clean Codebase Principles
+- **ONE SCRIPT RULE**: Use `a.bat` for all operations (no duplicate scripts)
+- **NO TEMPORARY FILES**: Don't create scripts that won't be reused
+- **NO PLATFORM DUPLICATES**: No .sh/.bat/.ps1 versions of the same script
+- **ESSENTIAL ONLY**: Only keep files necessary for production
+
+### Files to Keep
+- `a.bat` - Master control script
+- Configuration files (package.json, tsconfig.json, etc.)
+- Source code in /src
+- Tests in /tests
+- Essential configs (next.config.js, tailwind.config.js)
+
+### Files to Avoid
+- Automation scripts (use a.bat instead)
+- Multiple script versions
+- Temporary or backup files
+- Log files in repo
+- Unused dependencies or configs
 
 ## Important Notes
 - GitHub is used ONLY for version control and CI testing
