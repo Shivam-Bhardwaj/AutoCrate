@@ -1,4 +1,4 @@
-## 2.2.2 (2025-09-05)
+## 2.2.3 (2025-09-05)
 
 
 ### Bug Fixes
@@ -15,6 +15,7 @@
 
 * add dark mode and system logging functionality ([066cd5e](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/066cd5e7d2bb177a72d39be645feccdd2079bd73))
 * add mobile responsive layout with tabbed navigation ([795101f](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/795101f029ef5fe26bb37ec553b9f854fd62206d))
+* add Puppeteer monitoring system ([5e8a5f8](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/5e8a5f8da8c012ded31fa0235823536e0b6dd11d))
 * add unified changelog and email notification system ([5b93623](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/5b93623429d76642ff557a4b004bf81905499e2d))
 * add version display at bottom of page ([410f81c](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/410f81c932d4577ea2241002bbbfe055e3963598))
 * implement automatic skid sizing and spacing system (v2.2.0) ([0e495bc](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/0e495bcd6ac5d7b948a8e6d3255c64551b698f62))
