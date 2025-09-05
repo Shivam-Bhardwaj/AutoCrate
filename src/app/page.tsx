@@ -182,6 +182,13 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Footer with version */}
+      <footer
+        className={`border-t px-4 py-2 text-center ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
+      >
+        <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>v2.2.0</span>
+      </footer>
     </div>
   );
 }
