@@ -206,6 +206,7 @@ npx @sentry/wizard@latest -i nextjs
 
 Before deploying to production:
 
+#### Core Requirements
 - [ ] Run all tests: `npm run test:all`
 - [ ] Check code quality: `npm run check:all`
 - [ ] Run consistency checkers: `./autocrate.sh` (option 8)
@@ -216,6 +217,23 @@ Before deploying to production:
 - [ ] Check security headers
 - [ ] Test in multiple browsers
 - [ ] Validate accessibility
+
+#### AMAT Compliance Features
+- [ ] Test AMAT style auto-detection
+- [ ] Verify material validation system
+- [ ] Check ISPM-15 compliance for international shipping
+- [ ] Test MBB (Moisture Barrier Bag) calculations
+- [ ] Validate weight calculation accuracy
+- [ ] Test air shipment optimization
+- [ ] Verify chamfered panel 3D rendering
+- [ ] Check material specifications database
+
+#### Performance Testing
+- [ ] Test with large crate configurations
+- [ ] Verify 3D viewer performance
+- [ ] Check weight calculation performance
+- [ ] Test real-time updates
+- [ ] Validate memory usage
 
 ### 9. Rollback Procedures
 
@@ -288,6 +306,35 @@ git push --force
    npm run lighthouse
    ```
 
+3. **AMAT compliance performance**:
+   ```bash
+   # Test weight calculations
+   npm run test:unit -- --grep "weight"
+   
+   # Test material validation
+   npm run test:unit -- --grep "material"
+   
+   # Test ISPM-15 validation
+   npm run test:unit -- --grep "ispm"
+   ```
+
+#### AMAT Feature Issues
+
+1. **Material validation failures**:
+   - Check material specifications database
+   - Verify validation rules
+   - Review compliance scoring logic
+
+2. **Weight calculation errors**:
+   - Verify material densities
+   - Check dimensional calculations
+   - Validate hardware specifications
+
+3. **ISPM-15 compliance issues**:
+   - Verify country-specific requirements
+   - Check treatment parameters
+   - Validate documentation requirements
+
 ### 11. Security Considerations
 
 #### Headers Configuration
@@ -327,6 +374,79 @@ npm update
 - Consider rate limiting for API routes
 - Implement caching strategies
 - Use CDN for static assets
+
+#### AMAT Compliance Scaling
+- Material database is cached and optimized
+- Weight calculations are memoized
+- Validation results are cached
+- Country requirements are pre-loaded
+
+### 13. AMAT Compliance Deployment
+
+#### Environment Variables for AMAT Features
+
+Add these to your Vercel environment variables:
+
+```env
+# AMAT Compliance Settings
+NEXT_PUBLIC_AMAT_COMPLIANCE_ENABLED=true
+NEXT_PUBLIC_MATERIAL_DATABASE_URL=/api/materials
+NEXT_PUBLIC_ISPM15_VALIDATION_ENABLED=true
+
+# Performance Settings
+NEXT_PUBLIC_WEIGHT_CACHE_TTL=3600
+NEXT_PUBLIC_VALIDATION_CACHE_TTL=1800
+```
+
+#### Material Database Setup
+
+The AMAT compliance system includes a comprehensive material database that is automatically deployed:
+
+1. **Wood Specifications**: Pre-loaded with AMAT-approved wood grades
+2. **Hardware Database**: Complete hardware specifications
+3. **Treatment Standards**: ISPM-15 and other treatment standards
+4. **Country Requirements**: Pre-loaded country-specific requirements
+
+#### Compliance Validation
+
+The system automatically validates compliance during deployment:
+
+1. **Material Validation**: All materials validated against standards
+2. **ISPM-15 Compliance**: International shipping requirements checked
+3. **Weight Calculations**: Accurate weight calculations verified
+4. **Documentation**: Required documentation generated
+
+#### Monitoring AMAT Features
+
+Set up monitoring for AMAT compliance features:
+
+```bash
+# Check compliance validation performance
+npm run test:performance -- --grep "compliance"
+
+# Monitor material validation
+npm run test:performance -- --grep "material"
+
+# Check ISPM-15 validation
+npm run test:performance -- --grep "ispm"
+```
+
+#### Troubleshooting AMAT Deployment
+
+1. **Material validation timeouts**:
+   - Increase validation cache TTL
+   - Optimize database queries
+   - Implement pagination for large datasets
+
+2. **Weight calculation errors**:
+   - Verify material density database
+   - Check dimensional calculation logic
+   - Validate hardware specifications
+
+3. **ISPM-15 compliance failures**:
+   - Verify country-specific requirements
+   - Check treatment parameter validation
+   - Review documentation requirements
 
 ## Support
 

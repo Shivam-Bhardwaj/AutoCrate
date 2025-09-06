@@ -44,7 +44,6 @@ export const handlers = [
       },
       weight: {
         product: 50,
-        maxGross: 100,
       },
       base: {
         type: 'standard',

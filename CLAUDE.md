@@ -27,13 +27,24 @@
 AutoCrate is a Next.js 14 application for designing shipping crates with 3D visualization and NX CAD expression generation.
 Live URL: https://autocrate-5xoh6cft1-shivams-projects-1d3fe872.vercel.app
 
-## CRITICAL: Coordinate System Convention (Z-up)
-**The application MUST use NX CAD's Z-up coordinate system throughout:**
-- **X-axis (Red)**: Length - horizontal, typically the longest dimension
-- **Y-axis (Green)**: Width - horizontal, perpendicular to X
-- **Z-axis (Blue)**: Height - vertical, pointing upward
+## CRITICAL: World Coordinate System (Z-up) - SEE CRITICAL_GEOMETRY.md
 
-This convention ensures compatibility with NX CAD and standard engineering practices. All 3D components, calculations, and visualizations must follow this Z-up system.
+**MANDATORY POSITIONING:** The crate MUST be positioned with its CENTER ON THE FLOOR at world origin.
+
+### Quick Reference (Full details in CRITICAL_GEOMETRY.md):
+- **Origin [0,0,0]**: Center of crate's footprint ON THE FLOOR (not geometric center)
+- **X-axis (Red)**: Width - horizontal, sideways when viewing from front
+- **Y-axis (Green)**: Depth - horizontal, away from viewer
+- **Z-axis (Blue)**: Height - vertical, pointing upward
+- **Crate Position**: Bottom face at Z=0, extends upward to Z=height
+
+### Key Rules:
+1. NEVER place crate's geometric center at origin
+2. ALWAYS place crate's floor-center at origin [0,0,0]
+3. Crate sits ON the floor (Z=0 is floor level)
+4. All components positioned relative to floor-center origin
+
+This convention ensures compatibility with NX CAD and standard engineering practices.
 
 ## Simplified Deployment Workflow
 

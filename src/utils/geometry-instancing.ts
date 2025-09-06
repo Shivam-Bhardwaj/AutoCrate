@@ -9,7 +9,7 @@
  * Target: Reduce draw calls from N objects to 1 instanced draw call
  */
 
-import { Matrix4, Vector3, BoxGeometry, InstancedMesh, Object3D } from 'three';
+import { Matrix4, Vector3, BoxGeometry } from 'three';
 import { useMemo } from 'react';
 
 // PERFORMANCE: Cached geometries to avoid recreation
@@ -143,6 +143,7 @@ export function disposeGeometryCache() {
 }
 
 // PERFORMANCE: Memoization hook for expensive geometry calculations
-export function useMemoizedGeometry<T>(factory: () => T, dependencies: any[]): T {
+export function useMemoizedGeometry<T>(factory: () => T, dependencies: unknown[]): T {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(factory, dependencies);
 }

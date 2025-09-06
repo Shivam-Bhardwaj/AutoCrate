@@ -106,13 +106,31 @@ echo ========================================================
 echo         OPTION 1: LOCAL DEVELOPMENT & TESTING
 echo ========================================================
 echo.
+
+REM Check if ports 3000-3005 are in use and kill the processes
+echo Checking for existing processes on ports 3000-3005...
+for /l %%p in (3000,1,3005) do (
+    for /f "tokens=5" %%a in ('netstat -ano ^| findstr :%%p ^| findstr LISTENING') do (
+        set PID=%%a
+        if not "!PID!"=="" (
+            echo Found process !PID! using port %%p, terminating...
+            taskkill //PID !PID! //F >nul 2>&1
+        )
+    )
+)
+echo Port cleanup complete.
+ping -n 2 127.0.0.1 >nul 2>&1
+
 echo Starting development server...
 start cmd /k "npm run dev"
 
 echo Waiting for server to start...
 ping -n 5 127.0.0.1 >nul 2>&1
 
-echo Opening browser at http://localhost:3000...
+echo Opening browser...
+echo Note: Next.js will automatically find an available port (3000-3005)
+echo Check the console output above for the actual port number.
+ping -n 3 127.0.0.1 >nul 2>&1
 start http://localhost:3000
 
 echo.
@@ -484,6 +502,21 @@ goto :menu
 echo.
 echo Starting Development Server...
 echo.
+
+REM Check if ports 3000-3005 are in use and kill the processes
+echo Checking for existing processes on ports 3000-3005...
+for /l %%p in (3000,1,3005) do (
+    for /f "tokens=5" %%a in ('netstat -ano ^| findstr :%%p ^| findstr LISTENING') do (
+        set PID=%%a
+        if not "!PID!"=="" (
+            echo Found process !PID! using port %%p, terminating...
+            taskkill //PID !PID! //F >nul 2>&1
+        )
+    )
+)
+echo Port cleanup complete.
+ping -n 2 127.0.0.1 >nul 2>&1
+
 npm run dev
 goto :end
 

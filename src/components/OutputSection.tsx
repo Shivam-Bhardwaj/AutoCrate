@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCrateStore } from '@/store/crate-store';
 import { useLogsStore } from '@/store/logs-store';
 import { Download, Copy, Check } from 'lucide-react';
+import { NXExpressionGenerator } from '@/services/nx-generator';
 import { formatInches } from '@/utils/format-inches';
 
 export default function OutputSection() {
@@ -50,7 +51,7 @@ export default function OutputSection() {
   const handleCopy = async () => {
     try {
       logUser('export', 'Copying design summary to clipboard', undefined, 'OutputSection');
-      const summary = `${configuration.projectName}\nDimensions: ${configuration.dimensions.length}x${configuration.dimensions.width}x${configuration.dimensions.height} inches\nWeight: ${configuration.weight.product} kg (Max: ${configuration.weight.maxGross} kg)`;
+      const summary = `${configuration.projectName}\nDimensions: ${configuration.dimensions.length}x${configuration.dimensions.width}x${configuration.dimensions.height} inches\nWeight: ${configuration.weight.product} lbs`;
       await navigator.clipboard.writeText(summary);
       setCopied(true);
       logSuccess('export', 'Design summary copied to clipboard', undefined, 'OutputSection');
@@ -59,6 +60,43 @@ export default function OutputSection() {
       logError(
         'export',
         'Failed to copy to clipboard',
+        error instanceof Error ? error.message : 'Unknown error',
+        'OutputSection'
+      );
+    }
+  };
+
+  const handleNXExport = () => {
+    try {
+      logUser('export', 'Generating NX expression', undefined, 'OutputSection');
+
+      const generator = new NXExpressionGenerator(configuration);
+      const expression = generator.generateExpression();
+
+      // Create filename with format: {ProductName}_{L}x{W}x{H}_{Weight}lbs_{YYYYMMDD}_{HHMMSS}_UTC.exp
+      const now = new Date();
+      const timestamp = now
+        .toISOString()
+        .replace(/[:-]/g, '')
+        .replace('T', '_')
+        .replace('Z', '_UTC');
+      const filename = `${configuration.projectName.replace(/\s+/g, '_')}_${configuration.dimensions.length}x${configuration.dimensions.width}x${configuration.dimensions.height}_${configuration.weight.product}lbs_${timestamp}.exp`;
+
+      const blob = new Blob([expression.code], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      logSuccess('export', 'NX expression exported successfully', filename, 'OutputSection');
+    } catch (error: unknown) {
+      logError(
+        'export',
+        'NX export failed',
         error instanceof Error ? error.message : 'Unknown error',
         'OutputSection'
       );
@@ -118,20 +156,17 @@ export default function OutputSection() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div>
                           <div>
-                            <label className="text-sm text-gray-600">Maximum Load</label>
+                            <label className="text-sm text-gray-600">Product Weight</label>
                             <p className="text-2xl font-bold text-blue-600">
-                              {configuration.weight.maxGross} kg
+                              {configuration.weight.product} lbs
                             </p>
                           </div>
                           <div>
-                            <label className="text-sm text-gray-600">Safety Factor</label>
+                            <label className="text-sm text-gray-600">Estimated Gross</label>
                             <p className="text-2xl font-bold text-green-600">
-                              {(
-                                configuration.weight.maxGross / configuration.weight.product
-                              ).toFixed(1)}
-                              x
+                              {(configuration.weight.product * 1.2).toFixed(0)} lbs
                             </p>
                           </div>
                         </div>
@@ -270,21 +305,17 @@ export default function OutputSection() {
                       <dl className="space-y-1 text-sm">
                         <div className="flex justify-between">
                           <dt className="text-muted-foreground">Product Weight:</dt>
-                          <dd className="font-medium">{configuration.weight.product} kg</dd>
+                          <dd className="font-medium">{configuration.weight.product} lbs</dd>
                         </div>
                         <div className="flex justify-between">
-                          <dt className="text-muted-foreground">Max Gross:</dt>
-                          <dd className="font-medium">{configuration.weight.maxGross} kg</dd>
+                          <dt className="text-muted-foreground">Estimated Gross:</dt>
+                          <dd className="font-medium">
+                            {(configuration.weight.product * 1.2).toFixed(0)} lbs
+                          </dd>
                         </div>
                         <div className="flex justify-between">
                           <dt className="text-muted-foreground">Safety Factor:</dt>
-                          <dd className="font-medium">
-                            {(
-                              (configuration.weight.maxGross / configuration.weight.product) * 100 -
-                              100
-                            ).toFixed(0)}
-                            %
-                          </dd>
+                          <dd className="font-medium">20%</dd>
                         </div>
                       </dl>
                     </CardContent>
@@ -314,8 +345,8 @@ export default function OutputSection() {
                       <div>
                         <dt className="text-muted-foreground mb-1">Vinyl:</dt>
                         <dd className="font-medium">
-                          {configuration.vinyl.enabled
-                            ? `${configuration.vinyl.type} (${configuration.vinyl.coverage})`
+                          {configuration.vinyl?.enabled
+                            ? `${configuration.vinyl?.type} (${configuration.vinyl?.coverage})`
                             : 'None'}
                         </dd>
                       </div>
@@ -366,7 +397,7 @@ export default function OutputSection() {
                           </td>
                           <td className="text-right">pcs</td>
                         </tr>
-                        {configuration.vinyl.enabled && (
+                        {configuration.vinyl?.enabled && (
                           <tr className="border-b">
                             <td className="py-2">Vinyl Sheet</td>
                             <td className="text-right">
@@ -433,9 +464,8 @@ export default function OutputSection() {
                           </div>
                         </div>
                         <div className="text-center">
-                          <Button size="lg" className="w-full" disabled>
+                          <Button size="lg" className="w-full" onClick={handleNXExport}>
                             Generate NX Expression
-                            <span className="ml-2 text-xs">(Coming Soon)</span>
                           </Button>
                           <p className="text-xs text-muted-foreground mt-2">
                             Filename format: ProductName_LxWxH_WeightLbs_YYYYMMDD_HHMMSS_UTC.exp

@@ -20,10 +20,10 @@ const MobileHome = dynamic(() => import('./mobile-page'), { ssr: false });
 const CrateViewer3D = dynamic(() => import('@/components/CrateViewer3D'), {
   ssr: false,
   loading: () => (
-    <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg">
+    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
       <div className="text-center">
-        <p className="text-gray-600 mb-2">Loading 3D Viewer...</p>
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">Loading 3D viewer...</p>
       </div>
     </div>
   ),

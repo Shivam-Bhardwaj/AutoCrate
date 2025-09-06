@@ -1,6 +1,6 @@
 'use client';
 
-import { Line, Text } from '@react-three/drei';
+import { Line, Html } from '@react-three/drei';
 import { memo } from 'react';
 
 interface CoordinateAxesProps {
@@ -10,9 +10,23 @@ interface CoordinateAxesProps {
 // PERFORMANCE: Memoized coordinate axes to prevent unnecessary re-renders
 // These axes don't change frequently and are static geometric elements
 export const CoordinateAxes = memo(function CoordinateAxes({ size = 5 }: CoordinateAxesProps) {
+  // Update axis labels
+  const axesLabels = {
+    x: 'Width',
+    y: 'Depth',
+    z: 'Height',
+  };
+
+  // Update axis colors (Z=blue for up)
+  const _axesColors = {
+    x: 0xff0000, // Red
+    y: 0x00ff00, // Green
+    z: 0x0000ff, // Blue
+  };
+
   return (
     <group name="coordinate-axes">
-      {/* X Axis - Red - Length (horizontal) */}
+      {/* X Axis - Red - Width (horizontal) */}
       <Line
         points={[
           [0, 0, 0],
@@ -21,11 +35,11 @@ export const CoordinateAxes = memo(function CoordinateAxes({ size = 5 }: Coordin
         color="red"
         lineWidth={2}
       />
-      <Text position={[size + 0.5, 0, 0]} color="red" fontSize={0.3}>
-        X (Length)
-      </Text>
+      <Html position={[size + 0.5, 0, 0]} center distanceFactor={10}>
+        <div style={{ color: 'red', fontSize: '12px', fontWeight: 'bold' }}>{axesLabels.x}</div>
+      </Html>
 
-      {/* Y Axis - Green - Width (horizontal perpendicular to X) */}
+      {/* Y Axis - Green - Depth (horizontal perpendicular to X) */}
       <Line
         points={[
           [0, 0, 0],
@@ -34,9 +48,9 @@ export const CoordinateAxes = memo(function CoordinateAxes({ size = 5 }: Coordin
         color="green"
         lineWidth={2}
       />
-      <Text position={[0, size + 0.5, 0]} color="green" fontSize={0.3}>
-        Y (Width)
-      </Text>
+      <Html position={[0, size + 0.5, 0]} center distanceFactor={10}>
+        <div style={{ color: 'green', fontSize: '12px', fontWeight: 'bold' }}>{axesLabels.y}</div>
+      </Html>
 
       {/* Z Axis - Blue - Height (vertical up) */}
       <Line
@@ -47,9 +61,11 @@ export const CoordinateAxes = memo(function CoordinateAxes({ size = 5 }: Coordin
         color="blue"
         lineWidth={2}
       />
-      <Text position={[0, 0, size + 0.5]} color="blue" fontSize={0.3}>
-        Z (Height)
-      </Text>
+      <Html position={[0, 0, size + 0.5]} center distanceFactor={10}>
+        <div style={{ color: 'blue', fontSize: '12px', fontWeight: 'bold' }}>
+          {axesLabels.z} (Height)
+        </div>
+      </Html>
     </group>
   );
 });

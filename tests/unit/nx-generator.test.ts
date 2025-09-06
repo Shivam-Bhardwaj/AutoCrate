@@ -15,7 +15,6 @@ describe('NX Expression Generator', () => {
       },
       weight: {
         product: 500,
-        maxGross: 750,
       },
       base: {
         type: 'standard' as const,

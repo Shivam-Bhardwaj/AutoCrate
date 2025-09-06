@@ -23,7 +23,10 @@ interface LODCrateModelProps {
 }
 
 // PERFORMANCE: LOD-aware crate model that switches detail levels based on camera distance
-export const LODCrateModel = memo(function LODCrateModel({ config, children }: LODCrateModelProps) {
+export const LODCrateModel = memo(function LODCrateModel({
+  config: _config,
+  children,
+}: LODCrateModelProps) {
   const { camera } = useThree();
   const [lodLevel, setLodLevel] = useState<'high' | 'medium' | 'low'>('high');
   const [cameraDistance, setCameraDistance] = useState(0);

@@ -73,7 +73,6 @@ export function validateCrateConfiguration(
       height: validateDimension(config.dimensions.height, 36),
     },
     weight: {
-      maxGross: validateWeight(config.weight.maxGross, 1000),
       product: validateWeight(config.weight.product, 800),
     },
     base: {
@@ -106,7 +105,7 @@ export function isValidForRendering(config: CrateConfiguration | null): boolean 
     dimensions.length > 0 &&
     dimensions.width > 0 &&
     dimensions.height > 0 &&
-    weight.maxGross > 0 &&
+    weight.product > 0 &&
     base.skidHeight > 0 &&
     base.skidWidth > 0 &&
     base.skidCount >= 2 &&

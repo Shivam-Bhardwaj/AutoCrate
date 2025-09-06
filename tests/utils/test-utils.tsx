@@ -29,7 +29,6 @@ export function createMockCrateConfiguration(): CrateConfiguration {
     },
     weight: {
       product: 50,
-      maxGross: 150,
     },
     base: {
       type: 'standard',

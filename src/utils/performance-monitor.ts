@@ -101,14 +101,15 @@ class PerformanceMonitor {
 
     const avgFrameTime = this.frameTimes.reduce((a, b) => a + b, 0) / this.frameTimes.length;
     const maxFrameTime = Math.max(...this.frameTimes);
-    const minFrameTime = Math.min(...this.frameTimes);
+    const _minFrameTime = Math.min(...this.frameTimes);
 
     const currentFps = 1000 / this.frameTimes[this.frameTimes.length - 1];
     const avgFps = 1000 / avgFrameTime;
     const minFps = 1000 / maxFrameTime;
 
     // Estimate memory usage if available
-    const memoryUsage = (performance as any).memory?.usedJSHeapSize;
+    const memoryUsage = (performance as { memory?: { usedJSHeapSize: number } }).memory
+      ?.usedJSHeapSize;
 
     return {
       fps: Math.round(currentFps),

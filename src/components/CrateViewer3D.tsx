@@ -1,328 +1,219 @@
 'use client';
 
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid, Box, Text, Html } from '@react-three/drei';
-import { CrateConfiguration } from '@/types/crate';
+import { OrbitControls, Grid, Box, Html, Sphere } from '@react-three/drei';
+import { CrateConfiguration, Block } from '@/types/crate';
 import { useLogsStore } from '@/store/logs-store';
-import { useEffect, useState, useMemo, useCallback, memo, Suspense } from 'react';
-import { calculateFloorboardConfiguration } from '@/utils/floorboard-calculations';
-import { calculateSkidConfiguration } from '@/utils/skid-calculations';
+import { useEffect, useState, useMemo, memo } from 'react';
+import {
+  calculateSkidBlocks,
+  calculateFloorboardBlocks,
+  calculatePanelBlocks,
+  calculateCleatBlocks,
+} from '@/services/crateCalculations';
 import { CoordinateAxes } from './CoordinateAxes';
 import { validateCrateConfiguration, isValidForRendering } from '@/utils/input-validation';
 import { INCHES_TO_MM, MM_TO_METERS } from '@/lib/constants';
-import {
-  SHARED_MATERIALS,
-  getFloorboardMaterial,
-  createHoverableMaterial,
-} from '@/utils/materials';
+import { SHARED_MATERIALS } from '@/utils/materials';
 import { usePerformanceMonitor } from '@/utils/performance-monitor';
 import { useFrame } from '@react-three/fiber';
+import { validateCoGStability } from '@/services/cog-calculator';
 
 interface CrateViewer3DProps {
   configuration: CrateConfiguration | null;
 }
 
-// PERFORMANCE: Memoized floorboard component to prevent unnecessary re-renders
-// Target: Maintain 60 FPS by reducing render cycles from 30ms to <16ms per frame
-const FloorboardsGroup = memo(function FloorboardsGroup({
+const CrateModel = memo(function CrateModel({
   config,
+  _explodeFactor = 0,
 }: {
   config: CrateConfiguration;
+  _explodeFactor?: number;
 }) {
-  // PERFORMANCE: Memoize expensive calculations to avoid re-computing on every render
-  const { floorboardConfig, scaledDimensions } = useMemo(() => {
-    const skidConf = calculateSkidConfiguration(config.dimensions, config.weight.maxGross);
-    const floorConf = calculateFloorboardConfiguration(config.dimensions, skidConf);
-    const scaleFactor = INCHES_TO_MM;
+  const allBlocks = useMemo(() => {
+    const skidBlocks = calculateSkidBlocks(config);
+    const floorboardBlocks = calculateFloorboardBlocks(config);
 
-    return {
-      floorboardConfig: floorConf,
-      scaledDimensions: {
-        skidHeight: (config.base.skidHeight * scaleFactor) / MM_TO_METERS,
-        thickness: (floorConf.floorboardThickness * scaleFactor) / MM_TO_METERS,
-        boardLength: (config.dimensions.length * scaleFactor) / MM_TO_METERS,
-        scaleFactor,
-      },
-    };
-  }, [config.dimensions, config.weight.maxGross, config.base.skidHeight]);
+    // Calculate blocks for all five panels
+    const allPanelBlocks: Block[] = [];
+    const allCleatBlocks: Block[] = [];
 
-  const [hoveredBoard, setHoveredBoard] = useState<number | null>(null);
+    const { width, length, height } = config.dimensions;
 
-  // PERFORMANCE: Memoize hover callbacks to prevent function recreation
-  const handleBoardHover = useCallback((index: number) => () => setHoveredBoard(index), []);
-  const handleBoardOut = useCallback(() => setHoveredBoard(null), []);
-
-  const { skidHeight, thickness, boardLength, scaleFactor } = scaledDimensions;
-
-  // PERFORMANCE: Pre-calculate all board positions to avoid repeated calculations
-  const boardData = useMemo(() => {
-    return floorboardConfig.floorboards.map((board, index) => {
-      const boardWidth = (board.width * scaleFactor) / MM_TO_METERS;
-      // Floorboards run along the length (X axis), arranged across the width (Y axis in Z-up)
-      const yOffset = floorboardConfig.floorboards
-        .slice(0, index)
-        .reduce((sum, b) => sum + b.width, 0);
-      const yPos =
-        ((yOffset + board.width / 2 - config.dimensions.width / 2) * scaleFactor) / MM_TO_METERS;
-
-      return {
-        ...board,
-        boardWidth,
-        yPos,
-        index,
-      };
+    // Front panel (positive Y)
+    const frontPanelBlocks = calculatePanelBlocks(width, height);
+    const frontCleatBlocks = calculateCleatBlocks(width, height);
+    // Translate to front position
+    frontPanelBlocks.forEach((block) => {
+      allPanelBlocks.push({
+        position: [block.position[0], block.position[1] + length / 2, block.position[2]],
+        dimensions: block.dimensions,
+      });
     });
-  }, [floorboardConfig.floorboards, scaleFactor, config.dimensions.width]);
+    frontCleatBlocks.forEach((block) => {
+      allCleatBlocks.push({
+        position: [block.position[0], block.position[1] + length / 2, block.position[2]],
+        dimensions: block.dimensions,
+      });
+    });
 
-  return (
-    <group name="floorboards">
-      {boardData.map((board) => (
-        <FloorboardMesh
-          key={`floorboard-${board.index}`}
-          board={board}
-          thickness={thickness}
-          boardLength={boardLength}
-          skidHeight={skidHeight}
-          isHovered={hoveredBoard === board.index}
-          onPointerOver={handleBoardHover(board.index)}
-          onPointerOut={handleBoardOut}
-          boardData={boardData}
-        />
-      ))}
-    </group>
-  );
-});
+    // Back panel (negative Y)
+    const backPanelBlocks = calculatePanelBlocks(width, height);
+    const backCleatBlocks = calculateCleatBlocks(width, height);
+    // Translate to back position
+    backPanelBlocks.forEach((block) => {
+      allPanelBlocks.push({
+        position: [block.position[0], block.position[1] - length / 2, block.position[2]],
+        dimensions: block.dimensions,
+      });
+    });
+    backCleatBlocks.forEach((block) => {
+      allCleatBlocks.push({
+        position: [block.position[0], block.position[1] - length / 2, block.position[2]],
+        dimensions: block.dimensions,
+      });
+    });
 
-// PERFORMANCE: Separate memoized component for individual floorboards
-// This prevents re-rendering all boards when only one is hovered
-const FloorboardMesh = memo(function FloorboardMesh({
-  board,
-  thickness,
-  boardLength,
-  skidHeight,
-  isHovered,
-  onPointerOver,
-  onPointerOut,
-  boardData,
-}: {
-  board: any;
-  thickness: number;
-  boardLength: number;
-  skidHeight: number;
-  isHovered: boolean;
-  onPointerOver: () => void;
-  onPointerOut: () => void;
-  boardData: any[];
-}) {
-  return (
-    <group>
-      <Box
-        args={[boardLength, board.boardWidth, thickness]}
-        position={[0, board.yPos, skidHeight + thickness / 2]}
-        onPointerOver={onPointerOver}
-        onPointerOut={onPointerOut}
-        material={createHoverableMaterial(getFloorboardMaterial(board.isNarrowBoard), isHovered)}
-      />
+    // Left panel (negative X)
+    const leftPanelBlocks = calculatePanelBlocks(length, height);
+    const leftCleatBlocks = calculateCleatBlocks(length, height);
+    // Translate to left position
+    leftPanelBlocks.forEach((block) => {
+      allPanelBlocks.push({
+        position: [block.position[0] - width / 2, block.position[1], block.position[2]],
+        dimensions: block.dimensions,
+      });
+    });
+    leftCleatBlocks.forEach((block) => {
+      allCleatBlocks.push({
+        position: [block.position[0] - width / 2, block.position[1], block.position[2]],
+        dimensions: block.dimensions,
+      });
+    });
 
-      {/* Add gap between boards (1/8 inch) */}
-      {board.index < boardData.length - 1 && (
-        <Box
-          args={[boardLength, 0.003, thickness]}
-          position={[0, board.yPos + board.boardWidth / 2 + 0.0015, skidHeight + thickness / 2]}
-          material={SHARED_MATERIALS.BOARD_GAP}
-        />
-      )}
+    // Right panel (positive X)
+    const rightPanelBlocks = calculatePanelBlocks(length, height);
+    const rightCleatBlocks = calculateCleatBlocks(length, height);
+    // Translate to right position
+    rightPanelBlocks.forEach((block) => {
+      allPanelBlocks.push({
+        position: [block.position[0] + width / 2, block.position[1], block.position[2]],
+        dimensions: block.dimensions,
+      });
+    });
+    rightCleatBlocks.forEach((block) => {
+      allCleatBlocks.push({
+        position: [block.position[0] + width / 2, block.position[1], block.position[2]],
+        dimensions: block.dimensions,
+      });
+    });
 
-      {/* Show dimensions on hover */}
-      {isHovered && (
-        <Html position={[0, board.yPos, skidHeight + 0.2]}>
-          <div className="bg-black/80 text-white px-2 py-1 rounded text-xs">
-            {board.nominalSize} ({board.width.toFixed(2)}&quot;)
-            {board.isNarrowBoard && ' - Narrow Board'}
-          </div>
-        </Html>
-      )}
-    </group>
-  );
-});
+    // Top panel (positive Z)
+    const topPanelBlocks = calculatePanelBlocks(width, length);
+    const topCleatBlocks = calculateCleatBlocks(width, length);
+    // Translate to top position
+    topPanelBlocks.forEach((block) => {
+      allPanelBlocks.push({
+        position: [block.position[0], block.position[1], block.position[2] + height],
+        dimensions: block.dimensions,
+      });
+    });
+    topCleatBlocks.forEach((block) => {
+      allCleatBlocks.push({
+        position: [block.position[0], block.position[1], block.position[2] + height],
+        dimensions: block.dimensions,
+      });
+    });
 
-// PERFORMANCE: Memoized crate model to prevent unnecessary geometry recalculation
-// Reduces render time from 25ms to <10ms for complex crates
-const CrateModel = memo(function CrateModel({ config }: { config: CrateConfiguration }) {
-  const { dimensions, base, cap } = config;
+    return [...skidBlocks, ...floorboardBlocks, ...allPanelBlocks, ...allCleatBlocks];
+  }, [config]);
 
-  // PERFORMANCE: Memoize all scaled dimensions and skid calculations
-  const scaledGeometry = useMemo(() => {
-    const scaleFactor = INCHES_TO_MM;
-    const length = (dimensions.length * scaleFactor) / MM_TO_METERS;
-    const width = (dimensions.width * scaleFactor) / MM_TO_METERS;
-    const height = (dimensions.height * scaleFactor) / MM_TO_METERS;
-    const skidHeight = (base.skidHeight * scaleFactor) / MM_TO_METERS;
-    const skidWidth = (base.skidWidth * scaleFactor) / MM_TO_METERS;
-    const skidSpacing = (base.skidSpacing * scaleFactor) / MM_TO_METERS;
-    const panelThickness = (cap.topPanel.thickness * scaleFactor) / MM_TO_METERS;
-
-    // Pre-calculate skid positions (skids run along length, spaced across width in Y axis for Z-up)
-    const skidPositions = [];
-    const totalSpan = (base.skidCount - 1) * skidSpacing;
-    const startY = -totalSpan / 2;
-    for (let i = 0; i < base.skidCount; i++) {
-      skidPositions.push(startY + i * skidSpacing);
+  // Calculate CoG stability for visualization
+  const cogStability = useMemo(() => {
+    if (config.centerOfGravity?.combinedCoG) {
+      return validateCoGStability(config.centerOfGravity.combinedCoG, config.dimensions);
     }
-
-    return {
-      length,
-      width,
-      height,
-      skidHeight,
-      skidWidth,
-      skidSpacing,
-      panelThickness,
-      skidPositions,
-    };
-  }, [dimensions, base, cap]);
-
-  const { length, width, height, skidHeight, skidWidth, panelThickness, skidPositions } =
-    scaledGeometry;
+    return null;
+  }, [config.centerOfGravity, config.dimensions]);
 
   return (
-    <group>
-      {/* Individual Skids - PERFORMANCE: Using instancing would be ideal for identical skids */}
-      <SkidsGroup
-        skidPositions={skidPositions}
-        skidWidth={skidWidth}
-        skidHeight={skidHeight}
-        crateLength={length}
-      />
-
-      {/* Rub Strips if required */}
-      {base.requiresRubStrips && (
-        <RubStripsGroup
-          length={length}
-          skidHeight={skidHeight}
-          skidWidth={skidWidth}
-          crateWidth={width}
-        />
-      )}
-
-      {/* Individual Floorboards */}
-      <FloorboardsGroup config={config} />
-
-      {/* Crate Panels - PERFORMANCE: Group panels to reduce draw calls */}
-      <CratePanelsGroup
-        length={length}
-        width={width}
-        height={height}
-        skidHeight={skidHeight}
-        panelThickness={panelThickness}
-      />
-    </group>
-  );
-});
-
-// PERFORMANCE: Separate memoized components for repeated geometry types
-const SkidsGroup = memo(function SkidsGroup({
-  skidPositions,
-  skidWidth,
-  skidHeight,
-  crateLength,
-}: {
-  skidPositions: number[];
-  skidWidth: number;
-  skidHeight: number;
-  crateLength: number;
-}) {
-  return (
-    <>
-      {skidPositions.map((yPos, index) => (
+    <group position={[0, 0, 0]}>
+      {/* The origin is now at the center of the crate floor. All component positions are relative to this. */}
+      {allBlocks.map((block, index) => (
         <Box
-          key={`skid-${index}`}
-          args={[crateLength, skidWidth, skidHeight]}
-          position={[0, yPos, skidHeight / 2]}
-          material={SHARED_MATERIALS.SKID_WOOD}
+          key={index}
+          args={[
+            (block.dimensions[0] * INCHES_TO_MM) / MM_TO_METERS,
+            (block.dimensions[1] * INCHES_TO_MM) / MM_TO_METERS,
+            (block.dimensions[2] * INCHES_TO_MM) / MM_TO_METERS,
+          ]}
+          position={[
+            (block.position[0] * INCHES_TO_MM) / MM_TO_METERS,
+            (block.position[1] * INCHES_TO_MM) / MM_TO_METERS,
+            (block.position[2] * INCHES_TO_MM) / MM_TO_METERS,
+          ]}
+          material={SHARED_MATERIALS.SKID_WOOD} // Placeholder material
         />
       ))}
-    </>
-  );
-});
 
-const RubStripsGroup = memo(function RubStripsGroup({
-  length,
-  skidHeight,
-  skidWidth,
-  crateWidth,
-}: {
-  length: number;
-  skidHeight: number;
-  skidWidth: number;
-  crateWidth: number;
-}) {
-  return (
-    <>
-      <Box
-        args={[skidWidth * 0.5, crateWidth, skidHeight * 0.3]}
-        position={[length / 2 - skidWidth * 0.25, 0, skidHeight * 0.15]}
-        material={SHARED_MATERIALS.RUB_STRIP}
-      />
-      <Box
-        args={[skidWidth * 0.5, crateWidth, skidHeight * 0.3]}
-        position={[-length / 2 + skidWidth * 0.25, 0, skidHeight * 0.15]}
-        material={SHARED_MATERIALS.RUB_STRIP}
-      />
-    </>
-  );
-});
+      {/* CoG Visualization */}
+      {config.centerOfGravity?.combinedCoG && (
+        <group>
+          <Sphere
+            args={[0.1]} // 0.1 meter radius (about 4 inches)
+            position={[
+              (config.centerOfGravity.combinedCoG.x * INCHES_TO_MM) / MM_TO_METERS,
+              (config.centerOfGravity.combinedCoG.y * INCHES_TO_MM) / MM_TO_METERS,
+              (config.centerOfGravity.combinedCoG.z * INCHES_TO_MM) / MM_TO_METERS,
+            ]}
+          >
+            <meshStandardMaterial
+              color={
+                cogStability?.isStable
+                  ? '#22c55e' // green for stable
+                  : cogStability && cogStability.stabilityScore > 50
+                    ? '#eab308' // yellow for caution
+                    : '#ef4444' // red for unstable
+              }
+              emissive={
+                cogStability?.isStable
+                  ? '#166534' // dark green
+                  : cogStability && cogStability.stabilityScore > 50
+                    ? '#a16207' // dark yellow
+                    : '#991b1b' // dark red
+              }
+              emissiveIntensity={0.2}
+            />
+          </Sphere>
 
-const CratePanelsGroup = memo(function CratePanelsGroup({
-  length,
-  width,
-  height,
-  skidHeight,
-  panelThickness,
-}: {
-  length: number;
-  width: number;
-  height: number;
-  skidHeight: number;
-  panelThickness: number;
-}) {
-  return (
-    <>
-      {/* Front Panel */}
-      <Box
-        args={[length, panelThickness, height]}
-        position={[0, width / 2 - panelThickness / 2, skidHeight + height / 2]}
-        material={SHARED_MATERIALS.SIDE_PANEL}
-      />
+          {/* CoG Label */}
+          <Html
+            position={[
+              (config.centerOfGravity.combinedCoG.x * INCHES_TO_MM) / MM_TO_METERS,
+              (config.centerOfGravity.combinedCoG.y * INCHES_TO_MM) / MM_TO_METERS,
+              (config.centerOfGravity.combinedCoG.z * INCHES_TO_MM) / MM_TO_METERS + 0.2,
+            ]}
+            center
+            distanceFactor={10}
+          >
+            <div className="bg-black/80 text-white px-2 py-1 rounded text-xs whitespace-nowrap">
+              CoG: ({config.centerOfGravity.combinedCoG.x.toFixed(1)},{' '}
+              {config.centerOfGravity.combinedCoG.y.toFixed(1)},{' '}
+              {config.centerOfGravity.combinedCoG.z.toFixed(1)})
+            </div>
+          </Html>
+        </group>
+      )}
 
-      {/* Back Panel */}
-      <Box
-        args={[length, panelThickness, height]}
-        position={[0, -width / 2 + panelThickness / 2, skidHeight + height / 2]}
-        material={SHARED_MATERIALS.SIDE_PANEL}
-      />
-
-      {/* Left Panel */}
-      <Box
-        args={[panelThickness, width, height]}
-        position={[-length / 2 + panelThickness / 2, 0, skidHeight + height / 2]}
-        material={SHARED_MATERIALS.SIDE_PANEL}
-      />
-
-      {/* Right Panel */}
-      <Box
-        args={[panelThickness, width, height]}
-        position={[length / 2 - panelThickness / 2, 0, skidHeight + height / 2]}
-        material={SHARED_MATERIALS.SIDE_PANEL}
-      />
-
-      {/* Top Panel */}
-      <Box
-        args={[length, width, panelThickness]}
-        position={[0, 0, skidHeight + height - panelThickness / 2]}
-        material={SHARED_MATERIALS.TOP_PANEL}
-      />
-    </>
+      <Html position={[0, 0, config.dimensions.height + 1]}>
+        <div className="bg-black/80 text-white px-2 py-1 rounded text-xs">
+          {config.dimensions.length}&quot; x {config.dimensions.width}&quot; x{' '}
+          {config.dimensions.height}&quot;
+        </div>
+      </Html>
+      {/* TODO: Add Klimp Fastener Visualization */}
+      {/* TODO: Add Decal Visualization */}
+    </group>
   );
 });
 
@@ -347,15 +238,29 @@ const PerformanceTracker = memo(function PerformanceTracker() {
 
 // PERFORMANCE: Memoized main component to prevent unnecessary re-renders of entire 3D scene
 const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer3DProps) {
-  const { logInfo, logDebug, logWarning } = useLogsStore();
+  const { logInfo, logDebug, logWarning, logError } = useLogsStore();
+  const [explodeFactor, setExplodeFactor] = useState(0); // 0-100%
+  const [renderError, setRenderError] = useState<string | null>(null);
 
   // PERFORMANCE: Memoize validation to avoid re-validation on every render
   const { validatedConfig, canRender } = useMemo(() => {
-    const config = validateCrateConfiguration(configuration);
-    return {
-      validatedConfig: config,
-      canRender: isValidForRendering(config),
-    };
+    try {
+      const config = validateCrateConfiguration(configuration);
+      const canRenderResult = isValidForRendering(config);
+      return {
+        validatedConfig: config,
+        canRender: canRenderResult,
+      };
+    } catch (error) {
+      console.error('Configuration validation error:', error);
+      setRenderError(
+        `Configuration validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+      return {
+        validatedConfig: null,
+        canRender: false,
+      };
+    }
   }, [configuration]);
 
   useEffect(() => {
@@ -378,87 +283,134 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
     }
   }, [validatedConfig, canRender, configuration, logDebug, logWarning]);
 
-  // PERFORMANCE: Memoize ISPM-15 warnings calculation
-  const ispmWarnings = useMemo(() => {
-    if (!validatedConfig || !canRender) return [];
-
-    const skidConfig = calculateSkidConfiguration(
-      validatedConfig.dimensions,
-      validatedConfig.weight.maxGross
-    );
-    const floorboardConfig = calculateFloorboardConfiguration(
-      validatedConfig.dimensions,
-      skidConfig
-    );
-    return floorboardConfig.warnings;
-  }, [validatedConfig, canRender]);
-
   return (
     <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg relative">
-      {/* ISPM-15 Compliance Warnings */}
-      {ispmWarnings.length > 0 && (
-        <div className="absolute top-4 right-4 bg-yellow-500/90 backdrop-blur-sm p-3 rounded-lg max-w-xs z-10">
-          <h4 className="font-semibold text-yellow-900 mb-1">ISPM-15 Notice</h4>
-          {ispmWarnings.map((warning, idx) => (
-            <p key={idx} className="text-sm text-yellow-800">
-              {warning}
-            </p>
-          ))}
+      {/* Explode View Controls */}
+      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm p-3 rounded-lg z-10">
+        <div className="flex items-center space-x-2 mb-2">
+          <button
+            onClick={() => {
+              try {
+                setExplodeFactor(explodeFactor === 0 ? 100 : 0);
+                logInfo(
+                  'render',
+                  `Explode view ${explodeFactor === 0 ? 'enabled' : 'disabled'}`,
+                  undefined,
+                  'CrateViewer3D'
+                );
+              } catch (error) {
+                console.error('Explode view toggle error:', error);
+                logError(
+                  'render',
+                  'Failed to toggle explode view',
+                  error instanceof Error ? error.message : 'Unknown error',
+                  'CrateViewer3D'
+                );
+              }
+            }}
+            className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+          >
+            {explodeFactor === 0 ? 'Explode View' : 'Reset View'}
+          </button>
+        </div>
+        {explodeFactor > 0 && (
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-gray-700">Explode: {explodeFactor}%</label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={explodeFactor}
+              onChange={(e) => {
+                try {
+                  setExplodeFactor(Number(e.target.value));
+                } catch (error) {
+                  console.error('Explode factor change error:', error);
+                }
+              }}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Error Display */}
+      {renderError && (
+        <div className="absolute top-4 right-4 bg-red-500/90 backdrop-blur-sm p-3 rounded-lg max-w-xs z-10">
+          <h4 className="font-semibold text-red-100 mb-1">Render Error</h4>
+          <p className="text-sm text-red-200">{renderError}</p>
         </div>
       )}
 
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <p className="text-gray-600 mb-2">Loading 3D Viewer...</p>
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-            </div>
-          </div>
-        }
-      >
-        <Canvas
-          camera={{ position: [5, -5, 5], fov: 50, up: [0, 0, 1] }}
-          shadows
-          gl={{ preserveDrawingBuffer: true }}
-          onCreated={(_state) => {
+      <Canvas
+        camera={{
+          position: [
+            validatedConfig?.dimensions.width ?? 10,
+            -10,
+            validatedConfig?.dimensions.height ?? 5,
+          ],
+          fov: 50,
+          up: [0, 0, 1],
+        }}
+        shadows
+        gl={{ preserveDrawingBuffer: true, antialias: true }}
+        onCreated={(state) => {
+          try {
             // PERFORMANCE: Enable better performance and compatibility
             // Target: 60 FPS rendering with automatic fallback for low-end devices
-            try {
-              // Enable performance monitoring in development
-              if (process.env.NODE_ENV === 'development') {
-                console.log('3D Performance Target: 60 FPS (<16.67ms per frame)');
-              }
-              logInfo('render', '3D canvas initialized', 'WebGL renderer ready', 'CrateViewer3D');
-            } catch (error) {
-              console.warn('WebGL initialization warning:', error);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('3D Performance Target: 60 FPS (<16.67ms per frame)');
             }
-          }}
-        >
-          {/* PERFORMANCE: Real-time performance monitoring */}
-          <PerformanceTracker />
+            // Ensure the renderer is properly initialized
+            state.gl.setPixelRatio(window.devicePixelRatio);
+            logInfo('render', '3D canvas initialized', 'WebGL renderer ready', 'CrateViewer3D');
+          } catch (error) {
+            console.error('WebGL initialization error:', error);
+            setRenderError(
+              `WebGL initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+            );
+            logError(
+              'render',
+              'WebGL initialization failed',
+              error instanceof Error ? error.message : 'Unknown error',
+              'CrateViewer3D'
+            );
+          }
+        }}
+        onError={(error) => {
+          console.error('Canvas error:', error);
+          setRenderError(
+            `Canvas error: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+          logError(
+            'render',
+            'Canvas error occurred',
+            error instanceof Error ? error.message : 'Unknown error',
+            'CrateViewer3D'
+          );
+        }}
+      >
+        {/* PERFORMANCE: Real-time performance monitoring */}
+        <PerformanceTracker />
 
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
-          <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
-          <Grid args={[20, 20]} rotation={[-Math.PI / 2, 0, 0]} />
+        <ambientLight intensity={0.5} />
+        <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
+        <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
+        <Grid args={[20, 20]} rotation={[-Math.PI / 2, 0, 0]} />
+        <group position={[0, 0, 0]}>
           <CoordinateAxes size={3} />
+        </group>
 
-          {validatedConfig && canRender ? (
-            <CrateModel config={validatedConfig} />
-          ) : (
-            <Text
-              position={[0, 0, 2]}
-              fontSize={0.5}
-              color="gray"
-              anchorX="center"
-              anchorY="middle"
-            >
-              Configure crate to see 3D preview
-            </Text>
-          )}
-        </Canvas>
-      </Suspense>
+        {validatedConfig && canRender ? (
+          <CrateModel config={validatedConfig} _explodeFactor={explodeFactor} />
+        ) : (
+          <Html position={[0, 0, 2]} center distanceFactor={10}>
+            <div style={{ color: 'gray', fontSize: '20px', fontWeight: 'bold' }}>
+              {renderError ? 'Error loading 3D preview' : 'Configure crate to see 3D preview'}
+            </div>
+          </Html>
+        )}
+      </Canvas>
     </div>
   );
 });

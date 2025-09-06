@@ -106,7 +106,6 @@ describe('CrateStore', () => {
         },
         weight: {
           product: 500,
-          maxGross: 1000,
         },
         specialRequirements: [],
       },
@@ -131,7 +130,6 @@ describe('CrateStore', () => {
       const state = useCrateStore.getState();
 
       expect(state.configuration.weight.product).toBe(500);
-      expect(state.configuration.weight.maxGross).toBe(1000);
     });
 
     it('should have default base configuration', () => {
@@ -226,7 +224,7 @@ describe('CrateStore', () => {
 
       expect(calculateSkidConfiguration).toHaveBeenCalledWith(
         { length: 72, width: 60, height: 40 },
-        1000
+        600 // 500 * 1.2
       );
     });
 
@@ -252,11 +250,10 @@ describe('CrateStore', () => {
     it('should update weight configuration', () => {
       const state = useCrateStore.getState();
 
-      state.updateWeight({ product: 750, maxGross: 2000 });
+      state.updateWeight({ product: 750 });
 
       const updatedState = useCrateStore.getState();
       expect(updatedState.configuration.weight.product).toBe(750);
-      expect(updatedState.configuration.weight.maxGross).toBe(2000);
     });
 
     it('should update product weight only', () => {
@@ -266,27 +263,16 @@ describe('CrateStore', () => {
 
       const updatedState = useCrateStore.getState();
       expect(updatedState.configuration.weight.product).toBe(850);
-      expect(updatedState.configuration.weight.maxGross).toBe(1000); // unchanged
-    });
-
-    it('should update max gross weight only', () => {
-      const state = useCrateStore.getState();
-
-      state.updateWeight({ maxGross: 3000 });
-
-      const updatedState = useCrateStore.getState();
-      expect(updatedState.configuration.weight.product).toBe(500); // unchanged
-      expect(updatedState.configuration.weight.maxGross).toBe(3000);
     });
 
     it('should recalculate skid configuration when weight changes', () => {
       const state = useCrateStore.getState();
 
-      state.updateWeight({ maxGross: 5000 });
+      state.updateWeight({ product: 2000 });
 
       expect(calculateSkidConfiguration).toHaveBeenCalledWith(
         { length: 48, width: 40, height: 40 },
-        5000
+        2400 // 2000 * 1.2
       );
     });
   });
@@ -623,7 +609,7 @@ describe('CrateStore', () => {
 
       // Make changes
       state.updateDimensions({ length: 100 });
-      state.updateWeight({ maxGross: 5000 });
+      state.updateWeight({ product: 2000 });
 
       // Reset
       state.resetConfiguration();

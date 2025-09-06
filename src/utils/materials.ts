@@ -62,6 +62,13 @@ export const SHARED_MATERIALS = {
     opacity: 0.3,
     transparent: true,
   }),
+
+  // Cleat material for corner reinforcements
+  CLEAT_WOOD: new MeshStandardMaterial({
+    color: '#654321',
+    roughness: 0.8,
+    metalness: 0.1,
+  }),
 } as const;
 
 // PERFORMANCE: Material with hover state management

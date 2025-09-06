@@ -4,9 +4,10 @@
 1. [Getting Started](#getting-started)
 2. [Interface Overview](#interface-overview)
 3. [Creating Your First Crate](#creating-your-first-crate)
-4. [Advanced Features](#advanced-features)
-5. [Exporting to NX CAD](#exporting-to-nx-cad)
-6. [Tips and Best Practices](#tips-and-best-practices)
+4. [AMAT Compliance Features](#amat-compliance-features)
+5. [Advanced Features](#advanced-features)
+6. [Exporting to NX CAD](#exporting-to-nx-cad)
+7. [Tips and Best Practices](#tips-and-best-practices)
 
 ## Getting Started
 
@@ -108,6 +109,134 @@
 4. Configure:
    - **Thickness**: Vinyl sheet thickness
    - **Coverage**: Full or partial wrapping
+
+## AMAT Compliance Features
+
+### Overview
+AutoCrate now includes comprehensive AMAT (Applied Materials) compliance features based on the AMAT Standard Packing and Crating Requirements (0251-70054 Rev. 08). These features ensure your crates meet the highest standards for shipping sensitive equipment.
+
+### AMAT Crate Styles
+The system automatically recommends the appropriate AMAT crate style based on your product weight:
+
+#### Style A - Standard (0-5,000 lbs)
+- Two-way entry design
+- Cleated plywood or solid lumber panels
+- Cost-effective for lightweight products
+- Suitable for domestic shipping
+
+#### Style B - Floating Deck (5,000-10,000 lbs)
+- Drop-end design for easy loading
+- Floating deck with foam cushioning
+- Enhanced shock absorption
+- Ideal for medium-weight equipment
+
+#### Style C - Enhanced (10,000-20,000 lbs)
+- Four-way forklift entry
+- Enhanced structural support
+- Improved handling flexibility
+- Suitable for medium-heavy loads
+
+#### Style D - Heavy Duty (20,000+ lbs)
+- Reinforced joist construction
+- Heavy-duty design for extreme loads
+- Four-way entry for maximum flexibility
+- Enhanced structural integrity
+
+### AMAT Compliance Configuration
+
+#### Accessing AMAT Settings
+1. Complete your basic crate configuration
+2. The system will auto-detect the recommended AMAT style
+3. Click on "AMAT Compliance" section to customize settings
+4. Override automatic selections if needed
+
+#### International Shipping (ISPM-15)
+When shipping internationally:
+1. Toggle "International Shipping" to enable ISPM-15 compliance
+2. The system will require heat-treated wood with IPPC stamps
+3. Additional documentation will be generated
+4. Country-specific requirements are automatically applied
+
+#### Moisture Barrier Bag (MBB) - SEMI E137
+For sensitive electronic components:
+1. Toggle "Moisture Barrier Bag" to enable MBB protection
+2. Select bag type based on your product requirements:
+   - **Static-Shielding**: For ESD-sensitive components
+   - **Moisture-Barrier**: For humidity protection
+   - **Combination**: For comprehensive protection
+3. The system calculates required desiccant quantity
+4. Humidity indicator cards are automatically included
+
+### Air Shipment Optimization
+
+#### Chamfered Panel Design
+For air freight cost reduction:
+1. Enable "Air Shipment Mode" in the configuration
+2. Toggle "Enable Chamfering" to activate corner rounding
+3. Configure chamfer parameters:
+   - **Angle**: Typically 45° (range: 15°-45°)
+   - **Depth**: Based on crate size (0.5"-6")
+4. The system calculates weight and volume savings
+5. Cost savings are estimated based on freight rates
+
+#### Weight and Volume Savings
+The optimization system provides:
+- **Weight Reduction**: 5-25% depending on crate size
+- **Volume Reduction**: Reduced dimensional weight
+- **Cost Savings**: Based on current air freight rates
+- **Visual Comparison**: Standard vs. chamfered design
+
+### Material Specifications
+
+#### Comprehensive Materials Database
+The system includes detailed specifications for:
+- **Wood Materials**: Grade A, B, C lumber with strength properties
+- **Hardware**: Screws, nails, bolts with corrosion resistance ratings
+- **Treatments**: ISPM-15 heat treatment, pressure treatment
+- **Finishes**: Exterior paints, sealants with performance metrics
+
+#### Material Validation
+The system validates all materials against AMAT standards:
+- Moisture content limits (max 19%)
+- Strength requirements (bending, compression, shear)
+- Defect limitations (knots, splits, warp)
+- Compliance certifications
+
+### Weight Analysis
+
+#### Detailed Weight Breakdown
+Access comprehensive weight analysis:
+1. Click on "Weight Breakdown" to view detailed analysis
+2. Expand sections to see individual components:
+   - **Panels**: Top, front, back, left, right
+   - **Framing**: Cleats and reinforcements
+   - **Base**: Skids and floorboards
+   - **Hardware**: Fasteners and brackets
+   - **Protection**: Foam, MBB, desiccant
+   - **Accessories**: Indicators and labels
+
+#### Accurate Calculations
+The system uses real material densities:
+- Pine: 28 lbs/cubic foot
+- Oak: 45 lbs/cubic foot
+- Plywood: 35 lbs/cubic foot
+- OSB: 40 lbs/cubic foot
+
+### ISPM-15 Compliance
+
+#### International Shipping Requirements
+For international shipments, the system ensures:
+- **Heat Treatment**: 56°C minimum for 30 minutes
+- **IPPC Marking**: Required stamps on all wood components
+- **Documentation**: Treatment certificates
+- **Country-Specific Rules**: Automatic application based on destination
+
+#### Treatment Validation
+The system validates:
+- Temperature and duration compliance
+- Chemical treatment concentrations
+- Wood quality requirements
+- Marking specifications
 
 ## Advanced Features
 

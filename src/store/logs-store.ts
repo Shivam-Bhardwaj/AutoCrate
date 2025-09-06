@@ -15,7 +15,8 @@ export type LogCategory =
   | 'calculation'
   | 'validation'
   | 'navigation'
-  | 'system';
+  | 'system'
+  | 'config';
 
 export interface LogEntry {
   id: string;

@@ -5,21 +5,30 @@ import {
   ShippingBase,
   CrateCap,
   Fasteners,
-  VinylConfig,
   PanelConfig,
+  VinylConfig,
+  AMATCompliance,
 } from '@/types/crate';
 import { calculateSkidConfiguration } from '@/utils/skid-calculations';
+import { calculateEnhancedCrateWeight, WeightBreakdown } from '@/services/weightCalculations';
 
 interface CrateStore {
   configuration: CrateConfiguration;
+  weightBreakdown: WeightBreakdown;
   updateDimensions: (dimensions: Partial<CrateDimensions>) => void;
   updateBase: (base: Partial<ShippingBase>) => void;
   updatePanel: (panelKey: keyof CrateCap, panel: Partial<PanelConfig>) => void;
-  updateFasteners: (fasteners: Partial<Fasteners>) => void;
   updateVinyl: (vinyl: Partial<VinylConfig>) => void;
+  updateFasteners: (fasteners: Partial<Fasteners>) => void;
   updateWeight: (weight: Partial<CrateConfiguration['weight']>) => void;
+  updateAMATCompliance: (compliance: Partial<AMATCompliance>) => void;
   updateProjectName: (name: string) => void;
+  updateCenterOfGravity: (cog: Partial<NonNullable<CrateConfiguration['centerOfGravity']>>) => void;
+  updateHeaderRailConfig: (
+    config: Partial<NonNullable<CrateConfiguration['headerRailConfig']>>
+  ) => void;
   resetConfiguration: () => void;
+  recalculateWeights: () => void;
 }
 
 const defaultPanelConfig: PanelConfig = {
@@ -37,16 +46,15 @@ const defaultPanelConfig: PanelConfig = {
 // Calculate initial skid configuration
 const initialSkidConfig = calculateSkidConfiguration(
   { length: 48, width: 40, height: 40 },
-  1000 // Default max gross weight
+  1000 // Default estimated gross weight based on product weight
 );
+
+const initialDimensions = { length: 48, width: 40, height: 40 };
+const initialProductWeight = 500;
 
 const defaultConfiguration: CrateConfiguration = {
   projectName: 'New Crate Project',
-  dimensions: {
-    length: 48,
-    width: 40,
-    height: 40,
-  },
+  dimensions: initialDimensions,
   base: {
     type: 'standard',
     floorboardThickness: 0.75,
@@ -70,42 +78,55 @@ const defaultConfiguration: CrateConfiguration = {
     spacing: 6,
     material: 'steel',
   },
+  weight: {
+    product: initialProductWeight,
+  },
+  specialRequirements: [],
   vinyl: {
     enabled: false,
     type: 'waterproof',
-    thickness: 0.008,
+    thickness: 0.0625,
     coverage: 'full',
   },
-  weight: {
-    product: 500,
-    maxGross: 1000,
-  },
-  specialRequirements: [],
 };
 
-export const useCrateStore = create<CrateStore>((set) => ({
+// Calculate initial weight breakdown
+const initialWeightBreakdown = calculateEnhancedCrateWeight(defaultConfiguration);
+
+export const useCrateStore = create<CrateStore>((set, get) => ({
   configuration: defaultConfiguration,
+  weightBreakdown: initialWeightBreakdown,
+
+  recalculateWeights: () => {
+    const { configuration } = get();
+    const weightBreakdown = calculateEnhancedCrateWeight(configuration);
+    set({ weightBreakdown });
+  },
 
   updateDimensions: (dimensions) =>
     set((state) => {
       const newDimensions = { ...state.configuration.dimensions, ...dimensions };
-      const skidConfig = calculateSkidConfiguration(
-        newDimensions,
-        state.configuration.weight.maxGross
-      );
-      return {
-        configuration: {
-          ...state.configuration,
-          dimensions: newDimensions,
-          base: {
-            ...state.configuration.base,
-            skidHeight: skidConfig.dimensions.height,
-            skidWidth: skidConfig.dimensions.width,
-            skidCount: skidConfig.count,
-            skidSpacing: skidConfig.spacing,
-            requiresRubStrips: skidConfig.requiresRubStrips,
-          },
+      // Estimate gross weight as product weight + crate materials (roughly 20% additional)
+      const estimatedGrossWeight = state.configuration.weight.product * 1.2;
+      const skidConfig = calculateSkidConfiguration(newDimensions, estimatedGrossWeight);
+
+      // Recalculate enhanced weight breakdown
+      const newConfiguration = {
+        ...state.configuration,
+        dimensions: newDimensions,
+        base: {
+          ...state.configuration.base,
+          skidCount: skidConfig.count,
+          skidSpacing: skidConfig.spacing,
+          requiresRubStrips: skidConfig.requiresRubStrips,
         },
+      };
+
+      const weightBreakdown = calculateEnhancedCrateWeight(newConfiguration);
+
+      return {
+        configuration: newConfiguration,
+        weightBreakdown,
       };
     }),
 
@@ -151,34 +172,33 @@ export const useCrateStore = create<CrateStore>((set) => ({
       },
     })),
 
-  updateVinyl: (vinyl) =>
-    set((state) => ({
-      configuration: {
-        ...state.configuration,
-        vinyl: { ...state.configuration.vinyl, ...vinyl },
-      },
-    })),
-
   updateWeight: (weight) =>
     set((state) => {
       const newWeight = { ...state.configuration.weight, ...weight };
+      // Estimate gross weight as product weight + crate materials (roughly 20% additional)
+      const estimatedGrossWeight = newWeight.product * 1.2;
       const skidConfig = calculateSkidConfiguration(
         state.configuration.dimensions,
-        newWeight.maxGross
+        estimatedGrossWeight
       );
-      return {
-        configuration: {
-          ...state.configuration,
-          weight: newWeight,
-          base: {
-            ...state.configuration.base,
-            skidHeight: skidConfig.dimensions.height,
-            skidWidth: skidConfig.dimensions.width,
-            skidCount: skidConfig.count,
-            skidSpacing: skidConfig.spacing,
-            requiresRubStrips: skidConfig.requiresRubStrips,
-          },
+
+      const newConfiguration = {
+        ...state.configuration,
+        weight: newWeight,
+        base: {
+          ...state.configuration.base,
+          skidCount: skidConfig.count,
+          skidSpacing: skidConfig.spacing,
+          requiresRubStrips: skidConfig.requiresRubStrips,
         },
+      };
+
+      // Recalculate enhanced weight breakdown
+      const weightBreakdown = calculateEnhancedCrateWeight(newConfiguration);
+
+      return {
+        configuration: newConfiguration,
+        weightBreakdown,
       };
     }),
 
@@ -187,6 +207,46 @@ export const useCrateStore = create<CrateStore>((set) => ({
       configuration: {
         ...state.configuration,
         projectName,
+      },
+    })),
+
+  updateVinyl: (vinyl) =>
+    set((state) => ({
+      configuration: {
+        ...state.configuration,
+        vinyl: state.configuration.vinyl
+          ? { ...state.configuration.vinyl, ...vinyl }
+          : ({ ...vinyl } as VinylConfig),
+      },
+    })),
+
+  updateAMATCompliance: (compliance) =>
+    set((state) => ({
+      configuration: {
+        ...state.configuration,
+        amatCompliance: state.configuration.amatCompliance
+          ? { ...state.configuration.amatCompliance, ...compliance }
+          : ({ ...compliance } as AMATCompliance),
+      },
+    })),
+
+  updateCenterOfGravity: (cog) =>
+    set((state) => ({
+      configuration: {
+        ...state.configuration,
+        centerOfGravity: state.configuration.centerOfGravity
+          ? { ...state.configuration.centerOfGravity, ...cog }
+          : ({ ...cog } as NonNullable<CrateConfiguration['centerOfGravity']>),
+      },
+    })),
+
+  updateHeaderRailConfig: (config) =>
+    set((state) => ({
+      configuration: {
+        ...state.configuration,
+        headerRailConfig: state.configuration.headerRailConfig
+          ? { ...state.configuration.headerRailConfig, ...config }
+          : ({ ...config } as NonNullable<CrateConfiguration['headerRailConfig']>),
       },
     })),
 

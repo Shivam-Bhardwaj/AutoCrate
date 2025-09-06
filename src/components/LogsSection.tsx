@@ -116,8 +116,8 @@ export default function LogsSection() {
         logInfo(
           'vinyl',
           'Vinyl settings changed',
-          configuration.vinyl.enabled
-            ? `Enabled: ${configuration.vinyl.type} (${configuration.vinyl.coverage})`
+          configuration.vinyl?.enabled
+            ? `Enabled: ${configuration.vinyl?.type} (${configuration.vinyl?.coverage})`
             : 'Disabled',
           'CrateConfiguration'
         );
@@ -128,7 +128,7 @@ export default function LogsSection() {
         logInfo(
           'weight',
           'Weight parameters updated',
-          `Product: ${configuration.weight.product}kg, Max: ${configuration.weight.maxGross}kg`,
+          `Product: ${configuration.weight.product}kg`,
           'CrateConfiguration'
         );
       }
@@ -210,6 +210,7 @@ export default function LogsSection() {
       validation: 'bg-rose-500',
       navigation: 'bg-violet-500',
       system: 'bg-gray-500',
+      config: 'bg-amber-500',
     };
     return colors[category] || 'bg-gray-500';
   };

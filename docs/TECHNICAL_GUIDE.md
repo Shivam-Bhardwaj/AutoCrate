@@ -116,6 +116,56 @@ User Input → Zustand Store → Components → NX Generator
   Validation   3D Update    UI Update    Expression
 ```
 
+### AMAT Compliance Data Flow
+
+```
+Product Weight → Style Detection → Material Selection → Compliance Validation
+      ↓               ↓                 ↓                    ↓
+   Crate Style    Specifications    Validation        AMAT Status
+      ↓               ↓                 ↓                    ↓
+   Skid Sizing    MBB Requirements   Weight Calc       Final Config
+```
+
+## AMAT Compliance Architecture
+
+### Core Specifications System
+
+The AMAT compliance system is built around comprehensive specifications defined in [`src/types/amat-specifications.ts`](src/types/amat-specifications.ts:1):
+
+- **Crate Styles**: Four distinct styles (A, B, C, D) with specific weight ranges and features
+- **Skid Sizing**: Automatic skid size determination based on load requirements
+- **Material Specifications**: AMAT-approved materials with validation
+- **MBB Configuration**: SEMI E137 compliant moisture barrier bags
+- **Chamfer Optimization**: Air shipment weight reduction calculations
+
+### Material Validation Pipeline
+
+The material validation system ensures all components meet AMAT standards:
+
+1. **Input Validation**: User inputs validated against AMAT specifications
+2. **Material Database**: Comprehensive database of AMAT-approved materials
+3. **Compliance Scoring**: Real-time compliance scoring (0-100%)
+4. **Recommendation Engine**: Suggests improvements for non-compliant selections
+
+### Weight Calculation Engine
+
+The enhanced weight calculation system ([`src/services/weightCalculations.ts`](src/services/weightCalculations.ts:1)) provides:
+
+- **Material-Specific Densities**: Accurate densities for all materials
+- **Component Breakdown**: Detailed weight analysis by component type
+- **Hardware Calculations**: Precise hardware weight calculations
+- **Protection Materials**: Foam, MBB, desiccant weight calculations
+- **Dimensional Weight**: Air freight dimensional weight calculations
+
+### ISPM-15 Compliance System
+
+International shipping compliance is handled through [`src/types/ispm15-compliance.ts`](src/types/ispm15-compliance.ts:1):
+
+- **Treatment Validation**: Heat treatment and chemical treatment validation
+- **Country-Specific Requirements**: Database of country-specific import rules
+- **Documentation Requirements**: Treatment certificates and phytosanitary certificates
+- **Marking Specifications**: IPPC stamp requirements and placement
+
 ## Type System
 
 ### Core Types
@@ -229,3 +279,7 @@ Prepared for backend integration:
 - AR/VR visualization
 - Multi-language support
 - API for third-party integration
+- Advanced AMAT compliance features
+- Machine learning for optimization
+- IoT sensor integration
+- Blockchain traceability
