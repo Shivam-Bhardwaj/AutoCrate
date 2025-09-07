@@ -58,6 +58,7 @@ export default function MobileHome() {
           <div className="flex-1">
             <h1
               className={`text-xl font-bold text-center ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}
+              data-testid="app-title"
             >
               AutoCrate
             </h1>
@@ -68,6 +69,7 @@ export default function MobileHome() {
               size="icon"
               onClick={handleReset}
               className={`h-10 w-10 ${isDarkMode ? 'hover:bg-gray-700' : ''}`}
+              aria-label="Reset project"
             >
               <RotateCcw className="h-5 w-5" />
             </Button>
@@ -76,6 +78,7 @@ export default function MobileHome() {
               size="icon"
               onClick={toggleTheme}
               className={`h-10 w-10 ${isDarkMode ? 'hover:bg-gray-700' : ''}`}
+              aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
@@ -85,13 +88,20 @@ export default function MobileHome() {
 
       {/* Mobile Content with Tabs */}
       <div className="flex-1 flex flex-col">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="flex-1 flex flex-col"
+          aria-label="Application primary sections"
+        >
           {/* Tab Navigation */}
           <TabsList
             className={`grid w-full grid-cols-4 rounded-none ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}
+            aria-label="Mobile navigation tabs"
           >
             <TabsTrigger
               value="input"
+              aria-label="Show configuration input form"
               className="flex flex-col gap-1 h-auto py-2 px-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               <Settings className="h-4 w-4" />
@@ -99,6 +109,7 @@ export default function MobileHome() {
             </TabsTrigger>
             <TabsTrigger
               value="viewer"
+              aria-label="Show 3D viewer"
               className="flex flex-col gap-1 h-auto py-2 px-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               <Eye className="h-4 w-4" />
@@ -106,6 +117,7 @@ export default function MobileHome() {
             </TabsTrigger>
             <TabsTrigger
               value="output"
+              aria-label="Show generated output summary"
               className="flex flex-col gap-1 h-auto py-2 px-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               <FileOutput className="h-4 w-4" />
@@ -113,6 +125,7 @@ export default function MobileHome() {
             </TabsTrigger>
             <TabsTrigger
               value="logs"
+              aria-label="Show system and user logs"
               className="flex flex-col gap-1 h-auto py-2 px-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               <ScrollText className="h-4 w-4" />
@@ -143,7 +156,7 @@ export default function MobileHome() {
                   >
                     3D Preview
                   </h2>
-                  <div className="h-[calc(100vh-220px)]">
+                  <div className="h-[calc(100vh-220px)]" data-testid="crate-viewer-container">
                     <CrateViewer3D configuration={configuration} />
                   </div>
                 </div>
@@ -184,10 +197,10 @@ export default function MobileHome() {
         className={`border-t px-4 py-2 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
       >
         <div className="flex flex-col items-center gap-1">
-          <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+          <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             {getTechStackString(true)}
           </span>
-          <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+          <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             v{APP_VERSION}
           </span>
         </div>

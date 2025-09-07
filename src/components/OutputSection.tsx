@@ -139,11 +139,22 @@ export default function OutputSection() {
                 logUser('navigation', `Switched to ${value} tab`, undefined, 'OutputSection');
               }}
             >
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="summary">Summary</TabsTrigger>
-                <TabsTrigger value="bom">BOM</TabsTrigger>
-                <TabsTrigger value="analysis">Analysis</TabsTrigger>
-                <TabsTrigger value="nx-expression">NX Expression</TabsTrigger>
+              <TabsList
+                className="grid w-full grid-cols-4 text-gray-600 dark:text-gray-300"
+                aria-label="Output data sections"
+              >
+                <TabsTrigger value="summary" aria-label="Show summary view">
+                  Summary
+                </TabsTrigger>
+                <TabsTrigger value="bom" aria-label="Show bill of materials view">
+                  BOM
+                </TabsTrigger>
+                <TabsTrigger value="analysis" aria-label="Show analysis view">
+                  Analysis
+                </TabsTrigger>
+                <TabsTrigger value="nx-expression" aria-label="Show NX expression view">
+                  NX Expression
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="analysis">
@@ -158,13 +169,13 @@ export default function OutputSection() {
                       <CardContent>
                         <div>
                           <div>
-                            <label className="text-sm text-gray-600">Product Weight</label>
+                            <label className="text-sm text-gray-700">Product Weight</label>
                             <p className="text-2xl font-bold text-blue-600">
                               {configuration.weight.product} lbs
                             </p>
                           </div>
                           <div>
-                            <label className="text-sm text-gray-600">Estimated Gross</label>
+                            <label className="text-sm text-gray-700">Estimated Gross</label>
                             <p className="text-2xl font-bold text-green-600">
                               {(configuration.weight.product * 1.2).toFixed(0)} lbs
                             </p>
@@ -181,7 +192,7 @@ export default function OutputSection() {
                         <div className="text-center py-4">
                           <p className="font-mono text-lg">W = F / A</p>
                         </div>
-                        <p className="text-sm text-gray-600">Where W is weight per unit area</p>
+                        <p className="text-sm text-gray-700">Where W is weight per unit area</p>
                       </CardContent>
                     </Card>
                   </div>
@@ -195,7 +206,7 @@ export default function OutputSection() {
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <div>
                             <p className="font-medium">Corner joints</p>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-700">
                               Reinforce with brackets for heavy loads
                             </p>
                           </div>
@@ -206,7 +217,7 @@ export default function OutputSection() {
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <div>
                             <p className="font-medium">Center floor</p>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-700">
                               Add center support for loads &gt; 1000kg
                             </p>
                           </div>

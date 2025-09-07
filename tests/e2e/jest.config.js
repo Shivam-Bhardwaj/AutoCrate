@@ -2,7 +2,8 @@
 module.exports = {
   testEnvironment: 'node',
   testMatch: ['**/*.test.js'],
-  testTimeout: 60000,
+  // Increase timeout to accommodate first-time production server spin-up on CI
+  testTimeout: 120000,
   verbose: true,
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   collectCoverage: false,

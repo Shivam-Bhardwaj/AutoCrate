@@ -179,9 +179,9 @@ export default function LogsSection() {
         case 'info':
           return 'text-blue-600';
         case 'success':
-          return 'text-green-600';
+          return 'text-green-700';
         case 'warning':
-          return 'text-yellow-600';
+          return 'text-amber-700';
         case 'error':
           return 'text-red-600';
         case 'debug':
@@ -205,7 +205,7 @@ export default function LogsSection() {
       export: 'bg-pink-500',
       import: 'bg-orange-500',
       ui: 'bg-teal-500',
-      render: 'bg-cyan-500',
+      render: 'bg-cyan-700',
       calculation: 'bg-lime-500',
       validation: 'bg-rose-500',
       navigation: 'bg-violet-500',
@@ -283,6 +283,7 @@ export default function LogsSection() {
               variant="ghost"
               onClick={() => setShowFilters(!showFilters)}
               className={`h-7 px-2 ${isDarkMode ? 'hover:bg-gray-700' : ''}`}
+              aria-label={showFilters ? 'Hide log filters' : 'Show log filters'}
             >
               <Filter className="h-3 w-3" />
             </Button>
@@ -291,6 +292,7 @@ export default function LogsSection() {
               variant="ghost"
               onClick={togglePause}
               className={`h-7 px-2 ${isDarkMode ? 'hover:bg-gray-700' : ''}`}
+              aria-label={isPaused ? 'Resume log stream' : 'Pause log stream'}
             >
               {isPaused ? <Play className="h-3 w-3" /> : <Pause className="h-3 w-3" />}
             </Button>
@@ -299,6 +301,7 @@ export default function LogsSection() {
               variant="ghost"
               onClick={handleExport}
               className={`h-7 px-2 ${isDarkMode ? 'hover:bg-gray-700' : ''}`}
+              aria-label="Export logs as JSON file"
             >
               <Download className="h-3 w-3" />
             </Button>
@@ -307,6 +310,7 @@ export default function LogsSection() {
               variant="ghost"
               onClick={clearLogs}
               className={`h-7 px-2 ${isDarkMode ? 'hover:bg-gray-700' : ''}`}
+              aria-label="Clear all logs"
             >
               <Trash2 className="h-3 w-3" />
             </Button>
@@ -414,6 +418,9 @@ export default function LogsSection() {
       {/* Logs list */}
       <div
         className={`flex-1 overflow-y-auto px-4 pb-2 font-mono text-xs ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
+        tabIndex={0}
+        role="region"
+        aria-label="System and user log messages"
       >
         {filteredLogs.length === 0 ? (
           <div className={`text-center py-8 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
@@ -449,7 +456,7 @@ export default function LogsSection() {
                   )}
                   {log.source && (
                     <span
-                      className={`ml-2 text-xs ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}
+                      className={`ml-2 text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-600'}`}
                     >
                       [{log.source}]
                     </span>

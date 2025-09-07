@@ -4,32 +4,20 @@ import '@testing-library/jest-dom';
 import CrateViewer3D from '../../src/components/CrateViewer3D';
 import { CrateConfiguration } from '../../src/types/crate';
 
-// Mock the dynamic imports and Three.js components
-vi.mock('@react-three/fiber', () => ({
-  Canvas: ({ children, ...props }: any) => (
-    <div data-testid="canvas" {...props}>
-      {children}
-    </div>
-  ),
-  useFrame: vi.fn(),
-}));
-
-vi.mock('@react-three/drei', () => ({
-  OrbitControls: () => <div data-testid="orbit-controls" />,
-  Grid: () => <div data-testid="grid" />,
-  Box: ({ args, position, material }: any) => (
-    <div data-testid="box" data-args={args} data-position={position} data-material={material} />
-  ),
-  Text: ({ children, position }: any) => (
-    <div data-testid="text" data-position={position}>
-      {children}
-    </div>
-  ),
-  Html: ({ children }: any) => <div data-testid="html">{children}</div>,
-}));
-
+// NOTE: Per-file R3F/drei mocks removed; global mocks in tests/setup.ts now supply these.
+// CoordinateAxes also mocked globally via its own module? If not, keep lightweight mock.
 vi.mock('@/components/CoordinateAxes', () => ({
   CoordinateAxes: () => <div data-testid="coordinate-axes" />,
+}));
+
+// Local mock of logs store (removed from global setup to keep other store tests real)
+vi.mock('@/store/logs-store', () => ({
+  useLogsStore: () => ({
+    logInfo: vi.fn(),
+    logDebug: vi.fn(),
+    logWarning: vi.fn(),
+    logError: vi.fn(),
+  }),
 }));
 
 vi.mock('@/store/logs-store', () => ({
@@ -227,5 +215,19 @@ describe('CrateViewer3D', () => {
     // Check that the component renders without errors
     const canvas = screen.getByTestId('canvas');
     expect(canvas).toBeInTheDocument();
+  });
+
+  it('renders legend items for components', () => {
+    render(<CrateViewer3D configuration={mockConfiguration} />);
+    ['Skids', 'Floor', 'Panels', 'Cleats'].forEach((label) => {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    });
+  });
+
+  it('renders side labels (Front, Back, Left, Right, Top)', () => {
+    render(<CrateViewer3D configuration={mockConfiguration} />);
+    ['Front', 'Back', 'Left', 'Right', 'Top'].forEach((label) => {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    });
   });
 });

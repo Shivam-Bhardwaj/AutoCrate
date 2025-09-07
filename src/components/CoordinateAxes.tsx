@@ -62,9 +62,7 @@ export const CoordinateAxes = memo(function CoordinateAxes({ size = 5 }: Coordin
         lineWidth={2}
       />
       <Html position={[0, 0, size + 0.5]} center distanceFactor={10}>
-        <div style={{ color: 'blue', fontSize: '12px', fontWeight: 'bold' }}>
-          {axesLabels.z} (Height)
-        </div>
+        <div style={{ color: 'blue', fontSize: '12px', fontWeight: 'bold' }}>{axesLabels.z}</div>
       </Html>
     </group>
   );

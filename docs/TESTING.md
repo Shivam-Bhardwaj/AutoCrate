@@ -379,3 +379,73 @@ When adding new features:
 - [Playwright Documentation](https://playwright.dev/)
 - [MSW Documentation](https://mswjs.io/)
 - [Testing Three.js Applications](https://threejs.org/docs/#manual/en/introduction/Testing)
+
+---
+
+## Bundle Analysis & Performance Budgets
+
+Maintain bundle size discipline to preserve performance.
+
+### Enabling Analyzer
+1. Install: `npm i -D @next/bundle-analyzer`
+2. `next.config.js`:
+```js
+const withAnalyzer = require('@next/bundle-analyzer')({ enabled: process.env.ANALYZE === 'true' });
+module.exports = withAnalyzer({});
+```
+3. Run (PowerShell): `set ANALYZE=true; npm run build`
+
+### Proposed Size Budgets
+| Asset | Budget (gzip) |
+|-------|---------------|
+| First Load JS (main route) | < 180 kB |
+| Largest dynamic chunk | < 120 kB |
+| Duplicate vendor modules | < 10% overlap |
+
+Add CI script to parse `.next` stats and fail if exceeded.
+
+## Visual Regression Testing
+
+Use Playwright screenshot comparisons for key states.
+
+Example:
+```ts
+import { test, expect } from '@playwright/test';
+test('crate exploded view visual', async ({ page }) => {
+  await page.goto('/');
+  await page.getByText('Explode View').click();
+  expect(await page.screenshot()).toMatchSnapshot('crate-exploded.png');
+});
+```
+Commit baseline images under `tests/e2e/__screenshots__`.
+
+## Accessibility (A11y)
+
+Automate with axe during E2E:
+```ts
+import AxeBuilder from '@axe-core/playwright';
+const results = await new AxeBuilder({ page }).analyze();
+expect(results.violations).toEqual([]);
+```
+Ensure interactive elements have discernible text; labels for 3D panels assist orientation.
+
+## 3D Testing Guidelines
+
+| Layer | Focus | Example |
+|-------|-------|---------|
+| Unit | Math & conversion | inch->mm->m accuracy |
+| Component | UI state | explode factor slider updates blocks |
+| Visual | Rendering differences | screenshot baseline vs new |
+| Perf | Frame budget | log warnings if FPS < 45 |
+| A11y | Discoverability | button names, legend text |
+
+## Adding New Test Types Checklist
+1. Define acceptance criteria.
+2. Select test layer(s).
+3. Add factory/fixtures.
+4. Write failing test (TDD ideal).
+5. Implement feature/fix.
+6. Ensure coverage thresholds maintained.
+7. Update docs + site page.
+
+---

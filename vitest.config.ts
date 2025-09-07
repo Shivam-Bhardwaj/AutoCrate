@@ -29,7 +29,17 @@ export default defineConfig({
       statements: 80,
     },
     include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    exclude: ['node_modules', 'dist', '.idea', '.git', '.cache', 'playwright-tests'],
+    // Exclude puppeteer/Jest-based E2E tests so `npm test` (Vitest) doesn't hang
+    // They are executed separately via `npm run e2e` using Jest + Puppeteer.
+    exclude: [
+      'node_modules',
+      'dist',
+      '.idea',
+      '.git',
+      '.cache',
+      'playwright-tests',
+      'tests/e2e/**',
+    ],
   },
   resolve: {
     alias: {

@@ -66,7 +66,8 @@ export default function InputForms() {
                 step="0.125"
                 value={configuration.dimensions.length}
                 onChange={(e) => {
-                  const newLength = Number(e.target.value);
+                  let newLength = Number(e.target.value);
+                  if (newLength < 0) newLength = 0;
                   updateDimensions({ length: newLength });
                   logUser(
                     'dimension',
@@ -76,6 +77,7 @@ export default function InputForms() {
                   );
                 }}
                 placeholder="Width from front view"
+                aria-label="Product width in inches"
               />
             </div>
             <div className="space-y-2">
@@ -86,7 +88,8 @@ export default function InputForms() {
                 step="0.125"
                 value={configuration.dimensions.width}
                 onChange={(e) => {
-                  const newWidth = Number(e.target.value);
+                  let newWidth = Number(e.target.value);
+                  if (newWidth < 0) newWidth = 0;
                   updateDimensions({ width: newWidth });
                   logUser(
                     'dimension',
@@ -96,6 +99,7 @@ export default function InputForms() {
                   );
                 }}
                 placeholder="Depth from side view"
+                aria-label="Product depth in inches"
               />
             </div>
           </div>
@@ -109,7 +113,8 @@ export default function InputForms() {
                 step="0.125"
                 value={configuration.dimensions.height}
                 onChange={(e) => {
-                  const newHeight = Number(e.target.value);
+                  let newHeight = Number(e.target.value);
+                  if (newHeight < 0) newHeight = 0;
                   updateDimensions({ height: newHeight });
                   logUser(
                     'dimension',
@@ -119,6 +124,7 @@ export default function InputForms() {
                   );
                 }}
                 placeholder="Vertical height"
+                aria-label="Product height in inches"
               />
             </div>
             <div className="space-y-2">
@@ -127,8 +133,13 @@ export default function InputForms() {
                 id="productWeight"
                 type="number"
                 value={configuration.weight.product}
-                onChange={(e) => updateWeight({ product: Number(e.target.value) })}
+                onChange={(e) => {
+                  let val = Number(e.target.value);
+                  if (val < 0) val = 0;
+                  updateWeight({ product: val });
+                }}
                 placeholder="Weight of product to ship"
+                aria-label="Product weight in pounds"
               />
             </div>
           </div>
@@ -278,19 +289,23 @@ export default function InputForms() {
             <div className="space-y-2">
               <Label>Default Thickness</Label>
               <Input
+                id="panelDefaultThickness"
                 type="number"
                 value={configuration.cap.topPanel.thickness}
                 onChange={(e) => {
-                  const thickness = Number(e.target.value);
+                  let thickness = Number(e.target.value);
+                  if (thickness < 0) thickness = 0;
                   ['topPanel', 'frontPanel', 'backPanel', 'leftPanel', 'rightPanel'].forEach(
                     (panel) => updatePanel(panel as keyof typeof configuration.cap, { thickness })
                   );
                 }}
+                aria-label="Default panel thickness in inches"
               />
             </div>
             <div className="space-y-2">
               <Label>Default Material</Label>
               <Select
+                aria-label="Default panel material"
                 value={configuration.cap.topPanel.material}
                 onValueChange={(value: 'plywood' | 'osb' | 'solid-wood') => {
                   ['topPanel', 'frontPanel', 'backPanel', 'leftPanel', 'rightPanel'].forEach(
@@ -299,7 +314,10 @@ export default function InputForms() {
                   );
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger
+                  id="panelDefaultMaterial"
+                  aria-label="Default panel material selection"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -314,6 +332,7 @@ export default function InputForms() {
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center space-x-2">
               <Switch
+                id="reinforcementSwitch"
                 checked={configuration.cap.topPanel.reinforcement}
                 onCheckedChange={(checked) => {
                   ['topPanel', 'frontPanel', 'backPanel', 'leftPanel', 'rightPanel'].forEach(
@@ -323,11 +342,13 @@ export default function InputForms() {
                       })
                   );
                 }}
+                aria-label="Toggle panel reinforcement"
               />
               <Label>Apply Reinforcement</Label>
             </div>
             <div className="flex items-center space-x-2">
               <Switch
+                id="ventilationSwitch"
                 checked={configuration.cap.topPanel.ventilation.enabled}
                 onCheckedChange={(checked) => {
                   ['topPanel', 'frontPanel', 'backPanel', 'leftPanel', 'rightPanel'].forEach(
@@ -340,6 +361,7 @@ export default function InputForms() {
                       })
                   );
                 }}
+                aria-label="Toggle panel ventilation"
               />
               <Label>Add Ventilation</Label>
             </div>
@@ -391,7 +413,7 @@ export default function InputForms() {
                   updateFasteners({ material: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label="Fastener material">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

@@ -22,12 +22,24 @@ export default function NXInstructions() {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="quick-start" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="quick-start">Quick Start</TabsTrigger>
-          <TabsTrigger value="construction">Construction</TabsTrigger>
-          <TabsTrigger value="parameters">Parameters</TabsTrigger>
-          <TabsTrigger value="troubleshoot">Troubleshoot</TabsTrigger>
+      <Tabs
+        defaultValue="quick-start"
+        className="w-full"
+        aria-label="NX implementation instruction sections"
+      >
+        <TabsList className="grid w-full grid-cols-4" aria-label="Instruction category tabs">
+          <TabsTrigger value="quick-start" aria-label="Show quick start instructions">
+            Quick Start
+          </TabsTrigger>
+          <TabsTrigger value="construction" aria-label="Show construction method details">
+            Construction
+          </TabsTrigger>
+          <TabsTrigger value="parameters" aria-label="Show parameter reference">
+            Parameters
+          </TabsTrigger>
+          <TabsTrigger value="troubleshoot" aria-label="Show troubleshooting guidance">
+            Troubleshoot
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="quick-start" className="space-y-4">

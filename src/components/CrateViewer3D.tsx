@@ -5,18 +5,16 @@ import { OrbitControls, Grid, Box, Html, Sphere } from '@react-three/drei';
 import { CrateConfiguration, Block } from '@/types/crate';
 import { useLogsStore } from '@/store/logs-store';
 import { useEffect, useState, useMemo, memo } from 'react';
-import {
-  calculateSkidBlocks,
-  calculateFloorboardBlocks,
-  calculatePanelBlocks,
-  calculateCleatBlocks,
-} from '@/services/crateCalculations';
+// Geometry now centralized in buildCrateGeometry (outputs meters)
+import { buildCrateGeometry } from '@/utils/geometry/crate-geometry';
+import { fitCameraToBox } from '@/utils/geometry/camera-fit';
 import { CoordinateAxes } from './CoordinateAxes';
 import { validateCrateConfiguration, isValidForRendering } from '@/utils/input-validation';
-import { INCHES_TO_MM, MM_TO_METERS } from '@/lib/constants';
+import { INCHES_TO_MM, MM_TO_METERS, PANEL_THICKNESS } from '@/lib/constants';
 import { SHARED_MATERIALS } from '@/utils/materials';
 import { usePerformanceMonitor } from '@/utils/performance-monitor';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
+import type { PerspectiveCamera } from 'three';
 import { validateCoGStability } from '@/services/cog-calculator';
 
 interface CrateViewer3DProps {
@@ -25,108 +23,18 @@ interface CrateViewer3DProps {
 
 const CrateModel = memo(function CrateModel({
   config,
+  geometry,
   _explodeFactor = 0,
 }: {
   config: CrateConfiguration;
+  geometry: ReturnType<typeof buildCrateGeometry>;
   _explodeFactor?: number;
 }) {
-  const allBlocks = useMemo(() => {
-    const skidBlocks = calculateSkidBlocks(config);
-    const floorboardBlocks = calculateFloorboardBlocks(config);
+  interface OrientedBlock extends Block {
+    orientation?: 'frontback' | 'leftright' | 'top';
+  }
 
-    // Calculate blocks for all five panels
-    const allPanelBlocks: Block[] = [];
-    const allCleatBlocks: Block[] = [];
-
-    const { width, length, height } = config.dimensions;
-
-    // Front panel (positive Y)
-    const frontPanelBlocks = calculatePanelBlocks(width, height);
-    const frontCleatBlocks = calculateCleatBlocks(width, height);
-    // Translate to front position
-    frontPanelBlocks.forEach((block) => {
-      allPanelBlocks.push({
-        position: [block.position[0], block.position[1] + length / 2, block.position[2]],
-        dimensions: block.dimensions,
-      });
-    });
-    frontCleatBlocks.forEach((block) => {
-      allCleatBlocks.push({
-        position: [block.position[0], block.position[1] + length / 2, block.position[2]],
-        dimensions: block.dimensions,
-      });
-    });
-
-    // Back panel (negative Y)
-    const backPanelBlocks = calculatePanelBlocks(width, height);
-    const backCleatBlocks = calculateCleatBlocks(width, height);
-    // Translate to back position
-    backPanelBlocks.forEach((block) => {
-      allPanelBlocks.push({
-        position: [block.position[0], block.position[1] - length / 2, block.position[2]],
-        dimensions: block.dimensions,
-      });
-    });
-    backCleatBlocks.forEach((block) => {
-      allCleatBlocks.push({
-        position: [block.position[0], block.position[1] - length / 2, block.position[2]],
-        dimensions: block.dimensions,
-      });
-    });
-
-    // Left panel (negative X)
-    const leftPanelBlocks = calculatePanelBlocks(length, height);
-    const leftCleatBlocks = calculateCleatBlocks(length, height);
-    // Translate to left position
-    leftPanelBlocks.forEach((block) => {
-      allPanelBlocks.push({
-        position: [block.position[0] - width / 2, block.position[1], block.position[2]],
-        dimensions: block.dimensions,
-      });
-    });
-    leftCleatBlocks.forEach((block) => {
-      allCleatBlocks.push({
-        position: [block.position[0] - width / 2, block.position[1], block.position[2]],
-        dimensions: block.dimensions,
-      });
-    });
-
-    // Right panel (positive X)
-    const rightPanelBlocks = calculatePanelBlocks(length, height);
-    const rightCleatBlocks = calculateCleatBlocks(length, height);
-    // Translate to right position
-    rightPanelBlocks.forEach((block) => {
-      allPanelBlocks.push({
-        position: [block.position[0] + width / 2, block.position[1], block.position[2]],
-        dimensions: block.dimensions,
-      });
-    });
-    rightCleatBlocks.forEach((block) => {
-      allCleatBlocks.push({
-        position: [block.position[0] + width / 2, block.position[1], block.position[2]],
-        dimensions: block.dimensions,
-      });
-    });
-
-    // Top panel (positive Z)
-    const topPanelBlocks = calculatePanelBlocks(width, length);
-    const topCleatBlocks = calculateCleatBlocks(width, length);
-    // Translate to top position
-    topPanelBlocks.forEach((block) => {
-      allPanelBlocks.push({
-        position: [block.position[0], block.position[1], block.position[2] + height],
-        dimensions: block.dimensions,
-      });
-    });
-    topCleatBlocks.forEach((block) => {
-      allCleatBlocks.push({
-        position: [block.position[0], block.position[1], block.position[2] + height],
-        dimensions: block.dimensions,
-      });
-    });
-
-    return [...skidBlocks, ...floorboardBlocks, ...allPanelBlocks, ...allCleatBlocks];
-  }, [config]);
+  const categorized = geometry;
 
   // Calculate CoG stability for visualization
   const cogStability = useMemo(() => {
@@ -139,9 +47,10 @@ const CrateModel = memo(function CrateModel({
   return (
     <group position={[0, 0, 0]}>
       {/* The origin is now at the center of the crate floor. All component positions are relative to this. */}
-      {allBlocks.map((block, index) => (
+      {/* Skids */}
+      {categorized.skids.map((block, i) => (
         <Box
-          key={index}
+          key={`skid-${i}`}
           args={[
             (block.dimensions[0] * INCHES_TO_MM) / MM_TO_METERS,
             (block.dimensions[1] * INCHES_TO_MM) / MM_TO_METERS,
@@ -152,7 +61,117 @@ const CrateModel = memo(function CrateModel({
             (block.position[1] * INCHES_TO_MM) / MM_TO_METERS,
             (block.position[2] * INCHES_TO_MM) / MM_TO_METERS,
           ]}
-          material={SHARED_MATERIALS.SKID_WOOD} // Placeholder material
+          material={SHARED_MATERIALS.SKID_WOOD}
+        />
+      ))}
+      {/* Floorboards */}
+      {categorized.floorboards.map((block, i) => (
+        <Box
+          key={`floor-${i}`}
+          args={[
+            (block.dimensions[0] * INCHES_TO_MM) / MM_TO_METERS,
+            (block.dimensions[1] * INCHES_TO_MM) / MM_TO_METERS,
+            (block.dimensions[2] * INCHES_TO_MM) / MM_TO_METERS,
+          ]}
+          position={[
+            (block.position[0] * INCHES_TO_MM) / MM_TO_METERS,
+            (block.position[1] * INCHES_TO_MM) / MM_TO_METERS,
+            (block.position[2] * INCHES_TO_MM) / MM_TO_METERS,
+          ]}
+          material={SHARED_MATERIALS.FLOORBOARD_STANDARD}
+        />
+      ))}
+      {/* Panels */}
+      {categorized.panels.map((block, i) => {
+        // Re-map dimensions based on orientation so thickness aligns with panel normal
+        const thickness = (0.75 * INCHES_TO_MM) / MM_TO_METERS;
+        let args: [number, number, number];
+        const dim0 = (block.dimensions[0] * INCHES_TO_MM) / MM_TO_METERS;
+        const dim1 = (block.dimensions[1] * INCHES_TO_MM) / MM_TO_METERS;
+        if ((block as OrientedBlock).orientation === 'frontback') {
+          // X = panel width, Y = thickness, Z = panel height
+          args = [dim0, thickness, dim1];
+        } else if ((block as OrientedBlock).orientation === 'leftright') {
+          // X = thickness, Y = panel length, Z = panel height (dim0 represents length for side panels)
+          args = [thickness, dim0, dim1];
+        } else {
+          // top panel: X = width, Y = length, Z = thickness (already dim0=width, dim1=length)
+          args = [dim0, dim1, thickness];
+        }
+        return (
+          <Box
+            key={`panel-${i}`}
+            args={args}
+            position={[
+              (block.position[0] * INCHES_TO_MM) / MM_TO_METERS,
+              (block.position[1] * INCHES_TO_MM) / MM_TO_METERS,
+              (block.position[2] * INCHES_TO_MM) / MM_TO_METERS,
+            ]}
+            material={SHARED_MATERIALS.SIDE_PANEL}
+          />
+        );
+      })}
+      {/* Panel Labels */}
+      {(() => {
+        const { width, length, height } = config.dimensions;
+        const labels: { text: string; pos: [number, number, number] }[] = [
+          {
+            text: 'Front',
+            pos: [
+              0,
+              ((length / 2 + 1) * INCHES_TO_MM) / MM_TO_METERS,
+              ((height / 2) * INCHES_TO_MM) / MM_TO_METERS,
+            ],
+          },
+          {
+            text: 'Back',
+            pos: [
+              0,
+              ((-length / 2 - 1) * INCHES_TO_MM) / MM_TO_METERS,
+              ((height / 2) * INCHES_TO_MM) / MM_TO_METERS,
+            ],
+          },
+          {
+            text: 'Left',
+            pos: [
+              ((-width / 2 - 1) * INCHES_TO_MM) / MM_TO_METERS,
+              0,
+              ((height / 2) * INCHES_TO_MM) / MM_TO_METERS,
+            ],
+          },
+          {
+            text: 'Right',
+            pos: [
+              ((width / 2 + 1) * INCHES_TO_MM) / MM_TO_METERS,
+              0,
+              ((height / 2) * INCHES_TO_MM) / MM_TO_METERS,
+            ],
+          },
+          { text: 'Top', pos: [0, 0, ((height + 1) * INCHES_TO_MM) / MM_TO_METERS] },
+        ];
+        return labels.map((l) => (
+          <Html key={l.text} position={l.pos} center distanceFactor={25}>
+            <div className="bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded shadow-sm tracking-wide">
+              {l.text}
+            </div>
+          </Html>
+        ));
+      })()}
+      {/* Cleats */}
+      {categorized.cleats.map((block, i) => (
+        <Box
+          key={`cleat-${i}`}
+          args={[
+            (block.dimensions[0] * INCHES_TO_MM) / MM_TO_METERS,
+            (block.dimensions[1] * INCHES_TO_MM) / MM_TO_METERS,
+            (block.dimensions[2] * INCHES_TO_MM) / MM_TO_METERS,
+          ]}
+          position={[
+            (block.position[0] * INCHES_TO_MM) / MM_TO_METERS,
+            (block.position[1] * INCHES_TO_MM) / MM_TO_METERS,
+            (block.position[2] * INCHES_TO_MM) / MM_TO_METERS,
+          ]}
+          material={SHARED_MATERIALS.CLEAT_WOOD}
         />
       ))}
 
@@ -217,6 +236,24 @@ const CrateModel = memo(function CrateModel({
   );
 });
 
+// Automatically fits the camera to the crate dimensions so the model isn't tiny on first load
+const AutoFitCamera = ({
+  aabb,
+  enabled,
+}: {
+  aabb: ReturnType<typeof buildCrateGeometry>['aabb'] | null;
+  enabled: boolean;
+}) => {
+  const { camera, size } = useThree();
+  useEffect(() => {
+    if (!enabled || !aabb) return;
+    const perspective = camera as PerspectiveCamera;
+    perspective.aspect = size.width / size.height;
+    fitCameraToBox(perspective, aabb, { margin: 0.2, minDistance: 0.5 });
+  }, [aabb, enabled, camera, size]);
+  return null;
+};
+
 // PERFORMANCE: Internal performance monitoring component
 const PerformanceTracker = memo(function PerformanceTracker() {
   const { recordFrame } = usePerformanceMonitor(process.env.NODE_ENV === 'development');
@@ -263,6 +300,9 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
     }
   }, [configuration]);
 
+  // Auto-calculate camera position based on crate dimensions for optimal viewing distance
+  const cameraPosition = [3, -3, 2]; // starter; AutoFitCamera will override
+
   useEffect(() => {
     if (validatedConfig && canRender) {
       logDebug(
@@ -286,7 +326,7 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
   return (
     <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg relative">
       {/* Explode View Controls */}
-      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm p-3 rounded-lg z-10">
+      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm p-3 rounded-lg z-10 space-y-3">
         <div className="flex items-center space-x-2 mb-2">
           <button
             onClick={() => {
@@ -308,14 +348,19 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
                 );
               }
             }}
-            className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+            className="px-3 py-1 bg-blue-700 text-white text-sm rounded hover:bg-blue-800 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 transition-colors"
+            aria-label={
+              explodeFactor === 0 ? 'Enable exploded crate view' : 'Reset to assembled crate view'
+            }
           >
             {explodeFactor === 0 ? 'Explode View' : 'Reset View'}
           </button>
         </div>
         {explodeFactor > 0 && (
           <div className="space-y-2">
-            <label className="text-xs font-medium text-gray-700">Explode: {explodeFactor}%</label>
+            <label className="text-xs font-medium text-gray-700" htmlFor="explodeRange">
+              Explode: {explodeFactor}%
+            </label>
             <input
               type="range"
               min="0"
@@ -328,10 +373,29 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
                   console.error('Explode factor change error:', error);
                 }
               }}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              id="explodeRange"
+              aria-label="Exploded view separation percentage"
             />
           </div>
         )}
+        {/* Legend */}
+        <div className="grid grid-cols-2 gap-2 text-[10px] leading-tight">
+          {[
+            ['Skids', '#5D3A1A'],
+            ['Floor', '#A0662B'],
+            ['Panels', '#CFAF72'],
+            ['Cleats', '#4A2F14'],
+          ].map(([label, color]) => (
+            <div key={label} className="flex items-center gap-1">
+              <span
+                className="inline-block w-3 h-3 rounded-sm border"
+                style={{ backgroundColor: color as string }}
+              />
+              <span className="text-gray-700">{label}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Error Display */}
@@ -343,12 +407,10 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
       )}
 
       <Canvas
+        // Ensure canvas always fills available space
+        style={{ width: '100%', height: '100%' }}
         camera={{
-          position: [
-            validatedConfig?.dimensions.width ?? 10,
-            -10,
-            validatedConfig?.dimensions.height ?? 5,
-          ],
+          position: cameraPosition as [number, number, number],
           fov: 50,
           up: [0, 0, 1],
         }}
@@ -402,7 +464,19 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
         </group>
 
         {validatedConfig && canRender ? (
-          <CrateModel config={validatedConfig} _explodeFactor={explodeFactor} />
+          (() => {
+            const geometry = buildCrateGeometry(validatedConfig);
+            return (
+              <>
+                <AutoFitCamera aabb={geometry.aabb} enabled={true} />
+                <CrateModel
+                  config={validatedConfig}
+                  geometry={geometry}
+                  _explodeFactor={explodeFactor}
+                />
+              </>
+            );
+          })()
         ) : (
           <Html position={[0, 0, 2]} center distanceFactor={10}>
             <div style={{ color: 'gray', fontSize: '20px', fontWeight: 'bold' }}>

@@ -129,4 +129,6 @@ export interface NXExpression {
 export interface Block {
   position: [number, number, number];
   dimensions: [number, number, number];
+  // Optional orientation tag for panels: front/back faces, left/right faces, or top panel
+  orientation?: 'frontback' | 'leftright' | 'top';
 }

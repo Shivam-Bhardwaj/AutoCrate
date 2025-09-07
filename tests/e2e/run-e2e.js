@@ -2,9 +2,26 @@
 
 /**
  * Puppeteer E2E Test Runner
- * This script runs all E2E tests using Puppeteer
- * Automatically starts the dev server if not running
+ * Modes:
+ *  -- default dev auto-start (next dev)
+ *  -- --prod build + next start (stable HTML)
  */
+
+// Early signal shielding
+let earlyFirstSigint = true;
+process.on('SIGINT', () => {
+  if (earlyFirstSigint) {
+    console.warn('\n(EARLY) SIGINT intercepted before startup init. Press again to abort.');
+    earlyFirstSigint = false;
+    return;
+  }
+  console.warn('\n(EARLY) Second SIGINT received. Exiting.');
+  process.exit(130);
+});
+process.on('SIGTERM', () => {
+  console.warn('\n(EARLY) SIGTERM received. Exiting.');
+  process.exit(143);
+});
 
 const { spawn } = require('child_process');
 const path = require('path');
@@ -29,6 +46,7 @@ const args = process.argv.slice(2);
 const headless = !args.includes('--headed');
 const debug = args.includes('--debug');
 const skipServerStart = args.includes('--no-server');
+const prodMode = args.includes('--prod');
 
 if (!headless) {
   env.HEADLESS = 'false';
@@ -93,29 +111,48 @@ function startDevServer() {
   return server;
 }
 
+function startProdServer() {
+  console.log('Starting production server...');
+  const server = spawn('npm', ['run', 'start'], { detached: false, stdio: 'pipe', shell: true });
+  server.stdout.on('data', (d) => debug && console.log(`[PROD SERVER]: ${d}`));
+  server.stderr.on('data', (d) => debug && console.error(`[PROD SERVER ERROR]: ${d}`));
+  server.on('error', (err) => console.error('Failed to start prod server:', err));
+  return server;
+}
+
+async function buildProd() {
+  console.log('Building application (production)...');
+  return new Promise((resolve, reject) => {
+    const b = spawn('npm', ['run', 'build'], { stdio: 'inherit', shell: true });
+    b.on('exit', (code) =>
+      code === 0 ? resolve(true) : reject(new Error(`Build failed with code ${code}`))
+    );
+  });
+}
+
 async function runTests() {
   let devServer = null;
   let serverStarted = false;
 
   try {
     if (!skipServerStart) {
-      console.log('Checking if development server is running...');
-      const isRunning = await checkServer(env.PUPPETEER_BASE_URL, 2000);
-
+      if (prodMode) {
+        await buildProd();
+      }
+      console.log(`Checking if server is running (${prodMode ? 'prod' : 'dev'} mode)...`);
+      const isRunning = await checkServer(env.PUPPETEER_BASE_URL, prodMode ? 8000 : 4000);
       if (!isRunning) {
-        console.log('Development server not detected. Starting...');
-        devServer = startDevServer();
-
-        console.log('Waiting for server to be ready...');
-        serverStarted = await checkServer(env.PUPPETEER_BASE_URL, 30000);
-
+        console.log('Server not detected. Starting...');
+        devServer = prodMode ? startProdServer() : startDevServer();
+        console.log('Waiting for server to be ready (up to 60s)...');
+        serverStarted = await checkServer(env.PUPPETEER_BASE_URL, prodMode ? 90000 : 60000);
         if (!serverStarted) {
-          console.error('Failed to start development server after 30 seconds');
+          console.error(`Failed to start server after ${prodMode ? '90' : '60'} seconds`);
           process.exit(1);
         }
-        console.log('Development server is ready!');
+        console.log('Server is ready!');
       } else {
-        console.log('Development server is already running.');
+        console.log('Server is already running.');
       }
     }
 
@@ -133,7 +170,9 @@ async function runTests() {
 
     console.log('\nStarting Puppeteer E2E tests...');
     console.log(`Base URL: ${env.PUPPETEER_BASE_URL}`);
-    console.log(`Mode: ${headless ? 'Headless' : 'Headed'}`);
+    console.log(
+      `Mode: ${headless ? 'Headless' : 'Headed'} | Server: ${prodMode ? 'production' : 'dev'}`
+    );
     console.log('');
 
     const jest = spawn('npx', ['jest', ...jestArgs], {
@@ -185,5 +224,52 @@ process.on('SIGTERM', () => {
   process.exit(0);
 });
 
-// Run the tests
-runTests();
+// Simple watchdog to detect inactivity (no console output from Jest for N ms)
+let lastActivity = Date.now();
+const WATCHDOG_INTERVAL = 15000; // 15s check
+const INACTIVITY_LIMIT = 120000; // 2 minutes
+
+const activityLog = (msg) => {
+  lastActivity = Date.now();
+  if (debug) console.log(`[E2E-ACTIVITY] ${new Date().toISOString()} ${msg}`);
+};
+
+const watchdog = setInterval(() => {
+  const idle = Date.now() - lastActivity;
+  if (idle > INACTIVITY_LIMIT) {
+    console.error(`Watchdog: no test activity for ${Math.round(idle / 1000)}s, forcing exit.`);
+    process.exit(1);
+  }
+}, WATCHDOG_INTERVAL);
+
+let firstSigint = true;
+
+process.on('SIGINT', () => {
+  if (firstSigint) {
+    console.warn(
+      '\nSIGINT received (ignored once to allow graceful shutdown). Press Ctrl+C again to abort.'
+    );
+    firstSigint = false;
+    return;
+  }
+  console.log('\nSecond SIGINT – exiting now.');
+  clearInterval(watchdog);
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  console.log('\nReceived SIGTERM, shutting down gracefully...');
+  clearInterval(watchdog);
+  process.exit(0);
+});
+
+activityLog('Initializing runTests');
+runTests()
+  .then(() => {
+    activityLog('runTests resolved');
+    clearInterval(watchdog);
+  })
+  .catch((e) => {
+    console.error('runTests error', e);
+    clearInterval(watchdog);
+  });

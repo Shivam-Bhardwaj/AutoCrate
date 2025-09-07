@@ -15,43 +15,45 @@ import { MeshStandardMaterial, MeshBasicMaterial } from 'three';
 // PERFORMANCE: Pre-created shared materials to avoid recreation on every render
 export const SHARED_MATERIALS = {
   // Wood materials for different components
+  // Skids (darker wood)
   SKID_WOOD: new MeshStandardMaterial({
-    color: '#8B4513',
+    color: '#5D3A1A', // dark brown
     roughness: 0.9,
     metalness: 0.05,
   }),
 
+  // Floorboards (medium warm tone)
   FLOORBOARD_STANDARD: new MeshStandardMaterial({
-    color: '#8B4513',
-    roughness: 0.9,
+    color: '#888888', // neutral gray for strong contrast
+    roughness: 0.6,
     metalness: 0.05,
   }),
 
   FLOORBOARD_NARROW: new MeshStandardMaterial({
-    color: '#6B3410',
-    roughness: 0.9,
+    color: '#9A9A9A', // lighter gray variant
+    roughness: 0.6,
     metalness: 0.05,
   }),
 
   RUB_STRIP: new MeshStandardMaterial({
-    color: '#6B3410',
-    roughness: 0.9,
+    color: '#804A24',
+    roughness: 0.85,
     metalness: 0.05,
   }),
 
   // Panel materials
   SIDE_PANEL: new MeshStandardMaterial({
-    color: '#DEB887',
+    color: '#CFAF72', // tan
     transparent: true,
-    opacity: 0.8,
+    opacity: 0.75,
     roughness: 0.7,
     metalness: 0.1,
   }),
 
   TOP_PANEL: new MeshStandardMaterial({
-    color: '#F5DEB3',
+    color: '#E9D3A3', // lighter wheat
     transparent: true,
-    opacity: 0.9,
+    opacity: 0.85,
     roughness: 0.7,
     metalness: 0.1,
   }),
@@ -65,9 +67,9 @@ export const SHARED_MATERIALS = {
 
   // Cleat material for corner reinforcements
   CLEAT_WOOD: new MeshStandardMaterial({
-    color: '#654321',
-    roughness: 0.8,
-    metalness: 0.1,
+    color: '#4A2F14', // dark accent
+    roughness: 0.85,
+    metalness: 0.08,
   }),
 } as const;
 
