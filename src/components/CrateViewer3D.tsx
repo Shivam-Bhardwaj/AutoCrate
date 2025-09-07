@@ -96,10 +96,10 @@ const CrateModel = memo(function CrateModel({
           const { width, length, height } = config.dimensions;
           const maxDim = Math.max(width, length, height);
 
-          // Calculate proportional offset and font size
-          const labelOffset = Math.max(6, Math.min(12, maxDim * 0.15));
-          const fontSize = Math.max(10, Math.min(14, 10 + (maxDim / 100) * 4));
-          const distanceFactor = Math.max(8, Math.min(15, 8 + (maxDim / 100) * 7));
+          // Calculate proportional offset and font size - much smaller and further away
+          const labelOffset = Math.max(15, Math.min(30, maxDim * 0.5));
+          const fontSize = Math.max(9, Math.min(11, 9 + (maxDim / 200) * 2));
+          const distanceFactor = Math.max(15, Math.min(25, 15 + (maxDim / 100) * 10));
 
           const labels: {
             text: string;
@@ -150,33 +150,17 @@ const CrateModel = memo(function CrateModel({
                   <Html position={l.pos} center distanceFactor={distanceFactor}>
                     <div
                       style={{
-                        backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                        backgroundColor: 'rgba(30, 41, 59, 0.85)',
                         color: 'white',
                         fontSize: `${fontSize}px`,
-                        fontWeight: '600',
-                        padding: '4px 10px',
-                        borderRadius: '12px',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                        border: '1px solid rgba(148, 163, 184, 0.3)',
+                        fontWeight: '500',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
                         whiteSpace: 'nowrap',
-                        position: 'relative',
                       }}
                     >
                       {l.text}
-                      {/* Balloon tail pointing towards face */}
-                      <div
-                        style={{
-                          position: 'absolute',
-                          width: 0,
-                          height: 0,
-                          borderStyle: 'solid',
-                          borderWidth: '6px 4px 0 4px',
-                          borderColor: 'rgba(30, 41, 59, 0.95) transparent transparent transparent',
-                          bottom: '-6px',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                        }}
-                      />
                     </div>
                   </Html>
                 </group>
@@ -243,41 +227,31 @@ const CrateModel = memo(function CrateModel({
         </group>
       )}
 
-      {/* Overall dimensions label - proportionally sized */}
-      {(() => {
-        const maxDim = Math.max(
-          config.dimensions.width,
-          config.dimensions.length,
-          config.dimensions.height
-        );
-        const fontSize = Math.max(11, Math.min(16, 11 + (maxDim / 100) * 5));
-        const distanceFactor = Math.max(8, Math.min(15, 8 + (maxDim / 100) * 7));
-        const labelOffset = Math.max(8, Math.min(16, maxDim * 0.2));
-
-        return (
-          <Html
-            position={[0, 0, (config.dimensions.height + labelOffset) * INCH_TO_3D]}
-            center
-            distanceFactor={distanceFactor}
-          >
-            <div
-              style={{
-                backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                color: 'white',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                fontSize: `${fontSize}px`,
-                fontWeight: '600',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                border: '1px solid rgba(148, 163, 184, 0.2)',
-              }}
-            >
-              {config.dimensions.length}&quot; x {config.dimensions.width}&quot; x{' '}
-              {config.dimensions.height}&quot;
-            </div>
-          </Html>
-        );
-      })()}
+      {/* Overall dimensions label - positioned behind and to the side */}
+      <Html
+        position={[
+          config.dimensions.width * 0.8 * INCH_TO_3D,
+          -(config.dimensions.length * 0.8) * INCH_TO_3D,
+          config.dimensions.height * 0.3 * INCH_TO_3D,
+        ]}
+        center
+        distanceFactor={25}
+      >
+        <div
+          style={{
+            backgroundColor: 'rgba(15, 23, 42, 0.7)',
+            color: 'white',
+            padding: '2px 5px',
+            borderRadius: '2px',
+            fontSize: '9px',
+            fontWeight: '400',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+          }}
+        >
+          {config.dimensions.length}&quot; × {config.dimensions.width}&quot; ×{' '}
+          {config.dimensions.height}&quot;
+        </div>
+      </Html>
       {/* TODO: Add Klimp Fastener Visualization */}
       {/* TODO: Add Decal Visualization */}
     </group>
