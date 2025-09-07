@@ -1,20 +1,22 @@
 'use client';
 
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid, Box, Html, Sphere } from '@react-three/drei';
-import { CrateConfiguration, Block } from '@/types/crate';
+import { OrbitControls, Grid, Box, Html, Sphere, Line } from '@react-three/drei';
+import { CrateConfiguration } from '@/types/crate';
 import { useLogsStore } from '@/store/logs-store';
 import { useEffect, useState, useMemo, memo } from 'react';
-// Geometry now centralized in buildCrateGeometry (outputs meters)
-import { buildCrateGeometry } from '@/utils/geometry/crate-geometry';
-import { fitCameraToBox } from '@/utils/geometry/camera-fit';
+// Simple, correct geometry implementation
+import {
+  buildSimpleCrateGeometry,
+  scaleForVisualization,
+  INCH_TO_3D,
+} from '@/utils/geometry/simple-crate-geometry';
 import { CoordinateAxes } from './CoordinateAxes';
+import { MeasurementLines } from './MeasurementLines';
 import { validateCrateConfiguration, isValidForRendering } from '@/utils/input-validation';
-import { INCHES_TO_MM, MM_TO_METERS, PANEL_THICKNESS } from '@/lib/constants';
 import { SHARED_MATERIALS } from '@/utils/materials';
 import { usePerformanceMonitor } from '@/utils/performance-monitor';
 import { useFrame, useThree } from '@react-three/fiber';
-import type { PerspectiveCamera } from 'three';
 import { validateCoGStability } from '@/services/cog-calculator';
 
 interface CrateViewer3DProps {
@@ -23,18 +25,16 @@ interface CrateViewer3DProps {
 
 const CrateModel = memo(function CrateModel({
   config,
-  geometry,
   _explodeFactor = 0,
+  showFaceLabels = true,
 }: {
   config: CrateConfiguration;
-  geometry: ReturnType<typeof buildCrateGeometry>;
   _explodeFactor?: number;
+  showFaceLabels?: boolean;
 }) {
-  interface OrientedBlock extends Block {
-    orientation?: 'frontback' | 'leftright' | 'top';
-  }
-
-  const categorized = geometry;
+  // Build and scale geometry
+  const geometryInches = buildSimpleCrateGeometry(config);
+  const geometry = scaleForVisualization(geometryInches);
 
   // Calculate CoG stability for visualization
   const cogStability = useMemo(() => {
@@ -48,129 +48,148 @@ const CrateModel = memo(function CrateModel({
     <group position={[0, 0, 0]}>
       {/* The origin is now at the center of the crate floor. All component positions are relative to this. */}
       {/* Skids */}
-      {categorized.skids.map((block, i) => (
+      {geometry.skids.map((block, i) => (
         <Box
           key={`skid-${i}`}
-          args={[
-            (block.dimensions[0] * INCHES_TO_MM) / MM_TO_METERS,
-            (block.dimensions[1] * INCHES_TO_MM) / MM_TO_METERS,
-            (block.dimensions[2] * INCHES_TO_MM) / MM_TO_METERS,
-          ]}
-          position={[
-            (block.position[0] * INCHES_TO_MM) / MM_TO_METERS,
-            (block.position[1] * INCHES_TO_MM) / MM_TO_METERS,
-            (block.position[2] * INCHES_TO_MM) / MM_TO_METERS,
-          ]}
+          args={block.dimensions}
+          position={block.position}
           material={SHARED_MATERIALS.SKID_WOOD}
         />
       ))}
-      {/* Floorboards */}
-      {categorized.floorboards.map((block, i) => (
-        <Box
-          key={`floor-${i}`}
-          args={[
-            (block.dimensions[0] * INCHES_TO_MM) / MM_TO_METERS,
-            (block.dimensions[1] * INCHES_TO_MM) / MM_TO_METERS,
-            (block.dimensions[2] * INCHES_TO_MM) / MM_TO_METERS,
-          ]}
-          position={[
-            (block.position[0] * INCHES_TO_MM) / MM_TO_METERS,
-            (block.position[1] * INCHES_TO_MM) / MM_TO_METERS,
-            (block.position[2] * INCHES_TO_MM) / MM_TO_METERS,
-          ]}
-          material={SHARED_MATERIALS.FLOORBOARD_STANDARD}
-        />
-      ))}
-      {/* Panels */}
-      {categorized.panels.map((block, i) => {
-        // Re-map dimensions based on orientation so thickness aligns with panel normal
-        const thickness = (0.75 * INCHES_TO_MM) / MM_TO_METERS;
-        let args: [number, number, number];
-        const dim0 = (block.dimensions[0] * INCHES_TO_MM) / MM_TO_METERS;
-        const dim1 = (block.dimensions[1] * INCHES_TO_MM) / MM_TO_METERS;
-        if ((block as OrientedBlock).orientation === 'frontback') {
-          // X = panel width, Y = thickness, Z = panel height
-          args = [dim0, thickness, dim1];
-        } else if ((block as OrientedBlock).orientation === 'leftright') {
-          // X = thickness, Y = panel length, Z = panel height (dim0 represents length for side panels)
-          args = [thickness, dim0, dim1];
-        } else {
-          // top panel: X = width, Y = length, Z = thickness (already dim0=width, dim1=length)
-          args = [dim0, dim1, thickness];
-        }
-        return (
-          <Box
-            key={`panel-${i}`}
-            args={args}
-            position={[
-              (block.position[0] * INCHES_TO_MM) / MM_TO_METERS,
-              (block.position[1] * INCHES_TO_MM) / MM_TO_METERS,
-              (block.position[2] * INCHES_TO_MM) / MM_TO_METERS,
-            ]}
-            material={SHARED_MATERIALS.SIDE_PANEL}
-          />
-        );
-      })}
-      {/* Panel Labels */}
-      {(() => {
-        const { width, length, height } = config.dimensions;
-        const labels: { text: string; pos: [number, number, number] }[] = [
-          {
-            text: 'Front',
-            pos: [
-              0,
-              ((length / 2 + 1) * INCHES_TO_MM) / MM_TO_METERS,
-              ((height / 2) * INCHES_TO_MM) / MM_TO_METERS,
-            ],
-          },
-          {
-            text: 'Back',
-            pos: [
-              0,
-              ((-length / 2 - 1) * INCHES_TO_MM) / MM_TO_METERS,
-              ((height / 2) * INCHES_TO_MM) / MM_TO_METERS,
-            ],
-          },
-          {
-            text: 'Left',
-            pos: [
-              ((-width / 2 - 1) * INCHES_TO_MM) / MM_TO_METERS,
-              0,
-              ((height / 2) * INCHES_TO_MM) / MM_TO_METERS,
-            ],
-          },
-          {
-            text: 'Right',
-            pos: [
-              ((width / 2 + 1) * INCHES_TO_MM) / MM_TO_METERS,
-              0,
-              ((height / 2) * INCHES_TO_MM) / MM_TO_METERS,
-            ],
-          },
-          { text: 'Top', pos: [0, 0, ((height + 1) * INCHES_TO_MM) / MM_TO_METERS] },
-        ];
-        return labels.map((l) => (
-          <Html key={l.text} position={l.pos} center distanceFactor={25}>
-            <div className="bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded shadow-sm tracking-wide">
-              {l.text}
-            </div>
-          </Html>
-        ));
-      })()}
+
+      {/* Floor */}
+      <Box
+        args={geometry.floor.dimensions}
+        position={geometry.floor.position}
+        material={SHARED_MATERIALS.FLOORBOARD_STANDARD}
+      />
+
+      {/* Panels - properly oriented as walls */}
+      <Box
+        args={geometry.panels.front.dimensions}
+        position={geometry.panels.front.position}
+        material={SHARED_MATERIALS.SIDE_PANEL}
+      />
+      <Box
+        args={geometry.panels.back.dimensions}
+        position={geometry.panels.back.position}
+        material={SHARED_MATERIALS.SIDE_PANEL}
+      />
+      <Box
+        args={geometry.panels.left.dimensions}
+        position={geometry.panels.left.position}
+        material={SHARED_MATERIALS.SIDE_PANEL}
+      />
+      <Box
+        args={geometry.panels.right.dimensions}
+        position={geometry.panels.right.position}
+        material={SHARED_MATERIALS.SIDE_PANEL}
+      />
+      <Box
+        args={geometry.panels.top.dimensions}
+        position={geometry.panels.top.position}
+        material={SHARED_MATERIALS.SIDE_PANEL}
+      />
+      {/* Panel Labels - Balloon Style */}
+      {showFaceLabels &&
+        (() => {
+          const { width, length, height } = config.dimensions;
+          const maxDim = Math.max(width, length, height);
+
+          // Calculate proportional offset and font size
+          const labelOffset = Math.max(6, Math.min(12, maxDim * 0.15));
+          const fontSize = Math.max(10, Math.min(14, 10 + (maxDim / 100) * 4));
+          const distanceFactor = Math.max(8, Math.min(15, 8 + (maxDim / 100) * 7));
+
+          const labels: {
+            text: string;
+            pos: [number, number, number];
+            lineEnd?: [number, number, number];
+          }[] = [
+            {
+              text: 'Front',
+              pos: [0, (length / 2 + labelOffset) * INCH_TO_3D, (height / 2) * INCH_TO_3D],
+              lineEnd: [0, (length / 2 + 1) * INCH_TO_3D, (height / 2) * INCH_TO_3D],
+            },
+            {
+              text: 'Back',
+              pos: [0, (-length / 2 - labelOffset) * INCH_TO_3D, (height / 2) * INCH_TO_3D],
+              lineEnd: [0, (-length / 2 - 1) * INCH_TO_3D, (height / 2) * INCH_TO_3D],
+            },
+            {
+              text: 'Left',
+              pos: [(-width / 2 - labelOffset) * INCH_TO_3D, 0, (height / 2) * INCH_TO_3D],
+              lineEnd: [(-width / 2 - 1) * INCH_TO_3D, 0, (height / 2) * INCH_TO_3D],
+            },
+            {
+              text: 'Right',
+              pos: [(width / 2 + labelOffset) * INCH_TO_3D, 0, (height / 2) * INCH_TO_3D],
+              lineEnd: [(width / 2 + 1) * INCH_TO_3D, 0, (height / 2) * INCH_TO_3D],
+            },
+            {
+              text: 'Top',
+              pos: [0, 0, (height + labelOffset) * INCH_TO_3D],
+              lineEnd: [0, 0, (height + 1) * INCH_TO_3D],
+            },
+          ];
+          return (
+            <>
+              {labels.map((l) => (
+                <group key={l.text}>
+                  {/* Connecting line from label to face */}
+                  {l.lineEnd && (
+                    <Line
+                      points={[l.lineEnd, l.pos]}
+                      color="#94a3b8"
+                      lineWidth={1}
+                      opacity={0.4}
+                      transparent
+                    />
+                  )}
+                  {/* Balloon label */}
+                  <Html position={l.pos} center distanceFactor={distanceFactor}>
+                    <div
+                      style={{
+                        backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                        color: 'white',
+                        fontSize: `${fontSize}px`,
+                        fontWeight: '600',
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        border: '1px solid rgba(148, 163, 184, 0.3)',
+                        whiteSpace: 'nowrap',
+                        position: 'relative',
+                      }}
+                    >
+                      {l.text}
+                      {/* Balloon tail pointing towards face */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          width: 0,
+                          height: 0,
+                          borderStyle: 'solid',
+                          borderWidth: '6px 4px 0 4px',
+                          borderColor: 'rgba(30, 41, 59, 0.95) transparent transparent transparent',
+                          bottom: '-6px',
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                        }}
+                      />
+                    </div>
+                  </Html>
+                </group>
+              ))}
+            </>
+          );
+        })()}
       {/* Cleats */}
-      {categorized.cleats.map((block, i) => (
+      {geometry.cleats.map((block, i) => (
         <Box
           key={`cleat-${i}`}
-          args={[
-            (block.dimensions[0] * INCHES_TO_MM) / MM_TO_METERS,
-            (block.dimensions[1] * INCHES_TO_MM) / MM_TO_METERS,
-            (block.dimensions[2] * INCHES_TO_MM) / MM_TO_METERS,
-          ]}
-          position={[
-            (block.position[0] * INCHES_TO_MM) / MM_TO_METERS,
-            (block.position[1] * INCHES_TO_MM) / MM_TO_METERS,
-            (block.position[2] * INCHES_TO_MM) / MM_TO_METERS,
-          ]}
+          args={block.dimensions}
+          position={block.position}
           material={SHARED_MATERIALS.CLEAT_WOOD}
         />
       ))}
@@ -179,11 +198,11 @@ const CrateModel = memo(function CrateModel({
       {config.centerOfGravity?.combinedCoG && (
         <group>
           <Sphere
-            args={[0.1]} // 0.1 meter radius (about 4 inches)
+            args={[4 * INCH_TO_3D]} // 4 inch radius sphere
             position={[
-              (config.centerOfGravity.combinedCoG.x * INCHES_TO_MM) / MM_TO_METERS,
-              (config.centerOfGravity.combinedCoG.y * INCHES_TO_MM) / MM_TO_METERS,
-              (config.centerOfGravity.combinedCoG.z * INCHES_TO_MM) / MM_TO_METERS,
+              config.centerOfGravity.combinedCoG.x * INCH_TO_3D,
+              config.centerOfGravity.combinedCoG.y * INCH_TO_3D,
+              config.centerOfGravity.combinedCoG.z * INCH_TO_3D,
             ]}
           >
             <meshStandardMaterial
@@ -208,9 +227,9 @@ const CrateModel = memo(function CrateModel({
           {/* CoG Label */}
           <Html
             position={[
-              (config.centerOfGravity.combinedCoG.x * INCHES_TO_MM) / MM_TO_METERS,
-              (config.centerOfGravity.combinedCoG.y * INCHES_TO_MM) / MM_TO_METERS,
-              (config.centerOfGravity.combinedCoG.z * INCHES_TO_MM) / MM_TO_METERS + 0.2,
+              config.centerOfGravity.combinedCoG.x * INCH_TO_3D,
+              config.centerOfGravity.combinedCoG.y * INCH_TO_3D,
+              (config.centerOfGravity.combinedCoG.z + 8) * INCH_TO_3D,
             ]}
             center
             distanceFactor={10}
@@ -224,33 +243,61 @@ const CrateModel = memo(function CrateModel({
         </group>
       )}
 
-      <Html position={[0, 0, config.dimensions.height + 1]}>
-        <div className="bg-black/80 text-white px-2 py-1 rounded text-xs">
-          {config.dimensions.length}&quot; x {config.dimensions.width}&quot; x{' '}
-          {config.dimensions.height}&quot;
-        </div>
-      </Html>
+      {/* Overall dimensions label - proportionally sized */}
+      {(() => {
+        const maxDim = Math.max(
+          config.dimensions.width,
+          config.dimensions.length,
+          config.dimensions.height
+        );
+        const fontSize = Math.max(11, Math.min(16, 11 + (maxDim / 100) * 5));
+        const distanceFactor = Math.max(8, Math.min(15, 8 + (maxDim / 100) * 7));
+        const labelOffset = Math.max(8, Math.min(16, maxDim * 0.2));
+
+        return (
+          <Html
+            position={[0, 0, (config.dimensions.height + labelOffset) * INCH_TO_3D]}
+            center
+            distanceFactor={distanceFactor}
+          >
+            <div
+              style={{
+                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                color: 'white',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                fontSize: `${fontSize}px`,
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                border: '1px solid rgba(148, 163, 184, 0.2)',
+              }}
+            >
+              {config.dimensions.length}&quot; x {config.dimensions.width}&quot; x{' '}
+              {config.dimensions.height}&quot;
+            </div>
+          </Html>
+        );
+      })()}
       {/* TODO: Add Klimp Fastener Visualization */}
       {/* TODO: Add Decal Visualization */}
     </group>
   );
 });
 
-// Automatically fits the camera to the crate dimensions so the model isn't tiny on first load
-const AutoFitCamera = ({
-  aabb,
-  enabled,
-}: {
-  aabb: ReturnType<typeof buildCrateGeometry>['aabb'] | null;
-  enabled: boolean;
-}) => {
-  const { camera, size } = useThree();
+// Simple camera positioning
+const AutoFitCamera = ({ config }: { config: CrateConfiguration }) => {
+  const { camera } = useThree();
+
   useEffect(() => {
-    if (!enabled || !aabb) return;
-    const perspective = camera as PerspectiveCamera;
-    perspective.aspect = size.width / size.height;
-    fitCameraToBox(perspective, aabb, { margin: 0.2, minDistance: 0.5 });
-  }, [aabb, enabled, camera, size]);
+    const { width, length, height } = config.dimensions;
+    const maxDim = Math.max(width, length, height);
+    const distance = maxDim * INCH_TO_3D * 3;
+
+    camera.position.set(distance, -distance, distance);
+    camera.lookAt(0, 0, (height * INCH_TO_3D) / 2);
+    camera.updateProjectionMatrix();
+  }, [config, camera]);
+
   return null;
 };
 
@@ -278,6 +325,8 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
   const { logInfo, logDebug, logWarning, logError } = useLogsStore();
   const [explodeFactor, setExplodeFactor] = useState(0); // 0-100%
   const [renderError, setRenderError] = useState<string | null>(null);
+  const [showMeasurements, setShowMeasurements] = useState(true);
+  const [showFaceLabels, setShowFaceLabels] = useState(true);
 
   // PERFORMANCE: Memoize validation to avoid re-validation on every render
   const { validatedConfig, canRender } = useMemo(() => {
@@ -379,6 +428,33 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
             />
           </div>
         )}
+        {/* Display Toggles */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="showMeasurements"
+              checked={showMeasurements}
+              onChange={(e) => setShowMeasurements(e.target.checked)}
+              className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500"
+            />
+            <label htmlFor="showMeasurements" className="text-xs font-medium text-gray-700">
+              Show Measurements
+            </label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="showFaceLabels"
+              checked={showFaceLabels}
+              onChange={(e) => setShowFaceLabels(e.target.checked)}
+              className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500"
+            />
+            <label htmlFor="showFaceLabels" className="text-xs font-medium text-gray-700">
+              Show Face Labels
+            </label>
+          </div>
+        </div>
         {/* Legend */}
         <div className="grid grid-cols-2 gap-2 text-[10px] leading-tight">
           {[
@@ -460,19 +536,26 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
         <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
         <Grid args={[20, 20]} rotation={[-Math.PI / 2, 0, 0]} />
         <group position={[0, 0, 0]}>
-          <CoordinateAxes size={3} />
+          <CoordinateAxes size={1} />
         </group>
+        {validatedConfig && (
+          <MeasurementLines
+            width={validatedConfig.dimensions.width}
+            depth={validatedConfig.dimensions.length}
+            height={validatedConfig.dimensions.height}
+            visible={showMeasurements}
+          />
+        )}
 
         {validatedConfig && canRender ? (
           (() => {
-            const geometry = buildCrateGeometry(validatedConfig);
             return (
               <>
-                <AutoFitCamera aabb={geometry.aabb} enabled={true} />
+                <AutoFitCamera config={validatedConfig} />
                 <CrateModel
                   config={validatedConfig}
-                  geometry={geometry}
                   _explodeFactor={explodeFactor}
+                  showFaceLabels={showFaceLabels}
                 />
               </>
             );

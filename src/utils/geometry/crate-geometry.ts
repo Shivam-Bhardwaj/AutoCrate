@@ -1,11 +1,17 @@
 import { CrateConfiguration, Block } from '@/types/crate';
-import { INCHES_TO_MM, MM_TO_METERS, PANEL_THICKNESS, FLOORBOARD_THICKNESS } from '@/lib/constants';
+import { INCHES_TO_MM, MM_TO_METERS } from '@/lib/constants';
 import {
   calculateSkidBlocks,
   calculateFloorboardBlocks,
-  calculatePanelBlocks,
   calculateCleatBlocks,
 } from '@/services/crateCalculations';
+import {
+  createFrontPanelBlocks,
+  createBackPanelBlocks,
+  createLeftPanelBlocks,
+  createRightPanelBlocks,
+  createTopPanelBlocks,
+} from './panel-3d-construction';
 
 /**
  * Geometry units strategy:
@@ -33,88 +39,71 @@ function inchesToMeters(value: number) {
 
 export function buildCrateGeometry(config: CrateConfiguration): CrateGeometry {
   const { width, length, height } = config.dimensions; // inches
-  const widthM = inchesToMeters(width);
-  const lengthM = inchesToMeters(length);
-  const heightM = inchesToMeters(height);
 
-  // Placeholder: reuse existing calculation services (still inch-based). We'll convert them.
-  // Importing lazily to avoid circular deps if any.
-
+  // Get skids and floor from existing services
   const skidInches: Block[] = calculateSkidBlocks(config);
   const floorInches: Block[] = calculateFloorboardBlocks(config);
 
-  // Panels: Build fronts/backs/left/right/top similar to previous logic but tag orientation earlier.
+  // Create panels using proper 3D construction
   const panels: Block[] = [];
   const cleats: Block[] = [];
 
-  // Front / Back (Y axis faces) use width x height panels; offset along Y ± length/2
-  const front = calculatePanelBlocks(width, height).map((b: Block) => ({
-    ...b,
-    position: [b.position[0], b.position[1] + length / 2, b.position[2]] as [
-      number,
-      number,
-      number,
-    ],
-    orientation: 'frontback' as const,
-  }));
-  const back = calculatePanelBlocks(width, height).map((b: Block) => ({
-    ...b,
-    position: [b.position[0], b.position[1] - length / 2, b.position[2]] as [
-      number,
-      number,
-      number,
-    ],
-    orientation: 'frontback' as const,
-  }));
+  // Create properly oriented panels using new 3D construction functions
+  const frontPanels = createFrontPanelBlocks(width, height, length);
+  const backPanels = createBackPanelBlocks(width, height, length);
+  const leftPanels = createLeftPanelBlocks(width, height, length);
+  const rightPanels = createRightPanelBlocks(width, height, length);
+  const topPanels = createTopPanelBlocks(width, height, length);
+
+  panels.push(...frontPanels, ...backPanels, ...leftPanels, ...rightPanels, ...topPanels);
+
+  // Create cleats for each face
+  // Front/Back cleats
   const frontCleats = calculateCleatBlocks(width, height).map((b: Block) => ({
     ...b,
-    position: [b.position[0], b.position[1] + length / 2, b.position[2]] as [
-      number,
-      number,
-      number,
-    ],
+    position: [
+      b.position[0],
+      length / 2 - 0.75 / 2, // Position on inside of front panel
+      b.position[1] + height / 2,
+    ] as [number, number, number],
   }));
   const backCleats = calculateCleatBlocks(width, height).map((b: Block) => ({
     ...b,
-    position: [b.position[0], b.position[1] - length / 2, b.position[2]] as [
-      number,
-      number,
-      number,
-    ],
+    position: [
+      b.position[0],
+      -length / 2 + 0.75 / 2, // Position on inside of back panel
+      b.position[1] + height / 2,
+    ] as [number, number, number],
   }));
 
-  // Left / Right (X axis faces) panels use length x height; offset along X ± width/2
-  const leftPanels = calculatePanelBlocks(length, height).map((b: Block) => ({
-    ...b,
-    position: [b.position[0] - width / 2, b.position[1], b.position[2]] as [number, number, number],
-    orientation: 'leftright' as const,
-  }));
-  const rightPanels = calculatePanelBlocks(length, height).map((b: Block) => ({
-    ...b,
-    position: [b.position[0] + width / 2, b.position[1], b.position[2]] as [number, number, number],
-    orientation: 'leftright' as const,
-  }));
+  // Left/Right cleats
   const leftCleats = calculateCleatBlocks(length, height).map((b: Block) => ({
     ...b,
-    position: [b.position[0] - width / 2, b.position[1], b.position[2]] as [number, number, number],
+    position: [
+      -width / 2 + 0.75 / 2, // Position on inside of left panel
+      b.position[0],
+      b.position[1] + height / 2,
+    ] as [number, number, number],
   }));
   const rightCleats = calculateCleatBlocks(length, height).map((b: Block) => ({
     ...b,
-    position: [b.position[0] + width / 2, b.position[1], b.position[2]] as [number, number, number],
+    position: [
+      width / 2 - 0.75 / 2, // Position on inside of right panel
+      b.position[0],
+      b.position[1] + height / 2,
+    ] as [number, number, number],
   }));
 
-  // Top (horizontal) panels use width x length; offset Z + height
-  const topPanels = calculatePanelBlocks(width, length).map((b: Block) => ({
-    ...b,
-    position: [b.position[0], b.position[1], b.position[2] + height] as [number, number, number],
-    orientation: 'top' as const,
-  }));
+  // Top cleats
   const topCleats = calculateCleatBlocks(width, length).map((b: Block) => ({
     ...b,
-    position: [b.position[0], b.position[1], b.position[2] + height] as [number, number, number],
+    position: [
+      b.position[0],
+      b.position[1],
+      height - 0.75 / 2, // Position on underside of top panel
+    ] as [number, number, number],
   }));
 
-  panels.push(...front, ...back, ...leftPanels, ...rightPanels, ...topPanels);
   cleats.push(...frontCleats, ...backCleats, ...leftCleats, ...rightCleats, ...topCleats);
 
   // Helper to convert an inch-based block to meters

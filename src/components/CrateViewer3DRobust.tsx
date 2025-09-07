@@ -74,7 +74,7 @@ export default function CrateViewer3DRobust({ configuration }: CrateViewer3DRobu
         scene.add(gridHelper);
 
         // Axes helper (Red=X, Green=Y, Blue=Z)
-        const axesHelper = new THREE.AxesHelper(3);
+        const axesHelper = new THREE.AxesHelper(1);
         scene.add(axesHelper);
 
         // Create crate based on configuration

@@ -35,8 +35,8 @@ export const CoordinateAxes = memo(function CoordinateAxes({ size = 5 }: Coordin
         color="red"
         lineWidth={2}
       />
-      <Html position={[size + 0.5, 0, 0]} center distanceFactor={10}>
-        <div style={{ color: 'red', fontSize: '12px', fontWeight: 'bold' }}>{axesLabels.x}</div>
+      <Html position={[size + 0.2, 0, 0]} center distanceFactor={5}>
+        <div style={{ color: 'red', fontSize: '10px', fontWeight: 'bold' }}>{axesLabels.x}</div>
       </Html>
 
       {/* Y Axis - Green - Depth (horizontal perpendicular to X) */}
@@ -48,8 +48,8 @@ export const CoordinateAxes = memo(function CoordinateAxes({ size = 5 }: Coordin
         color="green"
         lineWidth={2}
       />
-      <Html position={[0, size + 0.5, 0]} center distanceFactor={10}>
-        <div style={{ color: 'green', fontSize: '12px', fontWeight: 'bold' }}>{axesLabels.y}</div>
+      <Html position={[0, size + 0.2, 0]} center distanceFactor={5}>
+        <div style={{ color: 'green', fontSize: '10px', fontWeight: 'bold' }}>{axesLabels.y}</div>
       </Html>
 
       {/* Z Axis - Blue - Height (vertical up) */}
@@ -61,8 +61,8 @@ export const CoordinateAxes = memo(function CoordinateAxes({ size = 5 }: Coordin
         color="blue"
         lineWidth={2}
       />
-      <Html position={[0, 0, size + 0.5]} center distanceFactor={10}>
-        <div style={{ color: 'blue', fontSize: '12px', fontWeight: 'bold' }}>{axesLabels.z}</div>
+      <Html position={[0, 0, size + 0.2]} center distanceFactor={5}>
+        <div style={{ color: 'blue', fontSize: '10px', fontWeight: 'bold' }}>{axesLabels.z}</div>
       </Html>
     </group>
   );
