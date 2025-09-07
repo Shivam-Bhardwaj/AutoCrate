@@ -71,34 +71,34 @@ export function buildSimpleCrateGeometry(config: CrateConfiguration): SimpleCrat
     front: {
       position: [0, depth / 2, height / 2] as [number, number, number],
       dimensions: [width, PANEL_THICKNESS, height] as [number, number, number],
-      orientation: 'front' as const,
+      orientation: 'frontback' as const,
     },
 
     // Back panel (negative Y) - stands vertically
     back: {
       position: [0, -depth / 2, height / 2] as [number, number, number],
       dimensions: [width, PANEL_THICKNESS, height] as [number, number, number],
-      orientation: 'back' as const,
+      orientation: 'frontback' as const,
     },
 
     // Left panel (negative X) - stands vertically
     left: {
       position: [-width / 2, 0, height / 2] as [number, number, number],
-      dimensions: [PANEL_THICKNESS, depth, height],
-      orientation: 'left' as const,
+      dimensions: [PANEL_THICKNESS, depth, height] as [number, number, number],
+      orientation: 'leftright' as const,
     },
 
     // Right panel (positive X) - stands vertically
     right: {
       position: [width / 2, 0, height / 2] as [number, number, number],
-      dimensions: [PANEL_THICKNESS, depth, height],
-      orientation: 'right' as const,
+      dimensions: [PANEL_THICKNESS, depth, height] as [number, number, number],
+      orientation: 'leftright' as const,
     },
 
     // Top panel - lies horizontally
     top: {
       position: [0, 0, height] as [number, number, number],
-      dimensions: [width, depth, PANEL_THICKNESS],
+      dimensions: [width, depth, PANEL_THICKNESS] as [number, number, number],
       orientation: 'top' as const,
     },
   };
@@ -173,18 +173,25 @@ export function scaleForVisualization(geometry: SimpleCrateGeometry) {
       block.dimensions[1] * INCH_TO_3D,
       block.dimensions[2] * INCH_TO_3D,
     ],
-    orientation: (block as any).orientation,
   });
+
+  const scalePanelBlock = (block: Block & { orientation?: string }) => {
+    const scaled = scaleBlock(block);
+    return {
+      ...scaled,
+      orientation: block.orientation,
+    };
+  };
 
   return {
     skids: geometry.skids.map(scaleBlock),
     floor: scaleBlock(geometry.floor),
     panels: {
-      front: scaleBlock(geometry.panels.front),
-      back: scaleBlock(geometry.panels.back),
-      left: scaleBlock(geometry.panels.left),
-      right: scaleBlock(geometry.panels.right),
-      top: scaleBlock(geometry.panels.top),
+      front: scalePanelBlock(geometry.panels.front as Block & { orientation?: string }),
+      back: scalePanelBlock(geometry.panels.back as Block & { orientation?: string }),
+      left: scalePanelBlock(geometry.panels.left as Block & { orientation?: string }),
+      right: scalePanelBlock(geometry.panels.right as Block & { orientation?: string }),
+      top: scalePanelBlock(geometry.panels.top as Block & { orientation?: string }),
     },
     cleats: geometry.cleats.map(scaleBlock),
   };
