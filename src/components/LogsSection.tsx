@@ -417,9 +417,9 @@ export default function LogsSection() {
 
       {/* Logs list */}
       <div
-        className={`flex-1 overflow-y-auto px-4 pb-2 font-mono text-xs ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
+        className={`flex-1 overflow-y-auto px-4 pb-2 font-mono text-sm leading-snug ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
         tabIndex={0}
-        role="region"
+        role="complementary"
         aria-label="System and user log messages"
       >
         {filteredLogs.length === 0 ? (
