@@ -99,6 +99,40 @@ Corner positions (from origin at center of floor):
 - [ ] Floorboards run perpendicular to skids
 - [ ] All panels positioned relative to floor-center origin
 
+### 3D LABEL STYLING: VISUAL READABILITY OVER GEOMETRIC ACCURACY
+
+#### Label Rendering Philosophy
+3D labels in AutoCrate prioritize **visual readability** over strict geometric accuracy. While the underlying crate geometry maintains precise engineering coordinates, label positioning and styling are optimized for user comprehension.
+
+#### Non-Geometric Label Enhancements
+- **Canvas Stroke Rendering**: Labels use canvas stroke techniques for enhanced visibility
+- **Text Shadow Effects**: Multiple shadow layers improve contrast against varying backgrounds
+- **Dynamic Positioning**: Labels may be offset from exact geometric positions for better visibility
+- **Size Scaling**: Label sizes scale based on camera distance, not geometric scale
+- **Billboarding**: Labels rotate to face the camera for optimal readability
+
+#### Label vs Geometry Distinction
+```
+Geometric Accuracy (Crate Structure):
+├── Precise coordinate positioning
+├── Exact dimensional relationships
+├── Engineering measurement compliance
+└── Manufacturing specification adherence
+
+Visual Readability (Labels):
+├── Enhanced contrast and visibility
+├── Optimized viewing angles
+├── Readable typography scaling
+├── Anti-aliasing and smoothing
+└── User experience prioritization
+```
+
+#### Implementation Guidelines
+1. **Geometric calculations** must maintain engineering precision
+2. **Label positioning** may be adjusted for visibility
+3. **Label styling** uses visual enhancement techniques
+4. **Performance** is balanced with readability requirements
+
 ### IMPLEMENTATION NOTES
 
 When implementing any 3D component:

@@ -103,6 +103,12 @@ This document describes the complete UI transformation of AutoCrate to match NX/
 
 ## Professional Features
 
+### 3D Visualization Enhancements
+- **Enhanced Label Readability**: Improved 3D label rendering with canvas stroke and text-shadow techniques
+- **Visual Clarity**: Labels prioritize readability over strict geometric accuracy
+- **Dynamic Scaling**: Label sizes adjust based on camera distance for optimal visibility
+- **Anti-aliasing**: Smooth text rendering for professional appearance
+
 ### Keyboard Shortcuts
 - **F8**: Fit View
 - **MB2**: Rotate View (Mouse Button 2)

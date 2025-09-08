@@ -1,6 +1,75 @@
-# Architect Notes for AutoCrate Implementation
+# AutoCrate Architecture & Design System
 
-This document outlines necessary changes and additions to the codebase that should be implemented by a developer in `code` mode.
+This document outlines the system architecture, design token locations, and implementation guidelines for AutoCrate.
+
+## Design System Architecture
+
+### Token Definition Locations
+
+#### Typography Tokens
+- **Primary Location**: `src/styles/design-tokens.ts`
+- **Tailwind Integration**: `tailwind.config.ts` (extended theme)
+- **Global CSS Variables**: `src/app/globals.css`
+- **Component Implementation**: `src/components/ThemeProvider.tsx`
+
+#### Color Tokens
+- **Design Tokens**: `src/styles/design-tokens.ts`
+- **Theme Configuration**: `src/components/ThemeProvider.tsx`
+- **Global Styles**: `src/app/globals.css`
+- **Tailwind Colors**: `tailwind.config.ts`
+
+#### Spacing & Layout Tokens
+- **Design Tokens**: `src/styles/design-tokens.ts`
+- **Tailwind Spacing**: `tailwind.config.ts`
+- **CSS Custom Properties**: `src/app/globals.css`
+
+### Token Implementation Flow
+
+```
+Design Tokens (design-tokens.ts)
+        ↓
+Theme Provider (ThemeProvider.tsx)
+        ↓
+CSS Custom Properties (globals.css)
+        ↓
+Tailwind Configuration (tailwind.config.ts)
+        ↓
+Component Usage (All components)
+```
+
+### Typography System Architecture
+
+#### Fluid Typography Scale
+- Uses CSS `clamp()` functions for responsive scaling
+- Minimum, preferred, and maximum sizes for each breakpoint
+- Semantic class names for consistent application
+- Accessibility-first approach with WCAG compliance
+
+#### Font Loading Strategy
+- Variable font support with `src/app/fonts.ts`
+- FOUT prevention with font-display optimization
+- Fallback font stacks for reliability
+- Performance monitoring for font loading metrics
+
+### Color System Architecture
+
+#### Semantic Color Tokens
+- Context-aware color application
+- Theme-aware color switching
+- Contrast ratio validation
+- Accessibility compliance verification
+
+#### Theme Implementation
+- CSS custom properties for dynamic theming
+- JavaScript theme switching in ThemeProvider
+- Persistent theme storage
+- System preference detection
+
+---
+
+## Implementation Notes
+
+The following sections contain specific implementation details for various AutoCrate features.
 
 ## Task 1.1: Floorboard Logic Implementation
 

@@ -93,6 +93,38 @@ END_BLOCK
 
 ## 3D Rendering Pipeline
 
+### Geometric Accuracy vs Visual Readability
+
+AutoCrate maintains a clear distinction between **geometric accuracy** and **visual readability**:
+
+#### Geometric Accuracy (Core Engineering)
+- **Precise Coordinates**: All crate dimensions and positions maintain engineering precision
+- **Manufacturing Compliance**: Exact measurements for NX CAD export
+- **Structural Integrity**: Accurate representation of load-bearing elements
+- **AMAT Standards**: Compliance with Applied Materials specifications
+
+#### Visual Readability (User Experience)
+- **Enhanced Labels**: Canvas stroke and text-shadow techniques for 3D labels
+- **Optimized Positioning**: Labels may be offset for better visibility
+- **Dynamic Scaling**: Text sizes adjust based on camera distance
+- **Anti-aliasing**: Smooth rendering for professional appearance
+
+#### Label Rendering Methods
+```typescript
+// Canvas stroke technique for enhanced visibility
+const renderLabelWithStroke = (text: string, position: Vector3) => {
+  // Render text with multiple stroke layers
+  context.strokeStyle = '#000000';
+  context.lineWidth = 3;
+  context.strokeText(text, x, y);
+
+  // Add text shadow for depth
+  context.shadowColor = '#000000';
+  context.shadowBlur = 2;
+  context.fillText(text, x, y);
+};
+```
+
 ### Mesh Generation Process
 
 1. **Dimension Scaling**: Converts user units to Three.js world units
@@ -177,6 +209,106 @@ Located in `src/types/crate.ts`
 - `Fasteners`: Connector types and spacing
 - `VinylConfig`: Protective coating options
 - `NXExpression`: Generated CAD code structure
+
+## Typography System
+
+### Fluid Typography Scale
+AutoCrate implements a responsive typography system using CSS `clamp()` functions for optimal readability across all device sizes:
+
+#### Font Families
+```typescript
+fontFamily: {
+  sans: 'Inter, system-ui, -apple-system, sans-serif',
+  mono: 'JetBrains Mono, Monaco, Consolas, monospace',
+  display: 'Cal Sans, Inter, sans-serif'
+}
+```
+
+#### Clamp Function Examples
+The typography scale uses fluid sizing that scales between minimum and maximum values based on viewport width:
+
+```css
+/* Base text sizes with fluid scaling */
+--text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);    /* 12px → 14px */
+--text-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);      /* 14px → 16px */
+--text-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);      /* 16px → 18px */
+--text-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);     /* 18px → 20px */
+--text-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);      /* 20px → 24px */
+--text-2xl: clamp(1.5rem, 1.3rem + 1vw, 2rem);           /* 24px → 32px */
+--text-3xl: clamp(1.875rem, 1.5rem + 1.875vw, 2.5rem);   /* 30px → 40px */
+--text-4xl: clamp(2.25rem, 1.8rem + 2.25vw, 3.5rem);     /* 36px → 56px */
+
+/* Display headings */
+--text-5xl: clamp(3rem, 2.4rem + 3vw, 5rem);             /* 48px → 80px */
+--text-6xl: clamp(3.75rem, 3rem + 3.75vw, 6.5rem);       /* 60px → 104px */
+```
+
+#### Semantic Typography Classes
+```css
+/* Display text styles */
+.text-display-2xl { font-size: var(--text-6xl); font-weight: 700; line-height: 1.1; }
+.text-display-xl { font-size: var(--text-5xl); font-weight: 700; line-height: 1.1; }
+.text-display-lg { font-size: var(--text-4xl); font-weight: 600; line-height: 1.2; }
+.text-display-md { font-size: var(--text-3xl); font-weight: 600; line-height: 1.2; }
+.text-display-sm { font-size: var(--text-2xl); font-weight: 600; line-height: 1.3; }
+
+/* Heading hierarchy */
+.text-heading-xl { font-size: var(--text-xl); font-weight: 600; line-height: 1.4; }
+.text-heading-lg { font-size: var(--text-lg); font-weight: 600; line-height: 1.4; }
+.text-heading-md { font-size: var(--text-base); font-weight: 600; line-height: 1.5; }
+.text-heading-sm { font-size: var(--text-sm); font-weight: 600; line-height: 1.5; }
+
+/* Body text styles */
+.text-body-lg { font-size: var(--text-lg); line-height: 1.6; }
+.text-body-md { font-size: var(--text-base); line-height: 1.6; }
+.text-body-sm { font-size: var(--text-sm); line-height: 1.6; }
+
+/* Supporting text */
+.text-caption { font-size: var(--text-xs); line-height: 1.5; color: var(--color-text-secondary); }
+```
+
+#### Design Token Implementation
+Typography tokens are centralized in `src/styles/design-tokens.ts`:
+
+```typescript
+export const typography = {
+  fontFamily: {
+    sans: 'Inter, system-ui, -apple-system, sans-serif',
+    mono: 'JetBrains Mono, Monaco, Consolas, monospace',
+    display: 'Cal Sans, Inter, sans-serif'
+  },
+  fontSize: {
+    xs: 'clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem)',
+    sm: 'clamp(0.875rem, 0.8rem + 0.375vw, 1rem)',
+    base: 'clamp(1rem, 0.9rem + 0.5vw, 1.125rem)',
+    lg: 'clamp(1.125rem, 1rem + 0.625vw, 1.25rem)',
+    xl: 'clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem)',
+    '2xl': 'clamp(1.5rem, 1.3rem + 1vw, 2rem)',
+    '3xl': 'clamp(1.875rem, 1.5rem + 1.875vw, 2.5rem)',
+    '4xl': 'clamp(2.25rem, 1.8rem + 2.25vw, 3.5rem)',
+    '5xl': 'clamp(3rem, 2.4rem + 3vw, 5rem)',
+    '6xl': 'clamp(3.75rem, 3rem + 3.75vw, 6.5rem)'
+  },
+  fontWeight: {
+    normal: '400',
+    medium: '500',
+    semibold: '600',
+    bold: '700'
+  },
+  lineHeight: {
+    tight: '1.25',
+    normal: '1.5',
+    relaxed: '1.625',
+    loose: '2'
+  }
+};
+```
+
+#### Responsive Breakpoint Behavior
+- **Mobile (< 640px)**: Uses minimum values for optimal readability on small screens
+- **Tablet (640px - 1024px)**: Scales fluidly based on viewport width
+- **Desktop (> 1024px)**: Uses maximum values for enhanced readability on large screens
+- **Accessibility**: Respects user's font size preferences and zoom settings
 
 ## Build and Deployment
 

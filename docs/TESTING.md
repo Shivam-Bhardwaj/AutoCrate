@@ -419,15 +419,149 @@ test('crate exploded view visual', async ({ page }) => {
 ```
 Commit baseline images under `tests/e2e/__screenshots__`.
 
-## Accessibility (A11y)
+## Accessibility (A11y) Testing
 
-Automate with axe during E2E:
+Comprehensive accessibility testing ensures AutoCrate meets WCAG 2.1 AA standards and provides an inclusive user experience.
+
+### Automated Accessibility Testing
+
+#### Axe Core Integration
 ```ts
 import AxeBuilder from '@axe-core/playwright';
-const results = await new AxeBuilder({ page }).analyze();
-expect(results.violations).toEqual([]);
+
+// Basic accessibility scan
+test('should pass accessibility checks', async ({ page }) => {
+  await page.goto('/');
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations).toEqual([]);
+});
+
+// Targeted component testing
+test('3D viewer accessibility', async ({ page }) => {
+  await page.goto('/');
+  const viewer = page.locator('[data-testid="crate-viewer"]');
+  const results = await new AxeBuilder({ page })
+    .include(viewer)
+    .analyze();
+  expect(results.violations).toEqual([]);
+});
 ```
-Ensure interactive elements have discernible text; labels for 3D panels assist orientation.
+
+#### Contrast Ratio Validation
+```ts
+import { getContrastRatio } from '@/tests/utils/contrast';
+
+test('color contrast compliance', async () => {
+  const textColor = '#212121'; // Primary text
+  const backgroundColor = '#FFFFFF'; // Light background
+  const ratio = getContrastRatio(textColor, backgroundColor);
+
+  expect(ratio).toBeGreaterThanOrEqual(4.5); // WCAG AA requirement
+});
+```
+
+### Manual Accessibility Testing Steps
+
+#### 1. Keyboard Navigation Testing
+- [ ] Tab through all interactive elements
+- [ ] Verify focus indicators are visible
+- [ ] Test Enter/Space activation of buttons
+- [ ] Check Escape key closes modals
+- [ ] Verify logical tab order
+- [ ] Test keyboard-only form completion
+
+#### 2. Screen Reader Testing
+- [ ] Enable NVDA/JAWS/VoiceOver
+- [ ] Verify all headings are announced
+- [ ] Check form labels are associated
+- [ ] Test 3D element descriptions
+- [ ] Verify error messages are announced
+- [ ] Check dynamic content updates
+
+#### 3. Color and Contrast Testing
+- [ ] Test with high contrast mode
+- [ ] Verify color-blind friendly palettes
+- [ ] Check focus indicators in all themes
+- [ ] Test 3D label visibility in both themes
+- [ ] Verify icon accessibility
+
+#### 4. Zoom and Scaling Testing
+- [ ] Test 200% browser zoom
+- [ ] Verify fluid typography scaling
+- [ ] Check layout doesn't break at high zoom
+- [ ] Test touch targets remain accessible
+
+#### 5. Mobile Accessibility Testing
+- [ ] Test with screen readers on mobile
+- [ ] Verify touch target sizes (44px minimum)
+- [ ] Check swipe gestures work
+- [ ] Test orientation changes
+
+### 3D-Specific Accessibility Testing
+
+#### Label and Annotation Testing
+- [ ] Verify 3D labels have sufficient contrast
+- [ ] Test label readability at different distances
+- [ ] Check label positioning doesn't obstruct content
+- [ ] Verify labels work with screen magnification
+
+#### Interactive 3D Element Testing
+- [ ] Test keyboard navigation in 3D space
+- [ ] Verify mouse/touch alternatives exist
+- [ ] Check 3D controls have accessible names
+- [ ] Test with assistive technologies
+
+### Accessibility Testing Tools
+
+#### Browser Extensions
+- axe DevTools (Chrome/Firefox)
+- WAVE Evaluation Tool
+- Accessibility Insights
+- Color Contrast Analyzer
+
+#### Screen Readers
+- NVDA (Windows)
+- JAWS (Windows)
+- VoiceOver (macOS/iOS)
+- TalkBack (Android)
+
+#### Automated Testing Scripts
+```bash
+# Run accessibility tests
+npm run test:a11y
+
+# Generate accessibility report
+npm run test:a11y:report
+
+# Test specific pages
+npm run test:a11y -- --page=/nx-demo
+```
+
+### Accessibility Checklist for New Features
+
+- [ ] Semantic HTML elements used
+- [ ] ARIA labels provided where needed
+- [ ] Color contrast ratios validated
+- [ ] Keyboard navigation supported
+- [ ] Screen reader announcements tested
+- [ ] Focus management implemented
+- [ ] Touch targets meet size requirements
+- [ ] Error states are accessible
+- [ ] Dynamic content updates announced
+
+### Continuous Accessibility Monitoring
+
+#### CI/CD Integration
+- Automated accessibility tests in pipeline
+- Contrast ratio validation on color changes
+- HTML semantic validation
+- ARIA usage checking
+
+#### Regular Audits
+- Quarterly accessibility reviews
+- User testing with assistive technologies
+- Cross-browser accessibility testing
+- Mobile accessibility validation
 
 ## 3D Testing Guidelines
 

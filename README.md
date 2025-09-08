@@ -23,6 +23,27 @@ Visit [http://localhost:3000](http://localhost:3000) to start designing crates.
 - **Mobile-First Design** - Responsive interface optimized for all devices
 - **Professional Testing** - 80% code coverage with comprehensive test suites
 
+## 🎨 Typography & Design System
+
+AutoCrate features a comprehensive semantic typography system with responsive scaling and accessibility-first design:
+
+### Semantic Tokens
+- **Typography Scale**: Fluid typography using `clamp()` functions for optimal readability across devices
+- **Color System**: WCAG AA compliant color tokens with automated contrast validation
+- **3D Label Enhancement**: Canvas stroke and text-shadow techniques for improved 3D readability
+- **Variable Font Support**: Optimized font loading with FOUT prevention
+
+### Design Token Locations
+- **Typography Tokens**: `src/styles/design-tokens.ts`
+- **Color Palette**: `src/app/globals.css` and `tailwind.config.ts`
+- **Theme Configuration**: `src/components/ThemeProvider.tsx`
+
+### Accessibility Features
+- **Contrast Ratios**: All text combinations meet WCAG AA standards (4.5:1 minimum)
+- **Responsive Scaling**: Typography scales fluidly from mobile to desktop
+- **Focus Indicators**: Enhanced focus states for keyboard navigation
+- **Screen Reader Support**: Proper ARIA labels and semantic HTML structure
+
 ## 🏗️ Tech Stack
 
 - **Frontend**: Next.js 14, React 18, TypeScript
