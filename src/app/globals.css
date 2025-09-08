@@ -4,62 +4,86 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 29 78 216; /* #1d4ed8 - Premium blue */
-    --primary-dark: 30 64 175; /* #1e40af - Deeper blue */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 16 185 129; /* #10b981 - Emerald */
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 226 232 240; /* Light border */
-    --input: 214.3 31.8% 91.4%;
-    --ring: 29 78 216; /* Primary color */
-    --radius: 0.5rem;
+    /* NX 2022 Professional Light Theme */
+    --background: 220 220 220; /* #DCDCDC - NX light background */
+    --foreground: 0 0% 13%; /* #212121 - Dark text */
+    --card: 245 245 245; /* #F5F5F5 - Panel background */
+    --card-foreground: 0 0% 13%;
+    --popover: 255 255 255; /* White popover */
+    --popover-foreground: 0 0% 13%;
+    --primary: 0 120 215; /* #0078D7 - Siemens blue */
+    --primary-dark: 0 102 204; /* #0066CC - Darker Siemens blue */
+    --primary-foreground: 255 255 255;
+    --secondary: 229 229 229; /* #E5E5E5 - Light gray */
+    --secondary-foreground: 0 0% 13%;
+    --muted: 240 240 240; /* #F0F0F0 - Muted background */
+    --muted-foreground: 102 102 102; /* #666666 - Muted text */
+    --accent: 255 140 0; /* #FF8C00 - NX selection orange */
+    --accent-foreground: 0 0% 13%;
+    --destructive: 196 26 22; /* #C41A16 - Red */
+    --destructive-foreground: 255 255 255;
+    --border: 204 204 204; /* #CCCCCC - Border */
+    --input: 255 255 255; /* White input */
+    --ring: 0 120 215; /* Siemens blue focus */
+    --radius: 0.25rem; /* Smaller radius for professional look */
 
-    /* Professional color system */
-    --surface: 255 255 255; /* White */
-    --surface-elevated: 248 250 252; /* Slight gray */
-    --text-primary: 15 23 42; /* Near black */
-    --text-secondary: 100 116 139; /* Muted */
-    --shadow-color: 0 0 0; /* For shadows */
+    /* NX Professional Color System */
+    --nx-background: 220 220 220; /* #DCDCDC - Main background */
+    --nx-panel: 245 245 245; /* #F5F5F5 - Panel background */
+    --nx-toolbar: 238 238 238; /* #EEEEEE - Toolbar */
+    --nx-border: 204 204 204; /* #CCCCCC - Borders */
+    --nx-text: 33 33 33; /* #212121 - Primary text */
+    --nx-text-secondary: 102 102 102; /* #666666 - Secondary text */
+    --nx-siemens-blue: 0 120 215; /* #0078D7 - Primary blue */
+    --nx-selection-orange: 255 140 0; /* #FF8C00 - Selection color */
+    --nx-grid-minor: 225 225 225; /* #E1E1E1 - Minor grid lines */
+    --nx-grid-major: 192 192 192; /* #C0C0C0 - Major grid lines */
 
-    /* Glass morphism variables */
-    --glass-bg: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.18);
-    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-    --backdrop-blur: 12px;
+    /* Professional shadows */
+    --shadow-panel: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-toolbar: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    /* NX 2022 Professional Dark Theme */
+    --background: 43 43 43; /* #2B2B2B - NX dark background */
+    --foreground: 255 255 255; /* White text */
+    --card: 64 64 64; /* #404040 - Panel background */
+    --card-foreground: 255 255 255;
+    --popover: 48 48 48; /* #303030 - Darker popover */
+    --popover-foreground: 255 255 255;
+    --primary: 0 120 215; /* #0078D7 - Siemens blue */
+    --primary-dark: 0 102 204; /* #0066CC - Darker Siemens blue */
+    --primary-foreground: 255 255 255;
+    --secondary: 96 96 96; /* #606060 - Dark gray */
+    --secondary-foreground: 255 255 255;
+    --muted: 58 58 58; /* #3A3A3A - Muted background */
+    --muted-foreground: 192 192 192; /* #C0C0C0 - Muted text */
+    --accent: 255 140 0; /* #FF8C00 - NX selection orange */
+    --accent-foreground: 0 0 0;
+    --destructive: 239 68 68; /* #EF4444 - Red */
+    --destructive-foreground: 255 255 255;
+    --border: 74 74 74; /* #4A4A4A - Border */
+    --input: 48 48 48; /* #303030 - Dark input */
+    --ring: 0 120 215; /* Siemens blue focus */
+
+    /* NX Dark Professional Color System */
+    --nx-background: 43 43 43; /* #2B2B2B - Main background */
+    --nx-panel: 64 64 64; /* #404040 - Panel background */
+    --nx-toolbar: 58 58 58; /* #3A3A3A - Toolbar */
+    --nx-border: 74 74 74; /* #4A4A4A - Borders */
+    --nx-text: 255 255 255; /* White - Primary text */
+    --nx-text-secondary: 192 192 192; /* #C0C0C0 - Secondary text */
+    --nx-siemens-blue: 0 120 215; /* #0078D7 - Primary blue */
+    --nx-selection-orange: 255 140 0; /* #FF8C00 - Selection color */
+    --nx-grid-minor: 64 64 64; /* #404040 - Minor grid lines */
+    --nx-grid-major: 96 96 96; /* #606060 - Major grid lines */
+
+    /* Professional dark shadows */
+    --shadow-panel: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-toolbar: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -95,26 +119,126 @@
   }
 }
 
-/* Premium glass panel style */
-.glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--backdrop-blur));
-  -webkit-backdrop-filter: blur(var(--backdrop-blur));
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* NX Professional Panel Styles */
+.nx-panel {
+  background: rgb(var(--nx-panel));
+  border: 1px solid rgb(var(--nx-border));
+  box-shadow: var(--shadow-panel);
+  transition: all 0.2s ease;
 }
 
-.glass-panel:hover {
-  box-shadow: 0 12px 48px 0 rgba(31, 38, 135, 0.25);
-  transform: translateY(-2px);
+.nx-panel:hover {
+  box-shadow: var(--shadow-elevated);
 }
 
-/* Professional gradients */
-.gradient-primary {
-  background: linear-gradient(135deg, rgb(var(--primary)) 0%, rgb(var(--primary-dark)) 100%);
+.nx-toolbar {
+  background: rgb(var(--nx-toolbar));
+  border-bottom: 1px solid rgb(var(--nx-border));
+  box-shadow: var(--shadow-toolbar);
 }
 
-.gradient-surface {
-  background: linear-gradient(135deg, rgb(var(--surface)) 0%, rgb(var(--surface-elevated)) 100%);
+.nx-viewport {
+  background: rgb(var(--nx-background));
+  position: relative;
+}
+
+/* NX Grid Styles */
+.nx-grid {
+  background-image: 
+    linear-gradient(rgb(var(--nx-grid-minor)) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--nx-grid-minor)) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.nx-grid-major {
+  background-image: 
+    linear-gradient(rgb(var(--nx-grid-major)) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--nx-grid-major)) 1px, transparent 1px),
+    linear-gradient(rgb(var(--nx-grid-minor)) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--nx-grid-minor)) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+}
+
+/* NX Selection and Highlighting */
+.nx-selected {
+  outline: 2px solid rgb(var(--nx-selection-orange));
+  outline-offset: 1px;
+}
+
+.nx-hover {
+  background-color: rgba(var(--nx-selection-orange), 0.1);
+}
+
+/* Professional button styles */
+.nx-button {
+  background: rgb(var(--nx-panel));
+  border: 1px solid rgb(var(--nx-border));
+  color: rgb(var(--nx-text));
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 400;
+  transition: all 0.15s ease;
+}
+
+.nx-button:hover {
+  background: rgb(var(--nx-toolbar));
+  border-color: rgb(var(--nx-siemens-blue));
+}
+
+.nx-button:active {
+  background: rgb(var(--nx-siemens-blue));
+  color: white;
+}
+
+.nx-button-primary {
+  background: rgb(var(--nx-siemens-blue));
+  color: white;
+  border-color: rgb(var(--nx-siemens-blue));
+}
+
+.nx-button-primary:hover {
+  background: rgb(var(--primary-dark));
+}
+
+/* Professional input styles */
+.nx-input {
+  background: rgb(var(--input));
+  border: 1px solid rgb(var(--nx-border));
+  color: rgb(var(--nx-text));
+  padding: 4px 8px;
+  font-size: 12px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.nx-input:focus {
+  outline: none;
+  border-color: rgb(var(--nx-siemens-blue));
+  box-shadow: 0 0 0 1px rgb(var(--nx-siemens-blue));
+}
+
+/* Typography for professional interface */
+.nx-text {
+  color: rgb(var(--nx-text));
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.nx-text-secondary {
+  color: rgb(var(--nx-text-secondary));
+}
+
+.nx-label {
+  color: rgb(var(--nx-text));
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: none;
+}
+
+/* Status line styling */
+.nx-status-line {
+  background: rgb(var(--nx-toolbar));
+  border-top: 1px solid rgb(var(--nx-border));
+  padding: 2px 8px;
+  font-size: 11px;
+  color: rgb(var(--nx-text-secondary));
+  font-family: 'Courier New', monospace;
 }

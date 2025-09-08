@@ -28,13 +28,18 @@ export default function InputForms() {
   const { logUser } = useLogsStore();
 
   return (
-    <div className="h-full overflow-y-auto p-4">
-      <div className="space-y-6">
+    <div className="h-full overflow-y-auto nx-panel">
+      <div className="nx-toolbar border-b border-nx-border px-3 py-2">
+        <h2 className="text-sm font-semibold nx-text">Part Properties</h2>
+      </div>
+      <div className="p-4 space-y-6">
         {/* Project Information */}
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold">Project Information</h3>
-          <Label htmlFor="projectName">Project Name</Label>
-          <Input
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold nx-text border-b border-nx-border pb-1">Project Information</h3>
+          <div className="space-y-2">
+            <Label htmlFor="projectName" className="nx-label">Project Name</Label>
+            <Input
+              className="nx-input"
             id="projectName"
             value={configuration.projectName}
             onChange={(e) => {
@@ -43,6 +48,7 @@ export default function InputForms() {
             }}
             placeholder="Enter project name"
           />
+          </div>
         </div>
 
         <Separator />

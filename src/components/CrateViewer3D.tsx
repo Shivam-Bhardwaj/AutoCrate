@@ -422,9 +422,9 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
   }, [validatedConfig, canRender, configuration, logDebug, logWarning]);
 
   return (
-    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg relative">
+    <div className="w-full h-full nx-viewport nx-grid-major relative">
       {/* Explode View Controls */}
-      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm p-3 rounded-lg z-10 space-y-3">
+      <div className="absolute top-4 left-4 nx-panel border border-nx-border p-3 rounded z-10 space-y-3">
         <div className="flex items-center space-x-2 mb-2">
           <button
             onClick={() => {
@@ -446,7 +446,7 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
                 );
               }
             }}
-            className="px-3 py-1 bg-blue-700 text-white text-sm rounded hover:bg-blue-800 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 transition-colors"
+            className="nx-button-primary text-xs"
             aria-label={
               explodeFactor === 0 ? 'Enable exploded crate view' : 'Reset to assembled crate view'
             }

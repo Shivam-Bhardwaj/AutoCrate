@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { useCrateStore } from '@/store/crate-store';
 import { useThemeStore } from '@/store/theme-store';
 import { useLogsStore } from '@/store/logs-store';
-import { Menu, X, Sun, Moon, RotateCcw } from 'lucide-react';
+import { Menu, X, Sun, Moon, RotateCcw, BookOpen } from 'lucide-react';
+import Link from 'next/link';
 import { APP_VERSION } from '@/utils/version';
 import { TechStackDisplay } from '@/components/TechStackDisplay';
 
@@ -103,6 +104,17 @@ export default function Home() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
+            <Link href="/docs">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`hidden sm:flex ${isDarkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100'}`}
+                aria-label="Open documentation"
+              >
+                <BookOpen className="h-4 w-4 mr-2" />
+                Docs
+              </Button>
+            </Link>
             <Button
               variant="outline"
               size="sm"

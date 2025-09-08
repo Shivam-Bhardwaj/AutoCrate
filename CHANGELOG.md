@@ -1,5 +1,38 @@
 # Changelog
 
+## 3.0.0 (2025-01-08) - NX Professional Release
+
+### Summary
+Major release with comprehensive NX CAD integration, professional documentation system, and Applied Materials standards compliance.
+
+### New Features
+- **NX CAD Integration**: Complete parametric expression generation for Siemens NX 2022+
+- **Applied Materials Standards**: ASME Y14.5-2009 compliant drawings and part numbering (0205-XXXXX format)
+- **JT Export/Import**: Native CAD file exchange with NX using JT 10.5+ format
+- **In-App Documentation**: Complete documentation system with markdown rendering and search
+- **Professional Testing**: Comprehensive test suites including NX integration validation
+- **Drawing Generation**: Technical drawings with AMAT title blocks and specifications
+- **Bill of Materials**: Enhanced BOM with supplier information and cost analysis
+
+### Technical Improvements
+- **Documentation Reorganization**: Clean 4-file root structure with /docs/ folder organization
+- **Comprehensive Testing**: Integration tests for NX workflow and JT export validation
+- **Performance Optimization**: Bundle analysis and 3D rendering improvements
+- **TypeScript Enhancements**: Improved type safety and NX-specific type definitions
+- **API Reference**: Complete API documentation for integration capabilities
+
+### Architecture Updates
+- **Coordinate System**: Z-up orientation matching NX CAD standards
+- **Modular Services**: Separated NX generation, drawing creation, and standards validation
+- **Markdown System**: Dynamic documentation loading with syntax highlighting
+- **Navigation Enhancement**: Added documentation access from main application
+
+### Standards Compliance
+- **ASME Y14.5-2009**: Geometric dimensioning and tolerancing compliance
+- **AMAT Requirements**: Applied Materials packaging and material standards
+- **NX Compatibility**: Validated with NX 2022 and JT file format specifications
+- **Quality Assurance**: Professional testing with 80%+ code coverage
+
 ## 1.1.0 (2025-01-05) - Pre-Redesign Stable
 
 ### Summary
