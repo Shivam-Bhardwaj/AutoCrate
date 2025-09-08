@@ -47,15 +47,8 @@ export default function Home() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
 
-    // Apply dark mode class to html element
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-
     return () => window.removeEventListener('resize', checkMobile);
-  }, [isDarkMode]);
+  }, []);
 
   // Fallback hydration guard: if persistence rehydration fails quickly (e.g., headless E2E env), force hydration
   useEffect(() => {
@@ -88,7 +81,7 @@ export default function Home() {
 
   return (
     <div
-      className={`min-h-screen md:h-screen flex flex-col ${isDarkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}
+      className={`min-h-screen md:h-screen flex flex-col ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
     >
       {/* Header */}
       <header

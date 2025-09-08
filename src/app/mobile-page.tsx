@@ -34,14 +34,6 @@ export default function MobileHome() {
   const { isDarkMode, toggleTheme } = useThemeStore();
   const { logInfo } = useLogsStore();
 
-  useEffect(() => {
-    // Apply dark mode class to html element
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDarkMode]);
 
   const handleReset = () => {
     resetConfiguration();
@@ -49,7 +41,7 @@ export default function MobileHome() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col ${isDarkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`min-h-screen flex flex-col ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Mobile Header */}
       <header
         className={`sticky top-0 z-50 border-b px-4 py-3 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} shadow-sm`}
