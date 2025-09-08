@@ -1,0 +1,70 @@
+PROMPT FOR LIGHTWEIGHT LLM - 3D FACE LABELS TOO LARGE
+
+=== PROBLEM STATEMENT ===
+The 3D crate visualization has face labels (Top, Left, Front, Back, Right) that are too large and obstructing the view of the crate. The labels need to be resized to look like small stickers on the panels - easily readable but not dominating the visual space.
+
+=== TECHNICAL CONTEXT ===
+Project: AutoCrate - Next.js 14 crate design application
+Tech Stack: Next.js 14, TypeScript, Three.js/React Three Fiber, Tailwind CSS, Zustand
+File Location: src/components/CrateViewer3D.tsx
+Related Components: 3D visualization using Three.js Html component for labels
+
+Current crate dimensions: 48" width x 40" depth x 40" height
+
+=== CURRENT BEHAVIOR ===
+Face labels (Top, Left, Front, Back, Right) appear as large dark rounded rectangles with white text that cover significant portions of the crate faces. Each label appears to be approximately 25-30% of the face size, creating dark gray/charcoal colored rectangular badges with rounded corners. The "Top" label sits above the crate, while "Left", "Front", "Back", and "Right" labels are positioned around the sides. The labels are disproportionately large compared to the crate size and obstruct the 3D visualization, making it difficult to see the actual crate structure and materials.
+
+=== EXPECTED BEHAVIOR ===
+Labels should appear as small, unobtrusive stickers on each face that are:
+- Easy to read but much smaller in size
+- Positioned appropriately on each face without blocking the view
+- Styled to look like actual stickers or tags
+- Maintain readability at different zoom levels
+
+=== REQUIREMENTS ===
+1. Reduce the size of face labels significantly
+2. Maintain readability of the text
+3. Position labels as corner or edge stickers on each face
+4. Ensure labels work with both dark and light themes
+5. Keep labels proportional to crate size
+6. Maintain accessibility standards
+
+=== CONSTRAINTS ===
+- Use existing Three.js Html component for labels
+- Follow project's TypeScript conventions
+- Maintain dark mode compatibility
+- No hardcoded values - use responsive sizing
+- Use underscore prefix for unused variables
+- 2-space indentation, single quotes, semicolons required
+
+=== CODE CONTEXT ===
+The labels are likely implemented using Three.js Html component in the CrateViewer3D.tsx file. They are positioned on each face of the crate (Top, Front, Back, Left, Right) and currently use large rounded rectangles with white text on dark background.
+
+Current implementation probably uses CSS classes or inline styles for sizing and positioning.
+
+=== FILE CHANGES ===
+File: src/components/CrateViewer3D.tsx
+- Component: Face label rendering section (likely Html components from @react-three/drei)
+- Change: Reduce label size by modifying CSS classes or inline styles
+- Change: Adjust positioning to corner/edge placement instead of center
+- Change: Scale labels proportionally to crate size
+- Location: Look for Html components with "Top", "Left", "Front", "Back", "Right" text
+
+File: [CSS/Style file if labels use external styles]
+- Change: Update label dimensions, padding, font-size
+- Change: Ensure responsive sizing based on crate dimensions
+
+=== SUCCESS CRITERIA ===
+- [ ] Face labels are significantly smaller (sticker-like size)
+- [ ] Labels remain readable at normal zoom levels
+- [ ] Labels don't obstruct the 3D crate view
+- [ ] Labels work in both dark and light modes
+- [ ] Labels are proportional to crate dimensions
+- [ ] No TypeScript errors
+- [ ] No linting errors
+- [ ] Maintains accessibility for screen readers
+
+=== ADDITIONAL NOTES ===
+Consider positioning labels at corners or edges of faces rather than center. The labels should feel like actual shipping labels or stickers that would be placed on a real crate - small, informative, but not dominating the surface area.
+
+The issue occurs in the exploded view mode where the crate components are separated for better visibility, with measurements and face labels both enabled. The labels need to work well in both normal and exploded view modes. The current labels are too prominent and take away from the primary purpose of visualizing the crate structure and dimensions.

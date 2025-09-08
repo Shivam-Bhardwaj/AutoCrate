@@ -1,0 +1,56 @@
+PROMPT TEMPLATE FOR LIGHTWEIGHT LLM
+
+=== PROBLEM STATEMENT ===
+[Clearly describe the bug, issue, or task]
+
+=== TECHNICAL CONTEXT ===
+Project: AutoCrate - Next.js 14 crate design application
+Tech Stack: Next.js 14, TypeScript, Three.js, Tailwind CSS, Zustand
+File Location: [specific file paths]
+Related Components: [list relevant components]
+
+=== CURRENT BEHAVIOR ===
+[What is happening now - include error messages, screenshots description, or current state]
+
+=== EXPECTED BEHAVIOR ===
+[What should happen instead]
+
+=== REQUIREMENTS ===
+1. [Specific task 1]
+2. [Specific task 2]
+3. [Additional requirements]
+
+=== CONSTRAINTS ===
+- Follow existing code patterns and conventions
+- Maintain TypeScript type safety
+- Ensure dark mode compatibility
+- No hardcoded values
+- Use underscore prefix for unused variables
+- 2-space indentation, single quotes, semicolons required
+
+=== CODE CONTEXT ===
+[Include relevant code snippets, function signatures, or component structure]
+
+=== FILE CHANGES ===
+File: [exact file path]
+- Function/Component: [specific function or component to modify]
+- Change: [what needs to be changed]
+- Location: [line numbers or section if known]
+
+File: [another file path if needed]
+- Function/Component: [specific function or component to modify]
+- Change: [what needs to be changed]
+- Location: [line numbers or section if known]
+
+[List any new files that need to be created]
+
+=== SUCCESS CRITERIA ===
+- [ ] Task 1 completed
+- [ ] Task 2 completed  
+- [ ] No TypeScript errors
+- [ ] No linting errors
+- [ ] Functionality works in both dark and light modes
+- [ ] Code follows project conventions
+
+=== ADDITIONAL NOTES ===
+[Any other relevant information, gotchas, or specific implementation details]

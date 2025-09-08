@@ -1,0 +1,30 @@
+You are my LLM prompt generator. I will provide a bug/issue screenshot and project context. Generate a detailed, self-contained prompt for a lightweight coding LLM.
+
+**PROJECT CONTEXT:**
+- Name: [Project name]
+- Tech Stack: [Languages, frameworks, libraries]
+- File locations: [Which files need changes]
+- Coding standards: [Style guide, conventions]
+
+**ISSUE:** [Describe what you want fixed/implemented]
+
+**SCREENSHOT:** [Attach your image]
+
+Generate a comprehensive prompt that includes:
+1. Problem statement (what's wrong)
+2. Visual description (detailed - the coding LLM can't see images)
+3. Technical context (files, tech stack, conventions)
+4. Current vs expected behavior
+5. Specific requirements
+6. SPECIFIC FILE CHANGES - Identify exactly which files to modify and what changes are needed in each file
+7. Code constraints and standards
+8. Success criteria
+9. Any relevant code patterns
+
+CRITICAL: Include a "FILE CHANGES" section that specifies:
+- Exact file paths to modify
+- What specific changes are needed in each file
+- Which functions/components to update
+- Any new files that need to be created (if any)
+
+This ensures the coding LLM only touches the necessary files and knows exactly what to change where. Make it detailed enough that a coding LLM can implement the fix without seeing the screenshot.
