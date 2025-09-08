@@ -115,7 +115,7 @@ export default function OutputSection() {
   };
 
   return (
-    <div className="h-full overflow-y-auto p-4">
+    <div className="h-full overflow-y-auto p-4" role="main" aria-label="Generated output and analysis">
       <div className="space-y-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
@@ -140,7 +140,7 @@ export default function OutputSection() {
               }}
             >
               <TabsList
-                className="grid w-full grid-cols-4 text-gray-600 dark:text-gray-300"
+                className="grid w-full grid-cols-4 text-text-primary"
                 aria-label="Output data sections"
               >
                 <TabsTrigger value="summary" aria-label="Show summary view">
@@ -203,25 +203,25 @@ export default function OutputSection() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center justify-between p-3 bg-surface rounded-lg">
                           <div>
                             <p className="font-medium">Corner joints</p>
                             <p className="text-sm text-gray-700">
                               Reinforce with brackets for heavy loads
                             </p>
                           </div>
-                          <span className="px-2 py-1 bg-yellow-200 text-yellow-800 rounded text-sm">
+                          <span className="px-2 py-1 bg-warning-bg text-text-primary rounded text-sm">
                             Medium
                           </span>
                         </div>
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center justify-between p-3 bg-surface rounded-lg">
                           <div>
                             <p className="font-medium">Center floor</p>
                             <p className="text-sm text-gray-700">
                               Add center support for loads &gt; 1000kg
                             </p>
                           </div>
-                          <span className="px-2 py-1 bg-green-200 text-green-800 rounded text-sm">
+                          <span className="px-2 py-1 bg-accent text-accent-contrast rounded text-sm">
                             Low
                           </span>
                         </div>
@@ -236,7 +236,7 @@ export default function OutputSection() {
                     <CardContent>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                          <div className="w-4 h-4 bg-accent rounded-full flex items-center justify-center">
                             <div className="w-2 h-2 bg-white rounded-full"></div>
                           </div>
                           <span className="text-sm">Heat treatment (56°C for 30 min)</span>
@@ -254,7 +254,7 @@ export default function OutputSection() {
                           <span className="text-sm">Debarked wood</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center">
+                          <div className="w-4 h-4 bg-warning-bg rounded-full flex items-center justify-center">
                             <div className="w-2 h-2 bg-white rounded-full"></div>
                           </div>
                           <span className="text-sm">IPPC marking required</span>
@@ -448,8 +448,8 @@ export default function OutputSection() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
-                          <p className="text-sm text-blue-800 dark:text-blue-200">
+                        <div className="p-3 bg-surface-accent border border-border-subtle rounded">
+                          <p className="text-sm text-text-primary">
                             Generate NX CAD expressions for parametric crate design. Import the
                             generated .exp file into NX for automated crate construction.
                           </p>

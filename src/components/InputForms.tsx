@@ -28,7 +28,7 @@ export default function InputForms() {
   const { logUser } = useLogsStore();
 
   return (
-    <div className="h-full overflow-y-auto nx-panel">
+    <div className="h-full overflow-y-auto nx-panel" role="form" aria-label="Crate configuration form">
       <div className="nx-toolbar border-b border-nx-border px-3 py-2">
         <h2 className="text-sm font-semibold nx-text">Part Properties</h2>
       </div>
@@ -56,12 +56,12 @@ export default function InputForms() {
         {/* Product Dimensions */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Product Dimensions</h3>
-          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
-            <p className="text-sm text-blue-800 dark:text-blue-200">
+          <div className="p-3 bg-surface-accent border border-border-subtle rounded">
+            <p className="text-sm text-text-primary">
               Enter the dimensions of the product you want to ship. The crate will be automatically
               sized to accommodate your product with proper clearances.
             </p>
-            <p className="text-xs text-blue-700 dark:text-blue-300 mt-2">
+            <p className="text-xs text-text-secondary mt-2">
               <strong>Size Limits:</strong> Minimum 10 inches, Maximum 150 inches per dimension.
               Values outside these ranges will be automatically adjusted.
             </p>
@@ -199,7 +199,7 @@ export default function InputForms() {
             </div>
           </div>
 
-          <div className="p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded">
+          <div className="p-3 bg-surface border border-border-subtle rounded">
             <h4 className="text-sm font-semibold mb-2">Calculated Crate Dimensions</h4>
             <p className="text-xs text-muted-foreground mb-2">
               Crate size includes 2&quot; clearance + panel thickness on each side
@@ -318,8 +318,8 @@ export default function InputForms() {
             </div>
 
             {configuration.base.requiresRubStrips && (
-              <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
-                <p className="text-xs text-yellow-800 dark:text-yellow-200">
+              <div className="p-3 bg-warning-bg border border-border-subtle rounded">
+                <p className="text-xs text-text-primary">
                   Rub strips are required for crate bases longer than 96 inches. These must extend
                   the width of the crate and be beveled at 45-60 degrees for half their height.
                 </p>
@@ -456,13 +456,13 @@ export default function InputForms() {
           </div>
 
           {/* TODO: Add simplified AMAT Style B specific options here */}
-          <div className="space-y-4 mt-4 p-4 bg-blue-50 rounded">
+          <div className="space-y-4 mt-4 p-4 bg-surface-accent rounded">
             <h4 className="text-sm font-semibold">Style B Specific Configuration</h4>
             <p className="text-xs">Style B crate with drop-end cleated plywood cap</p>
           </div>
 
           {/* TODO: Add simplified AMAT Style B specific options here */}
-          <div className="space-y-4 mt-4 p-4 bg-blue-50 rounded">
+          <div className="space-y-4 mt-4 p-4 bg-surface-accent rounded">
             <h4 className="text-sm font-semibold">Style B Specific Configuration</h4>
             <p className="text-xs">Style B crate with drop-end cleated plywood cap</p>
           </div>
