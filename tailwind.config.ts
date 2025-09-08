@@ -16,6 +16,9 @@ const config: Config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
@@ -50,6 +53,13 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        surface: 'hsl(var(--surface))',
+        'surface-accent': 'hsl(var(--surface-accent))',
+        'border-subtle': 'hsl(var(--border-subtle))',
+        'text-primary': 'hsl(var(--text-primary))',
+        'text-secondary': 'hsl(var(--text-secondary))',
+        'accent-contrast': 'hsl(var(--accent-contrast))',
+        'warning-bg': 'hsl(var(--warning-bg))',
       },
       borderRadius: {
         lg: 'var(--radius)',
