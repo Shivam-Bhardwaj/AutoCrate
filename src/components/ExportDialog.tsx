@@ -330,7 +330,7 @@ export function ExportDialog({ children, scene }: ExportDialogProps) {
               <div className="space-y-2 text-sm">
                 <div>
                   <span className="font-medium">Crate Size:</span>
-                  <div>{crateConfig.dimensions.width}" × {crateConfig.dimensions.length}" × {crateConfig.dimensions.height}"</div>
+                  <div>{crateConfig.dimensions.width}&quot; × {crateConfig.dimensions.length}&quot; × {crateConfig.dimensions.height}&quot;</div>
                 </div>
                 <div>
                   <span className="font-medium">Estimated Size:</span>

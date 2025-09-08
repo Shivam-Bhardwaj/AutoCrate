@@ -56,7 +56,7 @@ const HoverTooltip = ({ hoverState }: { hoverState: HoverState }) => {
         <div className="font-semibold capitalize">{hoverState.component}</div>
         {/* eslint-disable-next-line react/no-unescaped-entities */}
         <div className="text-xs text-gray-300">
-          {Math.round(hoverState.dimensions[0])}" × {Math.round(hoverState.dimensions[1])}" × {Math.round(hoverState.dimensions[2])}"
+          {Math.round(hoverState.dimensions[0])}&quot; × {Math.round(hoverState.dimensions[1])}&quot; × {Math.round(hoverState.dimensions[2])}&quot;
         </div>
       </div>
     </Html>

@@ -71,30 +71,26 @@ Stable version before professional UI redesign. This release marks the baseline 
 ## 2.3.0 (2025-09-08) - Readability & Typography Enhancement
 
 ### Summary
-Major typography and readability improvements with semantic token system, enhanced 3D label visibility, and comprehensive accessibility updates.
+This release introduces a major overhaul of the typography and design token system to significantly improve readability and accessibility. Key features include a fluid typography scale using CSS `clamp()`, enhanced 3D label visibility with text outlining, and a refactored color system that meets WCAG AA contrast standards.
 
 ### New Features
-- **Typography Token System**: Complete semantic typography scale with clamp() functions for responsive text sizing
-- **3D Label Readability**: Enhanced label rendering with outline strokes for improved visibility in 3D space
-- **Variable Font Support**: Dynamic font loading with fallback optimization
-- **Accessible Color Tokens**: Refactored color system with WCAG AA compliance verification
-- **Theme Consolidation**: Unified theme usage across all components
+- **Semantic Typography System**: Implemented a complete typography scale with `clamp()` functions for fluidly responsive text sizing across all viewports.
+- **3D Label Readability**: Enhanced 3D label rendering with outline strokes and text-shadow techniques, ensuring clarity against any background.
+- **Variable Font Support**: Integrated variable fonts for optimized performance and loading, preventing Flash of Unstyled Text (FOUT).
+- **Accessible Color Tokens**: Refactored the entire color system with a focus on accessibility, with all tokens verified for WCAG AA compliance.
+- **Theme Consolidation**: Unified theme management for consistent color and style application across all application components.
 
 ### Technical Improvements
-- **Semantic Tokens**: Typography tokens defined in `src/styles/design-tokens.ts` with clamp() examples
-- **3D Rendering**: Canvas stroke and text-shadow techniques for label clarity
-- **Color Contrast**: Automated contrast ratio validation in test suite
-- **Font Loading**: Optimized FOUT prevention with variable font loading
+- **Design Token Architecture**: Centralized typography and color tokens in `globals.css` and `tailwind.config.ts` for a single source of truth.
+- **Automated Contrast Testing**: Added automated color contrast validation to the testing suite to enforce accessibility standards.
+- **Optimized Font Loading**: Implemented a robust font loading strategy in `src/app/fonts.ts` to improve perceived performance.
 
-### Features
-* add variable font and typography tokens ([58e98af](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/58e98af))
-* refactor panels to accessible color tokens ([1e09d60](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/1e09d60))
-* consolidate theme color usage ([8fa7652](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/8fa7652))
-* improve 3D label readability with outline ([104b8cc](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/104b8cc))
-
-### Tests
-* add typography token unit tests ([c0145b1](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/c0145b1))
-
+### Commits
+- feat: add variable font and typography tokens ([58e98af](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/58e98af))
+- feat: refactor panels to accessible color tokens ([1e09d60](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/1e09d60))
+- feat: consolidate theme color usage ([8fa7652](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/8fa7652))
+- feat: improve 3D label readability with outline ([104b8cc](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/104b8cc))
+- test: add typography token unit tests ([c0145b1](https://github.com/Shivam-Bhardwaj/AutoCrate/commit/c0145b1))
 ---
 
 ## 2.2.10 (2025-09-05)

@@ -572,6 +572,10 @@ npm run test:a11y -- --page=/nx-demo
 | Visual | Rendering differences | screenshot baseline vs new |
 | Perf | Frame budget | log warnings if FPS < 45 |
 | A11y | Discoverability | button names, legend text |
+- [ ] 3D label contrast meets WCAG 2.1 AA (4.5:1 minimum)
+- [ ] Interactive 3D elements accessible via keyboard
+- [ ] 3D viewer provides alternative text descriptions
+- [ ] Camera controls have accessible labels
 
 ## Adding New Test Types Checklist
 1. Define acceptance criteria.

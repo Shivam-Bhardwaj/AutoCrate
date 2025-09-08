@@ -28,10 +28,27 @@ Visit [http://localhost:3000](http://localhost:3000) to start designing crates.
 AutoCrate features a comprehensive semantic typography system with responsive scaling and accessibility-first design:
 
 ### Semantic Tokens
-- **Typography Scale**: Fluid typography using `clamp()` functions for optimal readability across devices
-- **Color System**: WCAG AA compliant color tokens with automated contrast validation
-- **3D Label Enhancement**: Canvas stroke and text-shadow techniques for improved 3D readability
-- **Variable Font Support**: Optimized font loading with FOUT prevention
+- **Typography Scale**:
+  - Semantic tokens defined in `src/styles/design-tokens.ts` using `clamp()` for responsive scaling
+  - Fluid scaling from mobile to desktop with optimal readability at all viewports
+  - Example typography scale:
+    ```css
+    --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+    --text-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
+    --text-3xl: clamp(1.875rem, 1.5rem + 1.875vw, 2.5rem);
+    ```
+- **Semantic Color Tokens**: Context-aware color application with theme support
+  - Primary, secondary, and accent color families
+  - Success, error, warning, and info semantic colors
+  - Automated contrast validation ensuring WCAG AA compliance
+- **3D Label Enhancement**: Advanced canvas stroke and text-shadow techniques for improved 3D readability
+  - Multi-layer stroke rendering for enhanced visibility
+  - Dynamic text-shadow effects for depth perception
+  - Anti-aliasing and smoothing for professional appearance
+- **Variable Font Support**: Optimized font loading strategy with FOUT prevention
+  - Font loading in `src/app/fonts.ts` with performance monitoring
+  - Fallback font stacks for reliability
+  - Variable font weights for optimal loading
 
 ### Design Token Locations
 - **Typography Tokens**: `src/styles/design-tokens.ts`

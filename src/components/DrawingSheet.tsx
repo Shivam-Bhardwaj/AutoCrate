@@ -302,7 +302,7 @@ export function DrawingSheetComponent({
           fontFamily="Arial"
           fill="#000000"
         >
-          SKID, 4" X 4", PINE
+          SKID, 4&quot; X 4&quot;, PINE
         </text>
       </g>
     );

@@ -7,10 +7,9 @@ This document outlines the system architecture, design token locations, and impl
 ### Token Definition Locations
 
 #### Typography Tokens
-- **Primary Location**: `src/styles/design-tokens.ts`
-- **Tailwind Integration**: `tailwind.config.ts` (extended theme)
-- **Global CSS Variables**: `src/app/globals.css`
-- **Component Implementation**: `src/components/ThemeProvider.tsx`
+- **Defined in**: `src/styles/design-tokens.ts`
+- **Implemented via**: `src/app/globals.css` and `tailwind.config.ts`
+- **Theme Context**: `src/components/ThemeProvider.tsx` manages the theme
 
 #### Color Tokens
 - **Design Tokens**: `src/styles/design-tokens.ts`

@@ -108,6 +108,7 @@ Corner positions (from origin at center of floor):
 - **Canvas Stroke Rendering**: Labels use canvas stroke techniques for enhanced visibility
 - **Text Shadow Effects**: Multiple shadow layers improve contrast against varying backgrounds
 - **Dynamic Positioning**: Labels may be offset from exact geometric positions for better visibility
+- **Visual Clarity Priority**: Label placement prioritizes readability over geometric accuracy in complex views
 - **Size Scaling**: Label sizes scale based on camera distance, not geometric scale
 - **Billboarding**: Labels rotate to face the camera for optimal readability
 

@@ -233,7 +233,8 @@ const validatedColors = {
   success: '#22c55e',         // 4.5:1 on white
   error: '#ef4444',           // 4.5:1 on white
   warning: '#f59e0b',         // 4.5:1 on white
-  info: '#3b82f6'            // 4.5:1 on white
+   info: '#3b82f6'            // 4.5:1 on white
+};
 };
 ```
 

@@ -241,6 +241,9 @@ The typography scale uses fluid sizing that scales between minimum and maximum v
 /* Display headings */
 --text-5xl: clamp(3rem, 2.4rem + 3vw, 5rem);             /* 48px → 80px */
 --text-6xl: clamp(3.75rem, 3rem + 3.75vw, 6.5rem);       /* 60px → 104px */
+
+/* Special case - 3D labels require additional spacing */
+--label-3d: clamp(1rem, 0.9rem + 0.625vw, 1.25rem); /* 16px → 20px adaptive for 3D annotations */
 ```
 
 #### Semantic Typography Classes
