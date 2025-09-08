@@ -487,7 +487,11 @@ END_BLOCK
 
   private generateNX2022Parameters(): NXParameter[] {
     const params: NXParameter[] = [];
-    const { width, depth, height, weightCapacity, hasTop } = this.config;
+    const { dimensions, weight, cap } = this.config;
+    const { width, height, length } = dimensions;
+    const depth = length; // CrateDimensions uses 'length' for depth
+    const weightCapacity = weight.product;
+    const hasTop = cap.topPanel ? true : false;
 
     // Primary dimensions
     params.push(
@@ -601,13 +605,13 @@ END_BLOCK
           material: 'CDX_PLYWOOD'
         },
         constraints: [
-          { type: 'mate', entities: [wall.name, 'CRATE_FLOOR'] }
+          { type: 'distance', entities: [wall.name, 'CRATE_FLOOR'], value: 0 }
         ]
       });
     });
 
     // Top feature (if enabled)
-    if (this.config.hasTop) {
+    if ((this.config.cap.topPanel ? true : false)) {
       features.push({
         type: 'block',
         parameters: {
@@ -617,7 +621,7 @@ END_BLOCK
           material: 'CDX_PLYWOOD'
         },
         constraints: [
-          { type: 'distance', entities: ['CRATE_TOP', 'CRATE_FLOOR'], value: 'CRATE_HEIGHT - PLYWOOD_THICKNESS' }
+          { type: 'distance', entities: ['CRATE_TOP', 'CRATE_FLOOR'], value: this.config.dimensions.height - 0.75 }
         ]
       });
     }
@@ -637,7 +641,7 @@ END_BLOCK
           material: 'DOUGLAS_FIR_LUMBER'
         },
         constraints: [
-          { type: 'mate', entities: [`SKID_${i + 1}`, 'GROUND_PLANE'] }
+          { type: 'distance', entities: [`SKID_${i + 1}`, 'GROUND_PLANE'], value: 0 }
         ]
       });
     }
@@ -746,7 +750,7 @@ END_BLOCK
     ];
 
     // Add top panel if enabled
-    if (this.config.hasTop) {
+    if ((this.config.cap.topPanel ? true : false)) {
       code.push(
         '',
         'FEATURE CRATE_TOP',
@@ -886,7 +890,7 @@ END_BLOCK
   }
 
   private calculateOptimalScale(): string {
-    const maxDimension = Math.max(this.config.width, this.config.depth, this.config.height);
+    const maxDimension = Math.max(this.config.dimensions.width, this.config.dimensions.length, this.config.dimensions.height);
     
     if (maxDimension <= 24) return '1:2';
     if (maxDimension <= 48) return '1:4';
@@ -896,7 +900,7 @@ END_BLOCK
   }
 
   private calculateSkidCount(): number {
-    const depth = this.config.depth;
+    const depth = this.config.dimensions.length;
     if (depth <= 24) return 2;
     if (depth <= 48) return 3;
     if (depth <= 72) return 4;
@@ -905,6 +909,6 @@ END_BLOCK
 
   private calculateSkidSpacing(): number {
     const skidCount = this.calculateSkidCount();
-    return (this.config.depth - 3.5) / (skidCount - 1); // Account for skid width
+    return (this.config.dimensions.length - 3.5) / (skidCount - 1); // Account for skid width
   }
 }

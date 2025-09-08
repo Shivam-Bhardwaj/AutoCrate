@@ -414,7 +414,7 @@ export function validateBOMEntries(entries: BOMEntry[]): {
       errors.push(`Entry ${index + 1}: Invalid item number`);
     }
     
-    if (!entry.quantity || (entry.quantity !== 'AR' && entry.quantity <= 0)) {
+    if (!entry.quantity || (typeof entry.quantity === 'number' && entry.quantity <= 0) || (typeof entry.quantity === 'string' && entry.quantity !== 'AR' && parseInt(entry.quantity) <= 0)) {
       errors.push(`Entry ${index + 1}: Invalid quantity`);
     }
     

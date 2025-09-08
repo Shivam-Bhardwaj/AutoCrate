@@ -47,6 +47,9 @@ export interface TitleBlockInput {
   drawnBy?: string;
   checkedBy?: string;
   approvedBy?: string;
+  dateDrawn?: string;
+  dateChecked?: string;
+  dateApproved?: string;
   revision?: string;
   scale?: string;
 }

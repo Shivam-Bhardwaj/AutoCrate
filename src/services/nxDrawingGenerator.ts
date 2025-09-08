@@ -154,7 +154,8 @@ export class NXDrawingGenerator {
   }
 
   private generateIsometricView(): string {
-    const { width, depth, height } = this.config;
+    const { width, height, length } = this.config.dimensions;
+    const depth = length;
     
     return [
       '! Isometric view showing overall assembly',
@@ -169,12 +170,12 @@ export class NXDrawingGenerator {
       `CALLOUT 4 "Back Panel" ${width/2} 0 ${height/2}`,
       `CALLOUT 5 "Left Panel" 0 ${depth/2} ${height/2}`,
       `CALLOUT 6 "Right Panel" ${width} ${depth/2} ${height/2}`,
-      ...(this.config.hasTop ? [`CALLOUT 7 "Top Panel" ${width/2} ${depth/2} ${height}`] : [])
+      ...((this.config.cap.topPanel ? true : false) ? [`CALLOUT 7 "Top Panel" ${width/2} ${depth/2} ${height}`] : [])
     ].join('\n');
   }
 
   private generateFrontView(): string {
-    const { width, height } = this.config;
+    const { width, height } = this.config.dimensions;
     
     return [
       '! Front elevation view',
@@ -194,7 +195,7 @@ export class NXDrawingGenerator {
   }
 
   private generateRightView(): string {
-    const { depth, height } = this.config;
+    const { length: depth, height } = this.config.dimensions;
     
     return [
       '! Right side elevation view',
@@ -213,7 +214,7 @@ export class NXDrawingGenerator {
   }
 
   private generateTopView(): string {
-    const { width, depth } = this.config;
+    const { width, length: depth } = this.config.dimensions;
     
     return [
       '! Top plan view',
@@ -235,7 +236,7 @@ export class NXDrawingGenerator {
   }
 
   private generateDimensions(): string {
-    const { width, depth, height } = this.config;
+    const { width, length: depth, height } = this.config.dimensions;
     
     return [
       '! Primary dimensions',
@@ -305,7 +306,7 @@ export class NXDrawingGenerator {
   }
 
   private generateSkidGeometry(): string {
-    const { width, depth } = this.config;
+    const { width, length: depth } = this.config.dimensions;
     const skidSpacing = Math.min(width, depth) <= 48 ? 24 : 36;
     
     return [
@@ -323,7 +324,7 @@ export class NXDrawingGenerator {
   }
 
   private generateFloorGeometry(): string {
-    const { width, depth } = this.config;
+    const { width, length: depth } = this.config.dimensions;
     
     return [
       '! 3/4" Plywood Floor Panel',
@@ -342,7 +343,7 @@ export class NXDrawingGenerator {
   }
 
   private generatePanelGeometry(panelName: string): string {
-    const { width, depth, height } = this.config;
+    const { width, length: depth, height } = this.config.dimensions;
     let panelWidth, panelHeight;
     
     if (panelName.includes('Front') || panelName.includes('Back')) {
@@ -370,7 +371,7 @@ export class NXDrawingGenerator {
   }
 
   private generateTopGeometry(): string {
-    const { width, depth } = this.config;
+    const { width, length: depth } = this.config.dimensions;
     
     return [
       '! 3/4" Plywood Top Panel',
@@ -427,21 +428,21 @@ export class NXDrawingGenerator {
   private async generateBOMDrawing(): Promise<Blob> {
     const bomContent = [
       'Bill of Materials',
-      `Project: AutoCrate ${this.config.width}x${this.config.depth}x${this.config.height}`,
+      `Project: AutoCrate ${this.config.dimensions.width}x${this.config.dimensions.length}x${this.config.dimensions.height}`,
       `Part Number: ${this.generatePartNumber()}`,
       `TC Number: ${this.generateTCNumber()}`,
       `Date: ${new Date().toLocaleDateString()}`,
       '',
       'Item | Part Number | Description | Qty | Material | Dimensions | Weight | Supplier',
       '-----|-------------|-------------|-----|----------|------------|--------|----------',
-      '1    | 0205-001-01 | Skid Runners| 2   | Doug Fir | 2x4x' + this.config.width + ' | 5.2 | Local',
-      '2    | 0205-001-02 | Skid Cross  | 2   | Doug Fir | 2x4x' + (this.config.depth-7) + ' | 3.8 | Local',
-      '3    | 0205-002-01 | Floor Panel | 1   | CDX Ply  | 3/4x' + this.config.width + 'x' + this.config.depth + ' | 15.6 | Local',
-      '4    | 0205-003-01 | Front Panel | 1   | CDX Ply  | 3/4x' + this.config.width + 'x' + this.config.height + ' | 12.4 | Local',
-      '5    | 0205-004-01 | Back Panel  | 1   | CDX Ply  | 3/4x' + this.config.width + 'x' + this.config.height + ' | 12.4 | Local',
-      '6    | 0205-005-01 | Left Panel  | 1   | CDX Ply  | 3/4x' + this.config.depth + 'x' + this.config.height + ' | 11.8 | Local',
-      '7    | 0205-006-01 | Right Panel | 1   | CDX Ply  | 3/4x' + this.config.depth + 'x' + this.config.height + ' | 11.8 | Local',
-      ...(this.config.hasTop ? ['8    | 0205-007-01 | Top Panel   | 1   | CDX Ply  | 3/4x' + this.config.width + 'x' + this.config.depth + ' | 15.6 | Local'] : []),
+      '1    | 0205-001-01 | Skid Runners| 2   | Doug Fir | 2x4x' + this.config.dimensions.width + ' | 5.2 | Local',
+      '2    | 0205-001-02 | Skid Cross  | 2   | Doug Fir | 2x4x' + (this.config.dimensions.length-7) + ' | 3.8 | Local',
+      '3    | 0205-002-01 | Floor Panel | 1   | CDX Ply  | 3/4x' + this.config.dimensions.width + 'x' + this.config.dimensions.length + ' | 15.6 | Local',
+      '4    | 0205-003-01 | Front Panel | 1   | CDX Ply  | 3/4x' + this.config.dimensions.width + 'x' + this.config.dimensions.height + ' | 12.4 | Local',
+      '5    | 0205-004-01 | Back Panel  | 1   | CDX Ply  | 3/4x' + this.config.dimensions.width + 'x' + this.config.dimensions.height + ' | 12.4 | Local',
+      '6    | 0205-005-01 | Left Panel  | 1   | CDX Ply  | 3/4x' + this.config.dimensions.length + 'x' + this.config.dimensions.height + ' | 11.8 | Local',
+      '7    | 0205-006-01 | Right Panel | 1   | CDX Ply  | 3/4x' + this.config.dimensions.length + 'x' + this.config.dimensions.height + ' | 11.8 | Local',
+      ...((this.config.cap.topPanel ? true : false) ? ['8    | 0205-007-01 | Top Panel   | 1   | CDX Ply  | 3/4x' + this.config.dimensions.width + 'x' + this.config.dimensions.length + ' | 15.6 | Local'] : []),
       '',
       'Hardware:',
       'H1   | 3/8" x 6" Lag Bolts | 12 | Galvanized Steel',
@@ -464,7 +465,7 @@ export class NXDrawingGenerator {
       '==================================',
       '',
       `Generated: ${new Date().toISOString()}`,
-      `Crate Configuration: ${this.config.width}" x ${this.config.depth}" x ${this.config.height}"`,
+      `Crate Configuration: ${this.config.dimensions.width}" x ${this.config.dimensions.length}" x ${this.config.dimensions.height}"`,
       '',
       'File Contents:',
       '- 01_Assembly_Drawing.prt - Main assembly drawing',
@@ -568,7 +569,7 @@ export class NXDrawingGenerator {
       }
     ];
 
-    if (this.config.hasTop) {
+    if ((this.config.cap.topPanel ? true : false)) {
       components.push({
         id: 'top',
         name: 'Top Panel',
@@ -585,9 +586,9 @@ export class NXDrawingGenerator {
 
   private generatePartNumber(): string {
     if (this.options.applyMaterialsStandards) {
-      return `0205-${this.config.width.toString().padStart(3, '0')}${this.config.depth.toString().padStart(3, '0')}${this.config.height.toString().padStart(3, '0')}`;
+      return `0205-${this.config.dimensions.width.toString().padStart(3, '0')}${this.config.dimensions.length.toString().padStart(3, '0')}${this.config.dimensions.height.toString().padStart(3, '0')}`;
     }
-    return `CRATE-${this.config.width}x${this.config.depth}x${this.config.height}`;
+    return `CRATE-${this.config.dimensions.width}x${this.config.dimensions.length}x${this.config.dimensions.height}`;
   }
 
   private generateTCNumber(): string {
