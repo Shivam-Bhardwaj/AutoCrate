@@ -267,104 +267,102 @@ export default function LogsSection() {
   ];
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full panel">
       {/* Enhanced header with controls */}
-      <div className={`px-4 py-2 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+      <div className="px-6 py-4 border-b border-borders">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <span className="text-caption text-text-secondary">
               {filteredLogs.length} / {logs.length} entries
             </span>
-            {isPaused && <span className="text-xs text-yellow-500 font-medium">PAUSED</span>}
+            {isPaused && <span className="text-caption text-warning font-medium px-2 py-1 bg-warning-bg rounded-md">PAUSED</span>}
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <Button
               size="sm"
-              variant="ghost"
+              variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className={`h-7 px-2 ${isDarkMode ? 'hover:bg-gray-700' : ''}`}
+              className="btn btn-outline h-8 px-3"
               aria-label={showFilters ? 'Hide log filters' : 'Show log filters'}
             >
-              <Filter className="h-3 w-3" />
+              <Filter className="h-4 w-4" />
             </Button>
             <Button
               size="sm"
-              variant="ghost"
+              variant="outline"
               onClick={togglePause}
-              className={`h-7 px-2 ${isDarkMode ? 'hover:bg-gray-700' : ''}`}
+              className="btn btn-outline h-8 px-3"
               aria-label={isPaused ? 'Resume log stream' : 'Pause log stream'}
             >
-              {isPaused ? <Play className="h-3 w-3" /> : <Pause className="h-3 w-3" />}
+              {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
             </Button>
             <Button
               size="sm"
-              variant="ghost"
+              variant="outline"
               onClick={handleExport}
-              className={`h-7 px-2 ${isDarkMode ? 'hover:bg-gray-700' : ''}`}
+              className="btn btn-outline h-8 px-3"
               aria-label="Export logs as JSON file"
             >
-              <Download className="h-3 w-3" />
+              <Download className="h-4 w-4" />
             </Button>
             <Button
               size="sm"
-              variant="ghost"
+              variant="outline"
               onClick={clearLogs}
-              className={`h-7 px-2 ${isDarkMode ? 'hover:bg-gray-700' : ''}`}
+              className="btn btn-outline h-8 px-3"
               aria-label="Clear all logs"
             >
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
         {/* Search bar */}
-        <div className="relative mb-2">
+        <div className="relative mb-4">
           <Search
-            className={`absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-text-secondary"
           />
           <Input
             type="text"
             placeholder="Search logs..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className={`h-7 pl-7 pr-7 text-xs ${isDarkMode ? 'bg-gray-800 border-gray-700' : ''}`}
+            className="input h-10 pl-10 pr-10"
           />
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className={`absolute right-2 top-1/2 transform -translate-y-1/2 ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary hover:text-text-primary"
             >
-              <X className="h-3 w-3" />
+              <X className="h-4 w-4" />
             </button>
           )}
         </div>
 
         {/* Filters */}
         {showFilters && (
-          <div className={`p-2 rounded-md ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-            <div className="mb-2">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium">Type Filters</span>
+          <div className="p-4 bg-surface border border-borders rounded-md mb-4">
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-body font-semibold text-text-primary">Type Filters</span>
                 {selectedTypes.length > 0 && (
                   <button
                     onClick={() => setSelectedTypes([])}
-                    className="text-xs text-blue-500 hover:underline"
+                    className="text-small text-primary hover:underline"
                   >
                     Clear
                   </button>
                 )}
               </div>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-2">
                 {logTypes.map((type) => (
                   <button
                     key={type}
                     onClick={() => toggleType(type)}
-                    className={`px-2 py-0.5 text-xs rounded-full transition-colors ${
+                    className={`px-3 py-1.5 text-small rounded-md transition-colors font-medium ${
                       selectedTypes.includes(type)
-                        ? getLogColor(type) + ' bg-opacity-20'
-                        : isDarkMode
-                          ? 'bg-gray-700'
-                          : 'bg-gray-200'
+                        ? 'bg-primary text-primary-contrast'
+                        : 'bg-surface-accent text-text-primary hover:bg-surface-accent-hover'
                     }`}
                   >
                     {type}
@@ -374,28 +372,26 @@ export default function LogsSection() {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium">Category Filters</span>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-body font-semibold text-text-primary">Category Filters</span>
                 {selectedCategories.length > 0 && (
                   <button
                     onClick={() => setSelectedCategories([])}
-                    className="text-xs text-blue-500 hover:underline"
+                    className="text-small text-primary hover:underline"
                   >
                     Clear
                   </button>
                 )}
               </div>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-2">
                 {logCategories.map((category) => (
                   <button
                     key={category}
                     onClick={() => toggleCategory(category)}
-                    className={`px-2 py-0.5 text-xs rounded-full transition-colors ${
+                    className={`px-3 py-1.5 text-small rounded-md transition-colors font-medium ${
                       selectedCategories.includes(category)
-                        ? getCategoryBadgeColor(category) + ' text-white'
-                        : isDarkMode
-                          ? 'bg-gray-700'
-                          : 'bg-gray-200'
+                        ? 'bg-secondary text-secondary-contrast'
+                        : 'bg-surface-accent text-text-primary hover:bg-surface-accent-hover'
                     }`}
                   >
                     {category}
@@ -407,57 +403,50 @@ export default function LogsSection() {
         )}
 
         {/* Stats bar */}
-        <div className="flex items-center gap-3 text-xs">
-          <span className={getLogColor('info')}>Info: {stats.byType.info || 0}</span>
-          <span className={getLogColor('success')}>Success: {stats.byType.success || 0}</span>
-          <span className={getLogColor('warning')}>Warning: {stats.byType.warning || 0}</span>
-          <span className={getLogColor('error')}>Error: {stats.byType.error || 0}</span>
+        <div className="flex items-center gap-4 text-caption">
+          <span className="text-info">Info: {stats.byType.info || 0}</span>
+          <span className="text-success">Success: {stats.byType.success || 0}</span>
+          <span className="text-warning">Warning: {stats.byType.warning || 0}</span>
+          <span className="text-error">Error: {stats.byType.error || 0}</span>
         </div>
       </div>
 
       {/* Logs list */}
       <div
-        className={`flex-1 overflow-y-auto px-4 pb-2 font-mono text-sm leading-snug ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
+        className="flex-1 overflow-y-auto px-6 pb-4 font-mono text-body leading-relaxed bg-surface"
         tabIndex={0}
         role="complementary"
         aria-label="System and user log messages"
       >
         {filteredLogs.length === 0 ? (
-          <div className={`text-center py-8 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+          <div className="text-center py-12 text-text-secondary">
             {logs.length === 0 ? 'No logs to display' : 'No logs match the current filters'}
           </div>
         ) : (
-          <div className="space-y-1">
+          <div className="space-y-2">
             {filteredLogs.map((log) => (
               <div
                 key={log.id}
-                className={`flex items-start gap-2 py-1.5 ${isDarkMode ? 'border-gray-800' : 'border-gray-200'} border-b last:border-0`}
+                className="flex items-start gap-3 py-3 px-4 bg-background border border-borders rounded-md hover:bg-surface-accent transition-colors"
               >
-                <span
-                  className={`${isDarkMode ? 'text-gray-500' : 'text-gray-400'} whitespace-nowrap`}
-                >
+                <span className="text-text-secondary whitespace-nowrap font-mono text-small">
                   {mounted ? formatTime(log.timestamp) : ''}
                 </span>
-                <span className={getLogColor(log.type)}>{getLogIcon(log.type)}</span>
-                <span
-                  className={`px-1.5 py-0.5 text-xs rounded-full text-white ${getCategoryBadgeColor(log.category)}`}
-                  style={{ fontSize: '10px' }}
-                >
+                <span className="text-text-primary mt-0.5">{getLogIcon(log.type)}</span>
+                <span className="px-2 py-1 text-caption rounded-md font-medium bg-surface-accent text-text-primary">
                   {log.category}
                 </span>
-                <div className="flex-1">
-                  <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
+                <div className="flex-1 min-w-0">
+                  <span className="text-text-primary font-medium">
                     {log.message}
                   </span>
                   {log.details && (
-                    <span className={`ml-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                    <span className="ml-2 text-text-secondary font-normal">
                       ({log.details})
                     </span>
                   )}
                   {log.source && (
-                    <span
-                      className={`ml-2 text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-600'}`}
-                    >
+                    <span className="ml-2 text-caption text-text-secondary font-normal">
                       [{log.source}]
                     </span>
                   )}

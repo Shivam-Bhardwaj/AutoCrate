@@ -5,6 +5,7 @@ import { OrbitControls, Grid, Box, Html, Sphere } from '@react-three/drei';
 import { CrateConfiguration } from '@/types/crate';
 import { useLogsStore } from '@/store/logs-store';
 import { useEffect, useState, useMemo, memo } from 'react';
+import { Label } from '@/components/ui/label';
 // Simple, correct geometry implementation
 import {
   buildSimpleCrateGeometry,
@@ -425,8 +426,9 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
   return (
     <div className="w-full h-full nx-viewport nx-grid-major relative">
       {/* Explode View Controls */}
-      <div className="absolute top-4 left-4 nx-panel border border-nx-border p-3 rounded z-10 space-y-3">
-        <div className="flex items-center space-x-2 mb-2">
+      <div className="absolute top-4 left-4 panel p-4 z-10 min-w-[280px] space-y-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-h4 font-semibold text-text-primary">3D Viewer Controls</h3>
           <button
             onClick={() => {
               try {
@@ -447,7 +449,7 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
                 );
               }
             }}
-            className="nx-button-primary text-xs"
+            className="btn btn-secondary text-small"
             aria-label={
               explodeFactor === 0 ? 'Enable exploded crate view' : 'Reset to assembled crate view'
             }
@@ -456,74 +458,72 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
           </button>
         </div>
         {explodeFactor > 0 && (
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-gray-700" htmlFor="explodeRange">
-              Explode: {explodeFactor}%
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={explodeFactor}
-              onChange={(e) => {
-                try {
-                  setExplodeFactor(Number(e.target.value));
-                } catch (error) {
-                  console.error('Explode factor change error:', error);
-                }
-              }}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-              id="explodeRange"
-              aria-label="Exploded view separation percentage"
-            />
+          <div className="space-y-3">
+            <div className="form-group">
+              <Label htmlFor="explodeRange" className="form-label">Explode Factor: {explodeFactor}%</Label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={explodeFactor}
+                onChange={(e) => {
+                  try {
+                    setExplodeFactor(Number(e.target.value));
+                  } catch (error) {
+                    console.error('Explode factor change error:', error);
+                  }
+                }}
+                className="w-full h-2 bg-surface-accent rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500"
+                id="explodeRange"
+                aria-label="Exploded view separation percentage"
+              />
+            </div>
           </div>
         )}
-        {/* Display Toggles */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="showMeasurements"
-              checked={showMeasurements}
-              onChange={(e) => setShowMeasurements(e.target.checked)}
-              className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500"
-            />
-            <label htmlFor="showMeasurements" className="text-xs font-medium text-gray-700">
-              Show Measurements
-            </label>
+        {/* Display Options */}
+        <div className="space-y-3">
+          <h4 className="text-body font-semibold text-text-primary">Display Options</h4>
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="showMeasurements"
+                checked={showMeasurements}
+                onChange={(e) => setShowMeasurements(e.target.checked)}
+                className="w-4 h-4 text-primary-600 bg-surface border-borders rounded focus:ring-primary-500"
+              />
+              <Label htmlFor="showMeasurements" className="form-label">Show Measurements</Label>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="showFaceLabels"
+                checked={showFaceLabels}
+                onChange={(e) => setShowFaceLabels(e.target.checked)}
+                className="w-4 h-4 text-primary-600 bg-surface border-borders rounded focus:ring-primary-500"
+              />
+              <Label htmlFor="showFaceLabels" className="form-label">Show Face Labels</Label>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="showWCS"
+                checked={showWCS}
+                onChange={(e) => setShowWCS(e.target.checked)}
+                className="w-4 h-4 text-primary-600 bg-surface border-borders rounded focus:ring-primary-500"
+              />
+              <Label htmlFor="showWCS" className="form-label">Show WCS</Label>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="showFaceLabels"
-              checked={showFaceLabels}
-              onChange={(e) => setShowFaceLabels(e.target.checked)}
-              className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500"
-            />
-            <label htmlFor="showFaceLabels" className="text-xs font-medium text-gray-700">
-              Show Face Labels
-            </label>
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="showWCS"
-              checked={showWCS}
-              onChange={(e) => setShowWCS(e.target.checked)}
-              className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500"
-            />
-            <label htmlFor="showWCS" className="text-xs font-medium text-gray-700">
-              Show WCS
-            </label>
-          </div>
-          {/* Turn All Off Button */}
-          <div className="pt-2 space-y-2">
+
+          {/* Quick View Controls */}
+          <div className="flex gap-2 pt-2">
             <button
               onClick={() => {
                 setShowMeasurements(false);
                 setShowFaceLabels(false);
                 setShowWCS(false);
-                setExplodeFactor(0); // Reset to assembled view
+                setExplodeFactor(0);
                 setComponentVisibility({
                   skids: false,
                   floor: false,
@@ -533,10 +533,10 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
                 });
                 logInfo('render', 'All display elements turned off', 'Clean view mode activated', 'CrateViewer3D');
               }}
-              className="w-full px-3 py-1.5 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500 transition-colors"
+              className="btn btn-outline flex-1 text-small"
               aria-label="Turn off all display elements for clean view"
             >
-              Turn All Off
+              Clean View
             </button>
             <button
               onClick={() => {
@@ -552,59 +552,64 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
                 });
                 logInfo('render', 'All display elements turned on', 'Full detail view activated', 'CrateViewer3D');
               }}
-              className="w-full px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 transition-colors"
+              className="btn btn-primary flex-1 text-small"
               aria-label="Turn on all display elements for full detail view"
             >
-              Turn All On
+              Full Detail
             </button>
           </div>
         </div>
         
-        {/* Component Visibility Toggles */}
-        <div className="space-y-2 border-t pt-2">
-          <div className="text-xs font-semibold text-gray-700 mb-2">Components:</div>
-          {Object.entries(componentVisibility).map(([component, isVisible]) => (
-            <div key={component} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id={`show${component}`}
-                checked={isVisible}
-                onChange={(e) => setComponentVisibility(prev => ({
-                  ...prev,
-                  [component]: e.target.checked
-                }))}
-                className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500"
-              />
-              <label htmlFor={`show${component}`} className="text-xs font-medium text-gray-700 capitalize">
-                {component === 'cog' ? 'CoG' : component}
-              </label>
-            </div>
-          ))}
+        {/* Component Visibility */}
+        <div className="space-y-3 border-t border-borders pt-3">
+          <h4 className="text-body font-semibold text-text-primary">Components</h4>
+          <div className="space-y-2">
+            {Object.entries(componentVisibility).map(([component, isVisible]) => (
+              <div key={component} className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id={`show${component}`}
+                  checked={isVisible}
+                  onChange={(e) => setComponentVisibility(prev => ({
+                    ...prev,
+                    [component]: e.target.checked
+                  }))}
+                  className="w-4 h-4 text-primary-600 bg-surface border-borders rounded focus:ring-primary-500"
+                />
+                <Label htmlFor={`show${component}`} className="form-label capitalize">
+                  {component === 'cog' ? 'Center of Gravity' : component}
+                </Label>
+              </div>
+            ))}
+          </div>
         </div>
         {/* Legend */}
-        <div className="grid grid-cols-2 gap-2 text-[10px] leading-tight">
-          {[
-            ['Skids', '#5D3A1A'],
-            ['Floor', '#A0662B'],
-            ['Panels', '#CFAF72'],
-            ['Cleats', '#4A2F14'],
-          ].map(([label, color]) => (
-            <div key={label} className="flex items-center gap-1">
-              <span
-                className="inline-block w-3 h-3 rounded-sm border"
-                style={{ backgroundColor: color as string }}
-              />
-              <span className="text-gray-700">{label}</span>
-            </div>
-          ))}
+        <div className="border-t border-borders pt-3">
+          <h4 className="text-body font-semibold text-text-primary mb-3">Legend</h4>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              ['Skids', '#5D3A1A'],
+              ['Floor', '#A0662B'],
+              ['Panels', '#CFAF72'],
+              ['Cleats', '#4A2F14'],
+            ].map(([label, color]) => (
+              <div key={label} className="flex items-center gap-2">
+                <span
+                  className="inline-block w-4 h-4 rounded-sm border border-borders"
+                  style={{ backgroundColor: color as string }}
+                />
+                <span className="text-caption text-text-secondary">{label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Error Display */}
       {renderError && (
-        <div className="absolute top-4 right-4 bg-red-500/90 backdrop-blur-sm p-3 rounded-lg max-w-xs z-10">
-          <h4 className="font-semibold text-red-100 mb-1">Render Error</h4>
-          <p className="text-sm text-red-200">{renderError}</p>
+        <div className="absolute top-4 right-4 panel p-4 z-10 max-w-xs">
+          <h4 className="text-body font-semibold text-error mb-2">Render Error</h4>
+          <p className="text-caption text-text-secondary">{renderError}</p>
         </div>
       )}
 

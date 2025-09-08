@@ -1,5 +1,28 @@
 # Changelog
 
+## 3.1.0 (2025-09-08) - Design System & Accessibility Foundation
+
+### Summary
+This release establishes the foundational documentation for the new AutoCrate Design System. It includes comprehensive guides for colors, typography, spacing, and components, along with a detailed accessibility statement. This work centralizes design decisions and provides a framework for all future UI development.
+
+### New Features
+- **Design System Documentation**: Created `/docs/DESIGN_SYSTEM.md`, a central document detailing the visual and interactive elements of the application.
+  - Documents the full color palette with light/dark themes and WCAG contrast ratios.
+  - Defines the typographic scale, font weights, and families.
+  - Outlines the 4px-based spacing system (Tailwind's default).
+  - Lists the complete component library.
+- **Accessibility Guidelines**: Created `/docs/ACCESSIBILITY.md` to formalize the commitment to WCAG standards and provide clear guidelines for developers.
+
+### Documentation
+- **Master Plan**: Introduced `MASTER_PLAN.md` to track the progress of the visual overhaul initiative.
+
+### Commits
+- docs: create design system and accessibility documentation skeletons
+- docs: populate design system with color, typography, and spacing
+- docs: expand component library documentation
+
+---
+
 ## 3.0.0 (2025-01-08) - NX Professional Release
 
 ### Summary

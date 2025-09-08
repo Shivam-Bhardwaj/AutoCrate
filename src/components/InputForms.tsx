@@ -28,48 +28,45 @@ export default function InputForms() {
   const { logUser } = useLogsStore();
 
   return (
-    <div className="h-full overflow-y-auto nx-panel" role="form" aria-label="Crate configuration form">
-      <div className="nx-toolbar border-b border-nx-border px-3 py-2">
-        <h2 className="text-sm font-semibold nx-text">Part Properties</h2>
+    <div className="h-full overflow-y-auto panel" role="form" aria-label="Crate configuration form">
+      <div className="panel-header">
+        <h2 className="text-small font-semibold text-text-primary">Part Properties</h2>
       </div>
-      <div className="p-4 space-y-6">
+      <div className="panel-content space-y-6">
         {/* Project Information */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold nx-text border-b border-nx-border pb-1">Project Information</h3>
-          <div className="space-y-2">
-            <Label htmlFor="projectName" className="nx-label">Project Name</Label>
+        <div className="form-group">
+          <h3 className="text-body font-semibold text-text-primary border-b border-borders pb-1">Project Information</h3>
+          <div className="form-group">
+            <Label htmlFor="projectName" className="form-label">Project Name</Label>
             <Input
-              className="nx-input"
-            id="projectName"
-            value={configuration.projectName}
-            onChange={(e) => {
-              updateProjectName(e.target.value);
-              logUser('ui', `Project renamed to: ${e.target.value}`, undefined, 'InputForms');
-            }}
-            placeholder="Enter project name"
-          />
+              id="projectName"
+              value={configuration.projectName}
+              onChange={(e) => {
+                updateProjectName(e.target.value);
+                logUser('ui', `Project renamed to: ${e.target.value}`, undefined, 'InputForms');
+              }}
+              placeholder="Enter project name"
+            />
           </div>
-        </div>
-
-        <Separator />
+        </div>        <Separator />
 
         {/* Product Dimensions */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Product Dimensions</h3>
-          <div className="p-3 bg-surface-accent border border-border-subtle rounded">
-            <p className="text-sm text-text-primary">
+          <h3 className="text-h3 font-semibold text-text-primary">Product Dimensions</h3>
+          <div className="p-4 bg-surface border border-borders rounded-md">
+            <p className="text-body text-text-primary">
               Enter the dimensions of the product you want to ship. The crate will be automatically
               sized to accommodate your product with proper clearances.
             </p>
-            <p className="text-xs text-text-secondary mt-2">
+            <p className="text-small text-text-secondary mt-2">
               <strong>Size Limits:</strong> Minimum 10 inches, Maximum 150 inches per dimension.
               Values outside these ranges will be automatically adjusted.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="width">Product Width (inches)</Label>
+            <div className="form-group">
+              <Label htmlFor="width" className="form-label">Product Width (inches)</Label>
               <Input
                 id="width"
                 type="number"
@@ -101,8 +98,8 @@ export default function InputForms() {
                 aria-label="Product width in inches"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="length">Product Depth (inches)</Label>
+            <div className="form-group">
+              <Label htmlFor="length" className="form-label">Product Depth (inches)</Label>
               <Input
                 id="length"
                 type="number"
@@ -137,8 +134,8 @@ export default function InputForms() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="height">Product Height (inches)</Label>
+            <div className="form-group">
+              <Label htmlFor="height" className="form-label">Product Height (inches)</Label>
               <Input
                 id="height"
                 type="number"
@@ -170,8 +167,8 @@ export default function InputForms() {
                 aria-label="Product height in inches"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="productWeight">Product Weight (pounds)</Label>
+            <div className="form-group">
+              <Label htmlFor="productWeight" className="form-label">Product Weight (pounds)</Label>
               <Input
                 id="productWeight"
                 type="number"
@@ -199,12 +196,12 @@ export default function InputForms() {
             </div>
           </div>
 
-          <div className="p-3 bg-surface border border-border-subtle rounded">
-            <h4 className="text-sm font-semibold mb-2">Calculated Crate Dimensions</h4>
-            <p className="text-xs text-muted-foreground mb-2">
+          <div className="p-4 bg-surface border border-borders rounded-md">
+            <h4 className="text-small font-semibold mb-2 text-text-primary">Calculated Crate Dimensions</h4>
+            <p className="text-caption text-text-secondary mb-2">
               Crate size includes 2&quot; clearance + panel thickness on each side
             </p>
-            <div className="grid grid-cols-3 gap-2 text-sm">
+            <div className="grid grid-cols-3 gap-2 text-small text-text-primary">
               <div>
                 Width:{' '}
                 {configuration.dimensions.length + 2 * (configuration.cap.leftPanel.thickness + 2)}
@@ -231,17 +228,17 @@ export default function InputForms() {
 
         {/* Base Configuration */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Shipping Base Configuration</h3>
+          <h3 className="text-h3 font-semibold text-text-primary">Shipping Base Configuration</h3>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="baseType">Base Type</Label>
+            <div className="form-group">
+              <Label htmlFor="baseType" className="form-label">Base Type</Label>
               <Select
                 value={configuration.base.type}
                 onValueChange={(value: 'standard' | 'heavy-duty' | 'export') =>
                   updateBase({ type: value })
                 }
               >
-                <SelectTrigger id="baseType" aria-label="Base Type">
+                <SelectTrigger className="input" id="baseType" aria-label="Base Type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -251,8 +248,8 @@ export default function InputForms() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="floorboardThickness">Floorboard Thickness</Label>
+            <div className="form-group">
+              <Label htmlFor="floorboardThickness" className="form-label">Floorboard Thickness</Label>
               <Input
                 id="floorboardThickness"
                 type="number"
@@ -275,51 +272,52 @@ export default function InputForms() {
                   updateBase({ floorboardThickness: thickness });
                 }}
                 placeholder="Floorboard thickness (0.5-3 inches)"
+                className="input"
               />
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="border-t pt-4">
-              <h4 className="text-sm font-semibold mb-2">
+            <div className="border-t border-borders pt-4">
+              <h4 className="text-body font-semibold mb-2 text-text-primary">
                 Automatically Calculated Skid Configuration
               </h4>
-              <p className="text-xs text-muted-foreground mb-3">
+              <p className="text-caption text-text-secondary mb-3">
                 Skid dimensions and spacing are automatically determined based on crate weight
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Skid Size (H x W)</Label>
-                <div className="p-2 bg-muted rounded text-sm">
+              <div className="form-group">
+                <Label className="form-label">Skid Size (H x W)</Label>
+                <div className="p-3 bg-surface border border-borders rounded-md text-body text-text-primary">
                   {configuration.base.skidHeight} x {configuration.base.skidWidth} inches
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Number of Skids</Label>
-                <div className="p-2 bg-muted rounded text-sm">{configuration.base.skidCount}</div>
+              <div className="form-group">
+                <Label className="form-label">Number of Skids</Label>
+                <div className="p-3 bg-surface border border-borders rounded-md text-body text-text-primary">{configuration.base.skidCount}</div>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Skid Spacing</Label>
-                <div className="p-2 bg-muted rounded text-sm">
+              <div className="form-group">
+                <Label className="form-label">Skid Spacing</Label>
+                <div className="p-3 bg-surface border border-borders rounded-md text-body text-text-primary">
                   {configuration.base.skidSpacing} inches (center-to-center)
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Rub Strips Required</Label>
-                <div className="p-2 bg-muted rounded text-sm">
+              <div className="form-group">
+                <Label className="form-label">Rub Strips Required</Label>
+                <div className="p-3 bg-surface border border-borders rounded-md text-body text-text-primary">
                   {configuration.base.requiresRubStrips ? 'Yes' : 'No'}
                 </div>
               </div>
             </div>
 
             {configuration.base.requiresRubStrips && (
-              <div className="p-3 bg-warning-bg border border-border-subtle rounded">
-                <p className="text-xs text-text-primary">
+              <div className="p-4 bg-warning-bg border border-warning-border rounded-md">
+                <p className="text-caption text-text-primary">
                   Rub strips are required for crate bases longer than 96 inches. These must extend
                   the width of the crate and be beveled at 45-60 degrees for half their height.
                 </p>
@@ -327,15 +325,15 @@ export default function InputForms() {
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="baseMaterial">Material</Label>
+          <div className="form-group">
+            <Label htmlFor="baseMaterial" className="form-label">Material</Label>
             <Select
               value={configuration.base.material}
               onValueChange={(value: 'pine' | 'oak' | 'plywood' | 'osb') =>
                 updateBase({ material: value })
               }
             >
-              <SelectTrigger id="baseMaterial" aria-label="Material">
+              <SelectTrigger className="input" id="baseMaterial" aria-label="Material">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -352,14 +350,14 @@ export default function InputForms() {
 
         {/* Panel Configuration - Simplified */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Panel Configuration</h3>
-          <p className="text-sm text-muted-foreground">
+          <h3 className="text-h3 font-semibold text-text-primary">Panel Configuration</h3>
+          <p className="text-body text-text-secondary">
             Default settings applied to all panels. Customize individual panels as needed.
           </p>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Default Thickness</Label>
+            <div className="form-group">
+              <Label className="form-label">Default Thickness</Label>
               <Input
                 id="panelDefaultThickness"
                 type="number"
@@ -388,10 +386,11 @@ export default function InputForms() {
                 }}
                 placeholder="Panel thickness (0.5-4 inches)"
                 aria-label="Default panel thickness in inches"
+                className="input"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Default Material</Label>
+            <div className="form-group">
+              <Label className="form-label">Default Material</Label>
               <Select
                 aria-label="Default panel material"
                 value={configuration.cap.topPanel.material}
@@ -403,6 +402,7 @@ export default function InputForms() {
                 }}
               >
                 <SelectTrigger
+                  className="input"
                   id="panelDefaultMaterial"
                   aria-label="Default panel material selection"
                 >
@@ -418,7 +418,7 @@ export default function InputForms() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <Switch
                 id="reinforcementSwitch"
                 checked={configuration.cap.topPanel.reinforcement}
@@ -432,9 +432,9 @@ export default function InputForms() {
                 }}
                 aria-label="Toggle panel reinforcement"
               />
-              <Label>Apply Reinforcement</Label>
+              <Label className="form-label">Apply Reinforcement</Label>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <Switch
                 id="ventilationSwitch"
                 checked={configuration.cap.topPanel.ventilation.enabled}
@@ -451,20 +451,20 @@ export default function InputForms() {
                 }}
                 aria-label="Toggle panel ventilation"
               />
-              <Label>Add Ventilation</Label>
+              <Label className="form-label">Add Ventilation</Label>
             </div>
           </div>
 
           {/* TODO: Add simplified AMAT Style B specific options here */}
-          <div className="space-y-4 mt-4 p-4 bg-surface-accent rounded">
-            <h4 className="text-sm font-semibold">Style B Specific Configuration</h4>
-            <p className="text-xs">Style B crate with drop-end cleated plywood cap</p>
+          <div className="space-y-4 mt-4 p-4 bg-surface border border-borders rounded-md">
+            <h4 className="text-body font-semibold text-text-primary">Style B Specific Configuration</h4>
+            <p className="text-caption text-text-secondary">Style B crate with drop-end cleated plywood cap</p>
           </div>
 
           {/* TODO: Add simplified AMAT Style B specific options here */}
-          <div className="space-y-4 mt-4 p-4 bg-surface-accent rounded">
-            <h4 className="text-sm font-semibold">Style B Specific Configuration</h4>
-            <p className="text-xs">Style B crate with drop-end cleated plywood cap</p>
+          <div className="space-y-4 mt-4 p-4 bg-surface border border-borders rounded-md">
+            <h4 className="text-body font-semibold text-text-primary">Style B Specific Configuration</h4>
+            <p className="text-caption text-text-secondary">Style B crate with drop-end cleated plywood cap</p>
           </div>
         </div>
 
@@ -472,17 +472,17 @@ export default function InputForms() {
 
         {/* Fastener Configuration */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Fastener Configuration</h3>
+          <h3 className="text-h3 font-semibold text-text-primary">Fastener Configuration</h3>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="fastenerType">Fastener Type</Label>
+            <div className="form-group">
+              <Label htmlFor="fastenerType" className="form-label">Fastener Type</Label>
               <Select
                 value={configuration.fasteners.type}
                 onValueChange={(value: 'klimp' | 'nails' | 'screws' | 'bolts') =>
                   updateFasteners({ type: value })
                 }
               >
-                <SelectTrigger id="fastenerType" aria-label="Fastener Type">
+                <SelectTrigger className="input" id="fastenerType" aria-label="Fastener Type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -493,15 +493,15 @@ export default function InputForms() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Material</Label>
+            <div className="form-group">
+              <Label className="form-label">Material</Label>
               <Select
                 value={configuration.fasteners.material}
                 onValueChange={(value: 'steel' | 'stainless' | 'galvanized') =>
                   updateFasteners({ material: value })
                 }
               >
-                <SelectTrigger aria-label="Fastener material">
+                <SelectTrigger className="input" aria-label="Fastener material">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -514,16 +514,17 @@ export default function InputForms() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="fastenerSize">Size</Label>
+            <div className="form-group">
+              <Label htmlFor="fastenerSize" className="form-label">Size</Label>
               <Input
                 id="fastenerSize"
                 value={configuration.fasteners.size}
                 onChange={(e) => updateFasteners({ size: e.target.value })}
+                className="input"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="fastenerSpacing">Spacing (mm)</Label>
+            <div className="form-group">
+              <Label htmlFor="fastenerSpacing" className="form-label">Spacing (mm)</Label>
               <Input
                 id="fastenerSpacing"
                 type="number"
@@ -546,6 +547,7 @@ export default function InputForms() {
                   updateFasteners({ spacing });
                 }}
                 placeholder="Fastener spacing (50-500 mm)"
+                className="input"
               />
             </div>
           </div>

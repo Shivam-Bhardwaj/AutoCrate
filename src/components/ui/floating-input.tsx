@@ -28,24 +28,18 @@ const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputProps>(
             props.onBlur?.(e);
           }}
           className={cn(
-            `peer w-full px-4 pt-6 pb-2 text-gray-900 
-             bg-white/70 backdrop-blur-md
-             border-2 border-gray-200 rounded-lg
-             transition-all duration-300
-             focus:border-blue-500 focus:bg-white
-             hover:border-gray-300
-             dark:bg-gray-800/70 dark:text-white
-             dark:border-gray-600 dark:focus:border-blue-400`,
+            `input peer w-full px-4 pt-6 pb-2
+             transition-all duration-fast`,
             className
           )}
         />
         <label
           className={cn(
-            `absolute left-4 transition-all duration-300 pointer-events-none
+            `label absolute left-4 transition-all duration-fast pointer-events-none
              ${
                focused || hasValue
-                 ? 'top-2 text-xs text-blue-600 dark:text-blue-400'
-                 : 'top-4 text-base text-gray-500 dark:text-gray-400'
+                 ? 'top-2 text-caption text-primary'
+                 : 'top-4 text-body text-text-secondary'
              }`
           )}
         >

@@ -1,117 +1,57 @@
+@import '../styles/tokens.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Professional Design System for AutoCrate */
+/* WCAG AAA Compliant with Enhanced Readability */
+
 @layer base {
   :root {
-    /* NX 2022 Professional Light Theme */
-    --background: 220 220 220; /* #DCDCDC - NX light background */
-    --foreground: 0 0% 13%; /* #212121 - Dark text */
-    --card: 245 245 245; /* #F5F5F5 - Panel background */
-    --card-foreground: 0 0% 13%;
-    --popover: 255 255 255; /* White popover */
-    --popover-foreground: 0 0% 13%;
-    --primary: 0 120 215; /* #0078D7 - Siemens blue */
-    --primary-dark: 0 102 204; /* #0066CC - Darker Siemens blue */
-    --primary-foreground: 255 255 255;
-    --secondary: 229 229 229; /* #E5E5E5 - Light gray */
-    --secondary-foreground: 0 0% 13%;
-    --muted: 240 240 240; /* #F0F0F0 - Muted background */
-    --muted-foreground: 102 102 102; /* #666666 - Muted text */
-    --accent: 255 140 0; /* #FF8C00 - NX selection orange */
-    --accent-foreground: 0 0% 13%;
-    --destructive: 196 26 22; /* #C41A16 - Red */
-    --destructive-foreground: 255 255 255;
-    --border: 204 204 204; /* #CCCCCC - Border */
-    --input: 255 255 255; /* White input */
-    --ring: 0 120 215; /* Siemens blue focus */
-    --radius: 0.25rem; /* Smaller radius for professional look */
-
-    /* Semantic colors */
-    --surface: 245 245 245;
-    --surface-accent: 255 255 255;
-    --border-subtle: 229 229 229;
-    --text-primary: 0 0% 13%;
-    --text-secondary: 102 102 102;
-    --accent: 0 120 215;
-    --accent-contrast: 255 255 255;
-    --warning-bg: 255 243 224;
-
-    /* Font scale */
-    --text-xs: clamp(0.75rem, 0.7vw, 0.875rem);
-    --text-sm: clamp(0.875rem, 0.8vw, 1rem);
-    --text-base: clamp(1rem, 0.9vw, 1.125rem);
-    --text-lg: clamp(1.125rem, 1vw, 1.25rem);
-    --text-xl: clamp(1.25rem, 1.1vw, 1.375rem);
-    --text-2xl: clamp(1.5rem, 1.2vw, 1.5rem);
-
-    /* NX Professional Color System */
-    --nx-background: 220 220 220; /* #DCDCDC - Main background */
-    --nx-panel: 245 245 245; /* #F5F5F5 - Panel background */
-    --nx-toolbar: 238 238 238; /* #EEEEEE - Toolbar */
-    --nx-border: 204 204 204; /* #CCCCCC - Borders */
-    --nx-text: 33 33 33; /* #212121 - Primary text */
-    --nx-text-secondary: 102 102 102; /* #666666 - Secondary text */
-    --nx-siemens-blue: 0 120 215; /* #0078D7 - Primary blue */
-    --nx-selection-orange: 255 140 0; /* #FF8C00 - Selection color */
-    --nx-grid-minor: 225 225 225; /* #E1E1E1 - Minor grid lines */
-    --nx-grid-major: 192 192 192; /* #C0C0C0 - Major grid lines */
-
-    /* Professional shadows */
-    --shadow-panel: 0 2px 8px rgba(0, 0, 0, 0.1);
-    --shadow-toolbar: 0 1px 3px rgba(0, 0, 0, 0.1);
-    --shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.15);
+    /* Legacy HSL variables for backward compatibility */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
+    --primary: 204 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 89%;
+    --input: 0 0% 100%;
+    --ring: 204 100% 50%;
+    --radius: 0.5rem;
   }
 
   .dark {
-    /* NX 2022 Professional Dark Theme */
-    --background: 43 43 43; /* #2B2B2B - NX dark background */
-    --foreground: 255 255 255; /* White text */
-    --card: 64 64 64; /* #404040 - Panel background */
-    --card-foreground: 255 255 255;
-    --popover: 48 48 48; /* #303030 - Darker popover */
-    --popover-foreground: 255 255 255;
-    --primary: 0 120 215; /* #0078D7 - Siemens blue */
-    --primary-dark: 0 102 204; /* #0066CC - Darker Siemens blue */
-    --primary-foreground: 255 255 255;
-    --secondary: 96 96 96; /* #606060 - Dark gray */
-    --secondary-foreground: 255 255 255;
-    --muted: 58 58 58; /* #3A3A3A - Muted background */
-    --muted-foreground: 192 192 192; /* #C0C0C0 - Muted text */
-    --accent: 255 140 0; /* #FF8C00 - NX selection orange */
-    --accent-foreground: 0 0 0;
-    --destructive: 239 68 68; /* #EF4444 - Red */
-    --destructive-foreground: 255 255 255;
-    --border: 74 74 74; /* #4A4A4A - Border */
-    --input: 48 48 48; /* #303030 - Dark input */
-    --ring: 0 120 215; /* Siemens blue focus */
-
-    /* Semantic colors dark */
-    --surface: 64 64 64;
-    --surface-accent: 48 48 48;
-    --border-subtle: 74 74 74;
-    --text-primary: 255 255 255;
-    --text-secondary: 192 192 192;
-    --accent: 0 120 215;
-    --accent-contrast: 0 0 0;
-    --warning-bg: 64 32 0;
-
-    /* NX Dark Professional Color System */
-    --nx-background: 43 43 43; /* #2B2B2B - Main background */
-    --nx-panel: 64 64 64; /* #404040 - Panel background */
-    --nx-toolbar: 58 58 58; /* #3A3A3A - Toolbar */
-    --nx-border: 74 74 74; /* #4A4A4A - Borders */
-    --nx-text: 255 255 255; /* White - Primary text */
-    --nx-text-secondary: 192 192 192; /* #C0C0C0 - Secondary text */
-    --nx-siemens-blue: 0 120 215; /* #0078D7 - Primary blue */
-    --nx-selection-orange: 255 140 0; /* #FF8C00 - Selection color */
-    --nx-grid-minor: 64 64 64; /* #404040 - Minor grid lines */
-    --nx-grid-major: 96 96 96; /* #606060 - Major grid lines */
-
-    /* Professional dark shadows */
-    --shadow-panel: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --shadow-toolbar: 0 1px 3px rgba(0, 0, 0, 0.3);
-    --shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.4);
+    /* Legacy HSL variables for backward compatibility */
+    --background: 222 84% 5%;
+    --foreground: 210 40% 98%;
+    --card: 222 84% 5%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 84% 5%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 84% 5%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 217 91% 60%;
   }
 }
 
@@ -119,10 +59,70 @@
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground;
-    font-feature-settings: 'liga' 1;
+
+  html {
+    font-family: var(--font-family-sans);
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-text-primary;
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
+    font-weight: var(--font-weight-normal);
+    font-feature-settings: 'liga' 1, 'kern' 1;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Headings */
+  h1 {
+    @apply text-h1 text-text-primary;
+  }
+
+  h2 {
+    @apply text-h2 text-text-primary;
+  }
+
+  h3 {
+    @apply text-h3 text-text-primary;
+  }
+
+  /* Links */
+  a {
+    @apply text-primary transition-colors duration-fast;
+  }
+
+  a:hover {
+    @apply text-primary-hover;
+  }
+
+  /* Focus Styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-focus ring-offset-2 ring-offset-background;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-primary-hover text-text-primary;
+  }
+
+  /* Scrollbar Styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-surface;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-borders rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-text-secondary;
   }
 
   /* Mobile touch-friendly tap targets */
@@ -149,139 +149,415 @@
   }
 }
 
-/* NX Professional Panel Styles */
-.nx-panel {
-  background: rgb(var(--nx-panel));
-  border: 1px solid rgb(var(--nx-border));
-  box-shadow: var(--shadow-panel);
-  transition: all 0.2s ease;
+@layer components {
+  /* Professional Button Styles */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md font-medium transition-all duration-fast;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary-hover active:bg-primary-hover;
+    @apply shadow-sm hover:shadow-md;
+  }
+
+  .btn-secondary {
+    @apply bg-button-secondary text-text-primary border border-borders;
+    @apply hover:bg-hover active:bg-active;
+    @apply shadow-sm hover:shadow-md;
+  }
+
+  .btn-ghost {
+    @apply text-text-secondary hover:bg-hover hover:text-text-primary;
+  }
+
+  .btn-destructive {
+    @apply bg-error text-white hover:bg-error active:bg-error;
+    @apply shadow-sm hover:shadow-md;
+  }
+
+  .btn-success {
+    @apply bg-success text-white hover:bg-success active:bg-success;
+    @apply shadow-sm hover:shadow-md;
+  }
+
+  .btn-warning {
+    @apply bg-warning text-white hover:bg-warning active:bg-warning;
+    @apply shadow-sm hover:shadow-md;
+  }
+
+  /* Button Sizes */
+  .btn-sm {
+    @apply h-8 px-3 text-small;
+  }
+
+  .btn-md {
+    @apply h-10 px-4 text-body;
+  }
+
+  .btn-lg {
+    @apply h-12 px-6 text-body;
+  }
+
+  .btn-icon {
+    @apply h-10 w-10 p-0;
+  }
+
+  /* Professional Input Styles */
+  .input {
+    @apply flex h-10 w-full rounded-md border border-borders bg-input px-3 py-2 text-body;
+    @apply placeholder:text-text-secondary;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+    @apply transition-colors duration-fast;
+  }
+
+  .input:hover {
+    @apply border-text-secondary;
+  }
+
+  .input:focus {
+    @apply border-focus;
+  }
+
+  .input-error {
+    @apply border-error focus-visible:ring-error;
+  }
+
+  /* Professional Card Styles */
+  .card {
+    @apply rounded-lg border border-borders bg-card shadow-sm;
+    @apply transition-shadow duration-fast;
+  }
+
+  .card:hover {
+    @apply shadow-md;
+  }
+
+  .card-header {
+    @apply p-6 pb-4;
+  }
+
+  .card-content {
+    @apply p-6 pt-0;
+  }
+
+  .card-footer {
+    @apply p-6 pt-4;
+  }
+
+  /* Professional Panel Styles */
+  .panel {
+    @apply bg-surface border border-borders rounded-lg shadow-sm;
+    @apply transition-all duration-fast;
+  }
+
+  .panel:hover {
+    @apply shadow-md;
+  }
+
+  .panel-header {
+    @apply bg-toolbar border-b border-borders px-4 py-3;
+    @apply text-h3 font-semibold text-text-primary;
+  }
+
+  .panel-content {
+    @apply p-4;
+  }
+
+  /* Professional Toolbar Styles */
+  .toolbar {
+    @apply bg-toolbar border-b border-borders px-4 py-2;
+    @apply flex items-center gap-2;
+  }
+
+  .toolbar-group {
+    @apply flex items-center gap-1;
+  }
+
+  /* Professional Table Styles */
+  .table {
+    @apply w-full text-body;
+  }
+
+  .table th {
+    @apply bg-toolbar border-b border-borders px-4 py-3 text-left font-medium text-text-primary;
+  }
+
+  .table td {
+    @apply border-b border-borders px-4 py-3 text-text-primary;
+  }
+
+  .table tr:hover {
+    @apply bg-hover;
+  }
+
+  .table tr:nth-child(even) {
+    @apply bg-surface-accent;
+  }
+
+  /* Professional Code Styles */
+  .code {
+    @apply font-mono text-small bg-surface px-1.5 py-0.5 rounded border border-borders;
+    @apply text-text-primary;
+  }
+
+  .code-block {
+    @apply bg-surface border border-borders rounded-md p-4 overflow-x-auto;
+    @apply font-mono text-small text-text-primary;
+  }
+
+  /* Professional Badge Styles */
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-caption font-medium;
+  }
+
+  .badge-default {
+    @apply bg-surface text-text-primary border border-borders;
+  }
+
+  .badge-primary {
+    @apply bg-primary text-white;
+  }
+
+  .badge-success {
+    @apply bg-success text-white;
+  }
+
+  .badge-warning {
+    @apply bg-warning text-white;
+  }
+
+  .badge-error {
+    @apply bg-error text-white;
+  }
+
+  /* Professional Alert Styles */
+  .alert {
+    @apply rounded-lg border p-4;
+  }
+
+  .alert-info {
+    @apply border-info bg-info-bg text-info;
+  }
+
+  .alert-success {
+    @apply border-success bg-success-bg text-success;
+  }
+
+  .alert-warning {
+    @apply border-warning bg-warning-bg text-warning;
+  }
+
+  .alert-error {
+    @apply border-error bg-error-bg text-error;
+  }
+
+  /* Professional Separator */
+  .separator {
+    @apply bg-borders;
+  }
+
+  .separator-horizontal {
+    @apply h-px w-full;
+  }
+
+  .separator-vertical {
+    @apply h-full w-px;
+  }
+
+  /* Professional Label Styles */
+  .label {
+    @apply text-small font-medium text-text-primary;
+    @apply cursor-pointer;
+  }
+
+  .label-required::after {
+    content: '*';
+    @apply text-error ml-1;
+  }
+
+  /* Professional Form Styles */
+  .form-group {
+    @apply space-y-2;
+  }
+
+  .form-label {
+    @apply label;
+  }
+
+  .form-error {
+    @apply text-caption text-error;
+  }
+
+  .form-help {
+    @apply text-caption text-text-secondary;
+  }
+
+  /* Professional Loading States */
+  .loading {
+    @apply animate-pulse bg-surface rounded;
+  }
+
+  .loading-text {
+    @apply bg-text-secondary rounded;
+  }
+
+  /* Professional Status Indicators */
+  .status-indicator {
+    @apply inline-flex items-center gap-2 text-small;
+  }
+
+  .status-online {
+    @apply text-success;
+  }
+
+  .status-offline {
+    @apply text-text-secondary;
+  }
+
+  .status-error {
+    @apply text-error;
+  }
+
+  .status-warning {
+    @apply text-warning;
+  }
+
+  /* Professional Navigation */
+  .nav-link {
+    @apply text-text-primary hover:text-primary transition-colors duration-fast;
+    @apply px-3 py-2 rounded-md;
+  }
+
+  .nav-link.active {
+    @apply bg-primary text-white hover:text-white;
+  }
+
+  /* Professional Dropdown */
+  .dropdown {
+    @apply bg-card border border-borders rounded-md shadow-lg;
+    @apply p-1 z-dropdown;
+  }
+
+  .dropdown-item {
+    @apply px-3 py-2 text-body text-text-primary rounded-sm;
+    @apply hover:bg-hover cursor-pointer transition-colors duration-fast;
+  }
+
+  /* Professional Modal */
+  .modal-backdrop {
+    @apply fixed inset-0 bg-black-overlay backdrop-blur-sm z-modal-backdrop;
+  }
+
+  .modal {
+    @apply fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2;
+    @apply bg-card border border-borders rounded-lg shadow-xl;
+    @apply p-6 z-modal;
+  }
+
+  /* Professional Tooltip */
+  .tooltip {
+    @apply bg-card border border-borders rounded-md shadow-lg;
+    @apply px-3 py-2 text-small text-text-primary z-tooltip;
+  }
+
+  /* Professional Toast */
+  .toast {
+    @apply bg-card border border-borders rounded-lg shadow-lg;
+    @apply p-4 z-toast;
+  }
+
+  /* Utility Classes */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* High Contrast Mode Support */
+  @media (prefers-contrast: high) {
+    .card,
+    .panel,
+    .input,
+    .btn {
+      @apply border-2;
+    }
+  }
+
+  /* Reduced Motion Support */
+  @media (prefers-reduced-motion: reduce) {
+    .btn,
+    .card,
+    .panel,
+    .input {
+      @apply transition-none;
+    }
+  }
 }
 
-.nx-panel:hover {
-  box-shadow: var(--shadow-elevated);
-}
+@layer utilities {
+  /* Professional Spacing Utilities */
+  .space-section {
+    @apply space-y-8;
+  }
 
-.nx-toolbar {
-  background: rgb(var(--nx-toolbar));
-  border-bottom: 1px solid rgb(var(--nx-border));
-  box-shadow: var(--shadow-toolbar);
-}
+  .space-component {
+    @apply space-y-4;
+  }
 
-.nx-viewport {
-  background: rgb(var(--nx-background));
-  position: relative;
-}
+  .space-element {
+    @apply space-y-2;
+  }
 
-/* NX Grid Styles */
-.nx-grid {
-  background-image: 
-    linear-gradient(rgb(var(--nx-grid-minor)) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(var(--nx-grid-minor)) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
+  /* Professional Layout Utilities */
+  .container-professional {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
 
-.nx-grid-major {
-  background-image: 
-    linear-gradient(rgb(var(--nx-grid-major)) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(var(--nx-grid-major)) 1px, transparent 1px),
-    linear-gradient(rgb(var(--nx-grid-minor)) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(var(--nx-grid-minor)) 1px, transparent 1px);
-  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
-}
+  .grid-professional {
+    @apply grid gap-6;
+  }
 
-/* NX Selection and Highlighting */
-.nx-selected {
-  outline: 2px solid rgb(var(--nx-selection-orange));
-  outline-offset: 1px;
-}
+  .grid-cols-professional {
+    @apply grid-cols-1 md:grid-cols-2 lg:grid-cols-3;
+  }
 
-.nx-hover {
-  background-color: rgba(var(--nx-selection-orange), 0.1);
-}
+  .flex-professional {
+    @apply flex items-center justify-between;
+  }
 
-/* Professional button styles */
-.nx-button {
-  background: rgb(var(--nx-panel));
-  border: 1px solid rgb(var(--nx-border));
-  color: rgb(var(--nx-text));
-  padding: 4px 12px;
-  font-size: 12px;
-  font-weight: 400;
-  transition: all 0.15s ease;
-}
+  /* Professional Focus Utilities */
+  .focus-professional {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2;
+  }
 
-.nx-button:hover {
-  background: rgb(var(--nx-toolbar));
-  border-color: rgb(var(--nx-siemens-blue));
-}
+  /* Professional Text Utilities */
+  .text-professional {
+    @apply text-text-primary leading-relaxed;
+  }
 
-.nx-button:active {
-  background: rgb(var(--nx-siemens-blue));
-  color: white;
-}
+  .text-professional-secondary {
+    @apply text-text-secondary;
+  }
 
-.nx-button-primary {
-  background: rgb(var(--nx-siemens-blue));
-  color: white;
-  border-color: rgb(var(--nx-siemens-blue));
-}
+  .text-professional-muted {
+    @apply text-text-secondary;
+  }
 
-.nx-button-primary:hover {
-  background: rgb(var(--primary-dark));
-}
+  /* Professional Shadow Utilities */
+  .shadow-professional {
+    @apply shadow-md;
+  }
 
-/* Professional input styles */
-.nx-input {
-  background: rgb(var(--input));
-  border: 1px solid rgb(var(--nx-border));
-  color: rgb(var(--nx-text));
-  padding: 4px 8px;
-  font-size: 12px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+  .shadow-professional-lg {
+    @apply shadow-lg;
+  }
 
-.nx-input:focus {
-  outline: none;
-  border-color: rgb(var(--nx-siemens-blue));
-  box-shadow: 0 0 0 1px rgb(var(--nx-siemens-blue));
-}
-
-/* Typography for professional interface */
-.nx-text {
-  color: rgb(var(--nx-text));
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.nx-text-secondary {
-  color: rgb(var(--nx-text-secondary));
-}
-
-.nx-label {
-  color: rgb(var(--nx-text));
-  font-size: 11px;
-  font-weight: 400;
-  text-transform: none;
-}
-
-/* Status line styling */
-.nx-status-line {
-  background: rgb(var(--nx-toolbar));
-  border-top: 1px solid rgb(var(--nx-border));
-  padding: 2px 8px;
-  font-size: 11px;
-  color: rgb(var(--nx-text-secondary));
-  font-family: 'Courier New', monospace;
-}
-
-/* Utility classes */
-.text-label {
-  @apply text-sm font-medium text-text-primary;
-}
-
-.text-meta {
-  @apply text-xs text-text-secondary;
-}
-
-.panel {
-  @apply bg-surface border border-border-subtle rounded;
+  .shadow-professional-xl {
+    @apply shadow-xl;
+  }
 }

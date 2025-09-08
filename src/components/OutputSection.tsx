@@ -115,17 +115,17 @@ export default function OutputSection() {
   };
 
   return (
-    <div className="h-full overflow-y-auto p-4" role="main" aria-label="Generated output and analysis">
-      <div className="space-y-4">
-        <Card>
+    <div className="h-full overflow-y-auto p-6" role="main" aria-label="Generated output and analysis">
+      <div className="space-y-6">
+        <Card className="panel">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Generated Output</CardTitle>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={handleCopy}>
+            <CardTitle className="text-h3 font-semibold text-text-primary">Generated Output</CardTitle>
+            <div className="flex gap-3">
+              <Button size="sm" variant="outline" onClick={handleCopy} className="btn btn-outline">
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 {copied ? 'Copied' : 'Copy'}
               </Button>
-              <Button size="sm" onClick={handleExport}>
+              <Button size="sm" onClick={handleExport} className="btn btn-primary">
                 <Download className="h-4 w-4 mr-2" />
                 Download
               </Button>
@@ -140,43 +140,43 @@ export default function OutputSection() {
               }}
             >
               <TabsList
-                className="grid w-full grid-cols-4 text-text-primary"
+                className="grid w-full grid-cols-4 bg-surface border border-borders"
                 aria-label="Output data sections"
               >
-                <TabsTrigger value="summary" aria-label="Show summary view">
+                <TabsTrigger value="summary" aria-label="Show summary view" className="text-body text-text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-contrast">
                   Summary
                 </TabsTrigger>
-                <TabsTrigger value="bom" aria-label="Show bill of materials view">
+                <TabsTrigger value="bom" aria-label="Show bill of materials view" className="text-body text-text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-contrast">
                   BOM
                 </TabsTrigger>
-                <TabsTrigger value="analysis" aria-label="Show analysis view">
+                <TabsTrigger value="analysis" aria-label="Show analysis view" className="text-body text-text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-contrast">
                   Analysis
                 </TabsTrigger>
-                <TabsTrigger value="nx-expression" aria-label="Show NX expression view">
+                <TabsTrigger value="nx-expression" aria-label="Show NX expression view" className="text-body text-text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-contrast">
                   NX Expression
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="analysis">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <Card className="glass-panel">
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    <Card className="panel">
                       <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
+                        <CardTitle className="text-h4 font-semibold text-text-primary flex items-center gap-2">
                           Load Capacity Analysis
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div>
+                        <div className="space-y-4">
                           <div>
-                            <label className="text-sm text-gray-700">Product Weight</label>
-                            <p className="text-2xl font-bold text-blue-600">
+                            <label className="text-caption text-text-secondary block mb-1">Product Weight</label>
+                            <p className="text-h2 font-bold text-primary">
                               {configuration.weight.product} lbs
                             </p>
                           </div>
                           <div>
-                            <label className="text-sm text-gray-700">Estimated Gross</label>
-                            <p className="text-2xl font-bold text-green-600">
+                            <label className="text-caption text-text-secondary block mb-1">Estimated Gross</label>
+                            <p className="text-h2 font-bold text-success">
                               {(configuration.weight.product * 1.2).toFixed(0)} lbs
                             </p>
                           </div>
@@ -184,44 +184,44 @@ export default function OutputSection() {
                       </CardContent>
                     </Card>
 
-                    <Card className="glass-panel hover:scale-105 transition-transform">
+                    <Card className="panel">
                       <CardHeader>
-                        <CardTitle className="text-lg">Load Distribution</CardTitle>
+                        <CardTitle className="text-h4 font-semibold text-text-primary">Load Distribution</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-center py-4">
-                          <p className="font-mono text-lg">W = F / A</p>
+                        <div className="text-center py-6">
+                          <p className="font-mono text-h3 text-text-primary">W = F / A</p>
                         </div>
-                        <p className="text-sm text-gray-700">Where W is weight per unit area</p>
+                        <p className="text-caption text-text-secondary">Where W is weight per unit area</p>
                       </CardContent>
                     </Card>
                   </div>
 
-                  <Card className="glass-panel">
+                  <Card className="panel">
                     <CardHeader>
-                      <CardTitle>Structural Analysis</CardTitle>
+                      <CardTitle className="text-h4 font-semibold text-text-primary">Structural Analysis</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 bg-surface rounded-lg">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-4 bg-surface border border-borders rounded-md">
                           <div>
-                            <p className="font-medium">Corner joints</p>
-                            <p className="text-sm text-gray-700">
+                            <p className="text-body font-medium text-text-primary">Corner joints</p>
+                            <p className="text-caption text-text-secondary">
                               Reinforce with brackets for heavy loads
                             </p>
                           </div>
-                          <span className="px-2 py-1 bg-warning-bg text-text-primary rounded text-sm">
+                          <span className="px-3 py-1 bg-warning-bg text-warning-contrast rounded-md text-small font-medium">
                             Medium
                           </span>
                         </div>
-                        <div className="flex items-center justify-between p-3 bg-surface rounded-lg">
+                        <div className="flex items-center justify-between p-4 bg-surface border border-borders rounded-md">
                           <div>
-                            <p className="font-medium">Center floor</p>
-                            <p className="text-sm text-gray-700">
+                            <p className="text-body font-medium text-text-primary">Center floor</p>
+                            <p className="text-caption text-text-secondary">
                               Add center support for loads &gt; 1000kg
                             </p>
                           </div>
-                          <span className="px-2 py-1 bg-accent text-accent-contrast rounded text-sm">
+                          <span className="px-3 py-1 bg-accent text-accent-contrast rounded-md text-small font-medium">
                             Low
                           </span>
                         </div>
@@ -229,35 +229,35 @@ export default function OutputSection() {
                     </CardContent>
                   </Card>
 
-                  <Card className="glass-panel">
+                  <Card className="panel">
                     <CardHeader>
-                      <CardTitle>ISPM-15 Compliance Checklist</CardTitle>
+                      <CardTitle className="text-h4 font-semibold text-text-primary">ISPM-15 Compliance Checklist</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-accent rounded-full flex items-center justify-center">
-                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-5 h-5 bg-accent border-2 border-borders rounded-full flex items-center justify-center">
+                            <div className="w-2 h-2 bg-accent-contrast rounded-full"></div>
                           </div>
-                          <span className="text-sm">Heat treatment (56°C for 30 min)</span>
+                          <span className="text-body text-text-primary">Heat treatment (56°C for 30 min)</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                        <div className="flex items-center gap-3">
+                          <div className="w-5 h-5 bg-success border-2 border-borders rounded-full flex items-center justify-center">
                             <div className="w-2 h-2 bg-white rounded-full"></div>
                           </div>
-                          <span className="text-sm">Moisture content &lt; 20%</span>
+                          <span className="text-body text-text-primary">Moisture content &lt; 20%</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                        <div className="flex items-center gap-3">
+                          <div className="w-5 h-5 bg-success border-2 border-borders rounded-full flex items-center justify-center">
                             <div className="w-2 h-2 bg-white rounded-full"></div>
                           </div>
-                          <span className="text-sm">Debarked wood</span>
+                          <span className="text-body text-text-primary">Debarked wood</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 bg-warning-bg rounded-full flex items-center justify-center">
-                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-5 h-5 bg-warning-bg border-2 border-warning-border rounded-full flex items-center justify-center">
+                            <div className="w-2 h-2 bg-warning-contrast rounded-full"></div>
                           </div>
-                          <span className="text-sm">IPPC marking required</span>
+                          <span className="text-body text-text-primary">IPPC marking required</span>
                         </div>
                       </div>
                     </CardContent>
@@ -265,25 +265,25 @@ export default function OutputSection() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="summary" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <Card>
+              <TabsContent value="summary" className="space-y-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <Card className="panel">
                     <CardHeader>
-                      <CardTitle className="text-lg">Dimensions</CardTitle>
+                      <CardTitle className="text-h4 font-semibold text-text-primary">Dimensions</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <dl className="space-y-1 text-sm">
-                        <div className="flex justify-between">
-                          <dt className="text-muted-foreground">External:</dt>
-                          <dd className="font-medium">
+                      <dl className="space-y-3 text-body">
+                        <div className="flex justify-between items-center">
+                          <dt className="text-text-secondary">External:</dt>
+                          <dd className="font-medium text-text-primary">
                             {formatInches(configuration.dimensions.length)} x{' '}
                             {formatInches(configuration.dimensions.width)} x{' '}
                             {formatInches(configuration.dimensions.height)} inches
                           </dd>
                         </div>
-                        <div className="flex justify-between">
-                          <dt className="text-muted-foreground">Internal:</dt>
-                          <dd className="font-medium">
+                        <div className="flex justify-between items-center">
+                          <dt className="text-text-secondary">Internal:</dt>
+                          <dd className="font-medium text-text-primary">
                             {formatInches(
                               configuration.dimensions.length -
                                 configuration.cap.leftPanel.thickness -
@@ -308,54 +308,54 @@ export default function OutputSection() {
                     </CardContent>
                   </Card>
 
-                  <Card>
+                  <Card className="panel">
                     <CardHeader>
-                      <CardTitle className="text-lg">Weight Capacity</CardTitle>
+                      <CardTitle className="text-h4 font-semibold text-text-primary">Weight Capacity</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <dl className="space-y-1 text-sm">
-                        <div className="flex justify-between">
-                          <dt className="text-muted-foreground">Product Weight:</dt>
-                          <dd className="font-medium">{configuration.weight.product} lbs</dd>
+                      <dl className="space-y-3 text-body">
+                        <div className="flex justify-between items-center">
+                          <dt className="text-text-secondary">Product Weight:</dt>
+                          <dd className="font-medium text-text-primary">{configuration.weight.product} lbs</dd>
                         </div>
-                        <div className="flex justify-between">
-                          <dt className="text-muted-foreground">Estimated Gross:</dt>
-                          <dd className="font-medium">
+                        <div className="flex justify-between items-center">
+                          <dt className="text-text-secondary">Estimated Gross:</dt>
+                          <dd className="font-medium text-text-primary">
                             {(configuration.weight.product * 1.2).toFixed(0)} lbs
                           </dd>
                         </div>
-                        <div className="flex justify-between">
-                          <dt className="text-muted-foreground">Safety Factor:</dt>
-                          <dd className="font-medium">20%</dd>
+                        <div className="flex justify-between items-center">
+                          <dt className="text-text-secondary">Safety Factor:</dt>
+                          <dd className="font-medium text-text-primary">20%</dd>
                         </div>
                       </dl>
                     </CardContent>
                   </Card>
                 </div>
 
-                <Card>
+                <Card className="panel">
                   <CardHeader>
-                    <CardTitle className="text-lg">Configuration Summary</CardTitle>
+                    <CardTitle className="text-h4 font-semibold text-text-primary">Configuration Summary</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <dl className="grid grid-cols-2 gap-4 text-sm">
+                    <dl className="grid grid-cols-2 gap-6 text-body">
                       <div>
-                        <dt className="text-muted-foreground mb-1">Base Type:</dt>
-                        <dd className="font-medium capitalize">{configuration.base.type}</dd>
+                        <dt className="text-text-secondary mb-2">Base Type:</dt>
+                        <dd className="font-medium text-text-primary capitalize">{configuration.base.type}</dd>
                       </div>
                       <div>
-                        <dt className="text-muted-foreground mb-1">Panel Material:</dt>
-                        <dd className="font-medium capitalize">
+                        <dt className="text-text-secondary mb-2">Panel Material:</dt>
+                        <dd className="font-medium text-text-primary capitalize">
                           {configuration.cap.topPanel.material}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-muted-foreground mb-1">Fastener Type:</dt>
-                        <dd className="font-medium capitalize">{configuration.fasteners.type}</dd>
+                        <dt className="text-text-secondary mb-2">Fastener Type:</dt>
+                        <dd className="font-medium text-text-primary capitalize">{configuration.fasteners.type}</dd>
                       </div>
                       <div>
-                        <dt className="text-muted-foreground mb-1">Vinyl:</dt>
-                        <dd className="font-medium">
+                        <dt className="text-text-secondary mb-2">Vinyl:</dt>
+                        <dd className="font-medium text-text-primary">
                           {configuration.vinyl?.enabled
                             ? `${configuration.vinyl?.type} (${configuration.vinyl?.coverage})`
                             : 'None'}
@@ -366,39 +366,39 @@ export default function OutputSection() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="bom" className="space-y-4">
-                <Card>
+              <TabsContent value="bom" className="space-y-6">
+                <Card className="panel">
                   <CardHeader>
-                    <CardTitle className="text-lg">Bill of Materials</CardTitle>
+                    <CardTitle className="text-h4 font-semibold text-text-primary">Bill of Materials</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <table className="w-full text-sm">
+                    <table className="w-full text-body border-collapse">
                       <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-2">Component</th>
-                          <th className="text-right py-2">Quantity</th>
-                          <th className="text-right py-2">Unit</th>
+                        <tr className="border-b border-borders">
+                          <th className="text-left py-3 text-text-primary font-semibold">Component</th>
+                          <th className="text-right py-3 text-text-primary font-semibold">Quantity</th>
+                          <th className="text-right py-3 text-text-primary font-semibold">Unit</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr className="border-b">
-                          <td className="py-2">Base Skids</td>
-                          <td className="text-right">{configuration.base.skidCount}</td>
-                          <td className="text-right">pcs</td>
+                        <tr className="border-b border-borders hover:bg-surface-accent">
+                          <td className="py-3 text-text-primary">Base Skids</td>
+                          <td className="text-right py-3 text-text-primary">{configuration.base.skidCount}</td>
+                          <td className="text-right py-3 text-text-secondary">pcs</td>
                         </tr>
-                        <tr className="border-b">
-                          <td className="py-2">Floorboard</td>
-                          <td className="text-right">1</td>
-                          <td className="text-right">panel</td>
+                        <tr className="border-b border-borders hover:bg-surface-accent">
+                          <td className="py-3 text-text-primary">Floorboard</td>
+                          <td className="text-right py-3 text-text-primary">1</td>
+                          <td className="text-right py-3 text-text-secondary">panel</td>
                         </tr>
-                        <tr className="border-b">
-                          <td className="py-2">Side Panels</td>
-                          <td className="text-right">5</td>
-                          <td className="text-right">panels</td>
+                        <tr className="border-b border-borders hover:bg-surface-accent">
+                          <td className="py-3 text-text-primary">Side Panels</td>
+                          <td className="text-right py-3 text-text-primary">5</td>
+                          <td className="text-right py-3 text-text-secondary">panels</td>
                         </tr>
-                        <tr className="border-b">
-                          <td className="py-2">{configuration.fasteners.type}</td>
-                          <td className="text-right">
+                        <tr className="border-b border-borders hover:bg-surface-accent">
+                          <td className="py-3 text-text-primary">{configuration.fasteners.type}</td>
+                          <td className="text-right py-3 text-text-primary">
                             {Math.ceil(
                               (configuration.dimensions.length * 4 +
                                 configuration.dimensions.width * 4 +
@@ -406,12 +406,12 @@ export default function OutputSection() {
                                 configuration.fasteners.spacing
                             )}
                           </td>
-                          <td className="text-right">pcs</td>
+                          <td className="text-right py-3 text-text-secondary">pcs</td>
                         </tr>
                         {configuration.vinyl?.enabled && (
-                          <tr className="border-b">
-                            <td className="py-2">Vinyl Sheet</td>
-                            <td className="text-right">
+                          <tr className="border-b border-borders hover:bg-surface-accent">
+                            <td className="py-3 text-text-primary">Vinyl Sheet</td>
+                            <td className="text-right py-3 text-text-primary">
                               {Math.ceil(
                                 (configuration.dimensions.length *
                                   configuration.dimensions.width *
@@ -425,15 +425,15 @@ export default function OutputSection() {
                                   1000000
                               )}
                             </td>
-                            <td className="text-right">m²</td>
+                            <td className="text-right py-3 text-text-secondary">m²</td>
                           </tr>
                         )}
                       </tbody>
                     </table>
-                    <div className="mt-4 pt-4 border-t">
-                      <div className="flex justify-between font-medium">
-                        <span>Estimated Material Cost:</span>
-                        <span>${calculateMaterialCost()}</span>
+                    <div className="mt-6 pt-4 border-t border-borders">
+                      <div className="flex justify-between items-center text-body font-semibold">
+                        <span className="text-text-primary">Estimated Material Cost:</span>
+                        <span className="text-success">${calculateMaterialCost()}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -441,23 +441,23 @@ export default function OutputSection() {
               </TabsContent>
 
               <TabsContent value="nx-expression">
-                <div className="space-y-4">
-                  <Card>
+                <div className="space-y-6">
+                  <Card className="panel">
                     <CardHeader>
-                      <CardTitle className="text-lg">NX CAD Expression</CardTitle>
+                      <CardTitle className="text-h4 font-semibold text-text-primary">NX CAD Expression</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-4">
-                        <div className="p-3 bg-surface-accent border border-border-subtle rounded">
-                          <p className="text-sm text-text-primary">
+                      <div className="space-y-6">
+                        <div className="p-4 bg-surface border border-borders rounded-md">
+                          <p className="text-body text-text-primary">
                             Generate NX CAD expressions for parametric crate design. Import the
                             generated .exp file into NX for automated crate construction.
                           </p>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-6">
                           <div>
-                            <h4 className="font-medium mb-2">Features Include:</h4>
-                            <ul className="text-sm text-muted-foreground space-y-1">
+                            <h4 className="text-body font-semibold text-text-primary mb-3">Features Include:</h4>
+                            <ul className="text-caption text-text-secondary space-y-2">
                               <li>• Parametric dimensions</li>
                               <li>• Two-point diagonal construction</li>
                               <li>• Material specifications</li>
@@ -465,8 +465,8 @@ export default function OutputSection() {
                             </ul>
                           </div>
                           <div>
-                            <h4 className="font-medium mb-2">Export Details:</h4>
-                            <ul className="text-sm text-muted-foreground space-y-1">
+                            <h4 className="text-body font-semibold text-text-primary mb-3">Export Details:</h4>
+                            <ul className="text-caption text-text-secondary space-y-2">
                               <li>• Filename includes dimensions</li>
                               <li>• UTC timestamp for versioning</li>
                               <li>• Product weight in filename</li>
@@ -474,11 +474,11 @@ export default function OutputSection() {
                             </ul>
                           </div>
                         </div>
-                        <div className="text-center">
-                          <Button size="lg" className="w-full" onClick={handleNXExport}>
+                        <div className="text-center pt-4">
+                          <Button size="lg" className="w-full btn btn-primary" onClick={handleNXExport}>
                             Generate NX Expression
                           </Button>
-                          <p className="text-xs text-muted-foreground mt-2">
+                          <p className="text-caption text-text-secondary mt-3">
                             Filename format: ProductName_LxWxH_WeightLbs_YYYYMMDD_HHMMSS_UTC.exp
                           </p>
                         </div>

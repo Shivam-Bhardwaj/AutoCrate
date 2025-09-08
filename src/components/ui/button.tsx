@@ -4,31 +4,25 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  `inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium
-   transition-all duration-300 ease-out transform-gpu
-   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 
-   disabled:pointer-events-none disabled:opacity-50
-   active:scale-95 hover:scale-105 hover:shadow-lg`,
+  `btn focus-professional disabled:pointer-events-none disabled:opacity-50
+   active:scale-95 hover:scale-[1.02] transition-all duration-fast`,
   {
     variants: {
       variant: {
-        default: `bg-gradient-to-r from-blue-600 to-blue-500 text-white 
-                  hover:from-blue-700 hover:to-blue-600 
-                  shadow-md hover:shadow-xl`,
-        glass: `glass-panel hover:bg-white/80 text-gray-900 
-                border border-white/20`,
-        ghost: `hover:bg-gray-100/50 hover:backdrop-blur-sm 
-                text-gray-700 hover:text-gray-900`,
-        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        default: 'btn-primary',
+        destructive: 'btn-destructive',
+        outline: 'btn-secondary',
+        secondary: 'btn-secondary',
+        ghost: 'btn-ghost',
         link: 'text-primary underline-offset-4 hover:underline',
+        success: 'btn-success',
+        warning: 'btn-warning',
       },
       size: {
-        default: 'h-10 px-4 py-2',
-        sm: 'h-9 rounded-md px-3',
-        lg: 'h-11 rounded-md px-8',
-        icon: 'h-10 w-10',
+        default: 'btn-md',
+        sm: 'btn-sm',
+        lg: 'btn-lg',
+        icon: 'btn-icon',
       },
     },
     defaultVariants: {
