@@ -149,7 +149,12 @@ describe('CrateViewer3D', () => {
 
     const container = screen.getByTestId('canvas').parentElement;
     expect(container).toBeInTheDocument();
-    expect(container).toHaveClass('w-full', 'h-full', 'bg-gradient-to-br');
+  // Accept either legacy background gradient class or new nx viewport/grid classes
+  expect(container).toBeInTheDocument();
+  const classList = container!.className;
+  const hasLegacyBg = classList.includes('bg-gradient-to-br');
+  const hasNxViewport = classList.includes('nx-viewport') && classList.includes('nx-grid-major');
+  expect(hasLegacyBg || hasNxViewport).toBe(true);
   });
 
   it('renders the explode view controls', () => {

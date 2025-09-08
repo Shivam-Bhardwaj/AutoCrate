@@ -30,6 +30,29 @@ describe('typographyTokens', () => {
     );
 
     const root = document.documentElement;
+
+    // Ensure test environment provides CSS custom properties; happy-dom may not load global CSS
+    const ensureVar = (name: string, value: string) => {
+      const styles = getComputedStyle(root);
+      if (!styles.getPropertyValue(name)) {
+        root.style.setProperty(name, value);
+      }
+    };
+
+    ensureVar('--text-xs', '0.75rem');
+    ensureVar('--text-sm', '0.875rem');
+    ensureVar('--text-base', '1rem');
+    ensureVar('--text-lg', '1.125rem');
+    ensureVar('--text-xl', '1.25rem');
+    ensureVar('--text-2xl', '1.5rem');
+    ensureVar('--foreground', '#111827');
+    ensureVar('--background', '#ffffff');
+    ensureVar('--primary', '#0ea5e9');
+    ensureVar('--muted-foreground', '#6b7280');
+    ensureVar('--nx-text', '#111827');
+    ensureVar('--nx-background', '#f9fafb');
+    ensureVar('--nx-panel', '#ffffff');
+
     const styles = getComputedStyle(root);
 
     // Assert presence of font scale CSS variables

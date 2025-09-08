@@ -4,6 +4,25 @@ import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import 'resize-observer-polyfill';
 import React from 'react';
+
+// Suppress specific React DOM warnings arising from mock three components
+const originalError = console.error;
+console.error = (...args: any[]) => {
+  const msg = args[0];
+  if (
+    typeof msg === 'string' &&
+    (/validateDOMNesting/.test(msg) ||
+      /is using incorrect casing/.test(msg) ||
+      /is unrecognized in this browser/.test(msg) ||
+      /React does not recognize the `(?:castShadow|enablePan|enableZoom|enableRotate|emissiveIntensity|shadows)` prop/.test(msg) ||
+      /Unknown event handler property `onCreated`/.test(msg) ||
+      /Received `true` for a non-boolean attribute `shadows`/.test(msg))
+  ) {
+    return; // swallow noisy expected warnings from mocks
+  }
+  originalError.call(console, ...args);
+};
+
 // Three.js / R3F global mocks to stabilize 3D component unit tests
 vi.mock('@react-three/fiber', () => {
   const Canvas: React.FC<any> = ({ children, ...props }) =>
@@ -21,9 +40,10 @@ vi.mock('@react-three/fiber', () => {
     return Comp;
   };
 
-  const ambientLight = primitive('ambient-light');
-  const directionalLight = primitive('directional-light');
-  const group = primitive('group');
+  // PascalCase component names to avoid casing warnings
+  const AmbientLight = primitive('ambient-light');
+  const DirectionalLight = primitive('directional-light');
+  const Group = primitive('group');
 
   return {
     Canvas,
@@ -40,16 +60,16 @@ vi.mock('@react-three/fiber', () => {
       gl: { setPixelRatio: vi.fn() },
       scene: {},
     }),
-    ambientLight,
-    directionalLight,
-    group,
+    // Export PascalCase to match how components might be imported (if at all)
+    AmbientLight,
+    DirectionalLight,
+    Group,
   };
 });
 
 // Mock crate geometry builder with deterministic simplified geometry adequate for tests
 vi.mock('@/utils/geometry/crate-geometry', () => ({
   buildCrateGeometry: (config: any) => {
-    // Provide minimal but diverse block sets for tests
     return {
       skids: [{ dimensions: [10, 2, 2], position: [0, 0, 0] }],
       floorboards: [{ dimensions: [10, 1, 0.75], position: [0, 0, 0.75] }],
@@ -91,6 +111,7 @@ vi.mock('@/utils/materials', () => ({
   },
 }));
 
+// Update drei mocks similarly
 vi.mock('@react-three/drei', () => {
   const simple = (id: string) => {
     const Comp: React.FC<any> = (props) =>
@@ -110,11 +131,7 @@ vi.mock('@react-three/drei', () => {
     });
   Box.displayName = 'MockBox';
   const Text: React.FC<any> = ({ children, position }) =>
-    React.createElement(
-      'div',
-      { 'data-testid': 'text', 'data-position': JSON.stringify(position) },
-      children
-    );
+    React.createElement('div', { 'data-testid': 'text', 'data-position': JSON.stringify(position) }, children);
   Text.displayName = 'MockText';
   const Html: React.FC<any> = ({ children }) =>
     React.createElement('div', { 'data-testid': 'html' }, children);
@@ -178,14 +195,9 @@ class MockWebGLRenderingContext {
     clientWidth: 800,
     clientHeight: 600,
   };
-
   getParameter = vi.fn(() => 1024);
   getExtension = vi.fn();
-  getShaderPrecisionFormat = vi.fn(() => ({
-    rangeMin: 1,
-    rangeMax: 1,
-    precision: 1,
-  }));
+  getShaderPrecisionFormat = vi.fn(() => ({ rangeMin: 1, rangeMax: 1, precision: 1 }));
   createShader = vi.fn();
   shaderSource = vi.fn();
   compileShader = vi.fn();
@@ -215,35 +227,30 @@ class MockWebGLRenderingContext {
   drawElements = vi.fn();
 }
 
-// Add WebGL support to happy-dom
 if (typeof HTMLCanvasElement !== 'undefined') {
   (HTMLCanvasElement.prototype as any).getContext = vi.fn((contextType: string) => {
-    if (
-      contextType === 'webgl' ||
-      contextType === 'webgl2' ||
-      contextType === 'experimental-webgl'
-    ) {
+    if (['webgl', 'webgl2', 'experimental-webgl'].includes(contextType)) {
       return new MockWebGLRenderingContext();
     }
     return null;
   });
 }
 
-// Mock IntersectionObserver
-global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+// IntersectionObserver mock
+(global as any).IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }));
 
-// Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
+// ResizeObserver mock
+(global as any).ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }));
 
-// Mock window.matchMedia
+// matchMedia mock
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query) => ({
