@@ -1,26 +1,13 @@
 'use client';
 
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid, Box, Html, Sphere } from '@react-three/drei';
+import { OrbitControls, Grid, Html } from '@react-three/drei';
 import { CrateConfiguration } from '@/types/crate';
 import { useLogsStore } from '@/store/logs-store';
-import { useEffect, useState, useMemo, memo } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { Label } from '@/components/ui/label';
-// Simple, correct geometry implementation
-import {
-  buildSimpleCrateGeometry,
-  scaleForVisualization,
-  INCH_TO_3D,
-  PANEL_THICKNESS,
-} from '@/utils/geometry/simple-crate-geometry';
-import { CoordinateAxes } from './CoordinateAxes';
-import { MeasurementLines } from './MeasurementLines';
 import { validateCrateConfiguration, isValidForRendering } from '@/utils/input-validation';
-import { SHARED_MATERIALS } from '@/utils/materials';
-import { usePerformanceMonitor } from '@/utils/performance-monitor';
-import { useFrame, useThree } from '@react-three/fiber';
-import { validateCoGStability } from '@/services/cog-calculator';
-import { calculateSkidConfiguration } from '@/utils/skid-calculations';
+import { CrateModel } from './three/CrateModel';
 
 interface CrateViewer3DProps {
   configuration: CrateConfiguration | null;
@@ -55,7 +42,6 @@ const HoverTooltip = ({ hoverState }: { hoverState: HoverState }) => {
     >
       <div className="bg-black/90 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap shadow-lg border border-gray-600">
         <div className="font-semibold capitalize">{hoverState.component}</div>
-        {/* eslint-disable-next-line react/no-unescaped-entities */}
         <div className="text-xs text-gray-300">
           {Math.round(hoverState.dimensions[0])}&quot; × {Math.round(hoverState.dimensions[1])}&quot; × {Math.round(hoverState.dimensions[2])}&quot;
         </div>
@@ -64,647 +50,263 @@ const HoverTooltip = ({ hoverState }: { hoverState: HoverState }) => {
   );
 };
 
-const CrateModel = memo(function CrateModel({
-  config,
-  _explodeFactor = 0,
-  showFaceLabels = true,
-  _showMeasurements = true,
-  componentVisibility,
-  onHover,
-  onHoverEnd,
-}: {
-  config: CrateConfiguration;
-  _explodeFactor?: number;
-  showFaceLabels?: boolean;
-  _showMeasurements?: boolean;
-  componentVisibility: ComponentVisibility;
-  onHover: (component: string, dimensions: [number, number, number], position: [number, number, number]) => void;
-  onHoverEnd: () => void;
-}) {
-  // Build and scale geometry
-  const skidConfig = useMemo(() => {
-    if (config.weight?.product) {
-      return calculateSkidConfiguration(config.dimensions, config.weight.product);
-    }
-    return undefined;
-  }, [config.dimensions, config.weight?.product]);
-
-  const geometryInches = buildSimpleCrateGeometry(config, skidConfig);
-  const geometry = scaleForVisualization(geometryInches);
-  // Explode view calculations
-  const explodeDistance = 2 * INCH_TO_3D;
-  const factor = _explodeFactor / 100;
-
-  const frontPosition: [number, number, number] = [
-    geometry.panels.front.position[0],
-    geometry.panels.front.position[1] + factor * explodeDistance,
-    geometry.panels.front.position[2]
-  ];
-  const backPosition: [number, number, number] = [
-    geometry.panels.back.position[0],
-    geometry.panels.back.position[1] - factor * explodeDistance,
-    geometry.panels.back.position[2]
-  ];
-  const leftPosition: [number, number, number] = [
-    geometry.panels.left.position[0] - factor * explodeDistance,
-    geometry.panels.left.position[1],
-    geometry.panels.left.position[2]
-  ];
-  const rightPosition: [number, number, number] = [
-    geometry.panels.right.position[0] + factor * explodeDistance,
-    geometry.panels.right.position[1],
-    geometry.panels.right.position[2]
-  ];
-  const topPosition: [number, number, number] = [
-    geometry.panels.top.position[0],
-    geometry.panels.top.position[1],
-    geometry.panels.top.position[2] + factor * explodeDistance
-  ];
-
-  // Calculate CoG stability for visualization
-  const cogStability = useMemo(() => {
-    if (config.centerOfGravity?.combinedCoG) {
-      return validateCoGStability(config.centerOfGravity.combinedCoG, config.dimensions);
-    }
-    return null;
-  }, [config.centerOfGravity, config.dimensions]);
-
-  return (
-    <group position={[0, 0, 0]}>
-      {/* The origin is now at the center of the crate floor. All component positions are relative to this. */}
-      {/* Skids */}
-      {componentVisibility.skids && geometry.skids.map((block, i) => (
-        <Box
-          key={`skid-${i}`}
-          args={block.dimensions}
-          position={block.position}
-          material={SHARED_MATERIALS.SKID_WOOD}
-          onPointerOver={() => {
-            // Show actual lumber dimensions: width × length × height
-            const actualWidth = skidConfig ? skidConfig.dimensions.width : 3.5;
-            const actualLength = config.dimensions.length; // Skid spans full crate length
-            const actualHeight = skidConfig ? skidConfig.dimensions.height : 3.5;
-            onHover('Skid', [actualWidth, actualLength, actualHeight], block.position);
-          }}
-          onPointerOut={onHoverEnd}
-        />
-      ))}
-
-      {/* Floor */}
-      {componentVisibility.floor && (
-        <Box
-          args={geometry.floor.dimensions}
-          position={geometry.floor.position}
-          material={SHARED_MATERIALS.FLOORBOARD_STANDARD}
-          onPointerOver={() => onHover('Floor', geometry.floor.dimensions, geometry.floor.position)}
-          onPointerOut={onHoverEnd}
-        />
-      )}
-
-      {/* Panels - properly oriented as walls */}
-      {componentVisibility.panels && (
-        <>
-          <Box
-            args={geometry.panels.front.dimensions}
-            position={frontPosition}
-            material={SHARED_MATERIALS.SIDE_PANEL}
-            onPointerOver={() => onHover('Front Panel', geometry.panels.front.dimensions, frontPosition)}
-            onPointerOut={onHoverEnd}
-          />
-          <Box
-            args={geometry.panels.back.dimensions}
-            position={backPosition}
-            material={SHARED_MATERIALS.SIDE_PANEL}
-            onPointerOver={() => onHover('Back Panel', geometry.panels.back.dimensions, backPosition)}
-            onPointerOut={onHoverEnd}
-          />
-          <Box
-            args={geometry.panels.left.dimensions}
-            position={leftPosition}
-            material={SHARED_MATERIALS.SIDE_PANEL}
-            onPointerOver={() => onHover('Left Panel', geometry.panels.left.dimensions, leftPosition)}
-            onPointerOut={onHoverEnd}
-          />
-          <Box
-            args={geometry.panels.right.dimensions}
-            position={rightPosition}
-            material={SHARED_MATERIALS.SIDE_PANEL}
-            onPointerOver={() => onHover('Right Panel', geometry.panels.right.dimensions, rightPosition)}
-            onPointerOut={onHoverEnd}
-          />
-          <Box
-            args={geometry.panels.top.dimensions}
-            position={topPosition}
-            material={SHARED_MATERIALS.SIDE_PANEL}
-            onPointerOver={() => onHover('Top Panel', geometry.panels.top.dimensions, topPosition)}
-            onPointerOut={onHoverEnd}
-          />
-        </>
-      )}
-      {/* Front Face Label - Essential for orientation */}
-      {showFaceLabels && (() => {
-        const { width, length, height } = config.dimensions;
-        const maxDim = Math.max(width, length, height);
-
-        // Calculate proportional font size based on crate dimensions
-        const fontSize = Math.max(8, Math.min(16, 8 + (maxDim / 100) * 2));
-        const distanceFactor = Math.max(10, Math.min(20, 10 + (maxDim / 50) * 2));
-
-        return (
-          <Html
-            position={[0, (PANEL_THICKNESS / 2) * INCH_TO_3D, (config.dimensions.height / 2) * INCH_TO_3D]}
-            center
-            distanceFactor={distanceFactor}
-          >
-            <div
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                color: '#1f2937',
-                fontSize: `${fontSize}px`,
-                fontWeight: '600',
-                padding: '2px 6px',
-                borderRadius: '3px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                whiteSpace: 'nowrap',
-                border: '1px solid rgba(0,0,0,0.1)',
-                transform: 'rotateX(-5deg)',
-              }}
-            >
-              FRONT
-            </div>
-          </Html>
-        );
-      })()}
-      {/* Cleats */}
-      {componentVisibility.cleats && geometry.cleats.map((block, i) => (
-        <Box
-          key={`cleat-${i}`}
-          args={block.dimensions}
-          position={block.position}
-          material={SHARED_MATERIALS.CLEAT_WOOD}
-          onPointerOver={() => onHover('Cleat', block.dimensions, block.position)}
-          onPointerOut={onHoverEnd}
-        />
-      ))}
-
-      {/* CoG Visualization */}
-      {componentVisibility.cog && config.centerOfGravity?.combinedCoG && (
-        <group>
-          <Sphere
-            args={[4 * INCH_TO_3D]} // 4 inch radius sphere
-            position={[
-              config.centerOfGravity.combinedCoG.x * INCH_TO_3D,
-              config.centerOfGravity.combinedCoG.y * INCH_TO_3D,
-              config.centerOfGravity.combinedCoG.z * INCH_TO_3D,
-            ]}
-            onPointerOver={() => {
-              if (config.centerOfGravity?.combinedCoG) {
-                onHover('Center of Gravity', [8, 8, 8], [
-                  config.centerOfGravity.combinedCoG.x * INCH_TO_3D,
-                  config.centerOfGravity.combinedCoG.y * INCH_TO_3D,
-                  config.centerOfGravity.combinedCoG.z * INCH_TO_3D,
-                ]);
-              }
-            }}
-            onPointerOut={onHoverEnd}
-          >
-            <meshStandardMaterial
-              color={
-                cogStability?.isStable
-                  ? '#22c55e' // green for stable
-                  : cogStability && cogStability.stabilityScore > 50
-                    ? '#eab308' // yellow for caution
-                    : '#ef4444' // red for unstable
-              }
-              emissive={
-                cogStability?.isStable
-                  ? '#166534' // dark green
-                  : cogStability && cogStability.stabilityScore > 50
-                    ? '#a16207' // dark yellow
-                    : '#991b1b' // dark red
-              }
-              emissiveIntensity={0.2}
-            />
-          </Sphere>
-
-          {/* CoG Label */}
-          <Html
-            position={[
-              config.centerOfGravity.combinedCoG.x * INCH_TO_3D,
-              config.centerOfGravity.combinedCoG.y * INCH_TO_3D,
-              (config.centerOfGravity.combinedCoG.z + 8) * INCH_TO_3D,
-            ]}
-            center
-            distanceFactor={10}
-          >
-            <div className="bg-black/80 text-white px-2 py-1 rounded text-xs whitespace-nowrap">
-              CoG: ({config.centerOfGravity.combinedCoG.x.toFixed(1)},{' '}
-              {config.centerOfGravity.combinedCoG.y.toFixed(1)},{' '}
-              {config.centerOfGravity.combinedCoG.z.toFixed(1)})
-            </div>
-          </Html>
-        </group>
-      )}
-
-      
-      {/* TODO: Add Klimp Fastener Visualization */}
-      {/* TODO: Add Decal Visualization */}
-    </group>
-  );
-});
-
-// Simple camera positioning
-const AutoFitCamera = ({ config }: { config: CrateConfiguration }) => {
-  const { camera } = useThree();
-
-  useEffect(() => {
-    const { width, length, height } = config.dimensions;
-    const maxDim = Math.max(width, length, height);
-    const distance = maxDim * INCH_TO_3D * 2.5; // Slightly closer for better view
-
-    // Position camera to show correct axis directions when viewing from front
-    // Camera positioned at [0, distance, distance] with Z-up shows:
-    // - Positive X (red/Width) pointing right on screen
-    // - Positive Y (green/Depth) pointing away from viewer (into screen)
-    // - Positive Z (blue/Height) pointing up
-    camera.position.set(0, distance, distance);
-    camera.lookAt(0, 0, 0); // Look at origin (front-center of crate)
-    camera.updateProjectionMatrix();
-  }, [config, camera]);
-
-  return null;
-};
-
-// PERFORMANCE: Internal performance monitoring component
-const PerformanceTracker = memo(function PerformanceTracker() {
-  const { recordFrame } = usePerformanceMonitor(process.env.NODE_ENV === 'development');
-
-  useFrame(() => {
-    const metrics = recordFrame();
-
-    // Log performance warnings periodically (every 2 seconds)
-    if (metrics && performance.now() % 2000 < 16) {
-      const { fps, frameTime } = metrics;
-      if (fps < 45) {
-        console.warn(`Performance Warning: ${fps} FPS (${frameTime}ms per frame)`);
-      }
-    }
-  });
-
-  return null; // This component doesn't render anything
-});
-
-// PERFORMANCE: Memoized main component to prevent unnecessary re-renders of entire 3D scene
+/**
+ * Simplified 3D crate viewer component
+ */
 const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer3DProps) {
-  const { logInfo, logDebug, logWarning, logError } = useLogsStore();
-  const [explodeFactor, setExplodeFactor] = useState(0); // 0-100%
-  const [renderError, setRenderError] = useState<string | null>(null);
-  const [showMeasurements, setShowMeasurements] = useState(false); // Hidden by default to reduce clutter
-  const [showFaceLabels, setShowFaceLabels] = useState(true); // Show FRONT label by default for orientation
-  const [showWCS, setShowWCS] = useState(true); // Show World Coordinate System by default
-  
-  // Component visibility state
-  const [componentVisibility, setComponentVisibility] = useState<ComponentVisibility>({
-    skids: true,
-    floor: true,
-    panels: true,
-    cleats: true,
-    cog: true,
-  });
-  
-  // Hover state for tooltips
+  const { addLog } = useLogsStore();
+  const [viewMode, setViewMode] = useState<'clean' | 'full'>('full');
+  const [explodeFactor, setExplodeFactor] = useState(0);
+  const [showFaceLabels, setShowFaceLabels] = useState(false);
+  const [showMeasurements, setShowMeasurements] = useState(false);
+  const [showWCS, setShowWCS] = useState(false);
   const [hoverState, setHoverState] = useState<HoverState>({
     component: null,
     dimensions: null,
     position: null,
   });
+  const [componentVisibility, setComponentVisibility] = useState<ComponentVisibility>({
+    skids: true,
+    floor: true,
+    panels: false,
+    cleats: false,
+    cog: false,
+  });
 
-  // PERFORMANCE: Memoize validation to avoid re-validation on every render
-  const { validatedConfig, canRender } = useMemo(() => {
-    try {
-      const config = validateCrateConfiguration(configuration);
-      const canRenderResult = isValidForRendering(config);
-      return {
-        validatedConfig: config,
-        canRender: canRenderResult,
-      };
-    } catch (error) {
-      console.error('Configuration validation error:', error);
-      setRenderError(
-        `Configuration validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-      return {
-        validatedConfig: null,
-        canRender: false,
-      };
-    }
-  }, [configuration]);
+  const handleHover = (component: string, dimensions: [number, number, number], position: [number, number, number]) => {
+    setHoverState({ component, dimensions, position });
+  };
 
-  // Auto-calculate camera position based on crate dimensions for optimal viewing distance
-  const cameraPosition = [3, -3, 2]; // starter; AutoFitCamera will override
+  const handleHoverEnd = () => {
+    setHoverState({ component: null, dimensions: null, position: null });
+  };
 
-  useEffect(() => {
-    if (validatedConfig && canRender) {
-      logDebug(
-        'render',
-        '3D scene updated',
-        `Rendering crate: ${validatedConfig.dimensions.length}x${validatedConfig.dimensions.width}x${validatedConfig.dimensions.height} inches`,
-        'CrateViewer3D'
-      );
-    } else if (!canRender && configuration) {
-      logWarning(
-        'render',
-        'Invalid configuration values detected, using defaults',
-        undefined,
-        'CrateViewer3D'
-      );
+  const toggleViewMode = () => {
+    const newMode = viewMode === 'clean' ? 'full' : 'clean';
+    setViewMode(newMode);
+    
+    if (newMode === 'clean') {
+      setShowFaceLabels(false);
+      setShowMeasurements(false);
+      setShowWCS(false);
     } else {
-      logWarning('render', 'No configuration provided for 3D viewer', undefined, 'CrateViewer3D');
+      setShowFaceLabels(true);
+      setShowMeasurements(true);
+      setShowWCS(true);
     }
-  }, [validatedConfig, canRender, configuration, logDebug, logWarning]);
+    
+    addLog('user', 'ui', 'View mode changed', undefined, { viewMode: newMode });
+  };
+
+  const toggleExplodeView = () => {
+    const newValue = explodeFactor === 0 ? 50 : 0;
+    setExplodeFactor(newValue);
+    addLog('user', 'ui', 'Explode view toggled', undefined, { explodeFactor: newValue });
+  };
+
+  const toggleComponent = (component: keyof ComponentVisibility) => {
+    setComponentVisibility(prev => ({
+      ...prev,
+      [component]: !prev[component]
+    }));
+    addLog('user', 'ui', 'Component visibility toggled', undefined, { 
+      component, 
+      visible: !componentVisibility[component] 
+    });
+  };
+
+  // Validate configuration
+  if (!configuration || !isValidForRendering(configuration)) {
+    const validationErrors = ['Invalid crate configuration'];
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-muted/10 rounded-lg">
+        <div className="text-center space-y-2">
+          <p className="text-muted-foreground">Invalid crate configuration</p>
+          {validationErrors && validationErrors.length > 0 && (
+            <ul className="text-sm text-red-500 space-y-1">
+              {validationErrors.map((error, i) => (
+                <li key={i}>{error}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full h-full nx-viewport nx-grid-major relative">
-      {/* Explode View Controls */}
-      <div className="absolute top-4 left-4 panel p-4 z-10 min-w-[280px] space-y-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-h4 font-semibold text-text-primary">3D Viewer Controls</h3>
+    <div className="relative w-full h-full">
+      {/* Controls Panel */}
+      <div className="absolute top-4 left-4 z-10 bg-background/95 backdrop-blur-sm rounded-lg shadow-lg p-4 space-y-4 max-w-xs">
+        <div className="space-y-2">
+          <h3 className="font-semibold text-sm">3D Viewer Controls</h3>
           <button
-            onClick={() => {
-              try {
-                setExplodeFactor(explodeFactor === 0 ? 100 : 0);
-                logInfo(
-                  'render',
-                  `Explode view ${explodeFactor === 0 ? 'enabled' : 'disabled'}`,
-                  undefined,
-                  'CrateViewer3D'
-                );
-              } catch (error) {
-                console.error('Explode view toggle error:', error);
-                logError(
-                  'render',
-                  'Failed to toggle explode view',
-                  error instanceof Error ? error.message : 'Unknown error',
-                  'CrateViewer3D'
-                );
-              }
-            }}
-            className="btn btn-secondary text-small"
-            aria-label={
-              explodeFactor === 0 ? 'Enable exploded crate view' : 'Reset to assembled crate view'
-            }
+            onClick={toggleExplodeView}
+            className="text-xs px-3 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
           >
-            {explodeFactor === 0 ? 'Explode View' : 'Reset View'}
+            {explodeFactor > 0 ? 'Collapse' : 'Explode'} View
           </button>
         </div>
-        {explodeFactor > 0 && (
-          <div className="space-y-3">
-            <div className="form-group">
-              <Label htmlFor="explodeRange" className="form-label">Explode Factor: {explodeFactor}%</Label>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={explodeFactor}
-                onChange={(e) => {
-                  try {
-                    setExplodeFactor(Number(e.target.value));
-                  } catch (error) {
-                    console.error('Explode factor change error:', error);
-                  }
-                }}
-                className="w-full h-2 bg-surface-accent rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500"
-                id="explodeRange"
-                aria-label="Exploded view separation percentage"
-              />
-            </div>
-          </div>
-        )}
-        {/* Display Options */}
-        <div className="space-y-3">
-          <h4 className="text-body font-semibold text-text-primary">Display Options</h4>
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
+
+        <div className="space-y-2">
+          <Label className="text-xs font-medium">Display Options</Label>
+          <div className="space-y-1">
+            <label className="flex items-center gap-2 text-xs">
               <input
                 type="checkbox"
-                id="showMeasurements"
                 checked={showMeasurements}
                 onChange={(e) => setShowMeasurements(e.target.checked)}
-                className="w-4 h-4 text-primary-600 bg-surface border-borders rounded focus:ring-primary-500"
+                className="rounded"
               />
-              <Label htmlFor="showMeasurements" className="form-label">Show Measurements</Label>
-            </div>
-            <div className="flex items-center gap-3">
+              Show Measurements
+            </label>
+            <label className="flex items-center gap-2 text-xs">
               <input
                 type="checkbox"
-                id="showFaceLabels"
                 checked={showFaceLabels}
                 onChange={(e) => setShowFaceLabels(e.target.checked)}
-                className="w-4 h-4 text-primary-600 bg-surface border-borders rounded focus:ring-primary-500"
+                className="rounded"
               />
-              <Label htmlFor="showFaceLabels" className="form-label">Show Face Labels</Label>
-            </div>
-            <div className="flex items-center gap-3">
+              Show Face Labels
+            </label>
+            <label className="flex items-center gap-2 text-xs">
               <input
                 type="checkbox"
-                id="showWCS"
                 checked={showWCS}
                 onChange={(e) => setShowWCS(e.target.checked)}
-                className="w-4 h-4 text-primary-600 bg-surface border-borders rounded focus:ring-primary-500"
+                className="rounded"
               />
-              <Label htmlFor="showWCS" className="form-label">Show WCS</Label>
-            </div>
+              Show WCS
+            </label>
           </div>
+        </div>
 
-          {/* Quick View Controls */}
-          <div className="flex gap-2 pt-2">
-            <button
-              onClick={() => {
-                setShowMeasurements(false);
-                setShowFaceLabels(false);
-                setShowWCS(false);
-                setExplodeFactor(0);
-                setComponentVisibility({
-                  skids: false,
-                  floor: false,
-                  panels: false,
-                  cleats: false,
-                  cog: false,
-                });
-                logInfo('render', 'All display elements turned off', 'Clean view mode activated', 'CrateViewer3D');
-              }}
-              className="btn btn-outline flex-1 text-small"
-              aria-label="Turn off all display elements for clean view"
-            >
-              Clean View
-            </button>
-            <button
-              onClick={() => {
-                setShowMeasurements(true);
-                setShowFaceLabels(true);
-                setShowWCS(true);
-                setComponentVisibility({
-                  skids: true,
-                  floor: true,
-                  panels: true,
-                  cleats: true,
-                  cog: true,
-                });
-                logInfo('render', 'All display elements turned on', 'Full detail view activated', 'CrateViewer3D');
-              }}
-              className="btn btn-primary flex-1 text-small"
-              aria-label="Turn on all display elements for full detail view"
-            >
-              Full Detail
-            </button>
+        <div className="flex gap-2">
+          <button
+            onClick={toggleViewMode}
+            className={`text-xs px-3 py-1 rounded transition-colors ${
+              viewMode === 'clean' 
+                ? 'bg-secondary text-secondary-foreground hover:bg-secondary/90' 
+                : 'bg-primary text-primary-foreground hover:bg-primary/90'
+            }`}
+          >
+            {viewMode === 'clean' ? 'Clean View' : 'Full Detail'}
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs font-medium">Components</Label>
+          <div className="space-y-1">
+            <label className="flex items-center gap-2 text-xs">
+              <input
+                type="checkbox"
+                checked={componentVisibility.skids}
+                onChange={() => toggleComponent('skids')}
+                className="rounded"
+              />
+              <span className="inline-block w-3 h-3 bg-amber-900 rounded-sm mr-1" />
+              Skids
+            </label>
+            <label className="flex items-center gap-2 text-xs">
+              <input
+                type="checkbox"
+                checked={componentVisibility.floor}
+                onChange={() => toggleComponent('floor')}
+                className="rounded"
+              />
+              <span className="inline-block w-3 h-3 bg-amber-800 rounded-sm mr-1" />
+              Floor
+            </label>
+            <label className="flex items-center gap-2 text-xs">
+              <input
+                type="checkbox"
+                checked={componentVisibility.panels}
+                onChange={() => toggleComponent('panels')}
+                className="rounded"
+              />
+              <span className="inline-block w-3 h-3 bg-yellow-600 rounded-sm mr-1" />
+              Panels
+            </label>
+            <label className="flex items-center gap-2 text-xs">
+              <input
+                type="checkbox"
+                checked={componentVisibility.cleats}
+                onChange={() => toggleComponent('cleats')}
+                className="rounded"
+              />
+              <span className="inline-block w-3 h-3 bg-amber-700 rounded-sm mr-1" />
+              Cleats
+            </label>
+            <label className="flex items-center gap-2 text-xs">
+              <input
+                type="checkbox"
+                checked={componentVisibility.cog}
+                onChange={() => toggleComponent('cog')}
+                className="rounded"
+              />
+              Center Of Gravity
+            </label>
           </div>
         </div>
-        
-        {/* Component Visibility */}
-        <div className="space-y-3 border-t border-borders pt-3">
-          <h4 className="text-body font-semibold text-text-primary">Components</h4>
-          <div className="space-y-2">
-            {Object.entries(componentVisibility).map(([component, isVisible]) => (
-              <div key={component} className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id={`show${component}`}
-                  checked={isVisible}
-                  onChange={(e) => setComponentVisibility(prev => ({
-                    ...prev,
-                    [component]: e.target.checked
-                  }))}
-                  className="w-4 h-4 text-primary-600 bg-surface border-borders rounded focus:ring-primary-500"
-                />
-                <Label htmlFor={`show${component}`} className="form-label capitalize">
-                  {component === 'cog' ? 'Center of Gravity' : component}
-                </Label>
-              </div>
-            ))}
-          </div>
-        </div>
-        {/* Legend */}
-        <div className="border-t border-borders pt-3">
-          <h4 className="text-body font-semibold text-text-primary mb-3">Legend</h4>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              ['Skids', '#5D3A1A'],
-              ['Floor', '#A0662B'],
-              ['Panels', '#CFAF72'],
-              ['Cleats', '#4A2F14'],
-            ].map(([label, color]) => (
-              <div key={label} className="flex items-center gap-2">
-                <span
-                  className="inline-block w-4 h-4 rounded-sm border border-borders"
-                  style={{ backgroundColor: color as string }}
-                />
-                <span className="text-caption text-text-secondary">{label}</span>
-              </div>
-            ))}
+
+        <div className="space-y-1 pt-2 border-t">
+          <Label className="text-xs font-medium">Legend</Label>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="flex items-center gap-1">
+              <span className="inline-block w-3 h-3 bg-amber-900 rounded-sm" />
+              Skids
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="inline-block w-3 h-3 bg-amber-800 rounded-sm" />
+              Floor
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="inline-block w-3 h-3 bg-yellow-600 rounded-sm" />
+              Panels
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="inline-block w-3 h-3 bg-amber-700 rounded-sm" />
+              Cleats
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Error Display */}
-      {renderError && (
-        <div className="absolute top-4 right-4 panel p-4 z-10 max-w-xs">
-          <h4 className="text-body font-semibold text-error mb-2">Render Error</h4>
-          <p className="text-caption text-text-secondary">{renderError}</p>
-        </div>
-      )}
-
-      <Canvas
-        // Ensure canvas always fills available space
-        style={{ width: '100%', height: '100%' }}
-        camera={{
-          position: cameraPosition as [number, number, number],
-          fov: 50,
-          up: [0, 0, 1],
-        }}
-        shadows
-        gl={{ preserveDrawingBuffer: true, antialias: true }}
-        onCreated={(state) => {
-          try {
-            // PERFORMANCE: Enable better performance and compatibility
-            // Target: 60 FPS rendering with automatic fallback for low-end devices
-            if (process.env.NODE_ENV === 'development') {
-              console.log('3D Performance Target: 60 FPS (<16.67ms per frame)');
-            }
-            // Ensure the renderer is properly initialized
-            state.gl.setPixelRatio(window.devicePixelRatio);
-            logInfo('render', '3D canvas initialized', 'WebGL renderer ready', 'CrateViewer3D');
-          } catch (error) {
-            console.error('WebGL initialization error:', error);
-            setRenderError(
-              `WebGL initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-            );
-            logError(
-              'render',
-              'WebGL initialization failed',
-              error instanceof Error ? error.message : 'Unknown error',
-              'CrateViewer3D'
-            );
-          }
-        }}
-        onError={(error) => {
-          console.error('Canvas error:', error);
-          setRenderError(
-            `Canvas error: ${error instanceof Error ? error.message : 'Unknown error'}`
-          );
-          logError(
-            'render',
-            'Canvas error occurred',
-            error instanceof Error ? error.message : 'Unknown error',
-            'CrateViewer3D'
-          );
-        }}
+      {/* 3D Canvas */}
+      <Canvas 
+        camera={{ position: [2, 1.5, 2], fov: 50 }}
+        className="bg-muted/5"
       >
-        {/* PERFORMANCE: Real-time performance monitoring */}
-        <PerformanceTracker />
-
         <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
+        <directionalLight position={[10, 10, 5]} intensity={0.5} />
         <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
-        <Grid args={[20, 20]} rotation={[-Math.PI / 2, 0, 0]} />
-        <group position={[0, 0, 0]}>
-          {showWCS && <CoordinateAxes size={1} />}
-        </group>
-        {validatedConfig && (
-          <MeasurementLines
-            width={validatedConfig.dimensions.width}
-            depth={validatedConfig.dimensions.length}
-            height={validatedConfig.dimensions.height}
-            visible={showMeasurements}
-          />
-        )}
+        
+        <Grid
+          args={[10, 10]}
+          cellSize={0.5}
+          cellThickness={0.5}
+          cellColor="#6b7280"
+          sectionSize={2}
+          sectionThickness={1}
+          sectionColor="#9ca3af"
+          fadeDistance={25}
+          fadeStrength={1}
+          followCamera={false}
+          infiniteGrid={true}
+        />
 
-        {validatedConfig && canRender ? (
-          (() => {
-            return (
-              <>
-                <AutoFitCamera config={validatedConfig} />
-                <CrateModel
-                  config={validatedConfig}
-                  _explodeFactor={explodeFactor}
-                  showFaceLabels={showFaceLabels}
-                  _showMeasurements={showMeasurements}
-                  componentVisibility={componentVisibility}
-                  onHover={(component, dimensions, position) => 
-                    setHoverState({ component, dimensions, position })
-                  }
-                  onHoverEnd={() => setHoverState({ component: null, dimensions: null, position: null })}
-                />
-                <HoverTooltip hoverState={hoverState} />
-              </>
-            );
-          })()
-        ) : (
-          <Html position={[0, 0, 2]} center distanceFactor={10}>
-            <div style={{ color: 'gray', fontSize: '20px', fontWeight: 'bold' }}>
-              {renderError ? 'Error loading 3D preview' : 'Configure crate to see 3D preview'}
-            </div>
-          </Html>
-        )}
+        <CrateModel
+          config={configuration}
+          explodeFactor={explodeFactor}
+          showFaceLabels={showFaceLabels}
+          showMeasurements={showMeasurements}
+          showWCS={showWCS}
+          componentVisibility={componentVisibility}
+          onHover={handleHover}
+          onHoverEnd={handleHoverEnd}
+        />
+
+        <HoverTooltip hoverState={hoverState} />
       </Canvas>
     </div>
   );

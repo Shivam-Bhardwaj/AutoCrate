@@ -13,6 +13,7 @@
 
 import { CrateConfiguration, Block } from '@/types/crate';
 import { SkidConfiguration } from '@/utils/skid-calculations';
+import { calculateFloorBoards, FloorBoard } from '@/services/floor-calculator';
 
 const PANEL_THICKNESS = 0.75; // inches
 const SKID_HEIGHT = 3.5; // inches
@@ -22,7 +23,8 @@ export { PANEL_THICKNESS };
 
 export interface SimpleCrateGeometry {
   skids: Block[];
-  floor: Block;
+  floor: Block; // Legacy single floor block
+  floorBoards: Block[]; // New individual floor boards
   panels: {
     front: Block;
     back: Block;
@@ -109,8 +111,18 @@ export function buildSimpleCrateGeometry(config: CrateConfiguration, skidConfig?
     }
   }
 
-  // Floor - sits on top of skids
-  // Positioned with y=0 at front, so floor centered at y=-depth/2
+  // Floor - calculate individual boards
+  const floorConfig = calculateFloorBoards(width, depth);
+  const floorBoards: Block[] = floorConfig.boards.map(board => ({
+    position: [
+      board.position.x,
+      -depth / 2, // Boards run full depth, centered at y=-depth/2
+      skidHeight + board.thickness / 2 // Sit on top of skids
+    ] as [number, number, number],
+    dimensions: [board.width, board.depth, board.thickness],
+  }));
+
+  // Legacy single floor block (kept for compatibility)
   const floor: Block = {
     position: [0, -depth / 2, skidHeight + FLOOR_THICKNESS / 2] as [number, number, number],
     dimensions: [width, depth, FLOOR_THICKNESS],
@@ -200,6 +212,7 @@ export function buildSimpleCrateGeometry(config: CrateConfiguration, skidConfig?
   return {
     skids,
     floor,
+    floorBoards,
     panels,
     cleats,
   };
@@ -239,6 +252,7 @@ export function scaleForVisualization(geometry: SimpleCrateGeometry) {
   return {
     skids: geometry.skids.map(scaleBlock),
     floor: scaleBlock(geometry.floor),
+    floorBoards: geometry.floorBoards.map(scaleBlock),
     panels: {
       front: scalePanelBlock(geometry.panels.front as Block & { orientation?: string }),
       back: scalePanelBlock(geometry.panels.back as Block & { orientation?: string }),
