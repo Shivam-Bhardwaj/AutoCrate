@@ -12,9 +12,9 @@ import { TitleBlockData } from './titleBlockGenerator';
 import { validateDimensions } from './dimensionGenerator';
 
 // Placeholder functions until templates are created
-const validateBOMEntries = (entries: any) => ({ isValid: true, errors: [] });
-const validateTitleBlockData = (data: any) => ({ isValid: true, errors: [] });
-const validateDrawingLayout = (layout: any) => ({ isValid: true, errors: [] });
+const validateBOMEntries = (entries: any) => ({ isValid: true, errors: [], warnings: [] });
+const validateTitleBlockData = (data: any) => ({ isValid: true, errors: [], warnings: [] });
+const validateDrawingLayout = (layout: any) => ({ isValid: true, errors: [], warnings: [] });
 
 export interface ValidationResult {
   isValid: boolean;
