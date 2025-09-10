@@ -57,12 +57,49 @@ Component Usage (All components)
 - Theme-aware color switching
 - Contrast ratio validation
 - Accessibility compliance verification
+- Color Tokens with hex values, use cases, and contrast ratios
+- Organized for documentation compatibility
 
 #### Theme Implementation
 - CSS custom properties for dynamic theming
 - JavaScript theme switching in ThemeProvider
 - Persistent theme storage
 - System preference detection
+- Guide on how themes (e.g., dark/light mode) are implemented
+
+### Component Library Architecture
+
+#### Component Standards
+- Visual examples of all components
+- Documentation for interactive states (hover, focus, active, disabled)
+- Code snippets (CSS/React examples)
+- Consistent styling patterns
+
+#### Animation & Motion
+- Guidelines for animations and transitions
+- Performance-optimized animation strategies
+- Accessibility considerations for motion
+
+#### Iconography
+- Icon library and usage standards
+- SVG optimization strategies
+- Icon sizing and alignment guidelines
+
+### Accessibility Architecture
+
+#### Core Standards
+- WCAG AAA compliance targets
+- Color Contrast requirements
+- Keyboard Navigation patterns
+- Screen Reader Support (ARIA labels, semantic HTML)
+- Focus Management strategies
+- Readable Typography guidelines
+
+#### Testing Framework
+- Automated accessibility testing tools
+- Manual testing procedures
+- Performance measurement with Lighthouse
+- Continuous accessibility monitoring
 
 ---
 

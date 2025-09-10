@@ -15,7 +15,7 @@ import { APP_VERSION } from '@/utils/version';
 import { TechStackDisplay } from '@/components/TechStackDisplay';
 
 // Dynamically import mobile page for better code splitting
-const _MobileHome = dynamic(() => import('./mobile-page'), { ssr: false });
+const MobileV2 = dynamic(() => import('./mobile-v2'), { ssr: false });
 
 // Dynamically import CrateViewer3D to avoid SSR issues with Three.js
 const CrateViewer3D = dynamic(() => import('@/components/CrateViewer3D'), {
@@ -72,10 +72,10 @@ export default function Home() {
 
   // In test builds (E2E) always force desktop layout so selectors are stable.
   const _IS_TEST_BUILD = process.env.NODE_ENV === 'test';
-  // Temporarily disable mobile layout for consistency in automated E2E tests
-  // if (_isMobile && !_IS_TEST_BUILD) {
-  //   return <_MobileHome />;
-  // }
+  // Use new mobile experience for mobile devices
+  if (_isMobile && !_IS_TEST_BUILD) {
+    return <MobileV2 />;
+  }
 
   // Previously returned a skeleton until hydration; now we always render full layout so E2E selectors are present immediately.
 

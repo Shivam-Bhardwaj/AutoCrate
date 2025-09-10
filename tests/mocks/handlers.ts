@@ -22,7 +22,7 @@ export const handlers = [
 
   // Mock crate configuration save endpoint
   http.post('/api/crate/save', async ({ request }) => {
-    const body = await request.json();
+    const body = await request.json() as Record<string, any>;
 
     return HttpResponse.json({
       id: 'crate-123',

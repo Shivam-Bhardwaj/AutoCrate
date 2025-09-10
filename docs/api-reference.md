@@ -590,6 +590,115 @@ config = client.configurations.create({
 expression = client.nx.generate(config['id'])
 ```
 
+## AMAT Compliance API
+
+### AMAT Specifications
+
+#### Core Types
+
+```typescript
+type AMATCrateStyle = 'A' | 'B' | 'C' | 'D';
+
+interface AMATCrateStyleSpec {
+  style: AMATCrateStyle;
+  name: string;
+  description: string;
+  weightRange: { min: number; max: number };
+  features: string[];
+  entryType: 'two-way' | 'four-way';
+  hasFloatingDeck: boolean;
+  requiresReinforcedJoists: boolean;
+  panelType: 'cleated-plywood' | 'solid-lumber' | 'mixed';
+  dropEndCap: boolean;
+}
+```
+
+#### Determine AMAT Crate Style
+
+```http
+POST /api/amat/determine-style
+Content-Type: application/json
+Authorization: Bearer YOUR_API_KEY
+
+{
+  "productWeight": 7500,
+  "dimensions": { "length": 48, "width": 36, "height": 24 }
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "style": "B",
+  "specification": {
+    "name": "Style B - Heavy Duty",
+    "weightRange": { "min": 5000, "max": 10000 },
+    "features": ["four-way entry", "reinforced joints"]
+  }
+}
+```
+
+### ISPM-15 Compliance
+
+#### Validate Treatment
+
+```http
+POST /api/ispm15/validate-treatment
+Content-Type: application/json
+Authorization: Bearer YOUR_API_KEY
+
+{
+  "method": "heat-treatment",
+  "temperature": 56,
+  "duration": 30,
+  "coreTemperature": 56
+}
+```
+
+#### Country Requirements
+
+```http
+GET /api/ispm15/country-requirements/{countryCode}
+Authorization: Bearer YOUR_API_KEY
+```
+
+### Weight Calculations
+
+#### Enhanced Weight Breakdown
+
+```http
+POST /api/weight/calculate-enhanced
+Content-Type: application/json
+Authorization: Bearer YOUR_API_KEY
+
+{
+  "configurationId": "conf_1234567890",
+  "options": {
+    "includeFoamCushioning": true,
+    "includeMBB": true,
+    "includeDesiccant": true,
+    "airShipmentMode": false
+  }
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "breakdown": {
+    "panels": { "total": 250 },
+    "framing": { "total": 80 },
+    "base": { "total": 120 },
+    "hardware": { "total": 15 },
+    "protection": { "total": 35 },
+    "accessories": { "total": 5 },
+    "total": 505
+  }
+}
+```
+
 ## Examples
 
 ### Complete Workflow Example

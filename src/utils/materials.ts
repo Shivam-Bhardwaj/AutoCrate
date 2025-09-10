@@ -22,15 +22,21 @@ export const SHARED_MATERIALS = {
     metalness: 0.05,
   }),
 
-  // Floorboards (medium warm tone)
+  // Floorboards (alternating wood tones for visual distinction)
   FLOORBOARD_STANDARD: new MeshStandardMaterial({
-    color: '#888888', // neutral gray for strong contrast
+    color: '#D4A373', // light sandy wood
     roughness: 0.6,
     metalness: 0.05,
   }),
 
   FLOORBOARD_NARROW: new MeshStandardMaterial({
-    color: '#9A9A9A', // lighter gray variant
+    color: '#B08D57', // medium golden wood
+    roughness: 0.6,
+    metalness: 0.05,
+  }),
+
+  FLOORBOARD_DARK: new MeshStandardMaterial({
+    color: '#8B6F47', // darker wood tone
     roughness: 0.6,
     metalness: 0.05,
   }),

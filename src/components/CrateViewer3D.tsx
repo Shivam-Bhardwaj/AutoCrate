@@ -4,6 +4,7 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Html } from '@react-three/drei';
 import { CrateConfiguration } from '@/types/crate';
 import { useLogsStore } from '@/store/logs-store';
+import { useThemeStore } from '@/store/theme-store';
 import { useEffect, useState, memo } from 'react';
 import { Label } from '@/components/ui/label';
 import { validateCrateConfiguration, isValidForRendering } from '@/utils/input-validation';
@@ -55,11 +56,13 @@ const HoverTooltip = ({ hoverState }: { hoverState: HoverState }) => {
  */
 const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer3DProps) {
   const { addLog } = useLogsStore();
+  const { isDarkMode } = useThemeStore();
   const [viewMode, setViewMode] = useState<'clean' | 'full'>('full');
   const [explodeFactor, setExplodeFactor] = useState(0);
   const [showFaceLabels, setShowFaceLabels] = useState(false);
   const [showMeasurements, setShowMeasurements] = useState(false);
   const [showWCS, setShowWCS] = useState(false);
+  const [controlsCollapsed, setControlsCollapsed] = useState(false);
   const [hoverState, setHoverState] = useState<HoverState>({
     component: null,
     dimensions: null,
@@ -136,11 +139,22 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
 
   return (
     <div className="relative w-full h-full">
-      {/* Controls Panel */}
-      <div className="absolute top-4 left-4 z-10 bg-background/95 backdrop-blur-sm rounded-lg shadow-lg p-4 space-y-4 max-w-xs">
-        <div className="space-y-2">
+      {/* Controls Panel - Repositioned for mobile */}
+      <div className="absolute md:top-4 md:left-4 bottom-4 left-1/2 md:left-4 -translate-x-1/2 md:translate-x-0 z-10 bg-background/95 backdrop-blur-sm rounded-lg shadow-lg p-3 md:p-4 space-y-3 md:space-y-4 max-w-xs w-[90%] md:w-auto">
+        <div className="flex items-center justify-between">
           <h3 className="font-semibold text-sm">3D Viewer Controls</h3>
           <button
+            onClick={() => setControlsCollapsed(!controlsCollapsed)}
+            className="md:hidden text-xs px-2 py-1 bg-secondary text-secondary-foreground rounded hover:bg-secondary/90 transition-colors"
+          >
+            {controlsCollapsed ? 'Show' : 'Hide'}
+          </button>
+        </div>
+        
+        {!controlsCollapsed && (
+          <>
+            <div className="space-y-2">
+              <button
             onClick={toggleExplodeView}
             className="text-xs px-3 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
           >
@@ -270,25 +284,27 @@ const CrateViewer3D = memo(function CrateViewer3D({ configuration }: CrateViewer
             </div>
           </div>
         </div>
+          </>
+        )}
       </div>
 
       {/* 3D Canvas */}
       <Canvas 
         camera={{ position: [2, 1.5, 2], fov: 50 }}
-        className="bg-muted/5"
+        className={isDarkMode ? "bg-gray-800" : "bg-muted/5"}
       >
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={0.5} />
+        <ambientLight intensity={isDarkMode ? 0.7 : 0.5} />
+        <directionalLight position={[10, 10, 5]} intensity={isDarkMode ? 0.7 : 0.5} />
         <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
         
         <Grid
           args={[10, 10]}
           cellSize={0.5}
           cellThickness={0.5}
-          cellColor="#6b7280"
+          cellColor={isDarkMode ? "#4b5563" : "#6b7280"}
           sectionSize={2}
           sectionThickness={1}
-          sectionColor="#9ca3af"
+          sectionColor={isDarkMode ? "#6b7280" : "#9ca3af"}
           fadeDistance={25}
           fadeStrength={1}
           followCamera={false}

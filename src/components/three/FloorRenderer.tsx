@@ -24,6 +24,13 @@ export const FloorRenderer = memo(function FloorRenderer({
 }: FloorRendererProps) {
   if (!visible) return null;
 
+  // Cycle through three different wood tones for visual distinction
+  const materials = [
+    SHARED_MATERIALS.FLOORBOARD_STANDARD,
+    SHARED_MATERIALS.FLOORBOARD_NARROW,
+    SHARED_MATERIALS.FLOORBOARD_DARK
+  ];
+
   return (
     <>
       {floorBoards.map((board, i) => (
@@ -31,7 +38,7 @@ export const FloorRenderer = memo(function FloorRenderer({
           key={`floorboard-${i}`}
           args={board.dimensions}
           position={board.position}
-          material={SHARED_MATERIALS.FLOORBOARD_STANDARD}
+          material={materials[i % 3]}
           onPointerOver={() => {
             // Convert back to inches for display
             const widthInches = board.dimensions[0] / INCH_TO_3D;

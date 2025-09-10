@@ -1,0 +1,189 @@
+/* Responsive Typography and Scaling System */
+
+/* Fluid Typography - scales smoothly between breakpoints */
+:root {
+  /* Base font sizes that scale with viewport */
+  --font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --font-size-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
+  --font-size-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+  --font-size-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
+  --font-size-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+  --font-size-2xl: clamp(1.5rem, 1.3rem + 1vw, 2rem);
+  --font-size-3xl: clamp(1.875rem, 1.5rem + 1.875vw, 2.5rem);
+  --font-size-4xl: clamp(2.25rem, 1.8rem + 2.25vw, 3rem);
+  
+  /* Spacing that scales */
+  --spacing-xs: clamp(0.25rem, 0.2rem + 0.25vw, 0.375rem);
+  --spacing-sm: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
+  --spacing-md: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+  --spacing-lg: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+  --spacing-xl: clamp(2rem, 1.6rem + 2vw, 3rem);
+  
+  /* Container widths */
+  --container-xs: 100%;
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+}
+
+/* Responsive Text Classes */
+.text-responsive-xs { font-size: var(--font-size-xs); }
+.text-responsive-sm { font-size: var(--font-size-sm); }
+.text-responsive-base { font-size: var(--font-size-base); }
+.text-responsive-lg { font-size: var(--font-size-lg); }
+.text-responsive-xl { font-size: var(--font-size-xl); }
+.text-responsive-2xl { font-size: var(--font-size-2xl); }
+.text-responsive-3xl { font-size: var(--font-size-3xl); }
+.text-responsive-4xl { font-size: var(--font-size-4xl); }
+
+/* Responsive Spacing Classes */
+.p-responsive-xs { padding: var(--spacing-xs); }
+.p-responsive-sm { padding: var(--spacing-sm); }
+.p-responsive-md { padding: var(--spacing-md); }
+.p-responsive-lg { padding: var(--spacing-lg); }
+.p-responsive-xl { padding: var(--spacing-xl); }
+
+.m-responsive-xs { margin: var(--spacing-xs); }
+.m-responsive-sm { margin: var(--spacing-sm); }
+.m-responsive-md { margin: var(--spacing-md); }
+.m-responsive-lg { margin: var(--spacing-lg); }
+.m-responsive-xl { margin: var(--spacing-xl); }
+
+/* Responsive Grid System */
+.responsive-grid {
+  display: grid;
+  gap: var(--spacing-md);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+}
+
+/* Better font rendering across devices */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* Responsive breakpoint utilities */
+@media (min-width: 640px) {
+  .sm\:text-responsive-xs { font-size: var(--font-size-xs); }
+  .sm\:text-responsive-sm { font-size: var(--font-size-sm); }
+  .sm\:text-responsive-base { font-size: var(--font-size-base); }
+  .sm\:text-responsive-lg { font-size: var(--font-size-lg); }
+  .sm\:text-responsive-xl { font-size: var(--font-size-xl); }
+}
+
+@media (min-width: 768px) {
+  .md\:text-responsive-xs { font-size: var(--font-size-xs); }
+  .md\:text-responsive-sm { font-size: var(--font-size-sm); }
+  .md\:text-responsive-base { font-size: var(--font-size-base); }
+  .md\:text-responsive-lg { font-size: var(--font-size-lg); }
+  .md\:text-responsive-xl { font-size: var(--font-size-xl); }
+  .md\:text-responsive-2xl { font-size: var(--font-size-2xl); }
+}
+
+@media (min-width: 1024px) {
+  .lg\:text-responsive-xs { font-size: var(--font-size-xs); }
+  .lg\:text-responsive-sm { font-size: var(--font-size-sm); }
+  .lg\:text-responsive-base { font-size: var(--font-size-base); }
+  .lg\:text-responsive-lg { font-size: var(--font-size-lg); }
+  .lg\:text-responsive-xl { font-size: var(--font-size-xl); }
+  .lg\:text-responsive-2xl { font-size: var(--font-size-2xl); }
+  .lg\:text-responsive-3xl { font-size: var(--font-size-3xl); }
+}
+
+/* Touch-friendly targets for mobile */
+@media (max-width: 768px) {
+  button, 
+  .btn,
+  input[type="button"],
+  input[type="submit"],
+  a.btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* High DPI screen optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  body {
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
+  
+  /* Thinner borders on high DPI */
+  .border {
+    border-width: 0.5px;
+  }
+}
+
+/* Container responsiveness */
+.container-responsive {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--spacing-md);
+  padding-right: var(--spacing-md);
+}
+
+@media (min-width: 640px) {
+  .container-responsive { max-width: var(--container-sm); }
+}
+
+@media (min-width: 768px) {
+  .container-responsive { max-width: var(--container-md); }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive { max-width: var(--container-lg); }
+}
+
+@media (min-width: 1280px) {
+  .container-responsive { max-width: var(--container-xl); }
+}
+
+@media (min-width: 1536px) {
+  .container-responsive { max-width: var(--container-2xl); }
+}
+
+/* Smooth transitions for responsive changes */
+* {
+  transition: font-size 0.2s ease, padding 0.2s ease, margin 0.2s ease;
+}
+
+/* Prevent layout shift on font load */
+.font-loading * {
+  visibility: hidden;
+}
+
+.font-loaded * {
+  visibility: visible;
+}
+
+/* Responsive tables */
+@media (max-width: 768px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    font-size: 12pt;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}
