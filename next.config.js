@@ -7,7 +7,6 @@ const nextConfig = {
   },
   experimental: {
     // Enable experimental features for better performance
-    optimizeCss: true,
     scrollRestoration: true,
   },
   // Configure for Replit environment
