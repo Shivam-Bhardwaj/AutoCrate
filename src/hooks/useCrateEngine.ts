@@ -126,7 +126,8 @@ export function useCrateEngine() {
       PerformanceMonitor.start('nx-expressions', 'calculation');
       try {
         const nxGen = new NXExpressionGenerator(configuration);
-        const nxExpressions = nxGen.generateExpression().split('\n').filter(line => line.trim());
+        const nxResult = nxGen.generateExpression();
+        const nxExpressions = nxResult.code.split('\n').filter(line => line.trim());
         PerformanceMonitor.end('nx-expressions');
         logInfo('system', 'NX expressions generated', `${nxExpressions.length} parametric expressions`, 'NXGenerator');
         

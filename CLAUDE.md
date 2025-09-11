@@ -211,6 +211,27 @@ Unified script for all development tasks:
 - **Dark Mode**: Enhanced contrast and lighting adjustments
 - **Code Cleanup**: Removed legacy mobile implementations and redundant files
 
+## AI Development Workflows
+
+### For Complex Changes (Use Claude with Agents)
+- **Major Changes Workflow**: `/docs/agent-prompts/MAJOR_CHANGES_WORKFLOW.md`
+- **Minor Changes Workflow**: `/docs/agent-prompts/MINOR_CHANGES_WORKFLOW.md`
+- Use Claude's agent system for parallel execution and maximum efficiency
+
+### For Simple Tasks (Use Grok Fast or Qwen)
+- **Simple LLM Workflows**: `/docs/agent-prompts/SIMPLE_LLM_WORKFLOWS.md`
+- Quick Task: 1-10 minutes for fixes and tweaks
+- Focused Feature: 10-30 minutes for single features
+- Parallel Implementation: 30-60 minutes for multi-component features
+
+### Workflow Selection Guide
+| Task Complexity | Time | Use | 
+|----------------|------|-----|
+| Trivial fixes | <10min | Grok Fast with Quick Task |
+| Single features | 10-30min | Qwen with Focused Feature |
+| Multi-component | 30-60min | Both with Parallel |
+| Complex systems | >60min | Claude with Agents |
+
 ## Version
 Current: v3.0.1 (2025-09-10)
 - Enhanced mobile experience with bottom sheet pattern

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useRef, useEffect } from 'react';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { CrateConfiguration } from '@/types/crate';

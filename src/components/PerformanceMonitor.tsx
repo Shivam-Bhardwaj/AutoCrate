@@ -11,35 +11,41 @@ export default function PerformanceMonitor() {
   const [isMonitoring, setIsMonitoring] = useState(false);
 
   useEffect(() => {
-    // Start FPS monitoring
-    performanceMonitor.startFPSMonitoring((currentFps) => {
-      setFps(currentFps);
-    });
+    performanceMonitor.enable(true);
+    
+    // Update metrics every frame
+    const updateMetrics = () => {
+      const frameMetrics = performanceMonitor.recordFrame();
+      if (frameMetrics) {
+        setFps(frameMetrics.fps);
+        setMetrics(frameMetrics);
+      }
+    };
 
-    // Get initial metrics
-    updateMetrics();
-
-    // Update metrics every second
-    const interval = setInterval(updateMetrics, 1000);
-
-    // Load bundle info
-    performanceMonitor.getBundleSize().then(setBundleInfo);
+    // Start animation loop for FPS monitoring
+    let animationId: number;
+    const monitorLoop = () => {
+      updateMetrics();
+      animationId = requestAnimationFrame(monitorLoop);
+    };
+    monitorLoop();
 
     setIsMonitoring(true);
 
     return () => {
-      performanceMonitor.stopFPSMonitoring();
-      clearInterval(interval);
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+      performanceMonitor.enable(false);
     };
   }, []);
 
-  const updateMetrics = () => {
-    const currentMetrics = performanceMonitor.getPerformanceMetrics();
-    setMetrics(currentMetrics);
-  };
-
   const generateReport = async () => {
-    const report = await performanceMonitor.generatePerformanceReport();
+    const report = `Performance Report:
+FPS: ${fps}
+Frame Time: ${metrics?.frameTime || 0}ms
+Average FPS: ${metrics?.averageFps || 0}
+Min FPS: ${metrics?.minFps || 0}`;
     console.log(report);
     alert('Performance report generated! Check console for details.');
   };

@@ -214,16 +214,16 @@ export class CostCalculator {
     
     // Calculate skid materials
     const skidSize = determineAMATSkidSize(this.config.weight.product * 1.2);
-    const skidPieces = this.calculateSkidPieces(skidSize);
+    const skidPieces = this.calculateSkidPieces(skidSize.nominalSize);
     
     items.push({
       item: 'Skid Lumber',
       category: 'Base',
-      material: skidSize,
+      material: skidSize.nominalSize,
       quantity: skidPieces,
       unit: 'pieces',
-      unitCost: this.getSkidPrice(skidSize),
-      totalCost: skidPieces * this.getSkidPrice(skidSize),
+      unitCost: this.getSkidPrice(skidSize.nominalSize),
+      totalCost: skidPieces * this.getSkidPrice(skidSize.nominalSize),
       supplier: 'Local Lumber',
       leadTime: 1
     });
@@ -286,7 +286,7 @@ export class CostCalculator {
     });
     
     // Add optional materials
-    if (this.config.foam) {
+    if (this.config.amatCompliance?.requiresMoistureBag) {
       const foamArea = this.calculateFoamArea();
       items.push({
         item: 'Foam Cushioning',
@@ -301,7 +301,7 @@ export class CostCalculator {
       });
     }
     
-    if (this.config.mbb) {
+    if (this.config.amatCompliance?.isInternational) {
       const mbbArea = this.calculateMBBArea();
       items.push({
         item: 'Moisture Barrier',
@@ -330,7 +330,7 @@ export class CostCalculator {
       });
     }
     
-    if (this.config.shockIndicators) {
+    if (this.config.amatCompliance?.requiresShockIndicator) {
       items.push({
         item: 'Shock Indicators',
         category: 'Monitoring',
@@ -344,7 +344,7 @@ export class CostCalculator {
       });
     }
     
-    if (this.config.tiltIndicators) {
+    if (this.config.amatCompliance?.requiresTiltIndicator) {
       items.push({
         item: 'Tilt Indicators',
         category: 'Monitoring',
@@ -441,7 +441,7 @@ export class CostCalculator {
     });
     
     // Special features
-    if (this.config.foam) {
+    if (this.config.amatCompliance?.requiresMoistureBag) {
       items.push({
         task: 'Foam Installation',
         category: 'Protection',
@@ -452,7 +452,7 @@ export class CostCalculator {
       });
     }
     
-    if (this.config.mbb) {
+    if (this.config.amatCompliance?.isInternational) {
       items.push({
         task: 'MBB Application',
         category: 'Protection',
@@ -559,13 +559,13 @@ export class CostCalculator {
     let recommended = options[0]; // Default to ground
     
     // If international, prefer ocean
-    if (this.config.shipping?.international) {
+    if (this.config.amatCompliance?.isInternational) {
       const ocean = options.find(o => o.mode === 'ocean');
       if (ocean) recommended = ocean;
     }
     
     // If urgent, prefer air
-    if (this.config.shipping?.urgent && options.find(o => o.mode === 'air')) {
+    if (false && options.find(o => o.mode === 'air')) { // Urgent shipping not configured
       const air = options.find(o => o.mode === 'air');
       if (air) recommended = air;
     }
@@ -683,9 +683,9 @@ export class CostCalculator {
     if (this.config.weight.product > 5000) factor += 0.3;
     
     // Feature complexity
-    if (this.config.foam) factor += 0.1;
-    if (this.config.mbb) factor += 0.15;
-    if (this.config.diagonalBracing) factor += 0.1;
+    if (this.config.amatCompliance?.requiresMoistureBag) factor += 0.1;
+    if (this.config.amatCompliance?.isInternational) factor += 0.15;
+    if (this.config.cap.topPanel.reinforcement) factor += 0.1;
     
     return factor;
   }

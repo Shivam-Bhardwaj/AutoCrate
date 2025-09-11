@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       const expressions = nxGenerator.generateExpression();
       
       // Parse expressions into structured format
-      const expressionLines = expressions.split('\n').filter(line => line.trim());
+      const expressionLines = expressions.code.split('\n').filter(line => line.trim());
       const structuredExpressions = expressionLines.map(line => {
         const match = line.match(/^(\w+)\s*=\s*(.+)$/);
         if (match) {

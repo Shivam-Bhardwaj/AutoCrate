@@ -90,7 +90,7 @@ const InsightsPanel = dynamic(
 
 // Lazy load non-critical components
 const LogsSection = lazy(() => import('@/components/LogsSection'));
-const ExportDialog = lazy(() => import('@/components/ExportDialog'));
+const ExportDialog = lazy(() => import('@/components/ExportDialog').then(module => ({ default: module.ExportDialog })));
 const NXInstructions = lazy(() => import('@/components/NXInstructions'));
 
 // Main optimized page component
@@ -162,7 +162,7 @@ export default function OptimizedPage() {
 
   // Handle tab changes
   const handleTabChange = useCallback((tab: typeof activeTab) => {
-    PerformanceMonitor.start(`tab-change-${tab}`, 'interaction');
+    PerformanceMonitor.start(`tab-change-${tab}`, 'ui');
     setActiveTab(tab);
     setTimeout(() => {
       const metric = PerformanceMonitor.end(`tab-change-${tab}`);
@@ -266,11 +266,9 @@ export default function OptimizedPage() {
       </div>
 
       {/* Export Dialog */}
-      {showExport && (
-        <Suspense fallback={null}>
-          <ExportDialog onClose={() => setShowExport(false)} />
-        </Suspense>
-      )}
+      <Suspense fallback={null}>
+        <ExportDialog />
+      </Suspense>
     </div>
   );
 }

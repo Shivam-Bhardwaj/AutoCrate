@@ -503,7 +503,7 @@ export class IntegrationHubService {
   }
 
   private async checkAllIntegrationHealth(): Promise<void> {
-    for (const integration of this.integrations.values()) {
+    for (const integration of Array.from(this.integrations.values())) {
       if (integration.enabled) {
         await this.checkIntegrationHealth(integration.id);
       }

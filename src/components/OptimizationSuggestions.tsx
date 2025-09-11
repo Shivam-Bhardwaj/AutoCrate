@@ -82,7 +82,7 @@ export default function OptimizationSuggestions() {
     }
     
     // Mark as applied
-    setAppliedSuggestions(prev => new Set([...prev, suggestion.id]));
+    setAppliedSuggestions(prev => new Set(Array.from(prev).concat(suggestion.id)));
     
     // Re-run optimization
     setTimeout(runOptimization, 100);

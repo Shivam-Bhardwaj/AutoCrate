@@ -13,22 +13,58 @@ const projects = new Map<string, {
 
 // Initialize with a sample project
 const sampleConfig: CrateConfiguration = {
+  projectName: 'Sample Project',
   dimensions: { width: 48, length: 60, height: 36 },
-  weight: { product: 1500, grossWeight: 1800 },
-  base: { type: 'Style A', skids: 3 },
-  cap: { type: 'full', topPanel: true },
-  fasteners: { type: 'nails', spacing: 6 },
-  cleating: { required: true, size: '1x4' },
-  foam: true,
-  mbb: false,
-  vinyl: false,
-  diagonalBracing: false,
-  ispm15Compliant: true,
-  fragile: false,
-  shockIndicators: false,
-  tiltIndicators: false,
-  sustainableMaterials: false,
-  shipping: { mode: 'ground', international: false, urgent: false }
+  weight: { product: 1500 },
+  base: { 
+    type: 'standard' as const, 
+    floorboardThickness: 0.75,
+    skidHeight: 4,
+    skidWidth: 4,
+    skidCount: 3,
+    skidSpacing: 24,
+    requiresRubStrips: false,
+    material: 'pine' as const
+  },
+  cap: {
+    topPanel: {
+      thickness: 0.5,
+      material: 'plywood' as const,
+      reinforcement: false,
+      ventilation: { enabled: false, type: 'holes' as const, count: 0, size: 0 }
+    },
+    frontPanel: {
+      thickness: 0.5,
+      material: 'plywood' as const,
+      reinforcement: false,
+      ventilation: { enabled: false, type: 'holes' as const, count: 0, size: 0 }
+    },
+    backPanel: {
+      thickness: 0.5,
+      material: 'plywood' as const,
+      reinforcement: false,
+      ventilation: { enabled: false, type: 'holes' as const, count: 0, size: 0 }
+    },
+    leftPanel: {
+      thickness: 0.5,
+      material: 'plywood' as const,
+      reinforcement: false,
+      ventilation: { enabled: false, type: 'holes' as const, count: 0, size: 0 }
+    },
+    rightPanel: {
+      thickness: 0.5,
+      material: 'plywood' as const,
+      reinforcement: false,
+      ventilation: { enabled: false, type: 'holes' as const, count: 0, size: 0 }
+    }
+  },
+  fasteners: { 
+    type: 'nails' as const, 
+    size: '8d',
+    spacing: 6,
+    material: 'steel' as const
+  },
+  specialRequirements: []
 };
 
 projects.set('default', {

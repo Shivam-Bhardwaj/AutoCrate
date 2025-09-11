@@ -25,6 +25,7 @@ export default function InputFormsOptimized() {
     updateFasteners,
     updateWeight,
     updateProjectName,
+    updateVinyl,
   } = useCrateStore();
 
   const { logUser } = useLogsStore();
@@ -33,7 +34,7 @@ export default function InputFormsOptimized() {
   const debouncedUpdateDimensions = useDebouncedCallback(
     (dimensions: any) => {
       updateDimensions(dimensions);
-      logUser('input', 'Dimensions updated', 'InputForms', dimensions);
+      logUser('ui', 'Dimensions updated', JSON.stringify(dimensions), 'InputForms');
     },
     300,
     []
@@ -42,7 +43,7 @@ export default function InputFormsOptimized() {
   const debouncedUpdateWeight = useDebouncedCallback(
     (weight: any) => {
       updateWeight(weight);
-      logUser('input', 'Weight updated', 'InputForms', weight);
+      logUser('ui', 'Weight updated', JSON.stringify(weight), 'InputForms');
     },
     300,
     []
@@ -51,7 +52,7 @@ export default function InputFormsOptimized() {
   const debouncedUpdateProjectName = useDebouncedCallback(
     (name: string) => {
       updateProjectName(name);
-      logUser('input', 'Project name updated', 'InputForms', { projectName: name });
+      logUser('ui', 'Project name updated', JSON.stringify({ projectName: name }), 'InputForms');
     },
     300,
     []
@@ -84,28 +85,28 @@ export default function InputFormsOptimized() {
   const handleBaseTypeChange = useCallback((value: string) => {
     updateBase({
       ...configuration.base,
-      type: value as 'skid' | 'platform' | 'pallet'
+      type: value as 'standard' | 'heavy-duty' | 'export'
     });
-    logUser('input', 'Base type changed', 'InputForms', { baseType: value });
+    logUser('ui', 'Base type changed', JSON.stringify({ baseType: value }), 'InputForms');
   }, [configuration.base, updateBase, logUser]);
 
   const handleFastenerTypeChange = useCallback((value: string) => {
     updateFasteners({
       ...configuration.fasteners,
-      type: value as 'nails' | 'screws' | 'bolts'
+      type: value as 'klimp' | 'nails' | 'screws' | 'bolts'
     });
-    logUser('input', 'Fastener type changed', 'InputForms', { fastenerType: value });
+    logUser('ui', 'Fastener type changed', JSON.stringify({ fastenerType: value }), 'InputForms');
   }, [configuration.fasteners, updateFasteners, logUser]);
 
   const handleTopPanelToggle = useCallback((checked: boolean) => {
-    updatePanel('topPanel', { enabled: checked });
-    logUser('input', 'Top panel toggled', 'InputForms', { topPanel: checked });
+    updatePanel('topPanel', { reinforcement: checked });
+    logUser('ui', 'Top panel reinforcement toggled', JSON.stringify({ topPanel: checked }), 'InputForms');
   }, [updatePanel, logUser]);
 
   const handleVinylToggle = useCallback((checked: boolean) => {
-    updatePanel('frontPanel', { vinyl: checked });
-    logUser('input', 'Vinyl coating toggled', 'InputForms', { vinyl: checked });
-  }, [updatePanel, logUser]);
+    updateVinyl({ enabled: checked });
+    logUser('ui', 'Vinyl coating toggled', JSON.stringify({ vinyl: checked }), 'InputForms');
+  }, [updateVinyl, logUser]);
 
   // Memoize section components for better performance
   const projectSection = useMemo(() => (
@@ -252,7 +253,7 @@ export default function InputFormsOptimized() {
             </Label>
             <Switch
               id="topPanel"
-              checked={configuration.cap.topPanel?.enabled || false}
+              checked={configuration.cap.topPanel?.reinforcement || false}
               onCheckedChange={handleTopPanelToggle}
             />
           </div>
@@ -263,7 +264,7 @@ export default function InputFormsOptimized() {
             </Label>
             <Switch
               id="vinyl"
-              checked={configuration.cap.frontPanel?.vinyl || false}
+              checked={configuration.vinyl?.enabled || false}
               onCheckedChange={handleVinylToggle}
             />
           </div>

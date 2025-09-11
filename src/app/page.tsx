@@ -2,13 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-<<<<<<< HEAD
-import DashboardShell from '@/components/layout/DashboardShell';
-import Topbar from '@/components/layout/Topbar';
-import MainContent from '@/components/layout/MainContent';
-import RightPanel from '@/components/layout/RightPanel';
-import InputForms from '@/components/InputForms.clean';
-=======
 import InputForms from '@/components/InputForms';
 import OutputSection from '@/components/OutputSection';
 import LogsSection from '@/components/LogsSection';
@@ -20,17 +13,21 @@ import { Menu, X, Sun, Moon, RotateCcw, BookOpen, FileText } from 'lucide-react'
 import Link from 'next/link';
 import { APP_VERSION } from '@/utils/version';
 import { TechStackDisplay } from '@/components/TechStackDisplay';
->>>>>>> 22bf0b1 (Fix build errors and add last updated to footer)
 
-// Dynamic imports for better performance
-const MobileV2 = dynamic(() => import('./mobile-v2'), {
-  ssr: false,
-});
+// Dynamically import CrateViewer3D to avoid SSR issues with Three.js
+const CrateViewer3D = dynamic(() => import('@/components/CrateViewer3D'), { ssr: false });
+
+// Dynamically import MobileV2 component
+const MobileV2 = dynamic(() => import('./mobile-v2'), { ssr: false });
 
 export default function AutoCratePage() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [_isMobile, setIsMobile] = useState(false);
   const [isHydrated, setHydrated] = useState(false);
+
+  // Store hooks
+  const { configuration, resetConfiguration: handleReset } = useCrateStore();
+  const { isDarkMode, toggleTheme } = useThemeStore();
 
   // Check if we're on mobile - use 480px breakpoint for mobile layout switch
   useEffect(() => {
@@ -70,14 +67,6 @@ export default function AutoCratePage() {
 
   // Render the professional dashboard layout
   return (
-<<<<<<< HEAD
-    <DashboardShell
-      topbar={<Topbar showMobileMenu={showMobileMenu} setShowMobileMenu={setShowMobileMenu} />}
-      sidebar={<InputForms />}
-      main={<MainContent />}
-      rightPanel={<RightPanel />}
-    />
-=======
     <div
       className={`min-h-screen md:h-screen flex flex-col ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
     >
@@ -265,6 +254,5 @@ export default function AutoCratePage() {
         </div>
       </footer>
     </div>
->>>>>>> 22bf0b1 (Fix build errors and add last updated to footer)
   );
 }
