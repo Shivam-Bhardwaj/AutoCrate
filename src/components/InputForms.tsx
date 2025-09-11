@@ -28,16 +28,20 @@ export default function InputForms() {
   const { logUser } = useLogsStore();
 
   return (
-    <div className="h-full overflow-y-auto panel" role="form" aria-label="Crate configuration form">
-      <div className="panel-header">
-        <h2 className="text-small font-semibold text-text-primary">Part Properties</h2>
-      </div>
-      <div className="panel-content space-y-6">
+    <div className="h-full overflow-y-auto" role="form" aria-label="Crate configuration form">
+      <div className="p-6 space-y-8">
         {/* Project Information */}
-        <div className="form-group">
-          <h3 className="text-body font-semibold text-text-primary border-b border-borders pb-1">Project Information</h3>
-          <div className="form-group">
-            <Label htmlFor="projectName" className="form-label">Project Name</Label>
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+              <span className="text-white text-sm font-bold">📋</span>
+            </div>
+            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Project Information</h3>
+          </div>
+          <div className="bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-slate-800/50 dark:to-slate-700/50 backdrop-blur-sm rounded-xl border border-slate-200/50 dark:border-slate-600/50 p-6">
+            <Label htmlFor="projectName" className="text-sm font-semibold text-slate-700 dark:text-slate-300 block mb-3">
+              Project Name
+            </Label>
             <Input
               id="projectName"
               value={configuration.projectName}
@@ -45,64 +49,83 @@ export default function InputForms() {
                 updateProjectName(e.target.value);
                 logUser('ui', `Project renamed to: ${e.target.value}`, undefined, 'InputForms');
               }}
-              placeholder="Enter project name"
+              placeholder="Enter your project name..."
+              className="transition-all duration-300 hover:border-blue-400 focus:border-purple-500 focus:ring-purple-500/20 dark:hover:border-purple-400 dark:focus:border-blue-500"
             />
           </div>
-        </div>        <Separator />
+        </div>
+
+        <div className="h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-600 to-transparent"></div>
 
         {/* Product Dimensions */}
-        <div className="space-y-4">
-          <h3 className="text-h3 font-semibold text-text-primary">Product Dimensions</h3>
-          <div className="p-4 bg-surface border border-borders rounded-md">
-            <p className="text-body text-text-primary">
-              Enter the dimensions of the product you want to ship. The crate will be automatically
-              sized to accommodate your product with proper clearances.
-            </p>
-            <p className="text-small text-text-secondary mt-2">
-              <strong>Size Limits:</strong> Minimum 10 inches, Maximum 150 inches per dimension.
-              Values outside these ranges will be automatically adjusted.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="form-group">
-              <Label htmlFor="width" className="form-label">Product Width (inches)</Label>
-              <Input
-                id="width"
-                type="number"
-                step="0.125"
-                min="10"
-                max="150"
-                value={configuration.dimensions.width}
-                onChange={(e) => {
-                  // Allow free typing, just ensure it's a valid number
-                  const value = e.target.value;
-                  if (value === '' || !isNaN(Number(value))) {
-                    updateDimensions({ width: value === '' ? 10 : Number(value) });
-                  }
-                }}
-                onBlur={(e) => {
-                  // Enforce limits when user finishes editing
-                  let newWidth = Number(e.target.value);
-                  if (isNaN(newWidth) || newWidth < 10) newWidth = 10;
-                  if (newWidth > 150) newWidth = 150;
-                  updateDimensions({ width: newWidth });
-                  logUser(
-                    'dimension',
-                    `Product width set to ${newWidth} inches`,
-                    undefined,
-                    'InputForms'
-                  );
-                }}
-                placeholder="Width from front view (10-150 inches)"
-                aria-label="Product width in inches"
-              />
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+              <span className="text-white text-sm font-bold">📏</span>
             </div>
-            <div className="form-group">
-              <Label htmlFor="length" className="form-label">Product Depth (inches)</Label>
-              <Input
-                id="length"
-                type="number"
+            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Product Dimensions</h3>
+          </div>
+          
+          <div className="bg-gradient-to-r from-purple-50/50 to-pink-50/50 dark:from-slate-800/50 dark:to-slate-700/50 backdrop-blur-sm rounded-xl border border-slate-200/50 dark:border-slate-600/50 p-6">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-6 h-6 rounded-full bg-blue-500/20 dark:bg-blue-400/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-blue-600 dark:text-blue-400 text-xs">ℹ</span>
+              </div>
+              <div>
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                  Enter the dimensions of the product you want to ship. The crate will be automatically
+                  sized to accommodate your product with proper clearances.
+                </p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">
+                  <strong>Size Limits:</strong> Minimum 10", Maximum 150" per dimension.
+                </p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <Label htmlFor="width" className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                  <span>↔️</span> Width (inches)
+                </Label>
+                <Input
+                  id="width"
+                  type="number"
+                  step="0.125"
+                  min="10"
+                  max="150"
+                  value={configuration.dimensions.width}
+                  onChange={(e) => {
+                    // Allow free typing, just ensure it's a valid number
+                    const value = e.target.value;
+                    if (value === '' || !isNaN(Number(value))) {
+                      updateDimensions({ width: value === '' ? 10 : Number(value) });
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // Enforce limits when user finishes editing
+                    let newWidth = Number(e.target.value);
+                    if (isNaN(newWidth) || newWidth < 10) newWidth = 10;
+                    if (newWidth > 150) newWidth = 150;
+                    updateDimensions({ width: newWidth });
+                    logUser(
+                      'dimension',
+                      `Product width set to ${newWidth} inches`,
+                      undefined,
+                      'InputForms'
+                    );
+                  }}
+                  placeholder="10-150 inches"
+                  aria-label="Product width in inches"
+                  className="transition-all duration-300 hover:border-purple-400 focus:border-pink-500 focus:ring-pink-500/20 dark:hover:border-pink-400 dark:focus:border-purple-500"
+                />
+              </div>
+              <div className="space-y-3">
+                <Label htmlFor="length" className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                  <span>↕️</span> Depth (inches)
+                </Label>
+                <Input
+                  id="length"
+                  type="number"
                 step="0.125"
                 min="10"
                 max="150"
