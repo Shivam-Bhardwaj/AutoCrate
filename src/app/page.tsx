@@ -1,258 +1,274 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
-import InputForms from '@/components/InputForms';
-import OutputSection from '@/components/OutputSection';
-import LogsSection from '@/components/LogsSection';
-import { Button } from '@/components/ui/button';
+import React, { Suspense, lazy, useCallback, useMemo, useState } from 'react';
 import { useCrateStore } from '@/store/crate-store';
-import { useThemeStore } from '@/store/theme-store';
 import { useLogsStore } from '@/store/logs-store';
-import { Menu, X, Sun, Moon, RotateCcw, BookOpen, FileText } from 'lucide-react';
-import Link from 'next/link';
-import { APP_VERSION } from '@/utils/version';
-import { TechStackDisplay } from '@/components/TechStackDisplay';
+import { PerformanceMonitor } from '@/utils/performanceMonitor';
+import dynamic from 'next/dynamic';
 
-// Dynamically import CrateViewer3D to avoid SSR issues with Three.js
-const CrateViewer3D = dynamic(() => import('@/components/CrateViewer3D'), { ssr: false });
-
-// Dynamically import MobileV2 component
-const MobileV2 = dynamic(() => import('./mobile-v2'), { ssr: false });
-
-export default function AutoCratePage() {
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [_isMobile, setIsMobile] = useState(false);
-  const [isHydrated, setHydrated] = useState(false);
-
-  // Store hooks
-  const { configuration, resetConfiguration: handleReset } = useCrateStore();
-  const { isDarkMode, toggleTheme } = useThemeStore();
-
-  // Check if we're on mobile - use 480px breakpoint for mobile layout switch
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 480);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
-
-  // Force hydration after a timeout if it doesn't happen naturally
-  useEffect(() => {
-    if (!isHydrated) {
-      const id = setTimeout(() => {
-        try {
-          setHydrated(true);
-        } catch {
-          /* noop */
-        }
-      }, 50);
-      return () => clearTimeout(id);
-    }
-  }, [isHydrated]);
-
-  // In test builds (E2E) always force desktop layout so selectors are stable.
-  const _IS_TEST_BUILD = process.env.NODE_ENV === 'test';
-  
-  // Only show mobile layout after hydration and for very small screens
-  if (isHydrated && _isMobile && !_IS_TEST_BUILD && typeof window !== 'undefined' && window.innerWidth < 480) {
-    return <MobileV2 />;
+// Lazy load heavy components with code splitting
+const CrateViewer3D = dynamic(
+  () => import('@/components/CrateViewer3D'),
+  {
+    loading: () => (
+      <div className="w-full h-full flex items-center justify-center bg-muted/10 rounded-lg">
+        <div className="text-center space-y-2">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+          <p className="text-muted-foreground">Loading 3D viewer...</p>
+        </div>
+      </div>
+    ),
+    ssr: false // Disable SSR for Three.js components
   }
+);
 
-  // Render the professional dashboard layout
-  return (
-    <div
-      className={`min-h-screen md:h-screen flex flex-col ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
-    >
-      {/* Header */}
-      <header
-        className={`border-b px-4 py-2 md:py-3 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <h1
-              className={`text-xl md:text-2xl font-bold text-center ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}
-              data-testid="app-title"
-            >
-              AutoCrate
-            </h1>
+const InputFormsOptimized = dynamic(
+  () => import('@/components/InputFormsOptimized'),
+  {
+    loading: () => (
+      <div className="p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-10 bg-muted rounded" />
+          <div className="h-10 bg-muted rounded" />
+          <div className="h-10 bg-muted rounded" />
+        </div>
+      </div>
+    )
+  }
+);
+
+const OutputSection = dynamic(
+  () => import('@/components/OutputSection'),
+  {
+    loading: () => (
+      <div className="p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-muted rounded w-1/2" />
+          <div className="h-32 bg-muted rounded" />
+        </div>
+      </div>
+    )
+  }
+);
+
+const KPIStrip = dynamic(
+  () => import('@/components/dashboard/KPIStrip'),
+  {
+    loading: () => (
+      <div className="grid grid-cols-6 gap-4 mb-6">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="animate-pulse">
+            <div className="h-20 bg-muted rounded-xl" />
           </div>
-          <div className="flex items-center gap-2">
-            <Link href="/docs">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`hidden sm:flex ${isDarkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100'}`}
-                aria-label="Open documentation"
+        ))}
+      </div>
+    )
+  }
+);
+
+const StatusPanel = dynamic(
+  () => import('@/components/dashboard/StatusPanel'),
+  {
+    loading: () => (
+      <div className="animate-pulse">
+        <div className="h-48 bg-muted rounded-2xl" />
+      </div>
+    )
+  }
+);
+
+const InsightsPanel = dynamic(
+  () => import('@/components/dashboard/InsightsPanel'),
+  {
+    loading: () => (
+      <div className="animate-pulse">
+        <div className="h-48 bg-muted rounded-2xl" />
+      </div>
+    )
+  }
+);
+
+// Lazy load non-critical components
+const LogsSection = lazy(() => import('@/components/LogsSection'));
+const ExportDialog = lazy(() => import('@/components/ExportDialog').then(module => ({ default: module.ExportDialog })));
+const NXInstructions = lazy(() => import('@/components/NXInstructions'));
+
+// Main optimized page component
+export default function OptimizedPage() {
+  const { configuration } = useCrateStore();
+  const { clearLogs } = useLogsStore();
+  const [activeTab, setActiveTab] = useState<'input' | 'output' | 'logs' | 'nx'>('input');
+  const [showExport, setShowExport] = useState(false);
+
+  // Measure initial render performance
+  React.useEffect(() => {
+    PerformanceMonitor.start('page-initial-render', 'render');
+    
+    // Report metrics after initial render
+    const timer = setTimeout(() => {
+      const metric = PerformanceMonitor.end('page-initial-render');
+      if (metric) {
+        console.log(`Initial render completed in ${metric.duration.toFixed(0)}ms`);
+      }
+      
+      // Check if we're hitting 60 FPS
+      let frameCount = 0;
+      let lastTime = performance.now();
+      const checkFPS = () => {
+        frameCount++;
+        const currentTime = performance.now();
+        const delta = currentTime - lastTime;
+        
+        if (delta >= 1000) {
+          const fps = Math.round((frameCount * 1000) / delta);
+          console.log(`Current FPS: ${fps}`);
+          frameCount = 0;
+          lastTime = currentTime;
+        }
+        
+        if (currentTime - lastTime < 5000) {
+          requestAnimationFrame(checkFPS);
+        }
+      };
+      requestAnimationFrame(checkFPS);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Memoize tab content to prevent unnecessary re-renders
+  const tabContent = useMemo(() => {
+    switch (activeTab) {
+      case 'input':
+        return <InputFormsOptimized />;
+      case 'output':
+        return <OutputSection />;
+      case 'logs':
+        return (
+          <Suspense fallback={<div className="p-6">Loading logs...</div>}>
+            <LogsSection />
+          </Suspense>
+        );
+      case 'nx':
+        return (
+          <Suspense fallback={<div className="p-6">Loading instructions...</div>}>
+            <NXInstructions />
+          </Suspense>
+        );
+      default:
+        return null;
+    }
+  }, [activeTab]);
+
+  // Handle tab changes
+  const handleTabChange = useCallback((tab: typeof activeTab) => {
+    PerformanceMonitor.start(`tab-change-${tab}`, 'ui');
+    setActiveTab(tab);
+    setTimeout(() => {
+      const metric = PerformanceMonitor.end(`tab-change-${tab}`);
+      if (metric) {
+        console.log(`Tab change to ${tab} took ${metric.duration.toFixed(0)}ms`);
+      }
+    }, 0);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
+      {/* Header */}
+      <header className="glass-morphism backdrop-blur-xl border-b border-white/20 sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center shadow-2xl">
+                <span className="text-white text-xl font-black">AC</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  AutoCrate Pro
+                </h1>
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Optimized Edition v2.0
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setShowExport(true)}
+                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all"
               >
-                <BookOpen className="h-4 w-4 mr-2" />
-                Docs
-              </Button>
-            </Link>
-            <Link href="/active/documents">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`hidden sm:flex ${isDarkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100'}`}
-                aria-label="Open document processor"
+                Export
+              </button>
+              <button
+                onClick={clearLogs}
+                className="px-4 py-2 bg-white/10 backdrop-blur text-slate-700 dark:text-slate-300 rounded-lg hover:bg-white/20 transition-all"
               >
-                <FileText className="h-4 w-4 mr-2" />
-                Documents
-              </Button>
-            </Link>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleReset}
-              className={isDarkMode ? 'border-gray-600 hover:bg-gray-700' : ''}
-              aria-label="Create new project and reset all configuration"
-            >
-              <RotateCcw className="h-4 w-4 mr-2" />
-              New Project
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={toggleTheme}
-              data-testid="theme-toggle"
-              className={isDarkMode ? 'border-gray-600 hover:bg-gray-700' : ''}
-              aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-            <button
-              className="lg:hidden"
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
-              aria-label={showMobileMenu ? 'Close navigation menu' : 'Open navigation menu'}
-            >
-              {showMobileMenu ? (
-                <X className={`h-6 w-6 ${isDarkMode ? 'text-gray-100' : ''}`} />
-              ) : (
-                <Menu className={`h-6 w-6 ${isDarkMode ? 'text-gray-100' : ''}`} />
-              )}
-            </button>
+                Clear Logs
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Main Layout - Desktop Only */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Input Section */}
-        <div
-          className={`w-full md:w-1/3 lg:w-1/4 border-r ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} ${showMobileMenu ? 'block' : 'hidden md:block'}`}
-        >
-          <div className="h-full flex flex-col">
-            <div
-              className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}
-            >
-              <h2
-                className={`font-semibold text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-                data-testid="section-product-config"
-              >
-                Product Configuration
+      {/* KPI Strip */}
+      <div className="container mx-auto px-6 py-4">
+        <KPIStrip />
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-6 pb-6">
+        <div className="grid grid-cols-12 gap-6">
+          {/* Left Panel - Input/Output */}
+          <div className="col-span-3 space-y-6">
+            <div className="glass-morphism backdrop-blur-2xl rounded-2xl overflow-hidden">
+              {/* Tab Navigation */}
+              <div className="flex border-b border-white/10">
+                {(['input', 'output', 'logs', 'nx'] as const).map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => handleTabChange(tab)}
+                    className={`flex-1 px-4 py-3 text-sm font-medium transition-all ${
+                      activeTab === tab
+                        ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-600 dark:text-blue-400 border-b-2 border-blue-500'
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-white/5'
+                    }`}
+                  >
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Tab Content */}
+              <div className="max-h-[calc(100vh-400px)] overflow-y-auto">
+                {tabContent}
+              </div>
+            </div>
+          </div>
+
+          {/* Center - 3D Viewer */}
+          <div className="col-span-6">
+            <div className="glass-morphism backdrop-blur-2xl rounded-2xl p-6 h-[600px]">
+              <h2 className="text-lg font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                3D Visualization
               </h2>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <InputForms />
-            </div>
-          </div>
-        </div>
-
-        {/* Center Panel - 3D Rendering */}
-        <div className="flex-1 flex flex-col">
-          {/* Top - 3D Viewer */}
-          <div className={`flex-1 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <div className="h-full flex flex-col">
-              <div
-                className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}
-              >
-                <h2
-                  className={`font-semibold text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-                  data-testid="section-crate-visualization"
-                >
-                  Crate Visualization
-                </h2>
-              </div>
-              <div className="flex-1 p-4">
-                <div data-testid="crate-viewer-container" className="w-full h-full">
-                  <CrateViewer3D configuration={configuration} />
-                </div>
+              <div className="h-[calc(100%-2rem)]">
+                <CrateViewer3D configuration={configuration} />
               </div>
             </div>
           </div>
 
-          {/* Bottom - Logs Section */}
-          <div className={`h-1/3 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-            <div className="h-full flex flex-col">
-              <div
-                className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}
-              >
-                <h2
-                  className={`font-semibold text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-                  data-testid="section-system-logs"
-                >
-                  System Logs
-                </h2>
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <LogsSection />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Panel - Output Section */}
-        <div
-          className={`w-full md:w-1/3 lg:w-1/4 border-l ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} hidden md:block`}
-        >
-          <div className="h-full flex flex-col">
-            <div
-              className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}
-            >
-              <h2
-                className={`font-semibold text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-                data-testid="section-design-analysis"
-              >
-                Design Analysis
-              </h2>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <OutputSection />
-            </div>
+          {/* Right Panel - Status & Insights */}
+          <div className="col-span-3 space-y-6">
+            <StatusPanel />
+            <InsightsPanel />
           </div>
         </div>
       </div>
 
-      {/* Footer with version and tech stack */}
-      <footer
-        className={`border-t px-4 py-3 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
-      >
-        <div className="flex items-center justify-center">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Built with
-              </span>
-              <TechStackDisplay />
-            </div>
-            <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              v{APP_VERSION}
-            </span>
-            <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              |
-            </span>
-            <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              Last updated: September 10, 2025
-            </span>
-          </div>
-        </div>
-      </footer>
+      {/* Export Dialog */}
+      <Suspense fallback={null}>
+        <ExportDialog />
+      </Suspense>
     </div>
   );
 }
