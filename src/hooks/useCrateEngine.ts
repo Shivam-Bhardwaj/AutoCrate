@@ -83,17 +83,8 @@ export function useCrateEngine() {
       logInfo('system', 'Weight analysis complete', `Product: ${weights.product}lbs, Gross: ${weights.estimatedGross}lbs`, 'WeightCalculations');
 
       // Step 3: Bill of Materials Generation  
-      const bomOptions = {
-        format: 'exp' as const,
-        version: '1.0',
-        includeAssembly: true,
-        includeDrawings: true,
-        includeSpecifications: true,
-        includeCostAnalysis: true,
-        applyMaterialsStandards: true,
-        partNumberPrefix: 'AC'
-      };
-      const bomGen = new BOMGenerator(configuration, bomOptions);
+      // TODO: Integrate with full BOMGenerator service
+      // const bomGen = new BOMGenerator(configuration, bomOptions);
       const mockBOM = [
         { item: 'Base Panel', material: 'Plywood 3/4"', quantity: 1, cost: 45.00, total: 45.00 },
         { item: 'Side Panels', material: 'Plywood 3/4"', quantity: 4, cost: 30.00, total: 120.00 },
@@ -106,8 +97,9 @@ export function useCrateEngine() {
       logInfo('system', 'BOM generated', `${mockBOM.length} items, Total cost: $${totalCost.toFixed(2)}`, 'BOMGenerator');
 
       // Step 4: NX CAD Expressions
-      const nxGen = new NXExpressionGenerator(configuration);
-      const nxExpression = nxGen.generateExpression();
+      // TODO: Integrate with full NXExpressionGenerator service  
+      // const nxGen = new NXExpressionGenerator(configuration);
+      // const nxExpression = nxGen.generateExpression();
       const mockExpressions = [
         `Length = ${configuration.dimensions.length}.000`,
         `Width = ${configuration.dimensions.width}.000`,
