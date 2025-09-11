@@ -8,12 +8,12 @@ export default function KPIStrip() {
   const { configuration } = useCrateStore();
   const { results, isComputing } = useCrateEngine();
 
-  // Use real data from results
-  const totalWeight = results?.weight?.estimatedGross || 0;
-  const externalDims = results ? 
+  // Use real data from results with safe fallbacks
+  const totalWeight = results?.weight?.estimatedGross || results?.weight?.product || configuration.weight?.product || 0;
+  const externalDims = results?.dimensions?.external ? 
     `${results.dimensions.external.width}" × ${results.dimensions.external.length}" × ${results.dimensions.external.height}"` :
     `${configuration.dimensions.width}" × ${configuration.dimensions.length}" × ${configuration.dimensions.height}"`;
-  const volume = results ? 
+  const volume = results?.dimensions?.external ? 
     ((results.dimensions.external.width * results.dimensions.external.length * results.dimensions.external.height) / 1728).toFixed(1) :
     ((configuration.dimensions.width * configuration.dimensions.length * configuration.dimensions.height) / 1728).toFixed(1);
   const bomCount = results?.bom?.length || 0;
@@ -113,15 +113,15 @@ export default function KPIStrip() {
       {kpis.map((kpi, index) => {
         const Icon = kpi.icon;
         return (
-          <div key={index} className={`glass-morphism backdrop-blur-2xl rounded-2xl p-4 card-glow hover:scale-105 transition-all duration-300 ${kpi.pulse ? 'animate-pulse' : ''}`}>
+          <div key={index} className={`bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-4 hover:shadow-md transition-all duration-200 ${kpi.pulse ? 'animate-pulse' : ''}`}>
             <div className="flex items-center gap-3 mb-2">
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-r ${kpi.color} flex items-center justify-center shadow-lg ${kpi.highlight ? 'ring-2 ring-white/50' : ''}`}>
+              <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${kpi.color} flex items-center justify-center shadow-sm`}>
                 <Icon className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-white/60 uppercase tracking-wide">{kpi.label}</p>
-                <p className="text-lg font-black text-white text-glow">{kpi.value}</p>
-                <p className="text-xs text-white/50">{kpi.subtext}</p>
+                <p className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">{kpi.label}</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-slate-100">{kpi.value}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-500">{kpi.subtext}</p>
               </div>
             </div>
           </div>

@@ -3,7 +3,9 @@
 import React, { Suspense, lazy, useCallback, useMemo, useState } from 'react';
 import { useCrateStore } from '@/store/crate-store';
 import { useLogsStore } from '@/store/logs-store';
+import { useThemeStore } from '@/store/theme-store';
 import { PerformanceMonitor } from '@/utils/performanceMonitor';
+import { Moon, Sun, RotateCcw } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 // Lazy load heavy components with code splitting
@@ -95,8 +97,9 @@ const NXInstructions = lazy(() => import('@/components/NXInstructions'));
 
 // Main optimized page component
 export default function OptimizedPage() {
-  const { configuration } = useCrateStore();
+  const { configuration, resetConfiguration } = useCrateStore();
   const { clearLogs } = useLogsStore();
+  const { isDarkMode, toggleTheme } = useThemeStore();
   const [activeTab, setActiveTab] = useState<'input' | 'output' | 'logs' | 'nx'>('input');
   const [showExport, setShowExport] = useState(false);
 
@@ -173,35 +176,47 @@ export default function OptimizedPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
-      {/* Header */}
-      <header className="glass-morphism backdrop-blur-xl border-b border-white/20 sticky top-0 z-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      {/* Professional Header */}
+      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center shadow-2xl">
-                <span className="text-white text-xl font-black">AC</span>
+              <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg">
+                <span className="text-white text-lg font-bold">AC</span>
               </div>
               <div>
-                <h1 className="text-2xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  AutoCrate Pro
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  AutoCrate Professional
                 </h1>
-                <p className="text-xs text-slate-600 dark:text-slate-400">
-                  Optimized Edition v2.0
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  3D Crate Designer & NX CAD Integration
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowExport(true)}
-                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm"
               >
-                Export
+                Export STEP
+              </button>
+              <button
+                onClick={resetConfiguration}
+                className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg font-medium transition-colors"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </button>
+              <button
+                onClick={toggleTheme}
+                className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg font-medium transition-colors"
+              >
+                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
               <button
                 onClick={clearLogs}
-                className="px-4 py-2 bg-white/10 backdrop-blur text-slate-700 dark:text-slate-300 rounded-lg hover:bg-white/20 transition-all"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg font-medium transition-colors"
               >
                 Clear Logs
               </button>
@@ -220,17 +235,17 @@ export default function OptimizedPage() {
         <div className="grid grid-cols-12 gap-6">
           {/* Left Panel - Input/Output */}
           <div className="col-span-3 space-y-6">
-            <div className="glass-morphism backdrop-blur-2xl rounded-2xl overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
               {/* Tab Navigation */}
-              <div className="flex border-b border-white/10">
+              <div className="flex border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
                 {(['input', 'output', 'logs', 'nx'] as const).map(tab => (
                   <button
                     key={tab}
                     onClick={() => handleTabChange(tab)}
                     className={`flex-1 px-4 py-3 text-sm font-medium transition-all ${
                       activeTab === tab
-                        ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-600 dark:text-blue-400 border-b-2 border-blue-500'
-                        : 'text-slate-600 dark:text-slate-400 hover:bg-white/5'
+                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-b-2 border-blue-500'
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
                   >
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -247,11 +262,17 @@ export default function OptimizedPage() {
 
           {/* Center - 3D Viewer */}
           <div className="col-span-6">
-            <div className="glass-morphism backdrop-blur-2xl rounded-2xl p-6 h-[600px]">
-              <h2 className="text-lg font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                3D Visualization
-              </h2>
-              <div className="h-[calc(100%-2rem)]">
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 h-[600px]">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  3D Visualization
+                </h2>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Live Preview</span>
+                </div>
+              </div>
+              <div className="h-[calc(100%-2rem)] bg-slate-50 dark:bg-slate-900 rounded-lg overflow-hidden">
                 <CrateViewer3D configuration={configuration} />
               </div>
             </div>

@@ -16,6 +16,7 @@ import { useCrateStore } from '@/store/crate-store';
 import { useLogsStore } from '@/store/logs-store';
 import type { NXExportOptions } from '@/types/nx';
 import { JTExporter } from '@/services/jtExporter';
+import { STEPExporter } from '@/services/stepExporter';
 import { NXDrawingGenerator } from '@/services/nxDrawingGenerator';
 import { BOMGenerator } from '@/services/bomGenerator';
 import { NXExpressionGenerator } from '@/services/nx-generator';
@@ -119,18 +120,9 @@ export function ExportDialog({ children, scene }: ExportDialogProps) {
   };
 
   const exportSTEPFormat = async () => {
-    // STEP export would require additional libraries
-    // For now, export as JT with STEP naming
-    if (!scene) {
-      throw new Error('3D scene not available for STEP export');
-    }
-
-    const jtExporter = new JTExporter(scene, crateConfig, {
-      ...exportOptions,
-      format: 'step'
-    });
-    await jtExporter.exportJT();
-    addLog('info', 'export', 'STEP-compatible format exported');
+    const stepExporter = new STEPExporter(crateConfig, exportOptions);
+    await stepExporter.exportSTEP();
+    addLog('info', 'export', 'STEP files exported with component structure');
   };
 
   const exportNXPart = async () => {
