@@ -8,6 +8,9 @@ const nextConfig = {
   // Configure for Replit environment
   assetPrefix: process.env.NODE_ENV === 'production' ? undefined : '',
   
+  // Note: allowedDevOrigins disabled due to pattern.split errors in Replit environment
+  // Cross-origin warnings are non-critical and do not affect functionality
+  
   // Development server configuration for Replit proxy
   webpack: (config, { dev, isServer }) => {
     // Allow hot reloading in Replit iframe
