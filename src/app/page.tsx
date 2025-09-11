@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import InputForms from '@/components/InputForms';
+import InputForms from '@/components/InputForms.clean';
 import OutputSection from '@/components/OutputSection';
 import LogsSection from '@/components/LogsSection';
 import { Button } from '@/components/ui/button';

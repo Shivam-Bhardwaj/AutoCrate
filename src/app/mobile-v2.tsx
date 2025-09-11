@@ -12,7 +12,7 @@ import {
   Maximize2, Minimize2, Download, Share2
 } from 'lucide-react';
 import { APP_VERSION } from '@/utils/version';
-import InputForms from '@/components/InputForms';
+import InputForms from '@/components/InputForms.clean';
 import OutputSection from '@/components/OutputSection';
 
 // Dynamically import 3D viewer
