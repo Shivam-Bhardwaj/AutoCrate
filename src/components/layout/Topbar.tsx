@@ -5,7 +5,17 @@ import { Button } from '@/components/ui/button';
 import { useThemeStore } from '@/store/theme-store';
 import { useCrateStore } from '@/store/crate-store';
 import { useLogsStore } from '@/store/logs-store';
-import { BookOpen, RotateCcw, Sun, Moon, Menu, X, Zap } from 'lucide-react';
+import { BookOpen, RotateCcw, Sun, Moon, Menu, X, Zap, Plug } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { IntegrationHub } from '@/components/IntegrationHub';
+import { useState } from 'react';
 
 interface TopbarProps {
   showMobileMenu?: boolean;
@@ -16,6 +26,7 @@ export default function Topbar({ showMobileMenu, setShowMobileMenu }: TopbarProp
   const { isDarkMode, toggleTheme } = useThemeStore();
   const { resetConfiguration } = useCrateStore();
   const { logInfo } = useLogsStore();
+  const [integrationHubOpen, setIntegrationHubOpen] = useState(false);
 
   const handleReset = () => {
     resetConfiguration();
@@ -59,6 +70,29 @@ export default function Topbar({ showMobileMenu, setShowMobileMenu }: TopbarProp
             Docs
           </Button>
         </Link>
+
+        {/* Integration Hub Dialog */}
+        <Dialog open={integrationHubOpen} onOpenChange={setIntegrationHubOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden sm:flex transition-all duration-300 bg-gradient-to-r from-indigo-500/20 to-blue-500/20 border border-indigo-400/50 hover:border-indigo-300 text-white hover:bg-indigo-400/30 backdrop-blur-xl hover:scale-105 shadow-lg"
+            >
+              <Plug className="h-4 w-4 mr-2" />
+              Integrations
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-7xl h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Enterprise Integration Hub</DialogTitle>
+              <DialogDescription>
+                Manage CAD, ERP, and Manufacturing system connections
+              </DialogDescription>
+            </DialogHeader>
+            <IntegrationHub />
+          </DialogContent>
+        </Dialog>
 
         <Button
           variant="outline"
