@@ -18,10 +18,10 @@ export default function AutoCratePage() {
   const [_isMobile, setIsMobile] = useState(false);
   const [isHydrated, setHydrated] = useState(false);
 
-  // Check if we're on mobile
+  // Check if we're on mobile - use 480px breakpoint for mobile layout switch
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(window.innerWidth < 480);
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -48,8 +48,9 @@ export default function AutoCratePage() {
 
   // In test builds (E2E) always force desktop layout so selectors are stable.
   const _IS_TEST_BUILD = process.env.NODE_ENV === 'test';
-  // Use responsive design - mobile layout for very small screens only
-  if (_isMobile && window.innerWidth < 480 && !_IS_TEST_BUILD) {
+  
+  // Only show mobile layout after hydration and for very small screens
+  if (isHydrated && _isMobile && !_IS_TEST_BUILD && typeof window !== 'undefined' && window.innerWidth < 480) {
     return <MobileV2 />;
   }
 
