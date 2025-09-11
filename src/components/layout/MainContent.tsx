@@ -4,6 +4,10 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useCrateStore } from '@/store/crate-store';
 import { ChevronUp, ChevronDown, Package } from 'lucide-react';
+import KPIStrip from '@/components/dashboard/KPIStrip';
+import QuickActions from '@/components/dashboard/QuickActions';
+import StatusPanel from '@/components/dashboard/StatusPanel';
+import InsightsPanel from '@/components/dashboard/InsightsPanel';
 
 // Dynamic import for 3D viewer
 const CrateViewer3D = dynamic(() => import('@/components/CrateViewer3D'), {
@@ -28,9 +32,21 @@ export default function MainContent() {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      {/* 3D Viewer - Main Content */}
-      <div className="flex-1 min-h-0 p-6">
-        <div className="h-full rounded-2xl glass-morphism border border-white/30 backdrop-blur-2xl card-glow overflow-hidden group hover:scale-[1.02] transition-all duration-500">
+      {/* KPI Strip - Top Dashboard Metrics */}
+      <div className="p-6 pb-0">
+        <KPIStrip />
+      </div>
+
+      {/* Dashboard Grid Layout */}
+      <div className="flex-1 min-h-0 p-6 grid grid-cols-[300px_1fr_320px] gap-6">
+        {/* Left Panel - Quick Actions & Status */}
+        <div className="space-y-6 overflow-y-auto">
+          <QuickActions />
+          <StatusPanel />
+        </div>
+
+        {/* Center Panel - 3D Viewer */}
+        <div className="h-full rounded-2xl glass-morphism border border-white/30 backdrop-blur-2xl card-glow overflow-hidden">
           {/* Viewer Header */}
           <div className="bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 border-b border-white/20 px-6 py-4">
             <div className="flex items-center justify-between">
@@ -43,7 +59,7 @@ export default function MainContent() {
                 </h2>
               </div>
               <div className="text-sm text-white/80 font-medium">
-                Real-time rendering • {configuration.dimensions.width}" × {configuration.dimensions.length}" × {configuration.dimensions.height}"
+                {configuration.dimensions.width}" × {configuration.dimensions.length}" × {configuration.dimensions.height}"
               </div>
             </div>
           </div>
@@ -55,6 +71,11 @@ export default function MainContent() {
               <CrateViewer3D configuration={configuration} />
             </div>
           </div>
+        </div>
+
+        {/* Right Panel - Insights & Analytics */}
+        <div className="overflow-y-auto">
+          <InsightsPanel />
         </div>
       </div>
 

@@ -12,7 +12,7 @@ interface DashboardShellProps {
 
 export default function DashboardShell({ topbar, sidebar, main, rightPanel }: DashboardShellProps) {
   const { isDarkMode } = useThemeStore();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true); // Default collapsed for dashboard view
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
 
   // Auto-collapse panels on small screens to prevent overflow
