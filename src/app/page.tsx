@@ -81,27 +81,62 @@ export default function Home() {
 
   return (
     <div
-      className={`min-h-screen md:h-screen flex flex-col ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
+      className={`min-h-screen md:h-screen flex flex-col relative overflow-hidden ${
+        isDarkMode 
+          ? 'bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900' 
+          : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
+      }`}
     >
+      {/* Background Effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className={`absolute -top-1/2 -right-1/2 w-full h-full rounded-full ${
+          isDarkMode 
+            ? 'bg-gradient-to-l from-purple-500/20 to-blue-500/20 blur-3xl' 
+            : 'bg-gradient-to-l from-purple-200/30 to-blue-200/30 blur-3xl'
+        }`} />
+        <div className={`absolute -bottom-1/2 -left-1/2 w-full h-full rounded-full ${
+          isDarkMode 
+            ? 'bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 blur-3xl' 
+            : 'bg-gradient-to-r from-indigo-200/30 to-cyan-200/30 blur-3xl'
+        }`} />
+      </div>
+
       {/* Header */}
       <header
-        className={`border-b px-4 py-2 md:py-3 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
+        className={`backdrop-blur-xl border-b px-4 py-4 relative z-10 ${
+          isDarkMode 
+            ? 'bg-slate-800/80 border-slate-700/50' 
+            : 'bg-white/80 border-white/50'
+        } shadow-lg`}
       >
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <h1
-              className={`text-xl md:text-2xl font-bold text-center ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}
+              className={`text-xl md:text-3xl font-bold text-center bg-gradient-to-r ${
+                isDarkMode 
+                  ? 'from-blue-400 via-purple-400 to-cyan-400 text-transparent bg-clip-text'
+                  : 'from-blue-600 via-purple-600 to-cyan-600 text-transparent bg-clip-text'
+              }`}
               data-testid="app-title"
             >
               AutoCrate
             </h1>
+            <p className={`text-center text-sm mt-1 ${
+              isDarkMode ? 'text-slate-300' : 'text-slate-600'
+            }`}>
+              Professional Crate Design Suite
+            </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Link href="/docs">
               <Button
                 variant="ghost"
                 size="sm"
-                className={`hidden sm:flex ${isDarkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100'}`}
+                className={`hidden sm:flex transition-all duration-300 ${
+                  isDarkMode 
+                    ? 'hover:bg-slate-700/50 text-slate-300 hover:text-white backdrop-blur-sm' 
+                    : 'hover:bg-white/50 text-slate-700 hover:text-slate-900 backdrop-blur-sm'
+                }`}
                 aria-label="Open documentation"
               >
                 <BookOpen className="h-4 w-4 mr-2" />
@@ -112,7 +147,11 @@ export default function Home() {
               variant="outline"
               size="sm"
               onClick={handleReset}
-              className={isDarkMode ? 'border-gray-600 hover:bg-gray-700' : ''}
+              className={`transition-all duration-300 ${
+                isDarkMode 
+                  ? 'border-slate-600 hover:border-purple-400 hover:bg-purple-500/10 text-slate-300 hover:text-white backdrop-blur-sm' 
+                  : 'border-slate-300 hover:border-blue-400 hover:bg-blue-500/10 text-slate-700 hover:text-blue-600 backdrop-blur-sm'
+              }`}
               aria-label="Create new project and reset all configuration"
             >
               <RotateCcw className="h-4 w-4 mr-2" />
@@ -123,7 +162,11 @@ export default function Home() {
               size="icon"
               onClick={toggleTheme}
               data-testid="theme-toggle"
-              className={isDarkMode ? 'border-gray-600 hover:bg-gray-700' : ''}
+              className={`transition-all duration-300 ${
+                isDarkMode 
+                  ? 'border-slate-600 hover:border-yellow-400 hover:bg-yellow-500/10 text-slate-300 hover:text-yellow-300 backdrop-blur-sm' 
+                  : 'border-slate-300 hover:border-purple-400 hover:bg-purple-500/10 text-slate-700 hover:text-purple-600 backdrop-blur-sm'
+              }`}
               aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -144,21 +187,36 @@ export default function Home() {
       </header>
 
       {/* Main Layout - Desktop Only */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative z-10 gap-6 p-6">
         {/* Left Panel - Input Section */}
         <div
-          className={`w-full md:w-1/3 lg:w-1/4 border-r ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} ${showMobileMenu ? 'block' : 'hidden md:block'}`}
+          className={`w-full md:w-1/3 lg:w-1/4 backdrop-blur-xl rounded-2xl border shadow-2xl transition-all duration-500 ${
+            isDarkMode 
+              ? 'bg-slate-800/40 border-slate-700/50 shadow-slate-900/50' 
+              : 'bg-white/40 border-white/50 shadow-slate-200/50'
+          } ${showMobileMenu ? 'block' : 'hidden md:block'}`}
         >
           <div className="h-full flex flex-col">
             <div
-              className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}
+              className={`p-6 border-b backdrop-blur-sm rounded-t-2xl ${
+                isDarkMode 
+                  ? 'border-slate-700/50 bg-gradient-to-r from-purple-500/10 to-blue-500/10' 
+                  : 'border-slate-200/50 bg-gradient-to-r from-blue-500/10 to-purple-500/10'
+              }`}
             >
               <h2
-                className={`font-semibold text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                className={`font-bold text-center text-lg ${
+                  isDarkMode ? 'text-slate-100' : 'text-slate-800'
+                }`}
                 data-testid="section-product-config"
               >
-                Product Configuration
+                ⚙️ Product Configuration
               </h2>
+              <p className={`text-center text-sm mt-2 ${
+                isDarkMode ? 'text-slate-300' : 'text-slate-600'
+              }`}>
+                Design your perfect crate
+              </p>
             </div>
             <div className="flex-1 overflow-hidden">
               <InputForms />
@@ -167,22 +225,41 @@ export default function Home() {
         </div>
 
         {/* Center Panel - 3D Rendering */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col gap-6">
           {/* Top - 3D Viewer */}
-          <div className={`flex-1 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className={`flex-1 backdrop-blur-xl rounded-2xl border shadow-2xl transition-all duration-500 ${
+            isDarkMode 
+              ? 'bg-slate-800/30 border-slate-700/50 shadow-slate-900/50' 
+              : 'bg-white/30 border-white/50 shadow-slate-200/50'
+          }`}>
             <div className="h-full flex flex-col">
               <div
-                className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}
+                className={`p-6 border-b backdrop-blur-sm rounded-t-2xl ${
+                  isDarkMode 
+                    ? 'border-slate-700/50 bg-gradient-to-r from-cyan-500/10 to-purple-500/10' 
+                    : 'border-slate-200/50 bg-gradient-to-r from-purple-500/10 to-cyan-500/10'
+                }`}
               >
                 <h2
-                  className={`font-semibold text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                  className={`font-bold text-center text-lg ${
+                    isDarkMode ? 'text-slate-100' : 'text-slate-800'
+                  }`}
                   data-testid="section-crate-visualization"
                 >
-                  Crate Visualization
+                  🎯 3D Crate Visualization
                 </h2>
+                <p className={`text-center text-sm mt-2 ${
+                  isDarkMode ? 'text-slate-300' : 'text-slate-600'
+                }`}>
+                  Real-time 3D rendering
+                </p>
               </div>
-              <div className="flex-1 p-4">
-                <div data-testid="crate-viewer-container" className="w-full h-full">
+              <div className="flex-1 p-6">
+                <div data-testid="crate-viewer-container" className={`w-full h-full rounded-xl border overflow-hidden ${
+                  isDarkMode 
+                    ? 'border-slate-700/50 bg-slate-900/50' 
+                    : 'border-slate-200/50 bg-slate-50/50'
+                }`}>
                   <CrateViewer3D configuration={configuration} />
                 </div>
               </div>
@@ -190,17 +267,32 @@ export default function Home() {
           </div>
 
           {/* Bottom - Logs Section */}
-          <div className={`h-1/3 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+          <div className={`h-1/3 backdrop-blur-xl rounded-2xl border shadow-2xl transition-all duration-500 ${
+            isDarkMode 
+              ? 'bg-slate-800/40 border-slate-700/50 shadow-slate-900/50' 
+              : 'bg-white/40 border-white/50 shadow-slate-200/50'
+          }`}>
             <div className="h-full flex flex-col">
               <div
-                className={`p-4 border-b ${isDarkMode ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'}`}
+                className={`p-6 border-b backdrop-blur-sm rounded-t-2xl ${
+                  isDarkMode 
+                    ? 'border-slate-700/50 bg-gradient-to-r from-emerald-500/10 to-teal-500/10' 
+                    : 'border-slate-200/50 bg-gradient-to-r from-teal-500/10 to-emerald-500/10'
+                }`}
               >
                 <h2
-                  className={`font-semibold text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                  className={`font-bold text-center text-lg ${
+                    isDarkMode ? 'text-slate-100' : 'text-slate-800'
+                  }`}
                   data-testid="section-system-logs"
                 >
-                  System Logs
+                  📊 System Logs
                 </h2>
+                <p className={`text-center text-sm mt-2 ${
+                  isDarkMode ? 'text-slate-300' : 'text-slate-600'
+                }`}>
+                  Real-time activity monitoring
+                </p>
               </div>
               <div className="flex-1 overflow-hidden">
                 <LogsSection />
