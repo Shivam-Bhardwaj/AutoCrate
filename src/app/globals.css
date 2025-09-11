@@ -4,8 +4,51 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Professional Design System for AutoCrate */
-/* WCAG AAA Compliant with Enhanced Readability */
+/* Modern Engineering Dashboard Design System */
+/* Stunning Visual Effects with Professional Engineering Aesthetics */
+
+/* Modern Gradient Backgrounds */
+.bg-engineering {
+  background: linear-gradient(135deg, 
+    #667eea 0%, 
+    #764ba2 25%, 
+    #f093fb 50%, 
+    #f5576c 75%, 
+    #4facfe 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+}
+
+.glass-morphism-dark {
+  background: rgba(30, 41, 59, 0.3);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.card-glow {
+  box-shadow: 
+    0 0 20px rgba(99, 102, 241, 0.15),
+    0 0 40px rgba(167, 85, 221, 0.10),
+    0 4px 18px rgba(0, 0, 0, 0.1);
+}
+
+.text-glow {
+  text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+}
 
 @layer base {
   :root {
@@ -74,6 +117,13 @@
     font-weight: var(--font-weight-normal);
     font-feature-settings: 'liga' 1, 'kern' 1;
     text-rendering: optimizeLegibility;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  html {
+    height: 100vh;
+    overflow: hidden;
   }
 
   /* Headings */

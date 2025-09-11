@@ -33,8 +33,8 @@ export default function InputForms() {
         {/* Project Information */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-              <span className="text-white text-sm font-bold">📋</span>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center shadow-xl">
+              <span className="text-white text-lg font-black">P</span>
             </div>
             <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Project Information</h3>
           </div>
@@ -60,8 +60,8 @@ export default function InputForms() {
         {/* Product Dimensions */}
         <div className="space-y-6">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-              <span className="text-white text-sm font-bold">📏</span>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center shadow-xl">
+              <span className="text-white text-lg font-black">D</span>
             </div>
             <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Product Dimensions</h3>
           </div>
@@ -84,8 +84,8 @@ export default function InputForms() {
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-3">
-                <Label htmlFor="width" className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                  <span>↔️</span> Width (inches)
+                <Label htmlFor="width" className="text-sm font-bold text-white flex items-center gap-2">
+                  <span className="w-4 h-4 rounded bg-blue-500/30 flex items-center justify-center text-xs">W</span> Width (inches)
                 </Label>
                 <Input
                   id="width"
@@ -118,8 +118,8 @@ export default function InputForms() {
                 />
               </div>
               <div className="space-y-3">
-                <Label htmlFor="length" className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                  <span>↕️</span> Depth (inches)
+                <Label htmlFor="length" className="text-sm font-bold text-white flex items-center gap-2">
+                  <span className="w-4 h-4 rounded bg-purple-500/30 flex items-center justify-center text-xs">L</span> Depth (inches)
                 </Label>
                 <Input
                   id="length"

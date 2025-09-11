@@ -29,29 +29,32 @@ export default function DashboardShell({ topbar, sidebar, main, rightPanel }: Da
   }, []);
 
   return (
-    <div className={`h-screen overflow-hidden ${isDarkMode ? 'dark bg-slate-900' : 'bg-slate-50'}`}>
+    <div className={`h-screen overflow-hidden relative ${isDarkMode ? 'dark' : ''}`}>
+      {/* Animated Background */}
+      <div className={`absolute inset-0 ${isDarkMode ? 'bg-slate-900' : 'bg-engineering'}`}></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-white/20"></div>
       {/* CSS Grid Container - Full Viewport */}
       <div 
-        className={`h-full grid grid-rows-[60px_1fr] transition-all duration-300 ${
+        className={`relative z-10 h-full grid grid-rows-[70px_1fr] transition-all duration-500 ease-in-out ${
           sidebarCollapsed && rightPanelCollapsed
-            ? 'grid-cols-[60px_1fr_60px]'
+            ? 'grid-cols-[80px_1fr_80px]'
             : sidebarCollapsed
-            ? 'grid-cols-[60px_1fr_380px] xl:grid-cols-[60px_1fr_420px]'
+            ? 'grid-cols-[80px_1fr_400px] xl:grid-cols-[80px_1fr_450px]'
             : rightPanelCollapsed
-            ? 'grid-cols-[320px_1fr_60px] xl:grid-cols-[360px_1fr_60px]'
-            : 'grid-cols-[320px_1fr_380px] xl:grid-cols-[360px_1fr_420px]'
+            ? 'grid-cols-[350px_1fr_80px] xl:grid-cols-[380px_1fr_80px]'
+            : 'grid-cols-[350px_1fr_400px] xl:grid-cols-[380px_1fr_450px]'
         }`}
       >
         {/* Header Row - Spans Full Width */}
-        <header className="col-span-3 border-b border-slate-200/50 dark:border-slate-700/50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl">
+        <header className={`col-span-3 border-b border-white/20 ${isDarkMode ? 'glass-morphism-dark' : 'glass-morphism'} backdrop-blur-2xl`}>
           {topbar}
         </header>
 
         {/* Sidebar Panel */}
         <aside 
-          className={`border-r border-slate-200/50 dark:border-slate-700/50 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl transition-all duration-300 ${
+          className={`border-r border-white/20 ${isDarkMode ? 'glass-morphism-dark' : 'glass-morphism'} backdrop-blur-2xl transition-all duration-500 ease-in-out ${
             sidebarCollapsed ? 'overflow-hidden' : 'min-h-0'
-          }`}
+          } card-glow`}
         >
           <div className="h-full overflow-y-auto">
             {sidebarCollapsed ? (
@@ -80,15 +83,18 @@ export default function DashboardShell({ topbar, sidebar, main, rightPanel }: Da
         </aside>
 
         {/* Main Content Area */}
-        <main className="min-h-0 bg-gradient-to-br from-slate-50/50 to-slate-100/50 dark:from-slate-900/50 dark:to-slate-800/50">
-          {main}
+        <main className="min-h-0 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-white/10"></div>
+          <div className="relative z-10 h-full">
+            {main}
+          </div>
         </main>
 
         {/* Right Panel */}
         <aside 
-          className={`border-l border-slate-200/50 dark:border-slate-700/50 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl transition-all duration-300 ${
+          className={`border-l border-white/20 ${isDarkMode ? 'glass-morphism-dark' : 'glass-morphism'} backdrop-blur-2xl transition-all duration-500 ease-in-out ${
             rightPanelCollapsed ? 'overflow-hidden' : 'min-h-0'
-          }`}
+          } card-glow`}
         >
           <div className="h-full overflow-y-auto">
             {rightPanelCollapsed ? (
