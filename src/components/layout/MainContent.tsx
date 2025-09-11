@@ -36,7 +36,7 @@ export default function MainContent() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-6 h-6 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center">
-                  <span className="text-white text-xs">🎯</span>
+                  <span className="text-white text-xs">3D</span>
                 </div>
                 <h2 className="font-semibold text-slate-800 dark:text-slate-200">
                   3D Crate Visualization
@@ -68,7 +68,7 @@ export default function MainContent() {
         >
           <div className="flex items-center gap-3">
             <div className="w-6 h-6 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center">
-              <span className="text-white text-xs">📊</span>
+              <span className="text-white text-xs">LOG</span>
             </div>
             <h3 className="font-semibold text-slate-800 dark:text-slate-200 text-sm">
               System Logs

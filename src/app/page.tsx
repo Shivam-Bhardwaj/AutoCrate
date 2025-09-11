@@ -48,8 +48,8 @@ export default function AutoCratePage() {
 
   // In test builds (E2E) always force desktop layout so selectors are stable.
   const _IS_TEST_BUILD = process.env.NODE_ENV === 'test';
-  // Use mobile experience for mobile devices
-  if (_isMobile && !_IS_TEST_BUILD) {
+  // Use responsive design - mobile layout for very small screens only
+  if (_isMobile && window.innerWidth < 480 && !_IS_TEST_BUILD) {
     return <MobileV2 />;
   }
 

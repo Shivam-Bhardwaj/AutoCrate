@@ -264,7 +264,7 @@ Total_Volume = Length * Width * Height`}
       <div className="bg-gradient-to-r from-purple-50/80 to-pink-50/80 dark:from-purple-900/20 dark:to-pink-900/20 border-b border-slate-200/50 dark:border-slate-700/50 p-4">
         <h2 className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
           <div className="w-6 h-6 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-            <span className="text-white text-xs">📊</span>
+            <span className="text-white text-xs">OUT</span>
           </div>
           Output Panel
         </h2>

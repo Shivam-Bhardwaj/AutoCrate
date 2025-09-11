@@ -15,6 +15,19 @@ export default function DashboardShell({ topbar, sidebar, main, rightPanel }: Da
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
 
+  // Auto-collapse panels on small screens to prevent overflow
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setSidebarCollapsed(true);
+        setRightPanelCollapsed(true);
+      }
+    };
+    handleResize(); // Check on mount
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div className={`h-screen overflow-hidden ${isDarkMode ? 'dark bg-slate-900' : 'bg-slate-50'}`}>
       {/* CSS Grid Container - Full Viewport */}
@@ -48,7 +61,7 @@ export default function DashboardShell({ topbar, sidebar, main, rightPanel }: Da
                   className="w-full p-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition-colors"
                   title="Expand Configuration"
                 >
-                  ⚙️
+                  Config
                 </button>
               </div>
             ) : (
@@ -85,7 +98,7 @@ export default function DashboardShell({ topbar, sidebar, main, rightPanel }: Da
                   className="w-full p-3 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 transition-colors"
                   title="Expand Output Panel"
                 >
-                  📊
+                  Output
                 </button>
               </div>
             ) : (

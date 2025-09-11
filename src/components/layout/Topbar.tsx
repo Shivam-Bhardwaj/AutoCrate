@@ -28,7 +28,7 @@ export default function Topbar({ showMobileMenu, setShowMobileMenu }: TopbarProp
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-            <span className="text-white text-lg font-bold">🏗️</span>
+            <span className="text-white text-lg font-bold">AC</span>
           </div>
           <div>
             <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 dark:from-blue-400 dark:via-purple-400 dark:to-cyan-400 text-transparent bg-clip-text">
