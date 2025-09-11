@@ -101,6 +101,7 @@ export class FileConverterService {
       conversion.sourceFile!,
       conversion.sourceFormat as CADFormat,
       {
+        format: conversion.sourceFormat as CADFormat,
         units: conversion.options?.units || 'inches',
         healing: true,
         simplification: conversion.options?.optimize,
@@ -142,8 +143,15 @@ export class FileConverterService {
   }
 
   private async convertBOMToCSV(conversion: FileConversion): Promise<void> {
-    const bomGenerator = new BOMGenerator(this.config);
-    const bomData = bomGenerator.generateBOM();
+    const bomGenerator = new BOMGenerator(this.config, { 
+      format: 'exp', 
+      version: '2022', 
+      includeAssembly: true, 
+      includeDrawings: false, 
+      applyMaterialsStandards: true, 
+      partNumberPrefix: '0205' 
+    });
+    const bomData = await bomGenerator.generateBOM({ exportFormat: 'csv', includeLabor: true, includeCosts: true, includeSupplierInfo: true, includeSpecifications: true });
     
     conversion.progress = 50;
     this.conversions.set(conversion.conversionId, conversion);
@@ -393,12 +401,12 @@ export class FileConverterService {
     return templateId;
   }
 
-  public applyTemplate(templateId: string): BatchExport | null {
+  public async applyTemplate(templateId: string): Promise<BatchExport | null> {
     const templateData = localStorage.getItem(`export_template_${templateId}`);
     if (!templateData) return null;
     
     const template = JSON.parse(templateData);
-    return this.createBatchExport(template.name, template.formats, template.options);
+    return await this.createBatchExport(template.name, template.formats, template.options);
   }
 
   // ============ Utility Methods ============
