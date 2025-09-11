@@ -68,6 +68,17 @@ docs/*.pdf
 # Log files
 *.log
 
+# Generated assets and attachments
+attached_assets/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+
+# Cache directories
+.cache/
+
 # IDE specific
 .vscode/
 .idea/
