@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
+  swcMinify: false, // Disable native SWC minifier to avoid SIGBUS
   experimental: {
     // Enable experimental features if needed
   },
