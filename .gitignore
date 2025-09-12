@@ -89,6 +89,7 @@ attached_assets/
 # OS specific
 Thumbs.db
 Desktop.ini
+nul
 
 # Vercel
 .vercel
