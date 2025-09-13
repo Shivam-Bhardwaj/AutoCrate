@@ -99,6 +99,9 @@ export const useCrateStore = create<CrateStore>()(
       validateConfiguration: async () => {
         set({ isValidating: true })
         try {
+          // Simulate validation delay for better UX
+          await new Promise(resolve => setTimeout(resolve, 800))
+          
           const results = await validateConfiguration(get().configuration)
           const standardsResults = validateStandardsCompliance(get().configuration)
           

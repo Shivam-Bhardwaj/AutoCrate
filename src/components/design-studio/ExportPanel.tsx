@@ -5,6 +5,7 @@ import { useState } from 'react'
 
 export function ExportPanel() {
   const exportQueue = useExportQueue()
+  const configuration = useCrateStore(state => state.configuration)
   const addExportJob = useCrateStore(state => state.addExportJob)
   const updateExportJob = useCrateStore(state => state.updateExportJob)
   const removeExportJob = useCrateStore(state => state.removeExportJob)
@@ -21,16 +22,74 @@ export function ExportPanel() {
     })
     
     try {
-      // Simulate export process
-      for (let progress = 0; progress <= 100; progress += 10) {
-        await new Promise(resolve => setTimeout(resolve, 200))
-        updateExportJob(jobId, { progress })
+      // Update status to processing
+      updateExportJob(jobId, { status: 'processing', progress: 10 })
+      
+      // Call the appropriate API endpoint
+      let endpoint = ''
+      let fileExtension = ''
+      
+      switch (type) {
+        case 'nx-expressions':
+          endpoint = '/api/generate-nx'
+          fileExtension = 'txt'
+          break
+        case 'step-file':
+          endpoint = '/api/export-step'
+          fileExtension = 'stp'
+          break
+        case 'pdf-drawing':
+          endpoint = '/api/export-pdf'
+          fileExtension = 'pdf'
+          break
       }
+      
+      updateExportJob(jobId, { progress: 30 })
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(configuration),
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.statusText}`)
+      }
+      
+      updateExportJob(jobId, { progress: 60 })
+      
+      const data = await response.json()
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Export failed')
+      }
+      
+      updateExportJob(jobId, { progress: 80 })
+      
+      // Create and download the file
+      const filename = data.expressions?.filename || data.content?.filename || `autocrate_${type}_${new Date().toISOString().split('T')[0]}.${fileExtension}`
+      const content = data.expressions?.content || data.content?.content || JSON.stringify(data, null, 2)
+      
+      // Create blob and download
+      const blob = new Blob([content], { 
+        type: type === 'pdf-drawing' ? 'application/pdf' : 'text/plain' 
+      })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
       
       // Mark as completed
       updateExportJob(jobId, {
         status: 'completed',
-        downloadUrl: `#download-${type}-${Date.now()}`,
+        progress: 100,
+        downloadUrl: url,
         completedAt: new Date()
       })
       
