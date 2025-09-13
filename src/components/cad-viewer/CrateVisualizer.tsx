@@ -87,9 +87,9 @@ export function CrateVisualizer({
           <directionalLight 
             position={[-10, 10, -5]} 
             intensity={0.4} 
-            color="#ffffff"
+            color="white"
           />
-          <pointLight position={[0, 15, 0]} intensity={0.3} color="#ffffff" />
+          <pointLight position={[0, 15, 0]} intensity={0.3} color="white" />
           
           {/* CAD Model Components */}
           <CrateAssembly 
