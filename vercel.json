@@ -2,13 +2,5 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "functions": {
-    "src/app/api/generate-nx/route.ts": {
-      "runtime": "edge"
-    },
-    "src/app/api/export-step/route.ts": {
-      "runtime": "edge"
-    }
-  },
   "crons": []
 }
