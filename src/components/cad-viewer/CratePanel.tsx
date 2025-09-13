@@ -36,14 +36,14 @@ export function CratePanel({
 
 function getMaterialColor(material: string): string {
   const colors: Record<string, string> = {
-    'CDX': '#8B4513', // Brown
-    'BC': '#A0522D',  // Sienna
-    'AC': '#D2691E',  // Chocolate
-    'Standard': '#8B4513',
-    '#2': '#A0522D',
-    '#1': '#D2691E',
-    'Select': '#F4A460'
+    'CDX': '#D2B48C', // Tan - realistic plywood color
+    'BC': '#DEB887',  // Burlywood - better plywood
+    'AC': '#F5DEB3',  // Wheat - high grade plywood
+    'Standard': '#8B4513', // Brown lumber
+    '#2': '#A0522D',  // Sienna lumber
+    '#1': '#D2691E',  // Chocolate lumber
+    'Select': '#F4A460' // Sandy brown lumber
   }
   
-  return colors[material] || '#8B4513'
+  return colors[material] || '#D2B48C'
 }

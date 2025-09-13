@@ -13,7 +13,7 @@ export function SkidModel({ length, position, material }: SkidModelProps) {
   
   return (
     <group position={position}>
-      {/* Skid runners (2 pieces) */}
+      {/* Skid runners (2 pieces) - 4x4 lumber */}
       <mesh position={[-1.75, 0, 0]} castShadow receiveShadow>
         <boxGeometry args={[3.5, 3.5, length]} />
         <meshLambertMaterial color={skidColor} />
@@ -24,15 +24,15 @@ export function SkidModel({ length, position, material }: SkidModelProps) {
         <meshLambertMaterial color={skidColor} />
       </mesh>
       
-      {/* Cross members (every 16 inches) */}
+      {/* Cross members (every 16 inches) - 2x4 lumber */}
       {Array.from({ length: Math.floor(length / 16) + 1 }, (_, index) => (
         <mesh 
           key={index}
-          position={[0, 0, (index * 16) - length / 2]} 
+          position={[0, 1.75, (index * 16) - length / 2]} 
           castShadow 
           receiveShadow
         >
-          <boxGeometry args={[7, 1.5, 1.5]} />
+          <boxGeometry args={[7, 1.5, 3.5]} />
           <meshLambertMaterial color={skidColor} />
         </mesh>
       ))}

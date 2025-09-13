@@ -19,13 +19,12 @@ interface ProductModelProps {
 }
 
 export function ProductModel({ product, position, showExploded = false }: ProductModelProps) {
-  const explosionOffset = useMemo(() => showExploded ? 1 : 0, [showExploded])
+  const explosionOffset = useMemo(() => showExploded ? 2 : 0, [showExploded])
   
-  // Calculate color based on weight (darker for heavier products)
+  // More realistic product color - industrial gray
   const color = useMemo(() => {
-    const intensity = Math.min(0.8, product.weight / 2000) // Normalize to 0-0.8
-    return `hsl(200, 70%, ${50 + intensity * 30}%)` // Blue gradient
-  }, [product.weight])
+    return '#708090' // Slate gray - typical industrial equipment color
+  }, [])
   
   return (
     <group position={position}>
@@ -39,11 +38,11 @@ export function ProductModel({ product, position, showExploded = false }: Produc
         <meshLambertMaterial 
           color={color}
           transparent
-          opacity={0.7}
+          opacity={0.9}
         />
       </mesh>
       
-      {/* Center of gravity indicator */}
+      {/* Center of gravity indicator (small red dot) */}
       <mesh 
         position={[
           product.centerOfGravity.x - product.width / 2,
@@ -51,18 +50,8 @@ export function ProductModel({ product, position, showExploded = false }: Produc
           product.centerOfGravity.z - product.length / 2
         ]}
       >
-        <sphereGeometry args={[0.2, 8, 6]} />
+        <sphereGeometry args={[0.1, 8, 6]} />
         <meshLambertMaterial color="#FF0000" />
-      </mesh>
-      
-      {/* Weight label */}
-      <mesh position={[0, product.height / 2 + 0.5 + explosionOffset, 0]}>
-        <planeGeometry args={[2, 0.5]} />
-        <meshBasicMaterial 
-          color="#FFFFFF" 
-          transparent 
-          opacity={0.8}
-        />
       </mesh>
     </group>
   )

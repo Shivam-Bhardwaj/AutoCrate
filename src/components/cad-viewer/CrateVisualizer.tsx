@@ -43,21 +43,25 @@ export function CrateVisualizer({
         performance={{ min: 0.5 }} // Maintain 30fps minimum
       >
         <Suspense fallback={<LoadingFallback />}>
-          {/* Lighting setup for CAD visualization */}
-          <ambientLight intensity={0.4} />
+          {/* Professional lighting setup */}
+          <ambientLight intensity={0.3} />
           <directionalLight 
-            position={[10, 10, 5]} 
-            intensity={1} 
+            position={[20, 20, 10]} 
+            intensity={1.2} 
             castShadow 
-            shadow-mapSize={[2048, 2048]}
-            shadow-camera-far={50}
-            shadow-camera-left={-10}
-            shadow-camera-right={10}
-            shadow-camera-top={10}
-            shadow-camera-bottom={-10}
+            shadow-mapSize={[4096, 4096]}
+            shadow-camera-far={100}
+            shadow-camera-left={-25}
+            shadow-camera-right={25}
+            shadow-camera-top={25}
+            shadow-camera-bottom={-25}
           />
-          <pointLight position={[-10, -10, -10]} intensity={0.5} />
-          <pointLight position={[10, -10, 10]} intensity={0.3} />
+          <directionalLight 
+            position={[-10, 10, -5]} 
+            intensity={0.4} 
+            color="#ffffff"
+          />
+          <pointLight position={[0, 15, 0]} intensity={0.3} color="#ffffff" />
           
           {/* CAD Model Components */}
           <CrateAssembly 
@@ -79,8 +83,12 @@ export function CrateVisualizer({
             target={[0, 0, 0]}
           />
           
-          {/* Grid for reference */}
-          <gridHelper args={[50, 50, '#666666', '#333333']} position={[0, -0.1, 0]} />
+          {/* Professional grid and background */}
+          <gridHelper args={[50, 50, '#888888', '#444444']} position={[0, -0.1, 0]} />
+          <mesh position={[0, -1, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+            <planeGeometry args={[100, 100]} />
+            <meshLambertMaterial color="#f0f0f0" />
+          </mesh>
         </Suspense>
       </Canvas>
     </div>
