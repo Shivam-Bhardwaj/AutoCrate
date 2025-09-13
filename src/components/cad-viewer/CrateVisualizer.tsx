@@ -2,7 +2,7 @@
 
 import { Suspense, useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, useGLTF, Html } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
 import { CrateConfiguration } from '@/types/crate'
 import { calculateCrateDimensions } from '@/lib/domain/calculations'
 import { CrateAssembly } from './CrateAssembly'
@@ -18,8 +18,8 @@ interface CrateVisualizerProps {
 
 export function CrateVisualizer({ 
   config, 
-  showPMI = false, 
-  showDimensions = true,
+  showPMI: _showPMI = false, 
+  showDimensions: _showDimensions = true,
   showExploded = false,
   className = "h-full w-full"
 }: CrateVisualizerProps) {

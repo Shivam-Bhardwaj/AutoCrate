@@ -1,7 +1,6 @@
 'use client'
 
 import { useCrateStore, useCrateConfiguration } from '@/stores/crate-store'
-import { useState } from 'react'
 
 export function ConfigurationPanel() {
   const configuration = useCrateConfiguration()
@@ -233,7 +232,7 @@ export function ConfigurationPanel() {
               onChange={(e) => updateConfiguration({
                 materials: {
                   ...configuration.materials,
-                  lumber: { ...configuration.materials.lumber, grade: e.target.value as any }
+                  lumber: { ...configuration.materials.lumber, grade: e.target.value as 'Standard' | '#2' | '#1' | 'Select' }
                 }
               })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -254,7 +253,7 @@ export function ConfigurationPanel() {
               onChange={(e) => updateConfiguration({
                 materials: {
                   ...configuration.materials,
-                  plywood: { ...configuration.materials.plywood, grade: e.target.value as any }
+                  plywood: { ...configuration.materials.plywood, grade: e.target.value as 'CDX' | 'BC' | 'AC' }
                 }
               })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

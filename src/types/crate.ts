@@ -64,14 +64,14 @@ export interface ValidationError {
   message: string
   field: string
   severity: 'error' | 'warning'
-  appliedMaterialsStandard?: string
+  appliedMaterialsStandard?: string | undefined
 }
 
 export interface ValidationWarning {
   code: string
   message: string
   field: string
-  suggestion?: string
+  suggestion?: string | undefined
 }
 
 export interface CrateDimensions {

@@ -57,15 +57,6 @@ export const calculateSkidRequirements = (config: CrateConfiguration) => {
 export const calculatePanelRequirements = (config: CrateConfiguration) => {
   const dimensions = calculateCrateDimensions(config)
   
-  // Standard lumber sizes (actual dimensions)
-  const lumberSizes = {
-    '2x4': { width: 3.5, thickness: 1.5 },
-    '2x6': { width: 5.5, thickness: 1.5 },
-    '2x8': { width: 7.25, thickness: 1.5 },
-    '2x10': { width: 9.25, thickness: 1.5 },
-    '2x12': { width: 11.25, thickness: 1.5 }
-  }
-  
   // Calculate panel dimensions
   const panels = {
     // Bottom panel
@@ -175,7 +166,6 @@ export const calculateHardwareRequirements = (config: CrateConfiguration) => {
 
 // Generate complete Bill of Materials
 export const generateBillOfMaterials = (config: CrateConfiguration): BillOfMaterials => {
-  const dimensions = calculateCrateDimensions(config)
   const panels = calculatePanelRequirements(config)
   const framing = calculateFramingRequirements(config)
   const hardware = calculateHardwareRequirements(config)

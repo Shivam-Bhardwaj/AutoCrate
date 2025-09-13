@@ -28,7 +28,7 @@ interface CrateStore {
   // Export State
   exportQueue: ExportJob[]
   isExporting: boolean
-  addExportJob: (job: Omit<ExportJob, 'id' | 'createdAt'>) => void
+  addExportJob: (job: Omit<ExportJob, 'id' | 'createdAt'>) => string
   updateExportJob: (id: string, updates: Partial<ExportJob>) => void
   removeExportJob: (id: string) => void
   
@@ -157,6 +157,8 @@ export const useCrateStore = create<CrateStore>()(
           exportQueue: [...state.exportQueue, newJob],
           isExporting: true
         }))
+        
+        return newJob.id
       },
       
       updateExportJob: (id, updates) => {

@@ -150,7 +150,7 @@ const validateLumberGrade = (config: CrateConfiguration): ValidationError | null
       code: 'INSUFFICIENT_LUMBER_GRADE',
       message: `Product weight of ${product.weight} lbs requires ${requiredGrade} lumber grade`,
       field: 'materials.lumber.grade',
-      severity: 'error',
+      severity: 'error' as const,
       appliedMaterialsStandard: appliedMaterialsStandards.version
     }
   }
@@ -167,7 +167,7 @@ const validateSkidCount = (config: CrateConfiguration): ValidationError | null =
       code: 'INSUFFICIENT_SKID_COUNT',
       message: `Product weight requires at least ${skidRequirements.count} skids`,
       field: 'skids.count',
-      severity: 'error',
+      severity: 'error' as const,
       appliedMaterialsStandard: appliedMaterialsStandards.version
     }
   }
@@ -188,7 +188,7 @@ const validateCenterOfGravity = (config: CrateConfiguration): ValidationError | 
       code: 'INVALID_CENTER_OF_GRAVITY',
       message: 'Center of gravity must be within product dimensions',
       field: 'product.centerOfGravity',
-      severity: 'error'
+      severity: 'error' as const
     }
   }
   
@@ -203,25 +203,31 @@ export const validateCrateConfiguration = (config: CrateConfiguration): Validati
   // Run core validation rules
   for (const rule of validationRules) {
     if (!rule.validate(config)) {
-      errors.push({
+      const error: ValidationError = {
         code: rule.code,
         message: rule.message,
         field: rule.field,
-        severity: rule.severity,
-        appliedMaterialsStandard: rule.appliedMaterialsStandard
-      })
+        severity: rule.severity
+      }
+      if (rule.appliedMaterialsStandard) {
+        error.appliedMaterialsStandard = rule.appliedMaterialsStandard
+      }
+      errors.push(error)
     }
   }
   
   // Run warning rules
   for (const rule of warningRules) {
     if (rule.validate(config)) {
-      warnings.push({
+      const warning: ValidationWarning = {
         code: rule.code,
         message: rule.message,
-        field: rule.field,
-        suggestion: rule.suggestion
-      })
+        field: rule.field
+      }
+      if (rule.suggestion) {
+        warning.suggestion = rule.suggestion
+      }
+      warnings.push(warning)
     }
   }
   

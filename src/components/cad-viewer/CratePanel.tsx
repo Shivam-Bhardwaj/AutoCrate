@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Mesh } from 'three'
 
 interface CratePanelProps {
   type: 'bottom' | 'top' | 'side' | 'end'
@@ -16,23 +15,11 @@ interface CratePanelProps {
 }
 
 export function CratePanel({ 
-  type, 
   dimensions, 
   position, 
   rotation = [0, 0, 0],
   material 
 }: CratePanelProps) {
-  const geometry = useMemo(() => {
-    return new Mesh(
-      new THREE.BoxGeometry(dimensions.width, dimensions.thickness, dimensions.length),
-      new THREE.MeshLambertMaterial({ 
-        color: getMaterialColor(material),
-        transparent: true,
-        opacity: 0.8
-      })
-    )
-  }, [dimensions, material])
-  
   const materialColor = useMemo(() => getMaterialColor(material), [material])
   
   return (
