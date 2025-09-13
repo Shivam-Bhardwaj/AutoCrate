@@ -111,7 +111,7 @@ export function DesignStudio() {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => useCrateStore.getState().updateViewport({
-                    camera: { position: [10, 10, 10], target: [0, 0, 0] }
+                    camera: { position: [20, 20, 20], target: [0, 0, 0] }
                   })}
                   className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                 >

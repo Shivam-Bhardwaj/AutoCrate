@@ -29,8 +29,8 @@ export function CrateVisualizer({
     <div className={className}>
       <Canvas 
         camera={{ 
-          position: [10, 10, 10], 
-          fov: 50,
+          position: [20, 20, 20], 
+          fov: 45,
           near: 0.1,
           far: 1000
         }}
@@ -71,15 +71,16 @@ export function CrateVisualizer({
             enablePan={true} 
             enableZoom={true} 
             enableRotate={true}
-            maxDistance={50}
-            minDistance={2}
+            maxDistance={100}
+            minDistance={5}
             enableDamping={true}
             dampingFactor={0.05}
             screenSpacePanning={false}
+            target={[0, 0, 0]}
           />
           
           {/* Grid for reference */}
-          <gridHelper args={[20, 20, '#666666', '#333333']} position={[0, -0.1, 0]} />
+          <gridHelper args={[50, 50, '#666666', '#333333']} position={[0, -0.1, 0]} />
         </Suspense>
       </Canvas>
     </div>

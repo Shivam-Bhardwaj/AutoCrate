@@ -49,7 +49,7 @@ const generateId = (): string => {
 // Default viewport state
 const defaultViewport: ViewportState = {
   camera: {
-    position: [10, 10, 10],
+    position: [20, 20, 20],
     target: [0, 0, 0]
   },
   selectedComponents: [],
