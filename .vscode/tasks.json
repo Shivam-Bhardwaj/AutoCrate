@@ -1,0 +1,44 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Open Admin PowerShell",
+      "type": "shell",
+      "command": "Start-Process",
+      "args": [
+        "powershell",
+        "-Verb",
+        "runAs",
+        "-ArgumentList",
+        "-NoExit",
+        "-Command",
+        "cd '${workspaceFolder}'"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Vercel Setup",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-Command",
+        "npm install -g vercel; vercel login; vercel link; vercel domains add autocrate.shivambhardwaj.com"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "new"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

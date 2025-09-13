@@ -1,0 +1,16 @@
+{
+  "terminal.integrated.defaultProfile.windows": "PowerShell (Admin)",
+  "terminal.integrated.profiles.windows": {
+    "PowerShell (Admin)": {
+      "source": "PowerShell",
+      "args": ["-NoExit", "-Command", "Start-Process powershell -Verb runAs"]
+    }
+  },
+  "terminal.integrated.cwd": "${workspaceFolder}",
+  "terminal.integrated.shell.windows": "powershell.exe",
+  "terminal.integrated.shellArgs.windows": [
+    "-NoExit",
+    "-Command",
+    "Start-Process powershell -Verb runAs"
+  ]
+}
