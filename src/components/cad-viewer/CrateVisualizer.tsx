@@ -10,16 +10,12 @@ import { LoadingFallback } from './LoadingFallback'
 
 interface CrateVisualizerProps {
   config: CrateConfiguration
-  showPMI?: boolean
-  showDimensions?: boolean
   showExploded?: boolean
   className?: string
 }
 
 export function CrateVisualizer({ 
   config, 
-  showPMI: _showPMI = false, 
-  showDimensions: _showDimensions = true,
   showExploded = false,
   className = "h-full w-full"
 }: CrateVisualizerProps) {
@@ -54,7 +50,7 @@ export function CrateVisualizer({
   }, [dimensions])
   
   return (
-    <div className={className} role=" img\ aria-label=\3D Crate Visualization\ tabIndex=\0\>
+    <div className={className} role="img" aria-label="3D Crate Visualization" tabIndex={0}>
       <Canvas 
         camera={{ 
           position: cameraPosition, 
@@ -87,9 +83,9 @@ export function CrateVisualizer({
           <directionalLight 
             position={[-10, 10, -5]} 
             intensity={0.4} 
-            color="white"
+            color={0xffffff}
           />
-          <pointLight position={[0, 15, 0]} intensity={0.3} color="white" />
+          <pointLight position={[0, 15, 0]} intensity={0.3} color={0xffffff} />
           
           {/* CAD Model Components */}
           <CrateAssembly 
@@ -116,8 +112,8 @@ export function CrateVisualizer({
             args={[
               Math.max(dimensions.overallLength, dimensions.overallWidth) * 2, 
               Math.max(dimensions.overallLength, dimensions.overallWidth) * 2, 
-              '#888888', 
-              '#444444'
+              0x888888, 
+              0x444444
             ]} 
             position={[0, -0.1, 0]} 
           />
@@ -126,7 +122,7 @@ export function CrateVisualizer({
               Math.max(dimensions.overallLength, dimensions.overallWidth) * 3, 
               Math.max(dimensions.overallLength, dimensions.overallWidth) * 3
             ]} />
-            <meshLambertMaterial color="#f0f0f0" />
+            <meshLambertMaterial color={0xf0f0f0} />
           </mesh>
         </Suspense>
       </Canvas>

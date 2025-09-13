@@ -9,7 +9,7 @@ import {
   appliedMaterialsStandards
 } from '@/types/crate'
 import { validateCrateConfiguration } from '@/lib/domain/validation'
-import { calculateCrateDimensions } from '@/lib/domain/calculations'
+// import { calculateCrateDimensions } from '@/lib/domain/calculations'
 
 interface CrateStore {
   // Configuration State

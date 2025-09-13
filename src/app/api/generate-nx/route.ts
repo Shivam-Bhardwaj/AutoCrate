@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { CrateConfiguration } from '@/types/crate'
+import { CrateConfiguration, CrateDimensions } from '@/types/crate'
 import { calculateCrateDimensions } from '@/lib/domain/calculations'
 
 export async function POST(request: NextRequest) {
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function generateNXExpressions(config: CrateConfiguration, dimensions: any) {
+function generateNXExpressions(config: CrateConfiguration, dimensions: CrateDimensions) {
   const expressions = {
     // Product dimensions
     product_length: config.product.length,

@@ -1,9 +1,9 @@
-import { 
-  calculateCrateDimensions, 
+import {
+  calculateCrateDimensions,
   calculateSkidRequirements,
-  generateBillOfMaterials,
-  defaultCrateConfiguration 
+  generateBillOfMaterials
 } from '../calculations'
+import { defaultCrateConfiguration } from '../../../types/crate'
 
 describe('Crate Calculations', () => {
   describe('calculateCrateDimensions', () => {

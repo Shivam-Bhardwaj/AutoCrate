@@ -8,7 +8,7 @@ export const convertMillimetersToInches = (mm: number): number => mm / 25.4
 
 // Calculate overall crate dimensions
 export const calculateCrateDimensions = (config: CrateConfiguration): CrateDimensions => {
-  const { product, clearances, skids } = config
+  const { product, clearances } = config
   
   // Calculate internal dimensions (product + clearances)
   const internalWidth = product.width + (clearances.width * 2)

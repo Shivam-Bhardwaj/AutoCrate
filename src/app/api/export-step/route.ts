@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { CrateConfiguration } from '@/types/crate'
+import { CrateConfiguration, CrateDimensions } from '@/types/crate'
 import { calculateCrateDimensions } from '@/lib/domain/calculations'
 
 export async function POST(request: NextRequest) {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function generateSTEPContent(config: CrateConfiguration, dimensions: any) {
+function generateSTEPContent(config: CrateConfiguration, dimensions: CrateDimensions) {
   // Generate a simplified STEP file representation
   // In a real implementation, this would use a proper STEP file library
   

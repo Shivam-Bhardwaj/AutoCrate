@@ -60,8 +60,6 @@ export function DesignStudio() {
             }>
               <CrateVisualizer
                 config={configuration}
-                showPMI={viewport.showPMI}
-                showDimensions={viewport.showDimensions}
                 showExploded={viewport.showExploded}
                 className="h-full w-full"
               />

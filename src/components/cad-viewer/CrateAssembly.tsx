@@ -48,7 +48,6 @@ export function CrateAssembly({ config, dimensions, showExploded = false }: Crat
         dimensions={dimensions}
         position={[0, config.materials.plywood.thickness / 2, 0]}
         material={config.materials.lumber.grade}
-        explosionOffset={explosionOffset}
       />
       
       {/* Corner Posts (4 vertical 2x4s) */}
@@ -56,7 +55,6 @@ export function CrateAssembly({ config, dimensions, showExploded = false }: Crat
         dimensions={dimensions}
         height={dimensions.overallHeight}
         material={config.materials.lumber.grade}
-        explosionOffset={explosionOffset}
       />
       
       {/* Side Panels */}
@@ -114,7 +112,6 @@ export function CrateAssembly({ config, dimensions, showExploded = false }: Crat
         dimensions={dimensions}
         position={[0, dimensions.overallHeight - config.materials.plywood.thickness / 2 + explosionOffset, 0]}
         material={config.materials.lumber.grade}
-        explosionOffset={explosionOffset}
       />
       
       {/* Top Panel */}
@@ -143,13 +140,11 @@ export function CrateAssembly({ config, dimensions, showExploded = false }: Crat
 function CrateFrame({ 
   dimensions, 
   position, 
-  material, 
-  explosionOffset 
+  material
 }: { 
   dimensions: CrateDimensions
   position: [number, number, number]
   material: string
-  explosionOffset: number
 }) {
   const frameColor = getLumberColor(material)
   const frameThickness = 1.5 // 2x4 actual thickness
@@ -184,18 +179,14 @@ function CrateFrame({
 function CornerPosts({ 
   dimensions, 
   height, 
-  material, 
-  explosionOffset 
+  material
 }: { 
   dimensions: CrateDimensions
   height: number
   material: string
-  explosionOffset: number
 }) {
   const frameColor = getLumberColor(material)
   const frameThickness = 1.5 // 2x4 actual thickness
-  const frameHeight = 3.5 // 2x4 actual height
-  
   const cornerPositions: [number, number, number][] = [
     [-dimensions.overallWidth / 2, height / 2, -dimensions.overallLength / 2],
     [dimensions.overallWidth / 2, height / 2, -dimensions.overallLength / 2],

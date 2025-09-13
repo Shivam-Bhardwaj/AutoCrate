@@ -35,6 +35,8 @@ export interface CrateConfiguration {
     lumber: {
       grade: 'Standard' | '#2' | '#1' | 'Select'
       treatment: 'Untreated' | 'Pressure Treated' | 'Fire Retardant'
+      thickness: number // inches
+      width: number // inches
     }
     plywood: {
       grade: 'CDX' | 'BC' | 'AC'
@@ -174,7 +176,9 @@ export const defaultCrateConfiguration: CrateConfiguration = {
   materials: {
     lumber: {
       grade: 'Standard',
-      treatment: 'Untreated'
+      treatment: 'Untreated',
+      thickness: 1.5,
+      width: 3.5
     },
     plywood: {
       grade: 'CDX',
