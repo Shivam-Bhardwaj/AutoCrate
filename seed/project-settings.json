@@ -1,0 +1,200 @@
+{
+  "name": "AutoCrate 2025",
+  "version": "2.0.0-production",
+  "description": "Industrial shipping crate design tool with NX CAD integration for Applied Materials",
+  
+  "architecture": {
+    "type": "vercel-serverless",
+    "database": "none",
+    "stateManagement": "client-side",
+    "deployment": "vercel-continuous"
+  },
+  
+  "techStack": {
+    "framework": "next.js-14",
+    "language": "typescript-5",
+    "styling": "tailwind-css",
+    "components": "radix-ui",
+    "stateManagement": "zustand",
+    "3dEngine": "threejs-react-three-fiber", 
+    "testing": "jest-playwright",
+    "deployment": "vercel-edge-functions",
+    "storage": "vercel-blob"
+  },
+  
+  "businessRequirements": {
+    "client": "Applied Materials (AMAT)",
+    "industry": "Semiconductor Manufacturing",
+    "standards": "AMAT-0251-70054",
+    "cadIntegration": "NX CAD",
+    "compliance": "100% required"
+  },
+  
+  "developmentRules": {
+    "typescript": {
+      "strict": true,
+      "noAny": true,
+      "noImplicitReturns": true,
+      "exactOptionalPropertyTypes": true
+    },
+    "architecture": {
+      "noDatabase": true,
+      "clientSideOnly": true,
+      "serverlessOnly": true,
+      "vercelOptimized": true
+    },
+    "quality": {
+      "testCoverage": ">95%",
+      "performanceScore": ">90",
+      "accessibilityScore": ">95%",
+      "zeroTSErrors": true,
+      "zeroLintErrors": true
+    }
+  },
+  
+  "priorities": [
+    {
+      "phase": "foundation",
+      "tasks": [
+        "Initialize Next.js 14 with TypeScript strict mode",
+        "Configure Zustand client state management",
+        "Setup Three.js + React Three Fiber",
+        "Deploy to Vercel with continuous deployment"
+      ]
+    },
+    {
+      "phase": "core-logic", 
+      "tasks": [
+        "Implement Applied Materials standards validation",
+        "Build constraint satisfaction solver",
+        "Create real-time validation feedback",
+        "Add comprehensive test coverage"
+      ]
+    },
+    {
+      "phase": "3d-visualization",
+      "tasks": [
+        "Complete parametric 3D crate visualization",
+        "Build responsive design studio interface", 
+        "Add real-time constraint highlighting",
+        "Implement mobile-optimized controls"
+      ]
+    },
+    {
+      "phase": "nx-integration",
+      "tasks": [
+        "Create NX expression generation service",
+        "Implement STEP AP242 export functionality",
+        "Build Vercel edge functions for file processing",
+        "Add manufacturing metadata integration"
+      ]
+    }
+  ],
+  
+  "performanceTargets": {
+    "initialLoadTime": "<2s",
+    "3dRenderTime": "<500ms", 
+    "constraintValidation": "<100ms",
+    "mobileCompatibility": "iOS14+, Chrome90+",
+    "offlineCapability": true
+  },
+  
+  "qualityGates": {
+    "preCommit": [
+      "npm run type-check",
+      "npm run lint", 
+      "npm run test",
+      "npm run build"
+    ],
+    "deployment": [
+      "Zero TypeScript errors",
+      "Zero ESLint errors",
+      ">95% test coverage",
+      "Lighthouse score >90",
+      "Applied Materials compliance validation"
+    ]
+  },
+  
+  "fileStructure": {
+    "src/app": "Next.js 14 App Router pages",
+    "src/components": "React components organized by domain",
+    "src/lib": "Client-side utilities and domain logic", 
+    "src/stores": "Zustand state stores",
+    "src/types": "TypeScript type definitions",
+    "src/constants": "Applied Materials standards and configuration"
+  },
+  
+  "environmentVariables": {
+    "development": [
+      "NEXT_PUBLIC_APP_ENV=development",
+      "NEXT_PUBLIC_VERCEL_URL",
+      "BLOB_READ_WRITE_TOKEN"
+    ],
+    "production": [
+      "NEXT_PUBLIC_APP_ENV=production", 
+      "NEXT_PUBLIC_VERCEL_URL",
+      "BLOB_READ_WRITE_TOKEN",
+      "EDGE_CONFIG"
+    ]
+  },
+  
+  "dependencies": {
+    "core": [
+      "next@14+",
+      "react@18+", 
+      "typescript@5+",
+      "zustand",
+      "@vercel/blob"
+    ],
+    "3d": [
+      "@react-three/fiber",
+      "@react-three/drei", 
+      "three"
+    ],
+    "ui": [
+      "tailwindcss",
+      "@radix-ui/react-*",
+      "lucide-react",
+      "class-variance-authority"
+    ],
+    "testing": [
+      "jest",
+      "@testing-library/react",
+      "@testing-library/jest-dom",
+      "playwright"
+    ]
+  },
+  
+  "cursorSettings": {
+    "autoMode": true,
+    "agentMode": true,
+    "contextFiles": [
+      "autocrate-enhanced-2025.md",
+      "autocrate-vercel-architecture.md", 
+      "autocrate-vercel-todo.md",
+      "cursor-agent-prompt.md"
+    ],
+    "ignorePatterns": [
+      "node_modules/**",
+      ".next/**",
+      ".vercel/**",
+      "coverage/**"
+    ],
+    "typescriptConfig": "strict",
+    "eslintRules": "recommended-typescript",
+    "prettierConfig": "standard"
+  },
+  
+  "deploymentConfig": {
+    "vercel": {
+      "framework": "nextjs",
+      "buildCommand": "npm run build",
+      "installCommand": "npm install",
+      "functions": {
+        "src/app/api/*/route.ts": {
+          "runtime": "edge"
+        }
+      }
+    }
+  }
+}
