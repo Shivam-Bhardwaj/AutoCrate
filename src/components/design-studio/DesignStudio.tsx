@@ -15,19 +15,19 @@ export function DesignStudio() {
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b px-6 py-4">
+      <header className="bg-white shadow-professional border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">AutoCrate Design Studio</h1>
-            <p className="text-sm text-gray-600">Applied Materials Standards: AMAT-0251-70054</p>
+            <h1 className="text-2xl font-bold text-primary">AutoCrate Design Studio</h1>
+            <p className="text-sm text-secondary">Applied Materials Standards: AMAT-0251-70054</p>
           </div>
           <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-secondary">
               {validationResults.length > 0 && (
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                   validationResults[0].isValid 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
+                    ? 'status-success' 
+                    : 'status-error'
                 }`}>
                   {validationResults[0].isValid ? 'Valid' : 'Issues Found'}
                 </span>
@@ -40,7 +40,7 @@ export function DesignStudio() {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Configuration */}
-        <div className="w-80 bg-white shadow-lg flex flex-col">
+        <div className="w-80 bg-white shadow-professional-lg flex flex-col">
           <div className="flex-1 overflow-y-auto">
             <ConfigurationPanel />
           </div>
@@ -123,7 +123,7 @@ export function DesignStudio() {
         </div>
         
         {/* Right Panel - Validation & Export */}
-        <div className="w-80 bg-white shadow-lg flex flex-col">
+        <div className="w-80 bg-white shadow-professional-lg flex flex-col">
           <div className="flex-1 overflow-y-auto">
             <ValidationPanel />
             <ExportPanel />

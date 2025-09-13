@@ -1,18 +1,31 @@
 'use client'
 
-import { useValidationResults } from '@/stores/crate-store'
+import { useValidationResults, useCrateStore } from '@/stores/crate-store'
 import { getValidationExplanation } from '@/lib/domain/validation'
 
 export function ValidationPanel() {
   const validationResults = useValidationResults()
+  const isValidating = useCrateStore(state => state.isValidating)
   
-  if (validationResults.length === 0) {
+  if (validationResults.length === 0 && !isValidating) {
     return (
       <div className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Validation</h2>
+        <h2 className="text-lg font-semibold text-primary mb-4">Validation</h2>
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Validating configuration...</p>
+          <div className="loading-spinner h-8 w-8 mx-auto mb-4"></div>
+          <p className="text-secondary">Initializing validation...</p>
+        </div>
+      </div>
+    )
+  }
+  
+  if (isValidating) {
+    return (
+      <div className="p-6">
+        <h2 className="text-lg font-semibold text-primary mb-4">Validation</h2>
+        <div className="text-center py-8">
+          <div className="loading-spinner h-8 w-8 mx-auto mb-4"></div>
+          <p className="text-secondary">Validating configuration...</p>
         </div>
       </div>
     )

@@ -29,8 +29,8 @@ export function CrateVisualizer({
     <div className={className}>
       <Canvas 
         camera={{ 
-          position: [20, 20, 20], 
-          fov: 45,
+          position: [40, 30, 40], 
+          fov: 40,
           near: 0.1,
           far: 1000
         }}
@@ -75,8 +75,8 @@ export function CrateVisualizer({
             enablePan={true} 
             enableZoom={true} 
             enableRotate={true}
-            maxDistance={100}
-            minDistance={5}
+            maxDistance={200}
+            minDistance={10}
             enableDamping={true}
             dampingFactor={0.05}
             screenSpacePanning={false}

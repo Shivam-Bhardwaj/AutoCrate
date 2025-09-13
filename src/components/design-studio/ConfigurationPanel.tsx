@@ -7,16 +7,16 @@ export function ConfigurationPanel() {
   const updateConfiguration = useCrateStore(state => state.updateConfiguration)
   
   return (
-    <div className="p-6 space-y-6">
-      <h2 className="text-lg font-semibold text-gray-900">Crate Configuration</h2>
+    <div className="p-6 section-spacing">
+      <h2 className="text-lg font-semibold text-primary">Crate Configuration</h2>
       
       {/* Product Specifications */}
       <div className="space-y-4">
-        <h3 className="text-md font-medium text-gray-800">Product Specifications</h3>
+        <h3 className="text-md font-medium text-primary">Product Specifications</h3>
         
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Length (in)
             </label>
             <input
@@ -32,7 +32,7 @@ export function ConfigurationPanel() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Width (in)
             </label>
             <input
@@ -48,7 +48,7 @@ export function ConfigurationPanel() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Height (in)
             </label>
             <input
@@ -64,7 +64,7 @@ export function ConfigurationPanel() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Weight (lbs)
             </label>
             <input
@@ -83,11 +83,11 @@ export function ConfigurationPanel() {
       
       {/* Clearances */}
       <div className="space-y-4">
-        <h3 className="text-md font-medium text-gray-800">Clearances</h3>
+        <h3 className="text-md font-medium text-primary">Clearances</h3>
         
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Width (in)
             </label>
             <input
@@ -103,7 +103,7 @@ export function ConfigurationPanel() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Length (in)
             </label>
             <input
@@ -119,7 +119,7 @@ export function ConfigurationPanel() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Height (in)
             </label>
             <input
@@ -138,11 +138,11 @@ export function ConfigurationPanel() {
       
       {/* Skid Configuration */}
       <div className="space-y-4">
-        <h3 className="text-md font-medium text-gray-800">Skid Configuration</h3>
+        <h3 className="text-md font-medium text-primary">Skid Configuration</h3>
         
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Count
             </label>
             <input
@@ -157,7 +157,7 @@ export function ConfigurationPanel() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Pitch (in)
             </label>
             <input
@@ -173,7 +173,7 @@ export function ConfigurationPanel() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Front Overhang (in)
             </label>
             <input
@@ -195,7 +195,7 @@ export function ConfigurationPanel() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Back Overhang (in)
             </label>
             <input
@@ -220,11 +220,11 @@ export function ConfigurationPanel() {
       
       {/* Material Specifications */}
       <div className="space-y-4">
-        <h3 className="text-md font-medium text-gray-800">Materials</h3>
+        <h3 className="text-md font-medium text-primary">Materials</h3>
         
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Lumber Grade
             </label>
             <select
@@ -245,7 +245,7 @@ export function ConfigurationPanel() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Plywood Grade
             </label>
             <select
@@ -265,7 +265,7 @@ export function ConfigurationPanel() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Plywood Thickness (in)
             </label>
             <input

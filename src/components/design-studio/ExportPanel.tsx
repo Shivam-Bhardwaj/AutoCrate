@@ -46,14 +46,14 @@ export function ExportPanel() {
   
   return (
     <div className="p-6 border-t border-gray-200">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Export</h2>
+      <h2 className="text-lg font-semibold text-primary mb-4">Export</h2>
       
       {/* Export Buttons */}
       <div className="space-y-3">
         <button
           onClick={() => handleExport('nx-expressions')}
           disabled={isExporting}
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Export NX Expressions
         </button>
@@ -61,7 +61,7 @@ export function ExportPanel() {
         <button
           onClick={() => handleExport('step-file')}
           disabled={isExporting}
-          className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
         >
           Export STEP File
         </button>
@@ -69,7 +69,7 @@ export function ExportPanel() {
         <button
           onClick={() => handleExport('pdf-drawing')}
           disabled={isExporting}
-          className="w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
         >
           Export PDF Drawing
         </button>

@@ -94,7 +94,7 @@ export const useCrateStore = create<CrateStore>()(
       
       // Validation State
       validationResults: [],
-      isValidating: false,
+      isValidating: true,
       
       validateConfiguration: async () => {
         set({ isValidating: true })
