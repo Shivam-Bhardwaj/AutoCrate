@@ -9,6 +9,7 @@ import {
   appliedMaterialsStandards
 } from '@/types/crate'
 import { validateCrateConfiguration } from '@/lib/domain/validation'
+import { calculateCrateDimensions } from '@/lib/domain/calculations'
 
 interface CrateStore {
   // Configuration State
@@ -46,10 +47,36 @@ const generateId = (): string => {
   return `export_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
 
-// Default viewport state - calculated for 95" height crate (max dimension)
+// Calculate default viewport based on default crate configuration
+const calculateDefaultCameraPosition = () => {
+  const defaultConfig = defaultCrateConfiguration
+  const dimensions = calculateCrateDimensions(defaultConfig)
+  
+  const halfWidth = dimensions.overallWidth / 2
+  const halfLength = dimensions.overallLength / 2
+  const halfHeight = dimensions.overallHeight / 2
+  
+  const diagonal = Math.sqrt(
+    halfWidth * halfWidth + 
+    halfLength * halfLength + 
+    halfHeight * halfHeight
+  )
+  
+  const fovRadians = (40 * Math.PI) / 180
+  const distance = (diagonal * 1.2) / Math.tan(fovRadians / 2)
+  
+  const angle = Math.PI / 4
+  const x = distance * Math.cos(angle)
+  const y = distance * 0.6
+  const z = distance * Math.sin(angle)
+  
+  return [x, y, z] as [number, number, number]
+}
+
+// Default viewport state - dynamically calculated
 const defaultViewport: ViewportState = {
   camera: {
-    position: [142.5, 114, 142.5], // 95 * 1.5, 95 * 1.2, 95 * 1.5
+    position: calculateDefaultCameraPosition(),
     target: [0, 0, 0]
   },
   selectedComponents: [],

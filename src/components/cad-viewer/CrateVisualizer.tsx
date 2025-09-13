@@ -25,11 +25,32 @@ export function CrateVisualizer({
 }: CrateVisualizerProps) {
   const dimensions = useMemo(() => calculateCrateDimensions(config), [config])
   
-  // Calculate optimal camera position based on crate size
+  // Calculate optimal camera position to fit entire crate in view
   const cameraPosition = useMemo(() => {
-    const maxDimension = Math.max(dimensions.overallLength, dimensions.overallWidth, dimensions.overallHeight)
-    const distance = maxDimension * 1.5 // 1.5x the largest dimension
-    return [distance, distance * 0.8, distance] as [number, number, number]
+    // Create bounding box for the entire crate
+    const halfWidth = dimensions.overallWidth / 2
+    const halfLength = dimensions.overallLength / 2
+    const halfHeight = dimensions.overallHeight / 2
+    
+    // Calculate the diagonal distance from center to corner
+    const diagonal = Math.sqrt(
+      halfWidth * halfWidth + 
+      halfLength * halfLength + 
+      halfHeight * halfHeight
+    )
+    
+    // Field of view is 40 degrees, so we need distance to fit the diagonal
+    // Using trigonometry: distance = diagonal / tan(fov/2)
+    const fovRadians = (40 * Math.PI) / 180
+    const distance = (diagonal * 1.2) / Math.tan(fovRadians / 2) // 1.2x for padding
+    
+    // Position camera at an angle to show the crate nicely
+    const angle = Math.PI / 4 // 45 degrees
+    const x = distance * Math.cos(angle)
+    const y = distance * 0.6 // Slightly lower for better view
+    const z = distance * Math.sin(angle)
+    
+    return [x, y, z] as [number, number, number]
   }, [dimensions])
   
   return (
@@ -82,8 +103,8 @@ export function CrateVisualizer({
             enablePan={true} 
             enableZoom={true} 
             enableRotate={true}
-            maxDistance={Math.max(dimensions.overallLength, dimensions.overallWidth, dimensions.overallHeight) * 3}
-            minDistance={Math.max(dimensions.overallLength, dimensions.overallWidth, dimensions.overallHeight) * 0.3}
+            maxDistance={cameraPosition[0] * 3} // Allow zooming out 3x from optimal position
+            minDistance={Math.max(dimensions.overallLength, dimensions.overallWidth, dimensions.overallHeight) * 0.5} // Don't get too close
             enableDamping={true}
             dampingFactor={0.05}
             screenSpacePanning={false}

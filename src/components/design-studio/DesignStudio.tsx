@@ -112,13 +112,28 @@ export function DesignStudio() {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => {
-                    const maxDimension = Math.max(
-                      calculateCrateDimensions(configuration).overallLength,
-                      calculateCrateDimensions(configuration).overallWidth,
-                      calculateCrateDimensions(configuration).overallHeight
+                    const dimensions = calculateCrateDimensions(configuration)
+                    
+                    // Calculate optimal camera position using same logic as CrateVisualizer
+                    const halfWidth = dimensions.overallWidth / 2
+                    const halfLength = dimensions.overallLength / 2
+                    const halfHeight = dimensions.overallHeight / 2
+                    
+                    const diagonal = Math.sqrt(
+                      halfWidth * halfWidth + 
+                      halfLength * halfLength + 
+                      halfHeight * halfHeight
                     )
-                    const distance = maxDimension * 1.5
-                    const resetPosition: [number, number, number] = [distance, distance * 0.8, distance]
+                    
+                    const fovRadians = (40 * Math.PI) / 180
+                    const distance = (diagonal * 1.2) / Math.tan(fovRadians / 2)
+                    
+                    const angle = Math.PI / 4
+                    const x = distance * Math.cos(angle)
+                    const y = distance * 0.6
+                    const z = distance * Math.sin(angle)
+                    
+                    const resetPosition: [number, number, number] = [x, y, z]
                     
                     useCrateStore.getState().updateViewport({
                       camera: { position: resetPosition, target: [0, 0, 0] }
@@ -126,7 +141,7 @@ export function DesignStudio() {
                   }}
                   className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
-                  Reset View
+                  Auto Fit
                 </button>
               </div>
             </div>
