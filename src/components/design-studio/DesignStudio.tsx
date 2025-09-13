@@ -6,6 +6,7 @@ import { CrateVisualizer } from '@/components/cad-viewer/CrateVisualizer'
 import { ConfigurationPanel } from './ConfigurationPanel'
 import { ValidationPanel } from './ValidationPanel'
 import { ExportPanel } from './ExportPanel'
+import { calculateCrateDimensions } from '@/lib/domain/calculations'
 
 export function DesignStudio() {
   const configuration = useCrateConfiguration()
@@ -110,9 +111,19 @@ export function DesignStudio() {
               
               <div className="flex items-center space-x-2">
                 <button
-                  onClick={() => useCrateStore.getState().updateViewport({
-                    camera: { position: [20, 20, 20], target: [0, 0, 0] }
-                  })}
+                  onClick={() => {
+                    const maxDimension = Math.max(
+                      calculateCrateDimensions(configuration).overallLength,
+                      calculateCrateDimensions(configuration).overallWidth,
+                      calculateCrateDimensions(configuration).overallHeight
+                    )
+                    const distance = maxDimension * 1.5
+                    const resetPosition: [number, number, number] = [distance, distance * 0.8, distance]
+                    
+                    useCrateStore.getState().updateViewport({
+                      camera: { position: resetPosition, target: [0, 0, 0] }
+                    })
+                  }}
                   className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
                   Reset View

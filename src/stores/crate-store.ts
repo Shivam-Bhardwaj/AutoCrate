@@ -46,10 +46,10 @@ const generateId = (): string => {
   return `export_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
 
-// Default viewport state
+// Default viewport state - calculated for 95" height crate (max dimension)
 const defaultViewport: ViewportState = {
   camera: {
-    position: [20, 20, 20],
+    position: [142.5, 114, 142.5], // 95 * 1.5, 95 * 1.2, 95 * 1.5
     target: [0, 0, 0]
   },
   selectedComponents: [],

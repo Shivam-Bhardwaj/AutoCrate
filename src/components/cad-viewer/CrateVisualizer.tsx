@@ -25,11 +25,18 @@ export function CrateVisualizer({
 }: CrateVisualizerProps) {
   const dimensions = useMemo(() => calculateCrateDimensions(config), [config])
   
+  // Calculate optimal camera position based on crate size
+  const cameraPosition = useMemo(() => {
+    const maxDimension = Math.max(dimensions.overallLength, dimensions.overallWidth, dimensions.overallHeight)
+    const distance = maxDimension * 1.5 // 1.5x the largest dimension
+    return [distance, distance * 0.8, distance] as [number, number, number]
+  }, [dimensions])
+  
   return (
     <div className={className}>
       <Canvas 
         camera={{ 
-          position: [40, 30, 40], 
+          position: cameraPosition, 
           fov: 40,
           near: 0.1,
           far: 1000
@@ -75,8 +82,8 @@ export function CrateVisualizer({
             enablePan={true} 
             enableZoom={true} 
             enableRotate={true}
-            maxDistance={200}
-            minDistance={10}
+            maxDistance={Math.max(dimensions.overallLength, dimensions.overallWidth, dimensions.overallHeight) * 3}
+            minDistance={Math.max(dimensions.overallLength, dimensions.overallWidth, dimensions.overallHeight) * 0.3}
             enableDamping={true}
             dampingFactor={0.05}
             screenSpacePanning={false}
@@ -84,9 +91,20 @@ export function CrateVisualizer({
           />
           
           {/* Professional grid and background */}
-          <gridHelper args={[50, 50, '#888888', '#444444']} position={[0, -0.1, 0]} />
+          <gridHelper 
+            args={[
+              Math.max(dimensions.overallLength, dimensions.overallWidth) * 2, 
+              Math.max(dimensions.overallLength, dimensions.overallWidth) * 2, 
+              '#888888', 
+              '#444444'
+            ]} 
+            position={[0, -0.1, 0]} 
+          />
           <mesh position={[0, -1, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-            <planeGeometry args={[100, 100]} />
+            <planeGeometry args={[
+              Math.max(dimensions.overallLength, dimensions.overallWidth) * 3, 
+              Math.max(dimensions.overallLength, dimensions.overallWidth) * 3
+            ]} />
             <meshLambertMaterial color="#f0f0f0" />
           </mesh>
         </Suspense>
