@@ -54,7 +54,7 @@ export function CrateVisualizer({
   }, [dimensions])
   
   return (
-    <div className={className}>
+    <div className={className} role=" img\ aria-label=\3D Crate Visualization\ tabIndex=\0\>
       <Canvas 
         camera={{ 
           position: cameraPosition, 
