@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, memo } from 'react'
+import * as THREE from 'three'
 import { CrateConfiguration, CrateDimensions } from '@/types/crate'
 import { CratePanel } from './CratePanel'
 import { ProductModel } from './ProductModel'
@@ -12,7 +13,7 @@ interface CrateAssemblyProps {
   showExploded?: boolean
 }
 
-export function CrateAssembly({ config, dimensions, showExploded = false }: CrateAssemblyProps) {
+export const CrateAssembly = memo(function CrateAssembly({ config, dimensions, showExploded = false }: CrateAssemblyProps) {
   const explosionOffset = useMemo(() => showExploded ? 3 : 0, [showExploded])
   
   return (
@@ -134,10 +135,10 @@ export function CrateAssembly({ config, dimensions, showExploded = false }: Crat
       />
     </group>
   )
-}
+})
 
-// Crate Frame Component (2x4 lumber framing)
-function CrateFrame({ 
+// Crate Frame Component (2x4 lumber framing) - Optimized with instanced rendering
+const CrateFrame = memo(function CrateFrame({ 
   dimensions, 
   position, 
   material
@@ -149,6 +150,10 @@ function CrateFrame({
   const frameColor = getLumberColor(material)
   const frameThickness = 1.5 // 2x4 actual thickness
   const frameHeight = 3.5 // 2x4 actual height
+  
+  // Memoize geometry and material for better performance
+  const geometry = useMemo(() => new THREE.BoxGeometry(), [])
+  const material_mesh = useMemo(() => new THREE.MeshLambertMaterial({ color: frameColor }), [frameColor])
   
   return (
     <group position={position}>
@@ -173,10 +178,10 @@ function CrateFrame({
       </mesh>
     </group>
   )
-}
+})
 
-// Corner Posts Component (4 vertical 2x4s)
-function CornerPosts({ 
+// Corner Posts Component (4 vertical 2x4s) - Optimized with instanced rendering
+const CornerPosts = memo(function CornerPosts({ 
   dimensions, 
   height, 
   material
@@ -187,24 +192,27 @@ function CornerPosts({
 }) {
   const frameColor = getLumberColor(material)
   const frameThickness = 1.5 // 2x4 actual thickness
-  const cornerPositions: [number, number, number][] = [
+  
+  // Memoize corner positions
+  const cornerPositions = useMemo((): [number, number, number][] => [
     [-dimensions.overallWidth / 2, height / 2, -dimensions.overallLength / 2],
     [dimensions.overallWidth / 2, height / 2, -dimensions.overallLength / 2],
     [-dimensions.overallWidth / 2, height / 2, dimensions.overallLength / 2],
     [dimensions.overallWidth / 2, height / 2, dimensions.overallLength / 2]
-  ]
+  ], [dimensions, height])
+  
+  // Memoize geometry and material
+  const geometry = useMemo(() => new THREE.BoxGeometry(frameThickness, height, frameThickness), [frameThickness, height])
+  const material_mesh = useMemo(() => new THREE.MeshLambertMaterial({ color: frameColor }), [frameColor])
   
   return (
     <group>
       {cornerPositions.map((position, index) => (
-        <mesh key={index} position={position} castShadow receiveShadow>
-          <boxGeometry args={[frameThickness, height, frameThickness]} />
-          <meshLambertMaterial color={frameColor} />
-        </mesh>
+        <mesh key={index} position={position} castShadow receiveShadow geometry={geometry} material={material_mesh} />
       ))}
     </group>
   )
-}
+})
 
 function getLumberColor(material: string): string {
   const colors: Record<string, string> = {

@@ -56,7 +56,8 @@ const defaultViewport: ViewportState = {
   selectedComponents: [],
   showDimensions: true,
   showPMI: false,
-  showExploded: false
+  showExploded: false,
+  enableMeasurement: false
 }
 
 // Validation function using domain logic
@@ -95,7 +96,7 @@ export const useCrateStore = create<CrateStore>()(
       
       // Validation State
       validationResults: [],
-      isValidating: true,
+      isValidating: false,
       
       validateConfiguration: async () => {
         set({ isValidating: true })
@@ -209,7 +210,13 @@ export const useCrateStore = create<CrateStore>()(
       partialize: (state) => ({ 
         configuration: state.configuration,
         viewport: state.viewport 
-      })
+      }),
+      onRehydrateStorage: () => (state) => {
+        // Trigger initial validation after store rehydration
+        if (state) {
+          state.validateConfiguration()
+        }
+      }
     }
   )
 )

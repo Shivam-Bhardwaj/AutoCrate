@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { CrateConfiguration, CrateDimensions } from '@/types/crate'
-import { calculateCrateDimensions } from '@/lib/domain/calculations'
+import { calculateCrateDimensions, generateBillOfMaterials, calculateMaterialEfficiency, calculateCrateWeight } from '@/lib/domain/calculations'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,11 +14,14 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Calculate dimensions
+    // Calculate dimensions and manufacturing data
     const dimensions = calculateCrateDimensions(config)
+    const bom = generateBillOfMaterials(config)
+    const efficiency = calculateMaterialEfficiency(config)
+    const weight = calculateCrateWeight(config)
     
-    // Generate PDF content (simplified representation)
-    const pdfData = generatePDFContent(config, dimensions)
+    // Generate comprehensive PDF content
+    const pdfData = generatePDFContent(config, dimensions, bom, efficiency, weight)
     
     return NextResponse.json({
       success: true,
@@ -40,7 +43,13 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function generatePDFContent(config: CrateConfiguration, dimensions: CrateDimensions) {
+function generatePDFContent(
+  config: CrateConfiguration, 
+  dimensions: CrateDimensions, 
+  bom: { items: Array<{ id: string; description: string; quantity: number; unit: string; cost?: number }>; totalCost: number; materialWaste: number }, 
+  efficiency: number, 
+  weight: number
+) {
   const timestamp = new Date().toISOString()
   const filename = `autocrate_drawing_${timestamp.split('T')[0]}.pdf`
   
@@ -106,6 +115,23 @@ function generatePDFContent(config: CrateConfiguration, dimensions: CrateDimensi
       }
     },
     
+    // Bill of Materials
+    billOfMaterials: {
+      items: bom.items,
+      totalCost: bom.totalCost,
+      materialWaste: bom.materialWaste,
+      efficiency: efficiency
+    },
+    
+    // Manufacturing specifications
+    manufacturing: {
+      estimatedWeight: weight,
+      materialEfficiency: efficiency,
+      buildTime: Math.round(weight * 0.1 + bom.items.length * 0.5), // minutes
+      laborCost: Math.round(weight * 0.1 + bom.items.length * 0.5) * 0.5, // $0.50/minute
+      totalCost: bom.totalCost + (Math.round(weight * 0.1 + bom.items.length * 0.5) * 0.5)
+    },
+    
     // Standards compliance
     standards: {
       appliedMaterials: 'AMAT-0251-70054',
@@ -113,13 +139,27 @@ function generatePDFContent(config: CrateConfiguration, dimensions: CrateDimensi
       compliance: 'FULL'
     },
     
+    // Quality requirements
+    qualityRequirements: [
+      `Lumber grade: ${config.materials.lumber.grade}`,
+      `Plywood grade: ${config.materials.plywood.grade}`,
+      'Fastener specification: #10 x 2" deck screws',
+      'Finish: Weather-resistant treatment required',
+      'Dimensional tolerance: ±0.125"',
+      'Weight tolerance: ±5%',
+      'Clearance tolerance: ±0.25"'
+    ],
+    
     // Notes
     notes: [
       'All dimensions in inches unless otherwise specified',
       'Materials must meet Applied Materials specifications',
       'Center of gravity must be within acceptable limits',
       'Skid configuration must support product weight',
-      'Clearances must accommodate handling equipment'
+      'Clearances must accommodate handling equipment',
+      `Material efficiency: ${efficiency.toFixed(1)}%`,
+      `Estimated build time: ${Math.round(weight * 0.1 + bom.items.length * 0.5)} minutes`,
+      `Total estimated cost: $${(bom.totalCost + (Math.round(weight * 0.1 + bom.items.length * 0.5) * 0.5)).toFixed(2)}`
     ]
   }
   
