@@ -1,6 +1,7 @@
 'use client'
 
 import { useCrateStore, useCrateConfiguration } from '@/stores/crate-store'
+import { useFormFieldAccessibility } from '@/hooks/useAccessibility'
 
 export function ConfigurationPanel() {
   const configuration = useCrateConfiguration()
@@ -8,31 +9,34 @@ export function ConfigurationPanel() {
   
   return (
     <div className="p-6 section-spacing">
-      <h2 className="text-lg font-semibold text-primary">Crate Configuration</h2>
+      <h2 className="text-lg font-semibold text-slate-900">Crate Configuration</h2>
       
       {/* Product Specifications */}
       <div className="space-y-4">
-        <h3 className="text-md font-medium text-primary">Product Specifications</h3>
+        <h3 className="text-md font-medium text-slate-800">Product Specifications</h3>
         
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label htmlFor="product-length" className="block text-sm font-medium text-slate-700 mb-1">
               Length (in)
             </label>
             <input
               type="number"
+              id="product-length"
               value={configuration.product.length}
               onChange={(e) => updateConfiguration({
                 product: { ...configuration.product, length: Number(e.target.value) }
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               step="0.1"
               min="0"
+              aria-describedby="product-length-help"
             />
+            <span id="product-length-help" className="sr-only">Enter the length of the product in inches</span>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Width (in)
             </label>
             <input
@@ -41,14 +45,14 @@ export function ConfigurationPanel() {
               onChange={(e) => updateConfiguration({
                 product: { ...configuration.product, width: Number(e.target.value) }
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               step="0.1"
               min="0"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Height (in)
             </label>
             <input
@@ -57,14 +61,14 @@ export function ConfigurationPanel() {
               onChange={(e) => updateConfiguration({
                 product: { ...configuration.product, height: Number(e.target.value) }
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               step="0.1"
               min="0"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Weight (lbs)
             </label>
             <input
@@ -73,7 +77,7 @@ export function ConfigurationPanel() {
               onChange={(e) => updateConfiguration({
                 product: { ...configuration.product, weight: Number(e.target.value) }
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               step="1"
               min="0"
             />
@@ -83,11 +87,11 @@ export function ConfigurationPanel() {
       
       {/* Clearances */}
       <div className="space-y-4">
-        <h3 className="text-md font-medium text-primary">Clearances</h3>
+        <h3 className="text-md font-medium text-slate-800">Clearances</h3>
         
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Width (in)
             </label>
             <input
@@ -96,14 +100,14 @@ export function ConfigurationPanel() {
               onChange={(e) => updateConfiguration({
                 clearances: { ...configuration.clearances, width: Number(e.target.value) }
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               step="0.1"
               min="1"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Length (in)
             </label>
             <input
@@ -112,14 +116,14 @@ export function ConfigurationPanel() {
               onChange={(e) => updateConfiguration({
                 clearances: { ...configuration.clearances, length: Number(e.target.value) }
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               step="0.1"
               min="1"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Height (in)
             </label>
             <input
@@ -128,7 +132,7 @@ export function ConfigurationPanel() {
               onChange={(e) => updateConfiguration({
                 clearances: { ...configuration.clearances, height: Number(e.target.value) }
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               step="0.1"
               min="1"
             />
@@ -138,11 +142,11 @@ export function ConfigurationPanel() {
       
       {/* Skid Configuration */}
       <div className="space-y-4">
-        <h3 className="text-md font-medium text-primary">Skid Configuration</h3>
+        <h3 className="text-md font-medium text-slate-800">Skid Configuration</h3>
         
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Count
             </label>
             <input
@@ -151,13 +155,13 @@ export function ConfigurationPanel() {
               onChange={(e) => updateConfiguration({
                 skids: { ...configuration.skids, count: Number(e.target.value) }
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               min="1"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Pitch (in)
             </label>
             <input
@@ -166,14 +170,14 @@ export function ConfigurationPanel() {
               onChange={(e) => updateConfiguration({
                 skids: { ...configuration.skids, pitch: Number(e.target.value) }
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               step="1"
               min="12"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Front Overhang (in)
             </label>
             <input
@@ -188,14 +192,14 @@ export function ConfigurationPanel() {
                   }
                 }
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               step="0.1"
               min="1"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Back Overhang (in)
             </label>
             <input
@@ -210,7 +214,7 @@ export function ConfigurationPanel() {
                   }
                 }
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               step="0.1"
               min="1"
             />
@@ -220,11 +224,11 @@ export function ConfigurationPanel() {
       
       {/* Material Specifications */}
       <div className="space-y-4">
-        <h3 className="text-md font-medium text-primary">Materials</h3>
+        <h3 className="text-md font-medium text-slate-800">Materials</h3>
         
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Lumber Grade
             </label>
             <select
@@ -235,7 +239,7 @@ export function ConfigurationPanel() {
                   lumber: { ...configuration.materials.lumber, grade: e.target.value as 'Standard' | '#2' | '#1' | 'Select' }
                 }
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             >
               <option value="Standard">Standard</option>
               <option value="#2">#2</option>
@@ -245,7 +249,7 @@ export function ConfigurationPanel() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Plywood Grade
             </label>
             <select
@@ -256,7 +260,7 @@ export function ConfigurationPanel() {
                   plywood: { ...configuration.materials.plywood, grade: e.target.value as 'CDX' | 'BC' | 'AC' }
                 }
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             >
               <option value="CDX">CDX</option>
               <option value="BC">BC</option>
@@ -265,7 +269,7 @@ export function ConfigurationPanel() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Plywood Thickness (in)
             </label>
             <input
@@ -277,7 +281,7 @@ export function ConfigurationPanel() {
                   plywood: { ...configuration.materials.plywood, thickness: Number(e.target.value) }
                 }
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               step="0.125"
               min="0.5"
               max="1.5"

@@ -1,17 +1,19 @@
 @import "tailwindcss";
+@import "../styles/accessibility.css";
+@import "../styles/mobile.css";
 
 /* Professional Design System */
 :root {
   --color-primary: #1e40af;
   --color-primary-dark: #1e3a8a;
-  --color-secondary: #64748b;
+  --color-secondary: #475569;
   --color-success: #059669;
   --color-warning: #d97706;
   --color-error: #dc2626;
   --color-background: #f8fafc;
   --color-surface: #ffffff;
-  --color-text: #1e293b;
-  --color-text-muted: #64748b;
+  --color-text: #0f172a;
+  --color-text-muted: #475569;
   --color-border: #e2e8f0;
   --color-border-light: #f1f5f9;
 }
@@ -224,6 +226,13 @@ a {
   animation: spin 1s linear infinite;
 }
 
+.loading-spinner {
+  border: 2px solid #e2e8f0;
+  border-top: 2px solid #1e40af;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -275,4 +284,37 @@ a {
   .grid-professional-3 {
     grid-template-columns: 1fr;
   }
+}
+
+/* Skip Links */
+.skip-links {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  z-index: 1000;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 6px;
+  background: #000;
+  color: #fff;
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 0 0 4px 4px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 1001;
+  transition: top 0.3s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+}
+
+.skip-link:hover {
+  background: #333;
 }

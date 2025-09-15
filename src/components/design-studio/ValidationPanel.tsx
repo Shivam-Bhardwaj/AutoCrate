@@ -2,18 +2,32 @@
 
 import { useValidationResults, useCrateStore } from '@/stores/crate-store'
 import { getValidationExplanation } from '@/lib/domain/validation'
+import { useEffect } from 'react'
+import { announceToScreenReader } from '@/lib/accessibility'
 
 export function ValidationPanel() {
   const validationResults = useValidationResults()
   const isValidating = useCrateStore(state => state.isValidating)
+
+  // Announce validation status changes to screen readers
+  useEffect(() => {
+    if (validationResults.length > 0) {
+      const latestResult = validationResults[0]
+      const statusMessage = latestResult.isValid 
+        ? 'Configuration is valid. All constraints satisfied and Applied Materials standards met.'
+        : `Configuration has issues. ${latestResult.errors.length} error(s) and ${latestResult.warnings.length} warning(s) found.`
+      
+      announceToScreenReader(statusMessage, 'assertive')
+    }
+  }, [validationResults])
   
   if (validationResults.length === 0 && !isValidating) {
     return (
       <div className="p-6">
-        <h2 className="text-lg font-semibold text-primary mb-4">Validation</h2>
-        <div className="text-center py-8">
-          <div className="loading-spinner h-8 w-8 mx-auto mb-4"></div>
-          <p className="text-secondary">Initializing validation...</p>
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">Validation</h2>
+        <div className="text-center py-8" role="status" aria-live="polite">
+          <div className="loading-spinner h-8 w-8 mx-auto mb-4" aria-hidden="true"></div>
+          <p className="text-slate-600">Initializing validation...</p>
         </div>
       </div>
     )
@@ -22,10 +36,10 @@ export function ValidationPanel() {
   if (isValidating) {
     return (
       <div className="p-6">
-        <h2 className="text-lg font-semibold text-primary mb-4">Validation</h2>
-        <div className="text-center py-8">
-          <div className="loading-spinner h-8 w-8 mx-auto mb-4"></div>
-          <p className="text-secondary">Validating configuration...</p>
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">Validation</h2>
+        <div className="text-center py-8" role="status" aria-live="polite">
+          <div className="loading-spinner h-8 w-8 mx-auto mb-4" aria-hidden="true"></div>
+          <p className="text-slate-600">Validating configuration...</p>
         </div>
       </div>
     )
@@ -42,11 +56,11 @@ export function ValidationPanel() {
         latestResult.isValid 
           ? 'bg-green-50 border border-green-200' 
           : 'bg-red-50 border border-red-200'
-      }`}>
+      }`} role="status" aria-live="polite">
         <div className="flex items-center">
           <div className={`w-3 h-3 rounded-full mr-3 ${
             latestResult.isValid ? 'bg-green-500' : 'bg-red-500'
-          }`}></div>
+          }`} aria-hidden="true"></div>
           <span className={`font-medium ${
             latestResult.isValid ? 'text-green-800' : 'text-red-800'
           }`}>
@@ -65,13 +79,13 @@ export function ValidationPanel() {
       
       {/* Errors */}
       {latestResult.errors.length > 0 && (
-        <div className="mb-4">
+        <div className="mb-4" role="alert" aria-live="assertive">
           <h3 className="text-md font-medium text-red-800 mb-2">Errors</h3>
           <div className="space-y-2">
             {latestResult.errors.map((error, index) => (
               <div key={index} className="p-3 bg-red-50 border border-red-200 rounded-md">
                 <div className="flex items-start">
-                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3 flex-shrink-0" aria-hidden="true"></div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-red-800">{error.message}</p>
                     <p className="text-xs text-red-600 mt-1">
@@ -83,7 +97,7 @@ export function ValidationPanel() {
                       </p>
                     )}
                     <details className="mt-2">
-                      <summary className="text-xs text-red-600 cursor-pointer hover:text-red-800">
+                      <summary className="text-xs text-red-600 cursor-pointer hover:text-red-800" role="button" aria-expanded="false">
                         Why is this required?
                       </summary>
                       <p className="text-xs text-red-600 mt-1 pl-4">
@@ -100,13 +114,13 @@ export function ValidationPanel() {
       
       {/* Warnings */}
       {latestResult.warnings.length > 0 && (
-        <div className="mb-4">
+        <div className="mb-4" role="region" aria-label="Validation warnings">
           <h3 className="text-md font-medium text-yellow-800 mb-2">Warnings</h3>
           <div className="space-y-2">
             {latestResult.warnings.map((warning, index) => (
               <div key={index} className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                 <div className="flex items-start">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 mr-3 flex-shrink-0" aria-hidden="true"></div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-yellow-800">{warning.message}</p>
                     <p className="text-xs text-yellow-600 mt-1">

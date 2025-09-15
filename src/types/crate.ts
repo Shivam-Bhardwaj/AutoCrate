@@ -115,6 +115,7 @@ export interface ViewportState {
   showDimensions: boolean
   showPMI: boolean
   showExploded: boolean
+  enableMeasurement: boolean
 }
 
 export interface ExportJob {
