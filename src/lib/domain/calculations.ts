@@ -16,11 +16,14 @@ export const calculateCrateDimensions = (config: CrateConfiguration): CrateDimen
   const internalHeight = product.height + clearances.height
   
   // Calculate overall dimensions (internal + wall thickness)
-  // Standard wall thickness: 1.5" for lumber construction
-  const wallThickness = 1.5
-  const overallWidth = internalWidth + (wallThickness * 2)
-  const overallLength = internalLength + (wallThickness * 2)
-  const overallHeight = internalHeight + wallThickness // Only bottom wall thickness for height
+  // Framing lumber thickness and plywood skin both contribute.
+  // Use framing thickness for width/length, and include both bottom and top skins in height.
+  const frameThickness = 1.5 // 2x4 actual thickness
+  const plywoodThickness = config.materials.plywood.thickness
+  const overallWidth = internalWidth + (frameThickness * 2)
+  const overallLength = internalLength + (frameThickness * 2)
+  // Height accounts for framing plus plywood skins: bottom + top
+  const overallHeight = internalHeight + frameThickness + plywoodThickness
   
   return {
     overallWidth,

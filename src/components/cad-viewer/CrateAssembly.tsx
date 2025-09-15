@@ -32,7 +32,7 @@ export const CrateAssembly = memo(function CrateAssembly({ config, dimensions, s
         />
       ))}
       
-      {/* Bottom Panel */}
+      {/* Bottom Panel sits atop skids; keep at y=0 for ground reference */}
       <CratePanel
         type="bottom"
         dimensions={{
@@ -40,7 +40,7 @@ export const CrateAssembly = memo(function CrateAssembly({ config, dimensions, s
           length: dimensions.overallLength,
           thickness: config.materials.plywood.thickness
         }}
-        position={[0, -explosionOffset, 0]}
+        position={[0, 0 - explosionOffset, 0]}
         material={config.materials.plywood.grade}
       />
       
@@ -58,15 +58,15 @@ export const CrateAssembly = memo(function CrateAssembly({ config, dimensions, s
         material={config.materials.lumber.grade}
       />
       
-      {/* Side Panels */}
+      {/* Side Panels (plywood upright). Width equals internal height; center at mid-height above bottom panel */}
       <CratePanel
         type="side"
         dimensions={{
-          width: dimensions.overallHeight - config.materials.plywood.thickness,
+          width: dimensions.internalHeight,
           length: dimensions.overallLength,
           thickness: config.materials.plywood.thickness
         }}
-        position={[-(dimensions.overallWidth / 2) - explosionOffset, dimensions.overallHeight / 2, 0]}
+        position={[-(dimensions.overallWidth / 2) - explosionOffset, (config.materials.plywood.thickness + dimensions.internalHeight) / 2, 0]}
         rotation={[0, 0, Math.PI / 2]}
         material={config.materials.plywood.grade}
       />
@@ -74,11 +74,11 @@ export const CrateAssembly = memo(function CrateAssembly({ config, dimensions, s
       <CratePanel
         type="side"
         dimensions={{
-          width: dimensions.overallHeight - config.materials.plywood.thickness,
+          width: dimensions.internalHeight,
           length: dimensions.overallLength,
           thickness: config.materials.plywood.thickness
         }}
-        position={[(dimensions.overallWidth / 2) + explosionOffset, dimensions.overallHeight / 2, 0]}
+        position={[(dimensions.overallWidth / 2) + explosionOffset, (config.materials.plywood.thickness + dimensions.internalHeight) / 2, 0]}
         rotation={[0, 0, -Math.PI / 2]}
         material={config.materials.plywood.grade}
       />
@@ -87,11 +87,11 @@ export const CrateAssembly = memo(function CrateAssembly({ config, dimensions, s
       <CratePanel
         type="end"
         dimensions={{
-          width: dimensions.overallHeight - config.materials.plywood.thickness,
+          width: dimensions.internalHeight,
           length: dimensions.overallWidth,
           thickness: config.materials.plywood.thickness
         }}
-        position={[0, dimensions.overallHeight / 2, -(dimensions.overallLength / 2) - explosionOffset]}
+        position={[0, (config.materials.plywood.thickness + dimensions.internalHeight) / 2, -(dimensions.overallLength / 2) - explosionOffset]}
         rotation={[0, Math.PI / 2, 0]}
         material={config.materials.plywood.grade}
       />
@@ -99,23 +99,23 @@ export const CrateAssembly = memo(function CrateAssembly({ config, dimensions, s
       <CratePanel
         type="end"
         dimensions={{
-          width: dimensions.overallHeight - config.materials.plywood.thickness,
+          width: dimensions.internalHeight,
           length: dimensions.overallWidth,
           thickness: config.materials.plywood.thickness
         }}
-        position={[0, dimensions.overallHeight / 2, (dimensions.overallLength / 2) + explosionOffset]}
+        position={[0, (config.materials.plywood.thickness + dimensions.internalHeight) / 2, (dimensions.overallLength / 2) + explosionOffset]}
         rotation={[0, -Math.PI / 2, 0]}
         material={config.materials.plywood.grade}
       />
       
-      {/* Top Frame (2x4 lumber around top) */}
+      {/* Top Frame (2x4 lumber around top) at interior height + plywood top */}
       <CrateFrame
         dimensions={dimensions}
-        position={[0, dimensions.overallHeight - config.materials.plywood.thickness / 2 + explosionOffset, 0]}
+        position={[0, dimensions.internalHeight + config.materials.plywood.thickness + explosionOffset - 0.75, 0]}
         material={config.materials.lumber.grade}
       />
       
-      {/* Top Panel */}
+      {/* Top Panel sits above side/end panels */}
       <CratePanel
         type="top"
         dimensions={{
@@ -123,14 +123,14 @@ export const CrateAssembly = memo(function CrateAssembly({ config, dimensions, s
           length: dimensions.overallLength,
           thickness: config.materials.plywood.thickness
         }}
-        position={[0, dimensions.overallHeight + explosionOffset, 0]}
+        position={[0, dimensions.internalHeight + config.materials.plywood.thickness + explosionOffset, 0]}
         material={config.materials.plywood.grade}
       />
       
       {/* Product Model */}
       <ProductModel
         product={config.product}
-        position={[0, config.product.height / 2, 0]}
+        position={[0, config.materials.plywood.thickness + (config.product.height / 2), 0]}
         showExploded={showExploded}
       />
     </group>
