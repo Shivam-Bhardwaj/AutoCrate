@@ -28,12 +28,29 @@ describe('Crate Calculations', () => {
         ...defaultCrateConfiguration,
         product: { ...defaultCrateConfiguration.product, weight: 1500 }
       }
-      
+
       const skids = calculateSkidRequirements(config)
-      
+
       // 1500 lbs / 1000 lbs per skid = 2 skids required
       expect(skids.count).toBe(2)
       expect(skids.length).toBe(50) // 46 + 2 + 2 (product + overhangs)
+    })
+
+    it('should not add length when overhangs are zero', () => {
+      const config = {
+        ...defaultCrateConfiguration,
+        skids: {
+          ...defaultCrateConfiguration.skids,
+          overhang: {
+            front: 0,
+            back: 0
+          }
+        }
+      }
+
+      const skids = calculateSkidRequirements(config)
+
+      expect(skids.length).toBe(config.product.length)
     })
   })
   
