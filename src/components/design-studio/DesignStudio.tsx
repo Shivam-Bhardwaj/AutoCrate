@@ -13,6 +13,7 @@ import { KeyboardShortcutsHelp } from '@/components/accessibility/KeyboardShortc
 import { SkipLinks } from '@/components/accessibility/SkipLinks'
 import { announceToScreenReader } from '@/lib/accessibility'
 import { currentProductLabel } from '@/data/product-metadata'
+import { ReleaseChangelogTooltip } from './ReleaseChangelogTooltip'
 
 export function DesignStudio() {
   const configuration = useCrateConfiguration()
@@ -132,12 +133,17 @@ export function DesignStudio() {
       <header className="bg-white shadow-professional border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4" role="banner">
         <div className="flex items-center justify-between">
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg sm:text-2xl font-bold text-slate-900 truncate" id="main-heading">
-              {currentProductLabel}
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-600 truncate" aria-describedby="main-heading">
-              Applied Materials Standards: AMAT-0251-70054
-            </p>
+            <div className="flex items-start sm:items-center gap-2 sm:gap-3">
+              <ReleaseChangelogTooltip />
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-2xl font-bold text-slate-900 truncate" id="main-heading">
+                  {currentProductLabel}
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-600 truncate" aria-describedby="main-heading">
+                  Applied Materials Standards: AMAT-0251-70054
+                </p>
+              </div>
+            </div>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-4 ml-4">
             <div className="text-xs sm:text-sm text-slate-600">
