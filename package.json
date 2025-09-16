@@ -21,6 +21,7 @@
     "test:all": "npm run test && npm run test:e2e",
     "test:report": "playwright show-report",
     "test:install": "playwright install",
+    "validate:release": "node scripts/agents/release-hardcode-check.mjs",
     "setup:admin": "powershell -ExecutionPolicy Bypass -File scripts/setup-admin-powershell.ps1",
     "vercel:setup": "npm install -g vercel && vercel login && vercel link && vercel domains add autocrate.shivambhardwaj.com",
     "vercel:deploy": "vercel --prod",
