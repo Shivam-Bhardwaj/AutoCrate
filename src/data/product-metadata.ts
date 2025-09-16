@@ -1,0 +1,54 @@
+export interface ReleaseEntry {
+  /** Semantic version of the product release. */
+  version: string
+  /** Codename or short descriptor for internal reference. */
+  codename?: string
+  /** ISO timestamp (UTC) for when the release was published. */
+  releasedAt: string
+  /** High-level summary bullets for release notes. */
+  highlights: readonly string[]
+}
+
+export interface ProductMetadata {
+  name: string
+  changelog: readonly ReleaseEntry[]
+}
+
+const fallbackRelease: ReleaseEntry = {
+  version: 'development',
+  codename: 'Unreleased',
+  releasedAt: new Date(0).toISOString(),
+  highlights: []
+}
+
+export const productMetadata: ProductMetadata = {
+  name: 'Autocrate',
+  changelog: [
+    {
+      version: '14.0.0',
+      codename: 'Design Studio Refresh',
+      releasedAt: '2025-01-13T00:00:00.000Z',
+      highlights: [
+        'Updated design studio branding and accessibility labelling',
+        'Aligned STEP exporter metadata with refreshed release identity',
+        'Documented release workflow for automated changelog-driven updates'
+      ]
+    }
+  ]
+}
+
+/**
+ * Returns the latest release entry, falling back to a development placeholder
+ * to avoid runtime failures if the changelog has not been populated yet.
+ */
+export const latestRelease: ReleaseEntry =
+  productMetadata.changelog[0] ?? fallbackRelease
+
+export const currentReleaseVersion = latestRelease.version
+
+export const currentProductLabel = latestRelease.version
+  ? `${productMetadata.name} ${latestRelease.version}`
+  : productMetadata.name
+
+export const getProductLabelForVersion = (version: string): string =>
+  version ? `${productMetadata.name} ${version}` : productMetadata.name

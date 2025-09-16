@@ -1,4 +1,5 @@
 import { CrateConfiguration } from '@/types/crate'
+import { currentProductLabel } from '@/data/product-metadata'
 import { PMIAnnotations, STEPFile, STEPAP242Writer, DimensionAnnotation, GeometricTolerance, ManufacturingNote, ManufacturingData } from './step-types'
 
 export class STEPExporter {
@@ -174,7 +175,7 @@ class STEPAP242WriterImpl implements STEPAP242Writer {
     const stepContent = `ISO-10303-21;
 HEADER;
 FILE_DESCRIPTION(('AutoCrate STEP Export with PMI'),'2;1');
-FILE_NAME('${filename}','${timestamp}',('AutoCrate Design Studio'),('Applied Materials'),'','','');
+FILE_NAME('${filename}','${timestamp}',('${currentProductLabel}'),('Applied Materials'),'','','');
 FILE_SCHEMA(('AUTOMOTIVE_DESIGN'));
 ENDSEC;
 

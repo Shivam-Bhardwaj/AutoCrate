@@ -85,7 +85,7 @@ X-Standards-Compliance: AMAT-0251-70054
 ISO-10303-21;
 HEADER;
 FILE_DESCRIPTION(('AutoCrate STEP Export with PMI'),'2;1');
-FILE_NAME('autocrate_assembly_2025-01-13.stp','2025-01-13T...','AutoCrate Design Studio','Applied Materials','','','');
+FILE_NAME('autocrate_assembly_2025-01-13.stp','2025-01-13T...','${currentProductLabel}','Applied Materials','','','');
 FILE_SCHEMA(('AUTOMOTIVE_DESIGN'));
 ENDSEC;
 
@@ -108,6 +108,10 @@ DATA;
 ENDSEC;
 END-ISO-10303-21;
 ```
+
+> **Note:** `${currentProductLabel}` resolves to the latest release label defined in
+> `src/data/product-metadata.ts` (for example, `Autocrate 14.0.0`). Updating the
+> changelog there keeps both the STEP exporter and documentation aligned.
 
 ## PMI Annotation Types
 

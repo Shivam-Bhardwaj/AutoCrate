@@ -12,6 +12,7 @@ import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import { KeyboardShortcutsHelp } from '@/components/accessibility/KeyboardShortcutsHelp'
 import { SkipLinks } from '@/components/accessibility/SkipLinks'
 import { announceToScreenReader } from '@/lib/accessibility'
+import { currentProductLabel } from '@/data/product-metadata'
 
 export function DesignStudio() {
   const configuration = useCrateConfiguration()
@@ -126,13 +127,13 @@ export function DesignStudio() {
   return (
     <>
       <SkipLinks />
-      <div className="h-screen flex flex-col bg-gray-50" role="main" aria-label="AutoCrate Design Studio" id="main-content">
+      <div className="h-screen flex flex-col bg-gray-50" role="main" aria-label={currentProductLabel} id="main-content">
       {/* Header */}
       <header className="bg-white shadow-professional border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4" role="banner">
         <div className="flex items-center justify-between">
           <div className="min-w-0 flex-1">
             <h1 className="text-lg sm:text-2xl font-bold text-slate-900 truncate" id="main-heading">
-              AutoCrate Design Studio
+              {currentProductLabel}
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 truncate" aria-describedby="main-heading">
               Applied Materials Standards: AMAT-0251-70054
