@@ -218,6 +218,18 @@ npm i -g vercel
 vercel --prod
 ```
 
+### GitHub Actions (Automatic Deploys)
+
+This repository includes a GitHub Actions workflow that deploys to Vercel whenever commits are pushed to the `main` branch (for example, after a pull request merge). To enable it, add the following repository secrets in GitHub → *Settings* → *Secrets and variables* → *Actions*:
+
+| Secret Name | Description |
+|-------------|-------------|
+| `VERCEL_TOKEN` | A Vercel access token generated from your Vercel account settings. |
+| `VERCEL_ORG_ID` | The organization ID for the Vercel team that owns the project. |
+| `VERCEL_PROJECT_ID` | The unique project ID for the AutoCrate Vercel project. |
+
+Once the secrets are configured, every merge to `main` will build the app with the Vercel CLI and promote the deployment to production. You can also run the workflow manually from the *Actions* tab using the **Run workflow** button.
+
 ### Manual Deployment
 ```bash
 # Build for production
