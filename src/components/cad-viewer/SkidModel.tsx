@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { Edges } from '@react-three/drei'
 
 interface SkidModelProps {
   length: number
@@ -10,30 +11,34 @@ interface SkidModelProps {
 
 export function SkidModel({ length, position, material }: SkidModelProps) {
   const skidColor = useMemo(() => getSkidColor(material), [material])
-  
+  const edgeColor = '#b37b44'
+
   return (
     <group position={position}>
       {/* Skid runners (2 pieces) - 4x4 lumber */}
       <mesh position={[-1.75, 0, 0]} castShadow receiveShadow>
         <boxGeometry args={[3.5, 3.5, length]} />
         <meshLambertMaterial color={skidColor} />
+        <Edges color={edgeColor} threshold={25} />
       </mesh>
-      
+
       <mesh position={[1.75, 0, 0]} castShadow receiveShadow>
         <boxGeometry args={[3.5, 3.5, length]} />
         <meshLambertMaterial color={skidColor} />
+        <Edges color={edgeColor} threshold={25} />
       </mesh>
-      
+
       {/* Cross members (every 16 inches) - 2x4 lumber */}
       {Array.from({ length: Math.floor(length / 16) + 1 }, (_, index) => (
-        <mesh 
+        <mesh
           key={index}
-          position={[0, 1.75, (index * 16) - length / 2]} 
-          castShadow 
+          position={[0, 1.75, (index * 16) - length / 2]}
+          castShadow
           receiveShadow
         >
           <boxGeometry args={[7, 1.5, 3.5]} />
           <meshLambertMaterial color={skidColor} />
+          <Edges color={edgeColor} threshold={25} />
         </mesh>
       ))}
     </group>
@@ -42,11 +47,11 @@ export function SkidModel({ length, position, material }: SkidModelProps) {
 
 function getSkidColor(material: string): string {
   const colors: Record<string, string> = {
-    'Standard': '#8B4513', // Brown
-    '#2': '#A0522D',       // Sienna
-    '#1': '#D2691E',       // Chocolate
-    'Select': '#F4A460'    // Sandy Brown
+    'Standard': '#bc7e45',
+    '#2': '#cc9359',
+    '#1': '#ddaa70',
+    'Select': '#efc389'
   }
-  
-  return colors[material] || '#8B4513'
+
+  return colors[material] || '#bc7e45'
 }

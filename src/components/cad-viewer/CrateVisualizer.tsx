@@ -2,7 +2,7 @@
 
 import { Suspense, useMemo, useRef, useEffect, memo, lazy } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Preload } from '@react-three/drei'
+import { OrbitControls, Preload, Environment } from '@react-three/drei'
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { CrateConfiguration } from '@/types/crate'
 import { calculateCrateDimensions } from '@/lib/domain/calculations'
@@ -77,23 +77,35 @@ export const CrateVisualizer = memo(function CrateVisualizer({
     // Field of view is 40 degrees, so we need distance to fit the diagonal
     // Using trigonometry: distance = diagonal / tan(fov/2)
     const fovRadians = (40 * Math.PI) / 180
-    const distance = (diagonal * 2.5) / Math.tan(fovRadians / 2) // 2.5x for better framing - shows full crate
-    
-    // Position camera at an optimal angle for professional 3D view
-    const angle = Math.PI / 4 // 45 degrees for better perspective
-    const x = distance * Math.cos(angle)
-    const y = distance * 0.8 // Higher position for better overview
-    const z = distance * Math.sin(angle)
-    
-    return [x, y, z] as [number, number, number]
+    const distance = (diagonal * 1.3) / Math.tan(fovRadians / 2)
+
+    // Use an isometric viewing direction so the crate is immediately readable
+    const isoDirection: [number, number, number] = [1.25, 1, 1.1]
+    const directionLength = Math.hypot(...isoDirection)
+    const scale = distance / directionLength
+
+    return [
+      isoDirection[0] * scale,
+      isoDirection[1] * scale,
+      isoDirection[2] * scale
+    ] as [number, number, number]
   }, [dimensions])
+
+  const controlTarget = useMemo(() => [
+    0,
+    dimensions.overallHeight / 2,
+    0
+  ] as [number, number, number], [dimensions])
   
   // Reset camera to optimal position when component mounts
   useEffect(() => {
     if (controlsRef.current) {
-      controlsRef.current.reset()
+      controlsRef.current.target.set(...controlTarget)
+      controlsRef.current.object.position.set(...cameraPosition)
+      controlsRef.current.update()
+      controlsRef.current.saveState()
     }
-  }, [cameraPosition])
+  }, [cameraPosition, controlTarget])
   
   return (
     <div className={`${className} ${getMobileClasses()}`} role="img" aria-label="3D Crate Visualization" tabIndex={0}>
@@ -120,25 +132,32 @@ export const CrateVisualizer = memo(function CrateVisualizer({
         dpr={isMobile ? [1, 1.5] : [1, 2]} // Lower DPR on mobile for better performance
       >
         <Suspense fallback={<LoadingFallback />}>
+          <color attach="background" args={[isMobile ? '#f5f7fb' : '#eef1f7']} />
+          <fog attach="fog" args={[isMobile ? '#f5f7fb' : '#eef1f7', 80, 200]} />
           {/* Optimized professional lighting setup */}
-          <ambientLight intensity={isMobile ? 0.6 : 0.4} />
+          <ambientLight intensity={isMobile ? 0.8 : 0.6} color={0xffffff} />
+          <hemisphereLight
+            intensity={isMobile ? 0.6 : 0.5}
+            args={[0xf5f3ea, 0x4f5d75, 0.6]}
+          />
           <directionalLight
-            position={[25, 25, 15]} 
-            intensity={isMobile ? 1.2 : 1.5}
+            position={[35, 40, 20]}
+            intensity={isMobile ? 1.25 : 1.6}
             castShadow={!isMobile} // Disable shadows on mobile
             shadow-mapSize={isMobile ? [1024, 1024] : [2048, 2048]} // Smaller shadow map on mobile
-            shadow-camera-far={150} 
-            shadow-camera-left={-30} 
-            shadow-camera-right={30} 
-            shadow-camera-top={30} 
+            shadow-camera-far={150}
+            shadow-camera-left={-30}
+            shadow-camera-right={30}
+            shadow-camera-top={30}
             shadow-camera-bottom={-30}
           />
-          <directionalLight 
-            position={[-15, 15, -10]} 
-            intensity={isMobile ? 0.4 : 0.6} 
-            color={0xffffff}
+          <directionalLight
+            position={[-25, 25, -15]}
+            intensity={isMobile ? 0.5 : 0.75}
+            color={0xfdf6ec}
           />
-          <pointLight position={[0, 20, 0]} intensity={isMobile ? 0.2 : 0.4} color={0xffffff} />
+          <pointLight position={[0, 18, 10]} intensity={isMobile ? 0.3 : 0.5} color={0xffffff} />
+          <Environment preset="city" background={false} />
           
           {/* CAD Model Components */}
           <CrateAssembly 
@@ -193,7 +212,7 @@ export const CrateVisualizer = memo(function CrateVisualizer({
             screenSpacePanning={isMobile} // Enable screen space panning on mobile
             autoRotate={false}
             autoRotateSpeed={0.5}
-            target={[0, 0, 0]}
+            target={controlTarget}
             // Performance optimizations
             makeDefault={true}
             // Mobile-specific touch settings
@@ -216,8 +235,8 @@ export const CrateVisualizer = memo(function CrateVisualizer({
             args={[
               Math.max(dimensions.overallLength, dimensions.overallWidth) * 2, 
               Math.max(dimensions.overallLength, dimensions.overallWidth) * 2, 
-              0x888888, 
-              0x444444
+              0xb5bcc9,
+              0x9aa3b5
             ]} 
             position={[0, -0.1, 0]} 
           />
@@ -226,7 +245,7 @@ export const CrateVisualizer = memo(function CrateVisualizer({
               Math.max(dimensions.overallLength, dimensions.overallWidth) * 3, 
               Math.max(dimensions.overallLength, dimensions.overallWidth) * 3
             ]} />
-            <meshLambertMaterial color={0xf0f0f0} />
+            <meshLambertMaterial color={0xf6f6f8} />
           </mesh>
         </Suspense>
       </Canvas>

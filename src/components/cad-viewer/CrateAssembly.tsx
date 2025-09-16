@@ -2,6 +2,7 @@
 
 import { useMemo, memo } from 'react'
 import * as THREE from 'three'
+import { Edges } from '@react-three/drei'
 import { CrateConfiguration, CrateDimensions } from '@/types/crate'
 import { CratePanel } from './CratePanel'
 import { ProductModel } from './ProductModel'
@@ -150,6 +151,7 @@ const CrateFrame = memo(function CrateFrame({
   const frameColor = getLumberColor(material)
   const frameThickness = 1.5 // 2x4 actual thickness
   const frameHeight = 3.5 // 2x4 actual height
+  const edgeColor = '#b37b44'
   
   // Memoize geometry and material for better performance
   const geometry = useMemo(() => new THREE.BoxGeometry(), [])
@@ -161,20 +163,24 @@ const CrateFrame = memo(function CrateFrame({
       <mesh position={[0, 0, dimensions.overallLength / 2]} castShadow receiveShadow>
         <boxGeometry args={[dimensions.overallWidth, frameHeight, frameThickness]} />
         <meshLambertMaterial color={frameColor} />
+        <Edges color={edgeColor} threshold={25} />
       </mesh>
       <mesh position={[0, 0, -dimensions.overallLength / 2]} castShadow receiveShadow>
         <boxGeometry args={[dimensions.overallWidth, frameHeight, frameThickness]} />
         <meshLambertMaterial color={frameColor} />
+        <Edges color={edgeColor} threshold={25} />
       </mesh>
-      
+
       {/* Left and right rails */}
       <mesh position={[dimensions.overallWidth / 2, 0, 0]} castShadow receiveShadow>
         <boxGeometry args={[frameThickness, frameHeight, dimensions.overallLength]} />
         <meshLambertMaterial color={frameColor} />
+        <Edges color={edgeColor} threshold={25} />
       </mesh>
       <mesh position={[-dimensions.overallWidth / 2, 0, 0]} castShadow receiveShadow>
         <boxGeometry args={[frameThickness, frameHeight, dimensions.overallLength]} />
         <meshLambertMaterial color={frameColor} />
+        <Edges color={edgeColor} threshold={25} />
       </mesh>
     </group>
   )
@@ -204,11 +210,14 @@ const CornerPosts = memo(function CornerPosts({
   // Memoize geometry and material
   const geometry = useMemo(() => new THREE.BoxGeometry(frameThickness, height, frameThickness), [frameThickness, height])
   const material_mesh = useMemo(() => new THREE.MeshLambertMaterial({ color: frameColor }), [frameColor])
-  
+  const edgeColor = '#b37b44'
+
   return (
     <group>
       {cornerPositions.map((position, index) => (
-        <mesh key={index} position={position} castShadow receiveShadow geometry={geometry} material={material_mesh} />
+        <mesh key={index} position={position} castShadow receiveShadow geometry={geometry} material={material_mesh}>
+          <Edges color={edgeColor} threshold={25} />
+        </mesh>
       ))}
     </group>
   )
@@ -216,11 +225,11 @@ const CornerPosts = memo(function CornerPosts({
 
 function getLumberColor(material: string): string {
   const colors: Record<string, string> = {
-    'Standard': '#8B4513', // Brown
-    '#2': '#A0522D',       // Sienna
-    '#1': '#D2691E',       // Chocolate
-    'Select': '#F4A460'    // Sandy Brown
+    'Standard': '#c8894c',
+    '#2': '#d79b63',
+    '#1': '#e8ae78',
+    'Select': '#f4c999'
   }
-  
-  return colors[material] || '#8B4513'
+
+  return colors[material] || '#c8894c'
 }
