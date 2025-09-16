@@ -47,7 +47,7 @@ export function ConfigurationPanel() {
               })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               step="0.1"
-              min="0"
+              min="1"
             />
           </div>
           
@@ -63,7 +63,7 @@ export function ConfigurationPanel() {
               })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               step="0.1"
-              min="0"
+              min="1"
             />
           </div>
           
@@ -105,7 +105,7 @@ export function ConfigurationPanel() {
               min="1"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Length (in)
@@ -194,7 +194,7 @@ export function ConfigurationPanel() {
               })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               step="0.1"
-              min="1"
+              min="0"
             />
           </div>
           
@@ -216,7 +216,7 @@ export function ConfigurationPanel() {
               })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               step="0.1"
-              min="1"
+              min="0"
             />
           </div>
         </div>
