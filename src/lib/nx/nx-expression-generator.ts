@@ -1,4 +1,5 @@
 import { CrateConfiguration } from '@/types/crate'
+import { releaseIdentity } from '@/config/release'
 import { calculateCrateDimensions, calculateSkidRequirements, calculatePanelRequirements, calculateHardwareRequirements } from '@/lib/domain/calculations'
 
 export interface NXExpressionFile {
@@ -169,8 +170,8 @@ export class NXExpressionGenerator {
     const expressions: NXExpressionFile = {
       metadata: {
         generatedAt: new Date().toISOString(),
-        version: '2.0.0',
-        templateVersion: 'AUTOCRATE_TEMPLATE_V2.0.0',
+        version: releaseIdentity.version,
+        templateVersion: releaseIdentity.templateVersion,
         standardsCompliance: 'AMAT-0251-70054',
         validationChecksum: this.calculateChecksum(config)
       },

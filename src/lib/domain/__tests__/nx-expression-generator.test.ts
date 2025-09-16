@@ -1,5 +1,6 @@
 import { NXExpressionGenerator } from '../../nx/nx-expression-generator'
 import { defaultCrateConfiguration } from '../../../types/crate'
+import { releaseIdentity } from '@/config/release'
 
 describe('NXExpressionGenerator', () => {
   let generator: NXExpressionGenerator
@@ -12,9 +13,9 @@ describe('NXExpressionGenerator', () => {
     it('should generate valid NX expressions for default configuration', async () => {
       const expressions = await generator.generateExpressions(defaultCrateConfiguration)
 
-      expect(expressions.metadata.version).toBe('2.0.0')
+      expect(expressions.metadata.version).toBe(releaseIdentity.version)
       expect(expressions.metadata.standardsCompliance).toBe('AMAT-0251-70054')
-      expect(expressions.metadata.templateVersion).toBe('AUTOCRATE_TEMPLATE_V2.0.0')
+      expect(expressions.metadata.templateVersion).toBe(releaseIdentity.templateVersion)
       expect(expressions.metadata.generatedAt).toBeDefined()
       expect(expressions.metadata.validationChecksum).toBeDefined()
     })

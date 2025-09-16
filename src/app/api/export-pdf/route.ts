@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { CrateConfiguration, CrateDimensions } from '@/types/crate'
+import { releaseIdentity } from '@/config/release'
 import { calculateCrateDimensions, generateBillOfMaterials, calculateMaterialEfficiency, calculateCrateWeight } from '@/lib/domain/calculations'
 
 export async function POST(request: NextRequest) {
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
       content: pdfData,
       metadata: {
         generatedAt: new Date().toISOString(),
-        version: '2.0.0',
+        version: releaseIdentity.version,
         standards: 'AMAT-0251-70054',
         format: 'PDF'
       }
@@ -60,7 +61,7 @@ function generatePDFContent(
     title: 'AutoCrate Design Drawing',
     subtitle: 'Applied Materials Standards: AMAT-0251-70054',
     generatedAt: timestamp,
-    version: '2.0.0',
+    version: releaseIdentity.version,
     
     // Drawing information
     drawing: {

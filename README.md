@@ -72,6 +72,9 @@ npm run type-check
 # Linting
 npm run lint
 
+# Release metadata guard
+npm run validate:release
+
 # Testing
 npm run test
 npm run test:watch

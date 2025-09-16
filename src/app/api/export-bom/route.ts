@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { CrateConfiguration } from '@/types/crate'
+import { releaseIdentity } from '@/config/release'
 import { generateBillOfMaterials, calculateMaterialEfficiency, calculateCrateWeight, calculateCrateDimensions } from '@/lib/domain/calculations'
 
 export async function POST(request: NextRequest) {
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
       content: bomData,
       metadata: {
         generatedAt: new Date().toISOString(),
-        version: '2.0.0',
+        version: releaseIdentity.version,
         standards: 'AMAT-0251-70054',
         format: 'CSV/JSON'
       }

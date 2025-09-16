@@ -1,15 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 import { CrateConfiguration } from '@/types/crate'
 import { NXExpressionGenerator } from '@/lib/nx/nx-expression-generator'
 
 export async function POST(request: NextRequest) {
   try {
-    const configuration = await request.json() as CrateConfiguration
-    
+    const payload = await request.json() as Partial<{ configuration: CrateConfiguration }> & CrateConfiguration
+    const configuration = 'configuration' in payload && payload.configuration
+      ? payload.configuration
+      : payload
+
     // Validate the configuration
     if (!configuration || !configuration.product) {
       return NextResponse.json(
-        { error: 'Invalid configuration provided' },
+        { success: false, error: 'Invalid configuration provided' },
+        { status: 400 }
+      )
+    }
+
+    const { length, width, height } = configuration.product
+    if ([length, width, height].some((value) => typeof value !== 'number' || value <= 0)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid product dimensions provided' },
         { status: 400 }
       )
     }
@@ -28,10 +40,21 @@ export async function POST(request: NextRequest) {
       }
     })
     
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof SyntaxError) {
+      const message = error.message.toLowerCase().includes('empty')
+        ? 'Request body is empty'
+        : 'Invalid JSON payload'
+
+      return NextResponse.json(
+        { success: false, error: message },
+        { status: 400 }
+      )
+    }
+
     console.error('Error generating NX expressions:', error)
     return NextResponse.json(
-      { error: 'Failed to generate NX expressions' },
+      { success: false, error: 'Failed to generate NX expressions' },
       { status: 500 }
     )
   }
