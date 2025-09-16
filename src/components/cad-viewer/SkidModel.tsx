@@ -1,36 +1,66 @@
 'use client'
 
 import { useMemo } from 'react'
+import type { ThreeEvent } from '@react-three/fiber'
 
 interface SkidModelProps {
   length: number
   position: [number, number, number]
   material: string
+  metadataId?: string
+  onPointerOver?: (componentId: string, event: ThreeEvent<PointerEvent>) => void
+  onPointerMove?: (componentId: string, event: ThreeEvent<PointerEvent>) => void
+  onPointerOut?: (componentId: string, event: ThreeEvent<PointerEvent>) => void
 }
 
-export function SkidModel({ length, position, material }: SkidModelProps) {
+export function SkidModel({
+  length,
+  position,
+  material,
+  metadataId,
+  onPointerOver,
+  onPointerMove,
+  onPointerOut
+}: SkidModelProps) {
   const skidColor = useMemo(() => getSkidColor(material), [material])
-  
+
   return (
     <group position={position}>
       {/* Skid runners (2 pieces) - 4x4 lumber */}
-      <mesh position={[-1.75, 0, 0]} castShadow receiveShadow>
+      <mesh
+        position={[-1.75, 0, 0]}
+        castShadow
+        receiveShadow
+        onPointerOver={metadataId ? event => onPointerOver?.(metadataId, event) : undefined}
+        onPointerMove={metadataId ? event => onPointerMove?.(metadataId, event) : undefined}
+        onPointerOut={metadataId ? event => onPointerOut?.(metadataId, event) : undefined}
+      >
         <boxGeometry args={[3.5, 3.5, length]} />
         <meshLambertMaterial color={skidColor} />
       </mesh>
-      
-      <mesh position={[1.75, 0, 0]} castShadow receiveShadow>
+
+      <mesh
+        position={[1.75, 0, 0]}
+        castShadow
+        receiveShadow
+        onPointerOver={metadataId ? event => onPointerOver?.(metadataId, event) : undefined}
+        onPointerMove={metadataId ? event => onPointerMove?.(metadataId, event) : undefined}
+        onPointerOut={metadataId ? event => onPointerOut?.(metadataId, event) : undefined}
+      >
         <boxGeometry args={[3.5, 3.5, length]} />
         <meshLambertMaterial color={skidColor} />
       </mesh>
-      
+
       {/* Cross members (every 16 inches) - 2x4 lumber */}
       {Array.from({ length: Math.floor(length / 16) + 1 }, (_, index) => (
-        <mesh 
+        <mesh
           key={index}
-          position={[0, 1.75, (index * 16) - length / 2]} 
-          castShadow 
+          position={[0, 1.75, (index * 16) - length / 2]}
+          castShadow
           receiveShadow
+          onPointerOver={metadataId ? event => onPointerOver?.(metadataId, event) : undefined}
+          onPointerMove={metadataId ? event => onPointerMove?.(metadataId, event) : undefined}
+          onPointerOut={metadataId ? event => onPointerOut?.(metadataId, event) : undefined}
         >
           <boxGeometry args={[7, 1.5, 3.5]} />
           <meshLambertMaterial color={skidColor} />

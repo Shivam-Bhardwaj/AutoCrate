@@ -1,7 +1,7 @@
 'use client'
 
-import { Suspense, useMemo, useRef, useEffect, memo, lazy } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Suspense, useMemo, useRef, useEffect, memo, lazy, useState, useCallback } from 'react'
+import { Canvas, type ThreeEvent } from '@react-three/fiber'
 import { OrbitControls, Preload } from '@react-three/drei'
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { CrateConfiguration } from '@/types/crate'
@@ -9,6 +9,7 @@ import { calculateCrateDimensions } from '@/lib/domain/calculations'
 import { CrateAssembly } from './CrateAssembly'
 import { LoadingFallback } from './LoadingFallback'
 import { useMobileOptimization } from '@/hooks/useMobileOptimization'
+import { generateComponentMetadata } from './componentMetadata'
 
 // Lazy load heavy components for better performance
 const PMIAnnotations = lazy(() => import('./PMIAnnotations').then(module => ({ default: module.PMIAnnotations })))
@@ -25,8 +26,8 @@ interface CrateVisualizerProps {
   className?: string
 }
 
-export const CrateVisualizer = memo(function CrateVisualizer({ 
-  config, 
+export const CrateVisualizer = memo(function CrateVisualizer({
+  config,
   showExploded = false,
   showPMI = false,
   showDimensions: _showDimensions = true,
@@ -36,6 +37,9 @@ export const CrateVisualizer = memo(function CrateVisualizer({
 }: CrateVisualizerProps) {
   const dimensions = useMemo(() => calculateCrateDimensions(config), [config])
   const controlsRef = useRef<OrbitControlsImpl>(null)
+  const componentMetadata = useMemo(() => generateComponentMetadata(config, dimensions), [config, dimensions])
+  const [hoveredComponentId, setHoveredComponentId] = useState<string | null>(null)
+  const [pointerPosition, setPointerPosition] = useState<{ x: number; y: number } | null>(null)
   
   // Mobile optimization
   const { 
@@ -94,6 +98,42 @@ export const CrateVisualizer = memo(function CrateVisualizer({
       controlsRef.current.reset()
     }
   }, [cameraPosition])
+
+  useEffect(() => {
+    if (!enableMeasurement) {
+      setHoveredComponentId(null)
+      setPointerPosition(null)
+    }
+  }, [enableMeasurement])
+
+  const handleComponentPointerOver = useCallback(
+    (componentId: string, event: ThreeEvent<PointerEvent>) => {
+      if (!enableMeasurement) return
+      event.stopPropagation()
+      setHoveredComponentId(componentId)
+      setPointerPosition({ x: event.clientX, y: event.clientY })
+    },
+    [enableMeasurement]
+  )
+
+  const handleComponentPointerMove = useCallback(
+    (_componentId: string, event: ThreeEvent<PointerEvent>) => {
+      if (!enableMeasurement) return
+      event.stopPropagation()
+      setPointerPosition({ x: event.clientX, y: event.clientY })
+    },
+    [enableMeasurement]
+  )
+
+  const handleComponentPointerOut = useCallback(
+    (componentId: string, event: ThreeEvent<PointerEvent>) => {
+      if (!enableMeasurement) return
+      event.stopPropagation()
+      setPointerPosition(null)
+      setHoveredComponentId(current => (current === componentId ? null : current))
+    },
+    [enableMeasurement]
+  )
   
   return (
     <div className={`${className} ${getMobileClasses()}`} role="img" aria-label="3D Crate Visualization" tabIndex={0}>
@@ -141,10 +181,13 @@ export const CrateVisualizer = memo(function CrateVisualizer({
           <pointLight position={[0, 20, 0]} intensity={isMobile ? 0.2 : 0.4} color={0xffffff} />
           
           {/* CAD Model Components */}
-          <CrateAssembly 
+          <CrateAssembly
             config={config}
             dimensions={dimensions}
             showExploded={showExploded}
+            onComponentPointerOver={handleComponentPointerOver}
+            onComponentPointerMove={handleComponentPointerMove}
+            onComponentPointerOut={handleComponentPointerOut}
           />
           
           {/* PMI Annotations - Lazy loaded */}
@@ -162,10 +205,11 @@ export const CrateVisualizer = memo(function CrateVisualizer({
           {/* Component Metadata - Lazy loaded */}
           {enableMeasurement && (
             <Suspense fallback={null}>
-              <ComponentMetadata 
-                config={config} 
-                dimensions={dimensions} 
-                showMetadata={enableMeasurement} 
+              <ComponentMetadata
+                components={componentMetadata}
+                showMetadata={enableMeasurement}
+                hoveredComponentId={hoveredComponentId}
+                pointerPosition={pointerPosition}
               />
             </Suspense>
           )}
