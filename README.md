@@ -218,6 +218,32 @@ npm i -g vercel
 vercel --prod
 ```
 
+### GitHub Actions (Automatic Deploys)
+
+This repository includes a GitHub Actions workflow that deploys to Vercel whenever commits are pushed to the `main` branch (for example, after a pull request merge). To enable it, add the following repository secrets in GitHub → *Settings* → *Secrets and variables* → *Actions*:
+
+| Secret Name | Description |
+|-------------|-------------|
+| `VERCEL_TOKEN` | A Vercel access token generated from your Vercel account settings. |
+| `VERCEL_ORG_ID` | The organization ID for the Vercel team that owns the project. |
+| `VERCEL_PROJECT_ID` | The unique project ID for the AutoCrate Vercel project. |
+
+#### Where to find these values in Vercel
+
+1. **Generate `VERCEL_TOKEN`**
+   - Navigate to [vercel.com/account/tokens](https://vercel.com/account/tokens).
+   - Click **Create Token**, give it a descriptive name (for example `autocrate-github-actions`), and copy the generated value—this is the secret you paste into GitHub.
+   - Tokens are shown only once; store it in a password manager in case you need it again.
+2. **Locate `VERCEL_ORG_ID`**
+   - If the project lives in a team, open the team menu in the top-left of the Vercel dashboard and choose the correct team.
+   - Go to **Settings → General** for that team; the **Team ID** value is the `VERCEL_ORG_ID`.
+   - For personal accounts, visit [vercel.com/account](https://vercel.com/account) and copy the **User ID** shown under **Profile**.
+3. **Locate `VERCEL_PROJECT_ID`**
+   - From the dashboard, open the AutoCrate project and click **Settings → General**.
+   - Scroll to the **Project ID** field and use the copy button; this string becomes the `VERCEL_PROJECT_ID` secret in GitHub.
+
+Once the secrets are configured, every merge to `main` will build the app with the Vercel CLI and promote the deployment to production. You can also run the workflow manually from the *Actions* tab using the **Run workflow** button.
+
 ### Manual Deployment
 ```bash
 # Build for production
