@@ -3,10 +3,12 @@
 import { useMemo, memo } from 'react'
 import type { ThreeEvent } from '@react-three/fiber'
 import * as THREE from 'three'
+import { Edges } from '@react-three/drei'
 import { CrateConfiguration, CrateDimensions } from '@/types/crate'
 import { CratePanel } from './CratePanel'
 import { ProductModel } from './ProductModel'
 import { SkidModel } from './SkidModel'
+import { adjustColor, getLumberColor } from './utils/materialColors'
 
 type ComponentPointerHandler = (componentId: string, event: ThreeEvent<PointerEvent>) => void
 
@@ -27,7 +29,7 @@ export const CrateAssembly = memo(function CrateAssembly({
   onComponentPointerMove,
   onComponentPointerOut
 }: CrateAssemblyProps) {
-  const explosionOffset = useMemo(() => showExploded ? 3 : 0, [showExploded])
+  const explosionOffset = useMemo(() => (showExploded ? 3 : 0), [showExploded])
 
   return (
     <group>
@@ -48,7 +50,7 @@ export const CrateAssembly = memo(function CrateAssembly({
           onPointerOut={onComponentPointerOut}
         />
       ))}
-      
+
       {/* Bottom Panel */}
       <CratePanel
         type="bottom"
@@ -194,7 +196,7 @@ export const CrateAssembly = memo(function CrateAssembly({
   )
 })
 
-// Crate Frame Component (2x4 lumber framing) - Optimized with instanced rendering
+// Crate Frame Component (2x4 lumber framing)
 const CrateFrame = memo(function CrateFrame({
   dimensions,
   position,
@@ -215,61 +217,56 @@ const CrateFrame = memo(function CrateFrame({
   const frameColor = getLumberColor(material)
   const frameThickness = 1.5 // 2x4 actual thickness
   const frameHeight = 3.5 // 2x4 actual height
+  const edgeColor = adjustColor(frameColor, -0.25)
+
+  const rails = useMemo(
+    () => [
+      {
+        key: 'front-rail',
+        position: [0, 0, dimensions.overallLength / 2] as [number, number, number],
+        size: [dimensions.overallWidth, frameHeight, frameThickness] as [number, number, number]
+      },
+      {
+        key: 'back-rail',
+        position: [0, 0, -dimensions.overallLength / 2] as [number, number, number],
+        size: [dimensions.overallWidth, frameHeight, frameThickness] as [number, number, number]
+      },
+      {
+        key: 'right-rail',
+        position: [dimensions.overallWidth / 2, 0, 0] as [number, number, number],
+        size: [frameThickness, frameHeight, dimensions.overallLength] as [number, number, number]
+      },
+      {
+        key: 'left-rail',
+        position: [-dimensions.overallWidth / 2, 0, 0] as [number, number, number],
+        size: [frameThickness, frameHeight, dimensions.overallLength] as [number, number, number]
+      }
+    ],
+    [dimensions, frameHeight, frameThickness]
+  )
 
   return (
     <group position={position}>
-      {/* Front and back rails */}
-      <mesh
-        position={[0, 0, dimensions.overallLength / 2]}
-        castShadow
-        receiveShadow
-        onPointerOver={metadataId ? event => onPointerOver?.(metadataId, event) : undefined}
-        onPointerMove={metadataId ? event => onPointerMove?.(metadataId, event) : undefined}
-        onPointerOut={metadataId ? event => onPointerOut?.(metadataId, event) : undefined}
-      >
-        <boxGeometry args={[dimensions.overallWidth, frameHeight, frameThickness]} />
-        <meshLambertMaterial color={frameColor} />
-      </mesh>
-      <mesh
-        position={[0, 0, -dimensions.overallLength / 2]}
-        castShadow
-        receiveShadow
-        onPointerOver={metadataId ? event => onPointerOver?.(metadataId, event) : undefined}
-        onPointerMove={metadataId ? event => onPointerMove?.(metadataId, event) : undefined}
-        onPointerOut={metadataId ? event => onPointerOut?.(metadataId, event) : undefined}
-      >
-        <boxGeometry args={[dimensions.overallWidth, frameHeight, frameThickness]} />
-        <meshLambertMaterial color={frameColor} />
-      </mesh>
-
-      {/* Left and right rails */}
-      <mesh
-        position={[dimensions.overallWidth / 2, 0, 0]}
-        castShadow
-        receiveShadow
-        onPointerOver={metadataId ? event => onPointerOver?.(metadataId, event) : undefined}
-        onPointerMove={metadataId ? event => onPointerMove?.(metadataId, event) : undefined}
-        onPointerOut={metadataId ? event => onPointerOut?.(metadataId, event) : undefined}
-      >
-        <boxGeometry args={[frameThickness, frameHeight, dimensions.overallLength]} />
-        <meshLambertMaterial color={frameColor} />
-      </mesh>
-      <mesh
-        position={[-dimensions.overallWidth / 2, 0, 0]}
-        castShadow
-        receiveShadow
-        onPointerOver={metadataId ? event => onPointerOver?.(metadataId, event) : undefined}
-        onPointerMove={metadataId ? event => onPointerMove?.(metadataId, event) : undefined}
-        onPointerOut={metadataId ? event => onPointerOut?.(metadataId, event) : undefined}
-      >
-        <boxGeometry args={[frameThickness, frameHeight, dimensions.overallLength]} />
-        <meshLambertMaterial color={frameColor} />
-      </mesh>
+      {rails.map(({ key, position: railPosition, size }) => (
+        <mesh
+          key={key}
+          position={railPosition}
+          castShadow
+          receiveShadow
+          onPointerOver={metadataId ? event => onPointerOver?.(metadataId, event) : undefined}
+          onPointerMove={metadataId ? event => onPointerMove?.(metadataId, event) : undefined}
+          onPointerOut={metadataId ? event => onPointerOut?.(metadataId, event) : undefined}
+        >
+          <boxGeometry args={size} />
+          <meshLambertMaterial color={frameColor} />
+          <Edges color={edgeColor} threshold={25} />
+        </mesh>
+      ))}
     </group>
   )
 })
 
-// Corner Posts Component (4 vertical 2x4s) - Optimized with instanced rendering
+// Corner Posts Component (4 vertical 2x4s)
 const CornerPosts = memo(function CornerPosts({
   dimensions,
   height,
@@ -290,18 +287,17 @@ const CornerPosts = memo(function CornerPosts({
   const frameColor = getLumberColor(material)
   const frameThickness = 1.5 // 2x4 actual thickness
 
-  // Memoize corner positions
   const cornerPositions = useMemo((): [number, number, number][] => [
     [-dimensions.overallWidth / 2, height / 2, -dimensions.overallLength / 2],
     [dimensions.overallWidth / 2, height / 2, -dimensions.overallLength / 2],
     [-dimensions.overallWidth / 2, height / 2, dimensions.overallLength / 2],
     [dimensions.overallWidth / 2, height / 2, dimensions.overallLength / 2]
   ], [dimensions, height])
-  
-  // Memoize geometry and material
+
   const geometry = useMemo(() => new THREE.BoxGeometry(frameThickness, height, frameThickness), [frameThickness, height])
-  const material_mesh = useMemo(() => new THREE.MeshLambertMaterial({ color: frameColor }), [frameColor])
-  
+  const materialInstance = useMemo(() => new THREE.MeshLambertMaterial({ color: frameColor }), [frameColor])
+  const edgeColor = adjustColor(frameColor, -0.25)
+
   return (
     <group>
       {cornerPositions.map((position, index) => (
@@ -311,23 +307,14 @@ const CornerPosts = memo(function CornerPosts({
           castShadow
           receiveShadow
           geometry={geometry}
-          material={material_mesh}
+          material={materialInstance}
           onPointerOver={metadataId ? event => onPointerOver?.(metadataId, event) : undefined}
           onPointerMove={metadataId ? event => onPointerMove?.(metadataId, event) : undefined}
           onPointerOut={metadataId ? event => onPointerOut?.(metadataId, event) : undefined}
-        />
+        >
+          <Edges color={edgeColor} threshold={25} />
+        </mesh>
       ))}
     </group>
   )
 })
-
-function getLumberColor(material: string): string {
-  const colors: Record<string, string> = {
-    'Standard': '#8B4513', // Brown
-    '#2': '#A0522D',       // Sienna
-    '#1': '#D2691E',       // Chocolate
-    'Select': '#F4A460'    // Sandy Brown
-  }
-  
-  return colors[material] || '#8B4513'
-}

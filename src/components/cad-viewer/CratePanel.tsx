@@ -2,9 +2,11 @@
 
 import { useMemo } from 'react'
 import type { ThreeEvent } from '@react-three/fiber'
+import { Edges } from '@react-three/drei'
+import { adjustColor, getPanelColor, type CratePanelType } from './utils/materialColors'
 
 interface CratePanelProps {
-  type: 'bottom' | 'top' | 'side' | 'end'
+  type: CratePanelType
   dimensions: {
     width: number
     length: number
@@ -20,6 +22,7 @@ interface CratePanelProps {
 }
 
 export function CratePanel({
+  type,
   dimensions,
   position,
   rotation = [0, 0, 0],
@@ -29,8 +32,8 @@ export function CratePanel({
   onPointerMove,
   onPointerOut
 }: CratePanelProps) {
-  const materialColor = useMemo(() => getMaterialColor(material), [material])
-
+  const materialColor = useMemo(() => getPanelColor(material, type), [material, type])
+  const edgeColor = useMemo(() => adjustColor(materialColor, -0.35), [materialColor])
   return (
     <mesh
       position={position}
@@ -42,25 +45,8 @@ export function CratePanel({
       onPointerOut={metadataId ? event => onPointerOut?.(metadataId, event) : undefined}
     >
       <boxGeometry args={[dimensions.width, dimensions.thickness, dimensions.length]} />
-      <meshLambertMaterial
-        color={materialColor}
-        transparent
-        opacity={0.8}
-      />
+      <meshLambertMaterial color={materialColor} transparent opacity={0.92} />
+      <Edges color={edgeColor} threshold={20} />
     </mesh>
   )
-}
-
-function getMaterialColor(material: string): string {
-  const colors: Record<string, string> = {
-    'CDX': '#D2B48C', // Tan - realistic plywood color
-    'BC': '#DEB887',  // Burlywood - better plywood
-    'AC': '#F5DEB3',  // Wheat - high grade plywood
-    'Standard': '#8B4513', // Brown lumber
-    '#2': '#A0522D',  // Sienna lumber
-    '#1': '#D2691E',  // Chocolate lumber
-    'Select': '#F4A460' // Sandy brown lumber
-  }
-  
-  return colors[material] || '#D2B48C'
 }

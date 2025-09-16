@@ -1,15 +1,14 @@
 'use client'
 
-import { Suspense, useMemo, useRef, useEffect, memo, lazy, useState, useCallback } from 'react'
-import { Canvas, type ThreeEvent } from '@react-three/fiber'
-import { OrbitControls, Preload } from '@react-three/drei'
+import { Suspense, useMemo, useRef, useEffect, memo, lazy } from 'react'
+import { Canvas } from '@react-three/fiber'
+import { OrbitControls, Preload, Environment, ContactShadows } from '@react-three/drei'
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { CrateConfiguration } from '@/types/crate'
 import { calculateCrateDimensions } from '@/lib/domain/calculations'
 import { CrateAssembly } from './CrateAssembly'
 import { LoadingFallback } from './LoadingFallback'
 import { useMobileOptimization } from '@/hooks/useMobileOptimization'
-import { generateComponentMetadata } from './componentMetadata'
 
 // Lazy load heavy components for better performance
 const PMIAnnotations = lazy(() => import('./PMIAnnotations').then(module => ({ default: module.PMIAnnotations })))
@@ -33,22 +32,19 @@ export const CrateVisualizer = memo(function CrateVisualizer({
   showDimensions: _showDimensions = true,
   enableMeasurement = false,
   showPerformanceStats = false,
-  className = "h-full w-full"
+  className = 'h-full w-full'
 }: CrateVisualizerProps) {
   const dimensions = useMemo(() => calculateCrateDimensions(config), [config])
   const controlsRef = useRef<OrbitControlsImpl>(null)
-  const componentMetadata = useMemo(() => generateComponentMetadata(config, dimensions), [config, dimensions])
-  const [hoveredComponentId, setHoveredComponentId] = useState<string | null>(null)
-  const [pointerPosition, setPointerPosition] = useState<{ x: number; y: number } | null>(null)
-  
+
   // Mobile optimization
-  const { 
-    isMobile, 
-    isTouchDevice, 
-    orientation, 
+  const {
+    isMobile,
+    isTouchDevice,
+    orientation,
     screenSize,
     getMobileClasses,
-    triggerHapticFeedback 
+    triggerHapticFeedback
   } = useMobileOptimization({
     enablePinchZoom: true,
     enablePan: true,
@@ -56,221 +52,206 @@ export const CrateVisualizer = memo(function CrateVisualizer({
     enableTap: true,
     enableDoubleTap: true,
     onDoubleTap: () => {
-      // Double tap to reset camera
       if (controlsRef.current) {
         controlsRef.current.reset()
         triggerHapticFeedback('light')
       }
     }
   })
-  
+
   // Calculate optimal camera position to fit entire crate in view
   const cameraPosition = useMemo(() => {
-    // Create bounding box for the entire crate
     const halfWidth = dimensions.overallWidth / 2
     const halfLength = dimensions.overallLength / 2
     const halfHeight = dimensions.overallHeight / 2
-    
-    // Calculate the diagonal distance from center to corner
+
     const diagonal = Math.sqrt(
-      halfWidth * halfWidth + 
-      halfLength * halfLength + 
+      halfWidth * halfWidth +
+      halfLength * halfLength +
       halfHeight * halfHeight
     )
-    
-    // Field of view is 40 degrees, so we need distance to fit the diagonal
-    // Using trigonometry: distance = diagonal / tan(fov/2)
+
     const fovRadians = (40 * Math.PI) / 180
-    const distance = (diagonal * 2.5) / Math.tan(fovRadians / 2) // 2.5x for better framing - shows full crate
-    
-    // Position camera at an optimal angle for professional 3D view
-    const angle = Math.PI / 4 // 45 degrees for better perspective
-    const x = distance * Math.cos(angle)
-    const y = distance * 0.8 // Higher position for better overview
-    const z = distance * Math.sin(angle)
-    
-    return [x, y, z] as [number, number, number]
+    const distance = (diagonal * 1.3) / Math.tan(fovRadians / 2)
+
+    const isoDirection: [number, number, number] = [1.25, 1, 1.1]
+    const directionLength = Math.hypot(...isoDirection)
+    const scale = distance / directionLength
+
+    return [
+      isoDirection[0] * scale,
+      isoDirection[1] * scale,
+      isoDirection[2] * scale
+    ] as [number, number, number]
   }, [dimensions])
-  
-  // Reset camera to optimal position when component mounts
+
+  const controlTarget = useMemo(() => [
+    0,
+    dimensions.overallHeight / 2,
+    0
+  ] as [number, number, number], [dimensions])
+
   useEffect(() => {
     if (controlsRef.current) {
-      controlsRef.current.reset()
+      controlsRef.current.target.set(...controlTarget)
+      controlsRef.current.object.position.set(...cameraPosition)
+      controlsRef.current.update()
+      controlsRef.current.saveState()
     }
-  }, [cameraPosition])
+  }, [cameraPosition, controlTarget])
 
-  useEffect(() => {
-    if (!enableMeasurement) {
-      setHoveredComponentId(null)
-      setPointerPosition(null)
-    }
-  }, [enableMeasurement])
-
-  const handleComponentPointerOver = useCallback(
-    (componentId: string, event: ThreeEvent<PointerEvent>) => {
-      if (!enableMeasurement) return
-      event.stopPropagation()
-      setHoveredComponentId(componentId)
-      setPointerPosition({ x: event.clientX, y: event.clientY })
-    },
-    [enableMeasurement]
+  const backgroundColor = useMemo(() => (isMobile ? '#f7f9fc' : '#eef2fa'), [isMobile])
+  const fogSettings = useMemo(
+    () => ({
+      near: isMobile ? 70 : 80,
+      far: isMobile ? 180 : 220
+    }),
+    [isMobile]
   )
 
-  const handleComponentPointerMove = useCallback(
-    (_componentId: string, event: ThreeEvent<PointerEvent>) => {
-      if (!enableMeasurement) return
-      event.stopPropagation()
-      setPointerPosition({ x: event.clientX, y: event.clientY })
-    },
-    [enableMeasurement]
-  )
-
-  const handleComponentPointerOut = useCallback(
-    (componentId: string, event: ThreeEvent<PointerEvent>) => {
-      if (!enableMeasurement) return
-      event.stopPropagation()
-      setPointerPosition(null)
-      setHoveredComponentId(current => (current === componentId ? null : current))
-    },
-    [enableMeasurement]
-  )
-  
   return (
     <div className={`${className} ${getMobileClasses()}`} role="img" aria-label="3D Crate Visualization" tabIndex={0}>
-      <Canvas 
-        camera={{ 
-          position: cameraPosition, 
-          fov: isMobile ? 45 : 40, // Slightly wider FOV on mobile
+      <Canvas
+        camera={{
+          position: cameraPosition,
+          fov: isMobile ? 45 : 40,
           near: 0.1,
           far: 1000
         }}
-        gl={{ 
-          antialias: !isMobile, // Disable antialiasing on mobile for better performance
+        gl={{
+          antialias: !isMobile,
           alpha: false,
           powerPreference: isMobile ? 'low-power' : 'high-performance',
           stencil: false,
           depth: true,
-          logarithmicDepthBuffer: !isMobile // Disable on mobile for better performance
+          logarithmicDepthBuffer: !isMobile
         }}
-        performance={{ 
-          min: isMobile ? 0.6 : 0.8, // Lower minimum FPS on mobile
-          max: 1.0, // Target 60fps
-          debounce: isMobile ? 300 : 200 // Longer debounce on mobile
+        performance={{
+          min: isMobile ? 0.6 : 0.8,
+          max: 1.0,
+          debounce: isMobile ? 300 : 200
         }}
-        dpr={isMobile ? [1, 1.5] : [1, 2]} // Lower DPR on mobile for better performance
+        dpr={isMobile ? [1, 1.5] : [1, 2]}
       >
         <Suspense fallback={<LoadingFallback />}>
+          <color attach="background" args={[backgroundColor]} />
+          <fog attach="fog" args={[backgroundColor, fogSettings.near, fogSettings.far]} />
+
           {/* Optimized professional lighting setup */}
-          <ambientLight intensity={isMobile ? 0.6 : 0.4} />
+          <ambientLight intensity={isMobile ? 0.75 : 0.65} color={0xffffff} />
+          <hemisphereLight intensity={isMobile ? 0.65 : 0.55} args={[0xf2f6ff, 0x4f5d75, 0.65]} />
           <directionalLight
-            position={[25, 25, 15]} 
-            intensity={isMobile ? 1.2 : 1.5}
-            castShadow={!isMobile} // Disable shadows on mobile
-            shadow-mapSize={isMobile ? [1024, 1024] : [2048, 2048]} // Smaller shadow map on mobile
-            shadow-camera-far={150} 
-            shadow-camera-left={-30} 
-            shadow-camera-right={30} 
-            shadow-camera-top={30} 
+            position={[35, 40, 20]}
+            intensity={isMobile ? 1.2 : 1.45}
+            castShadow={!isMobile}
+            shadow-mapSize={isMobile ? [1024, 1024] : [2048, 2048]}
+            shadow-camera-far={150}
+            shadow-camera-left={-30}
+            shadow-camera-right={30}
+            shadow-camera-top={30}
             shadow-camera-bottom={-30}
           />
-          <directionalLight 
-            position={[-15, 15, -10]} 
-            intensity={isMobile ? 0.4 : 0.6} 
-            color={0xffffff}
+          <directionalLight
+            position={[-25, 25, -15]}
+            intensity={isMobile ? 0.45 : 0.7}
+            color={0xfdf6ec}
           />
-          <pointLight position={[0, 20, 0]} intensity={isMobile ? 0.2 : 0.4} color={0xffffff} />
-          
+          <spotLight
+            position={[10, 45, 35]}
+            angle={0.4}
+            penumbra={0.5}
+            intensity={isMobile ? 0.35 : 0.55}
+            castShadow={!isMobile}
+          />
+          <pointLight position={[0, 22, 10]} intensity={isMobile ? 0.28 : 0.45} color={0xffffff} />
+          <Environment preset="apartment" background={false} />
+
           {/* CAD Model Components */}
-          <CrateAssembly
-            config={config}
-            dimensions={dimensions}
-            showExploded={showExploded}
-            onComponentPointerOver={handleComponentPointerOver}
-            onComponentPointerMove={handleComponentPointerMove}
-            onComponentPointerOut={handleComponentPointerOut}
-          />
-          
+          <CrateAssembly config={config} dimensions={dimensions} showExploded={showExploded} />
+
           {/* PMI Annotations - Lazy loaded */}
           {showPMI && (
             <Suspense fallback={null}>
-            <PMIAnnotations
-              config={config}
-              dimensions={dimensions}
-              showPMI={showPMI}
-              showAdvancedInfo={true}
-            />
-            </Suspense>
-          )}
-          
-          {/* Component Metadata - Lazy loaded */}
-          {enableMeasurement && (
-            <Suspense fallback={null}>
-              <ComponentMetadata
-                components={componentMetadata}
-                showMetadata={enableMeasurement}
-                hoveredComponentId={hoveredComponentId}
-                pointerPosition={pointerPosition}
+              <PMIAnnotations
+                config={config}
+                dimensions={dimensions}
+                showPMI={showPMI}
+                showAdvancedInfo={true}
               />
             </Suspense>
           )}
-          
+
+          {/* Component Metadata - Lazy loaded */}
+          {enableMeasurement && (
+            <Suspense fallback={null}>
+              <ComponentMetadata config={config} dimensions={dimensions} showMetadata={enableMeasurement} />
+            </Suspense>
+          )}
+
           {/* Preload assets for better performance */}
           <Preload all />
-          
+
           {/* Performance Monitor */}
           {showPerformanceStats && (
             <Suspense fallback={null}>
               <PerformanceMonitor enabled={true} showStats={true} />
             </Suspense>
           )}
-          
+
           {/* Interactive Controls */}
           <OrbitControls
             ref={controlsRef}
             enablePan={true}
-            enableZoom={true} 
+            enableZoom={true}
             enableRotate={true}
-            maxDistance={cameraPosition[0] * (isMobile ? 6 : 8)} // Reduced zoom out on mobile
-            minDistance={Math.max(dimensions.overallLength, dimensions.overallWidth, dimensions.overallHeight) * (isMobile ? 0.3 : 0.5)} // Closer zoom on mobile
+            maxDistance={cameraPosition[0] * (isMobile ? 6 : 8)}
+            minDistance={Math.max(dimensions.overallLength, dimensions.overallWidth, dimensions.overallHeight) * (isMobile ? 0.3 : 0.5)}
             enableDamping={true}
-            dampingFactor={isMobile ? 0.12 : 0.08} // More damping on mobile for smoother feel
-            screenSpacePanning={isMobile} // Enable screen space panning on mobile
+            dampingFactor={isMobile ? 0.12 : 0.08}
+            screenSpacePanning={isMobile}
             autoRotate={false}
             autoRotateSpeed={0.5}
-            target={[0, 0, 0]}
-            // Performance optimizations
+            target={controlTarget}
             makeDefault={true}
-            // Mobile-specific touch settings
             touches={{
-              ONE: isMobile ? 1 : 1, // Single touch for rotation
-              TWO: isMobile ? 2 : 2, // Two touches for zoom/pan
-              THREE: isMobile ? 0 : 0 // Disable three-finger gestures on mobile
+              ONE: isMobile ? 1 : 1,
+              TWO: isMobile ? 2 : 2,
+              THREE: isMobile ? 0 : 0
             }}
-            // Mobile-specific sensitivity
             rotateSpeed={isMobile ? 0.8 : 1.0}
             zoomSpeed={isMobile ? 0.8 : 1.0}
             panSpeed={isMobile ? 0.8 : 1.0}
-            // Mobile-specific limits
-            maxPolarAngle={isMobile ? Math.PI * 0.8 : Math.PI} // Limit vertical rotation on mobile
-            minPolarAngle={isMobile ? Math.PI * 0.2 : 0} // Prevent going under the model on mobile
+            maxPolarAngle={isMobile ? Math.PI * 0.8 : Math.PI}
+            minPolarAngle={isMobile ? Math.PI * 0.2 : 0}
           />
-          
+
           {/* Professional grid and background */}
-          <gridHelper 
+          <gridHelper
             args={[
-              Math.max(dimensions.overallLength, dimensions.overallWidth) * 2, 
-              Math.max(dimensions.overallLength, dimensions.overallWidth) * 2, 
-              0x888888, 
-              0x444444
-            ]} 
-            position={[0, -0.1, 0]} 
+              Math.max(dimensions.overallLength, dimensions.overallWidth) * 2,
+              Math.max(dimensions.overallLength, dimensions.overallWidth) * 2,
+              0xbfc6d6,
+              0xa5aec2
+            ]}
+            position={[0, -0.1, 0]}
+          />
+          <ContactShadows
+            rotation={[Math.PI / 2, 0, 0]}
+            position={[0, -0.99, 0]}
+            opacity={isMobile ? 0.45 : 0.6}
+            width={Math.max(dimensions.overallLength, dimensions.overallWidth) * 1.2}
+            height={Math.max(dimensions.overallLength, dimensions.overallWidth) * 1.2}
+            blur={isMobile ? 2.2 : 2.6}
+            far={25}
           />
           <mesh position={[0, -1, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-            <planeGeometry args={[
-              Math.max(dimensions.overallLength, dimensions.overallWidth) * 3, 
-              Math.max(dimensions.overallLength, dimensions.overallWidth) * 3
-            ]} />
-            <meshLambertMaterial color={0xf0f0f0} />
+            <planeGeometry
+              args={[
+                Math.max(dimensions.overallLength, dimensions.overallWidth) * 3,
+                Math.max(dimensions.overallLength, dimensions.overallWidth) * 3
+              ]}
+            />
+            <meshLambertMaterial color={0xf5f7fb} />
           </mesh>
         </Suspense>
       </Canvas>

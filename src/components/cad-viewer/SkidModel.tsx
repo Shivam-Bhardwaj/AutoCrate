@@ -2,6 +2,8 @@
 
 import { useMemo } from 'react'
 import type { ThreeEvent } from '@react-three/fiber'
+import { Edges } from '@react-three/drei'
+import { adjustColor, getSkidColor } from './utils/materialColors'
 
 interface SkidModelProps {
   length: number
@@ -23,6 +25,7 @@ export function SkidModel({
   onPointerOut
 }: SkidModelProps) {
   const skidColor = useMemo(() => getSkidColor(material), [material])
+  const edgeColor = useMemo(() => adjustColor(skidColor, -0.25), [skidColor])
 
   return (
     <group position={position}>
@@ -37,8 +40,8 @@ export function SkidModel({
       >
         <boxGeometry args={[3.5, 3.5, length]} />
         <meshLambertMaterial color={skidColor} />
+        <Edges color={edgeColor} threshold={25} />
       </mesh>
-
       <mesh
         position={[1.75, 0, 0]}
         castShadow
@@ -49,6 +52,7 @@ export function SkidModel({
       >
         <boxGeometry args={[3.5, 3.5, length]} />
         <meshLambertMaterial color={skidColor} />
+        <Edges color={edgeColor} threshold={25} />
       </mesh>
 
       {/* Cross members (every 16 inches) - 2x4 lumber */}
@@ -64,19 +68,9 @@ export function SkidModel({
         >
           <boxGeometry args={[7, 1.5, 3.5]} />
           <meshLambertMaterial color={skidColor} />
+          <Edges color={edgeColor} threshold={25} />
         </mesh>
       ))}
     </group>
   )
-}
-
-function getSkidColor(material: string): string {
-  const colors: Record<string, string> = {
-    'Standard': '#8B4513', // Brown
-    '#2': '#A0522D',       // Sienna
-    '#1': '#D2691E',       // Chocolate
-    'Select': '#F4A460'    // Sandy Brown
-  }
-  
-  return colors[material] || '#8B4513'
 }
