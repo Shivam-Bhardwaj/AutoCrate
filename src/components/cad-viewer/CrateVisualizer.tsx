@@ -2,7 +2,7 @@
 
 import { Suspense, useMemo, useRef, useEffect, memo, lazy } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Preload, Environment } from '@react-three/drei'
+import { OrbitControls, Preload, Environment, ContactShadows } from '@react-three/drei'
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { CrateConfiguration } from '@/types/crate'
 import { calculateCrateDimensions } from '@/lib/domain/calculations'
@@ -106,7 +106,13 @@ export const CrateVisualizer = memo(function CrateVisualizer({
       controlsRef.current.saveState()
     }
   }, [cameraPosition, controlTarget])
-  
+
+  const backgroundColor = useMemo(() => (isMobile ? '#f7f9fc' : '#eef2fa'), [isMobile])
+  const fogSettings = useMemo(() => ({
+    near: isMobile ? 70 : 80,
+    far: isMobile ? 180 : 220
+  }), [isMobile])
+
   return (
     <div className={`${className} ${getMobileClasses()}`} role="img" aria-label="3D Crate Visualization" tabIndex={0}>
       <Canvas 
@@ -132,17 +138,17 @@ export const CrateVisualizer = memo(function CrateVisualizer({
         dpr={isMobile ? [1, 1.5] : [1, 2]} // Lower DPR on mobile for better performance
       >
         <Suspense fallback={<LoadingFallback />}>
-          <color attach="background" args={[isMobile ? '#f5f7fb' : '#eef1f7']} />
-          <fog attach="fog" args={[isMobile ? '#f5f7fb' : '#eef1f7', 80, 200]} />
+          <color attach="background" args={[backgroundColor]} />
+          <fog attach="fog" args={[backgroundColor, fogSettings.near, fogSettings.far]} />
           {/* Optimized professional lighting setup */}
-          <ambientLight intensity={isMobile ? 0.8 : 0.6} color={0xffffff} />
+          <ambientLight intensity={isMobile ? 0.75 : 0.65} color={0xffffff} />
           <hemisphereLight
-            intensity={isMobile ? 0.6 : 0.5}
-            args={[0xf5f3ea, 0x4f5d75, 0.6]}
+            intensity={isMobile ? 0.65 : 0.55}
+            args={[0xf2f6ff, 0x4f5d75, 0.65]}
           />
           <directionalLight
             position={[35, 40, 20]}
-            intensity={isMobile ? 1.25 : 1.6}
+            intensity={isMobile ? 1.2 : 1.45}
             castShadow={!isMobile} // Disable shadows on mobile
             shadow-mapSize={isMobile ? [1024, 1024] : [2048, 2048]} // Smaller shadow map on mobile
             shadow-camera-far={150}
@@ -153,11 +159,18 @@ export const CrateVisualizer = memo(function CrateVisualizer({
           />
           <directionalLight
             position={[-25, 25, -15]}
-            intensity={isMobile ? 0.5 : 0.75}
+            intensity={isMobile ? 0.45 : 0.7}
             color={0xfdf6ec}
           />
-          <pointLight position={[0, 18, 10]} intensity={isMobile ? 0.3 : 0.5} color={0xffffff} />
-          <Environment preset="city" background={false} />
+          <spotLight
+            position={[10, 45, 35]}
+            angle={0.4}
+            penumbra={0.5}
+            intensity={isMobile ? 0.35 : 0.55}
+            castShadow={!isMobile}
+          />
+          <pointLight position={[0, 22, 10]} intensity={isMobile ? 0.28 : 0.45} color={0xffffff} />
+          <Environment preset="apartment" background={false} />
           
           {/* CAD Model Components */}
           <CrateAssembly 
@@ -231,24 +244,34 @@ export const CrateVisualizer = memo(function CrateVisualizer({
           />
           
           {/* Professional grid and background */}
-          <gridHelper 
+          <gridHelper
             args={[
-              Math.max(dimensions.overallLength, dimensions.overallWidth) * 2, 
-              Math.max(dimensions.overallLength, dimensions.overallWidth) * 2, 
-              0xb5bcc9,
-              0x9aa3b5
-            ]} 
-            position={[0, -0.1, 0]} 
+              Math.max(dimensions.overallLength, dimensions.overallWidth) * 2,
+              Math.max(dimensions.overallLength, dimensions.overallWidth) * 2,
+              0xbfc6d6,
+              0xa5aec2
+            ]}
+            position={[0, -0.1, 0]}
+          />
+          <ContactShadows
+            rotation={[Math.PI / 2, 0, 0]}
+            position={[0, -0.99, 0]}
+            opacity={isMobile ? 0.45 : 0.6}
+            width={Math.max(dimensions.overallLength, dimensions.overallWidth) * 1.2}
+            height={Math.max(dimensions.overallLength, dimensions.overallWidth) * 1.2}
+            blur={isMobile ? 2.2 : 2.6}
+            far={25}
           />
           <mesh position={[0, -1, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
             <planeGeometry args={[
               Math.max(dimensions.overallLength, dimensions.overallWidth) * 3, 
               Math.max(dimensions.overallLength, dimensions.overallWidth) * 3
             ]} />
-            <meshLambertMaterial color={0xf6f6f8} />
+            <meshLambertMaterial color={0xf5f7fb} />
           </mesh>
         </Suspense>
       </Canvas>
     </div>
   )
 })
+

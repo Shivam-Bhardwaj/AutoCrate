@@ -139,11 +139,11 @@ export const CrateAssembly = memo(function CrateAssembly({ config, dimensions, s
 })
 
 // Crate Frame Component (2x4 lumber framing) - Optimized with instanced rendering
-const CrateFrame = memo(function CrateFrame({ 
-  dimensions, 
-  position, 
+const CrateFrame = memo(function CrateFrame({
+  dimensions,
+  position,
   material
-}: { 
+}: {
   dimensions: CrateDimensions
   position: [number, number, number]
   material: string
@@ -151,37 +151,40 @@ const CrateFrame = memo(function CrateFrame({
   const frameColor = getLumberColor(material)
   const frameThickness = 1.5 // 2x4 actual thickness
   const frameHeight = 3.5 // 2x4 actual height
-  const edgeColor = '#b37b44'
-  
-  // Memoize geometry and material for better performance
-  const geometry = useMemo(() => new THREE.BoxGeometry(), [])
-  const material_mesh = useMemo(() => new THREE.MeshLambertMaterial({ color: frameColor }), [frameColor])
-  
+  const edgeColor = adjustColor(frameColor, -0.25)
+
+  const rails = useMemo(() => ([
+    {
+      key: 'front-rail',
+      position: [0, 0, dimensions.overallLength / 2] as [number, number, number],
+      size: [dimensions.overallWidth, frameHeight, frameThickness] as [number, number, number]
+    },
+    {
+      key: 'back-rail',
+      position: [0, 0, -dimensions.overallLength / 2] as [number, number, number],
+      size: [dimensions.overallWidth, frameHeight, frameThickness] as [number, number, number]
+    },
+    {
+      key: 'right-rail',
+      position: [dimensions.overallWidth / 2, 0, 0] as [number, number, number],
+      size: [frameThickness, frameHeight, dimensions.overallLength] as [number, number, number]
+    },
+    {
+      key: 'left-rail',
+      position: [-dimensions.overallWidth / 2, 0, 0] as [number, number, number],
+      size: [frameThickness, frameHeight, dimensions.overallLength] as [number, number, number]
+    }
+  ]), [dimensions, frameHeight, frameThickness])
+
   return (
     <group position={position}>
-      {/* Front and back rails */}
-      <mesh position={[0, 0, dimensions.overallLength / 2]} castShadow receiveShadow>
-        <boxGeometry args={[dimensions.overallWidth, frameHeight, frameThickness]} />
-        <meshLambertMaterial color={frameColor} />
-        <Edges color={edgeColor} threshold={25} />
-      </mesh>
-      <mesh position={[0, 0, -dimensions.overallLength / 2]} castShadow receiveShadow>
-        <boxGeometry args={[dimensions.overallWidth, frameHeight, frameThickness]} />
-        <meshLambertMaterial color={frameColor} />
-        <Edges color={edgeColor} threshold={25} />
-      </mesh>
-
-      {/* Left and right rails */}
-      <mesh position={[dimensions.overallWidth / 2, 0, 0]} castShadow receiveShadow>
-        <boxGeometry args={[frameThickness, frameHeight, dimensions.overallLength]} />
-        <meshLambertMaterial color={frameColor} />
-        <Edges color={edgeColor} threshold={25} />
-      </mesh>
-      <mesh position={[-dimensions.overallWidth / 2, 0, 0]} castShadow receiveShadow>
-        <boxGeometry args={[frameThickness, frameHeight, dimensions.overallLength]} />
-        <meshLambertMaterial color={frameColor} />
-        <Edges color={edgeColor} threshold={25} />
-      </mesh>
+      {rails.map(({ key, position: railPosition, size }) => (
+        <mesh key={key} position={railPosition} castShadow receiveShadow>
+          <boxGeometry args={size} />
+          <meshLambertMaterial color={frameColor} />
+          <Edges color={edgeColor} threshold={25} />
+        </mesh>
+      ))}
     </group>
   )
 })
@@ -198,7 +201,7 @@ const CornerPosts = memo(function CornerPosts({
 }) {
   const frameColor = getLumberColor(material)
   const frameThickness = 1.5 // 2x4 actual thickness
-  
+
   // Memoize corner positions
   const cornerPositions = useMemo((): [number, number, number][] => [
     [-dimensions.overallWidth / 2, height / 2, -dimensions.overallLength / 2],
@@ -210,7 +213,7 @@ const CornerPosts = memo(function CornerPosts({
   // Memoize geometry and material
   const geometry = useMemo(() => new THREE.BoxGeometry(frameThickness, height, frameThickness), [frameThickness, height])
   const material_mesh = useMemo(() => new THREE.MeshLambertMaterial({ color: frameColor }), [frameColor])
-  const edgeColor = '#b37b44'
+  const edgeColor = adjustColor(frameColor, -0.25)
 
   return (
     <group>
@@ -232,4 +235,30 @@ function getLumberColor(material: string): string {
   }
 
   return colors[material] || '#c8894c'
+}
+
+function adjustColor(hex: string, factor: number): string {
+  const normalized = hex.replace('#', '')
+  if (normalized.length !== 6) {
+    return hex
+  }
+
+  const num = parseInt(normalized, 16)
+  let r = (num >> 16) & 0xff
+  let g = (num >> 8) & 0xff
+  let b = num & 0xff
+
+  const adjust = (value: number) => {
+    if (factor >= 0) {
+      return Math.min(255, Math.round(value + (255 - value) * factor))
+    }
+
+    return Math.max(0, Math.round(value + value * factor))
+  }
+
+  r = adjust(r)
+  g = adjust(g)
+  b = adjust(b)
+
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`
 }
