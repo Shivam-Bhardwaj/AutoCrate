@@ -171,8 +171,8 @@ export const defaultCrateConfiguration: CrateConfiguration = {
       front: 2,
       back: 2
     },
-    count: 1,
-    pitch: 16
+    count: 3,
+    pitch: 20.75
   },
   materials: {
     lumber: {

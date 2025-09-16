@@ -78,33 +78,6 @@ export class NXExpressionGenerator {
     return Math.abs(hash).toString(16)
   }
 
-  private selectSkidSize(weight: number): string {
-    if (weight < 500) return '2x4'
-    if (weight < 1000) return '4x4'
-    if (weight < 2000) return '4x6'
-    return '6x6'
-  }
-
-  private getSkidDimensions(config: CrateConfiguration): { width: number; height: number } {
-    const skidSize = this.selectSkidSize(config.product.weight)
-    const dimensions: Record<string, { width: number; height: number }> = {
-      '2x4': { width: 3.5, height: 1.5 },
-      '4x4': { width: 3.5, height: 3.5 },
-      '4x6': { width: 5.5, height: 3.5 },
-      '6x6': { width: 5.5, height: 5.5 }
-    }
-    return dimensions[skidSize] || { width: 3.5, height: 3.5 }
-  }
-
-  private calculateSkidCount(config: CrateConfiguration): number {
-    const skidRequirements = calculateSkidRequirements(config)
-    return skidRequirements.count
-  }
-
-  private calculateSkidPitch(config: CrateConfiguration): number {
-    return config.skids.pitch
-  }
-
   private generatePanelSpecifications(config: CrateConfiguration) {
     const panels = calculatePanelRequirements(config)
     
@@ -164,7 +137,7 @@ export class NXExpressionGenerator {
   }
 
   async generateExpressions(config: CrateConfiguration): Promise<NXExpressionFile> {
-    const skidDimensions = this.getSkidDimensions(config)
+    const skidRequirements = calculateSkidRequirements(config)
 
     const expressions: NXExpressionFile = {
       metadata: {
@@ -198,11 +171,11 @@ export class NXExpressionGenerator {
 
       // Skid specifications with weight-based selection
       skidSpecs: {
-        skid_lumber_size_callout: this.selectSkidSize(config.product.weight),
-        skid_actual_height_in: skidDimensions.height,
-        skid_actual_width_in: skidDimensions.width,
-        skid_count: this.calculateSkidCount(config),
-        skid_pitch_in: this.calculateSkidPitch(config),
+        skid_lumber_size_callout: skidRequirements.lumberCallout,
+        skid_actual_height_in: skidRequirements.height,
+        skid_actual_width_in: skidRequirements.width,
+        skid_count: skidRequirements.count,
+        skid_pitch_in: skidRequirements.pitch,
         skid_overhang_front_in: config.skids.overhang.front,
         skid_overhang_back_in: config.skids.overhang.back
       },

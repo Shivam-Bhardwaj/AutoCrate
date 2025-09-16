@@ -89,7 +89,7 @@ EDGE_CONFIG=your_edge_config_id
 ### Basic Workflow
 1. **Configure Product**: Set product dimensions, weight, and center of gravity
 2. **Set Clearances**: Define internal clearances for handling
-3. **Configure Skids**: Set skid count, pitch, and overhang
+3. **Configure Skids**: Review auto-calculated skid count/spacing and adjust overhang
 4. **Select Materials**: Choose lumber grade, plywood, and hardware
 5. **Validate Design**: Review constraint validation and warnings
 6. **Optimize Materials**: Use AI-assisted optimization for cost/weight

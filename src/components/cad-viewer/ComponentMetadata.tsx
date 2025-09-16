@@ -3,7 +3,7 @@
 import { useMemo, useState, useRef, useEffect } from 'react'
 import { Html } from '@react-three/drei'
 import { CrateConfiguration, CrateDimensions } from '@/types/crate'
-import { generateBillOfMaterials, calculateMaterialEfficiency, calculateCrateWeight } from '@/lib/domain/calculations'
+import { generateBillOfMaterials, calculateMaterialEfficiency, calculateCrateWeight, calculateSkidRequirements } from '@/lib/domain/calculations'
 
 interface ComponentMetadataProps {
   config: CrateConfiguration
@@ -44,6 +44,7 @@ export function ComponentMetadata({ config, dimensions, showMetadata }: Componen
     const bom = generateBillOfMaterials(config)
     const efficiency = calculateMaterialEfficiency(config)
     const weight = calculateCrateWeight(config)
+    const skidRequirements = calculateSkidRequirements(config)
     
     return [
       // Product component
@@ -229,25 +230,26 @@ export function ComponentMetadata({ config, dimensions, showMetadata }: Componen
         id: 'skids',
         name: 'Skids',
         type: 'skid',
-        position: [0, -dimensions.overallHeight / 2 - config.materials.lumber.thickness / 2, 0] as [number, number, number],
+        position: [0, -dimensions.overallHeight / 2 - skidRequirements.height / 2, 0] as [number, number, number],
         dimensions: {
-          length: dimensions.overallLength + config.skids.overhang.front + config.skids.overhang.back,
-          width: config.materials.lumber.width,
-          height: config.materials.lumber.thickness
+          length: skidRequirements.length,
+          width: skidRequirements.width,
+          height: skidRequirements.height
         },
         material: {
           type: 'Lumber',
           grade: config.materials.lumber.grade,
-          thickness: config.materials.lumber.thickness
+          thickness: skidRequirements.height
         },
-        weight: config.skids.count * (dimensions.overallLength + config.skids.overhang.front + config.skids.overhang.back) * config.materials.lumber.width * config.materials.lumber.thickness * 0.02,
+        weight: skidRequirements.count * skidRequirements.length * skidRequirements.width * skidRequirements.height * 0.02,
         cost: bom.items.find(item => item.description.includes('Skid'))?.cost || 0,
         specifications: [
           `Material: ${config.materials.lumber.grade} Lumber`,
-          `Count: ${config.skids.count} pieces`,
-          `Pitch: ${config.skids.pitch}"`,
+          `Lumber Size: ${skidRequirements.lumberCallout}`,
+          `Count: ${skidRequirements.count} pieces`,
+          `Pitch: ${skidRequirements.pitch.toFixed(2)}"`,
           `Overhang: Front ${config.skids.overhang.front}", Back ${config.skids.overhang.back}"`,
-          `Weight: ${(config.skids.count * (dimensions.overallLength + config.skids.overhang.front + config.skids.overhang.back) * config.materials.lumber.width * config.materials.lumber.thickness * 0.02).toFixed(1)} lbs`
+          `Weight: ${(skidRequirements.count * skidRequirements.length * skidRequirements.width * skidRequirements.height * 0.02).toFixed(1)} lbs`
         ],
         manufacturingNotes: [
           'Must support full crate weight',

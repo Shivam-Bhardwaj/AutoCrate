@@ -9,7 +9,7 @@ import {
   appliedMaterialsStandards
 } from '@/types/crate'
 import { validateCrateConfiguration } from '@/lib/domain/validation'
-// import { calculateCrateDimensions } from '@/lib/domain/calculations'
+import { calculateSkidRequirements } from '@/lib/domain/calculations'
 
 interface CrateStore {
   // Configuration State
@@ -47,6 +47,21 @@ const generateId = (): string => {
   return `export_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
 
+const applyAutomaticSkidConfiguration = (config: CrateConfiguration): CrateConfiguration => {
+  const skidRequirements = calculateSkidRequirements(config)
+
+  return {
+    ...config,
+    skids: {
+      ...config.skids,
+      count: skidRequirements.count,
+      pitch: skidRequirements.pitch
+    }
+  }
+}
+
+const initialConfiguration = applyAutomaticSkidConfiguration(defaultCrateConfiguration)
+
 // Default viewport state - using static values to avoid circular dependency
 const defaultViewport: ViewportState = {
   camera: {
@@ -79,18 +94,21 @@ export const useCrateStore = create<CrateStore>()(
   persist(
     (set, get) => ({
       // Configuration State
-      configuration: defaultCrateConfiguration,
+      configuration: initialConfiguration,
       
       updateConfiguration: (config) => {
-        set((state) => ({
-          configuration: { ...state.configuration, ...config }
-        }))
+        set((state) => {
+          const mergedConfiguration = { ...state.configuration, ...config }
+          return {
+            configuration: applyAutomaticSkidConfiguration(mergedConfiguration)
+          }
+        })
         // Trigger real-time validation
         get().validateConfiguration()
       },
-      
+
       resetConfiguration: () => {
-        set({ configuration: defaultCrateConfiguration })
+        set({ configuration: initialConfiguration })
         get().validateConfiguration()
       },
       

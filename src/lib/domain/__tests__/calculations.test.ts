@@ -23,17 +23,25 @@ describe('Crate Calculations', () => {
   })
   
   describe('calculateSkidRequirements', () => {
-    it('should calculate correct skid count for heavy products', () => {
-      const config = {
+    it('derives skid spacing and count from weight chart', () => {
+      const skids = calculateSkidRequirements(defaultCrateConfiguration)
+
+      expect(skids.lumberCallout).toBe('4x4')
+      expect(skids.count).toBe(3)
+      expect(skids.pitch).toBeCloseTo(20.75, 2)
+      expect(skids.length).toBe(57) // Overall length (53) + 2" front/back overhang
+    })
+
+    it('increases skid count when crate width grows beyond spacing limits', () => {
+      const wideConfig = {
         ...defaultCrateConfiguration,
-        product: { ...defaultCrateConfiguration.product, weight: 1500 }
+        product: { ...defaultCrateConfiguration.product, width: 80 }
       }
-      
-      const skids = calculateSkidRequirements(config)
-      
-      // 1500 lbs / 1000 lbs per skid = 2 skids required
-      expect(skids.count).toBe(2)
-      expect(skids.length).toBe(50) // 46 + 2 + 2 (product + overhangs)
+
+      const skids = calculateSkidRequirements(wideConfig)
+
+      expect(skids.count).toBeGreaterThan(3)
+      expect(skids.pitch).toBeLessThanOrEqual(skids.maxSpacing)
     })
   })
   

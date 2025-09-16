@@ -6,6 +6,7 @@ import { CrateConfiguration, CrateDimensions } from '@/types/crate'
 import { CratePanel } from './CratePanel'
 import { ProductModel } from './ProductModel'
 import { SkidModel } from './SkidModel'
+import { calculateSkidRequirements } from '@/lib/domain/calculations'
 
 interface CrateAssemblyProps {
   config: CrateConfiguration
@@ -15,18 +16,27 @@ interface CrateAssemblyProps {
 
 export const CrateAssembly = memo(function CrateAssembly({ config, dimensions, showExploded = false }: CrateAssemblyProps) {
   const explosionOffset = useMemo(() => showExploded ? 3 : 0, [showExploded])
-  
+  const skidRequirements = useMemo(() => calculateSkidRequirements(config), [config])
+  const skidVerticalOffset = useMemo(() => {
+    const combinedThickness = config.materials.plywood.thickness + skidRequirements.height
+    return -(combinedThickness / 2) - (explosionOffset * 0.5)
+  }, [config.materials.plywood.thickness, skidRequirements.height, explosionOffset])
+
   return (
     <group>
       {/* Skids (bottom support) */}
-      {Array.from({ length: config.skids.count }, (_, index) => (
+      {Array.from({ length: skidRequirements.count }, (_, index) => (
         <SkidModel
           key={index}
-          length={config.product.length + config.skids.overhang.front + config.skids.overhang.back}
+          length={skidRequirements.length}
+          width={skidRequirements.width}
+          height={skidRequirements.height}
           position={[
-            0, 
-            -config.materials.plywood.thickness / 2 - explosionOffset * 0.5, 
-            (index - (config.skids.count - 1) / 2) * config.skids.pitch
+            skidRequirements.count === 1
+              ? 0
+              : (index - (skidRequirements.count - 1) / 2) * skidRequirements.pitch,
+            skidVerticalOffset,
+            0
           ]}
           material={config.materials.lumber.grade}
         />

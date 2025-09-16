@@ -1,5 +1,6 @@
 import { CrateConfiguration, CrateDimensions } from '@/types/crate'
 import { PMIAnnotations, DimensionAnnotation, GeometricTolerance, ManufacturingNote, DatumFeature } from './step-types'
+import { calculateSkidRequirements } from '@/lib/domain/calculations'
 
 export function generatePMIAnnotations(config: CrateConfiguration, dimensions: CrateDimensions): PMIAnnotations {
   const annotations: PMIAnnotations = {
@@ -223,6 +224,7 @@ function generateGeometricTolerances(config: CrateConfiguration, dimensions: Cra
 
 function generateManufacturingNotes(config: CrateConfiguration, dimensions: CrateDimensions): ManufacturingNote[] {
   const notes: ManufacturingNote[] = []
+  const skidRequirements = calculateSkidRequirements(config)
 
   // Material specifications note
   notes.push({
@@ -249,7 +251,7 @@ function generateManufacturingNotes(config: CrateConfiguration, dimensions: Crat
   notes.push({
     id: 'NOTE_ASSEMBLY_INSTRUCTIONS',
     text: `ASSEMBLY INSTRUCTIONS:
-1. Install skids with ${config.skids.count} count at ${config.skids.pitch}" pitch
+1. Install skids with ${skidRequirements.count} count at ${skidRequirements.pitch.toFixed(2)}" pitch
 2. Front overhang: ${config.skids.overhang.front}", Back overhang: ${config.skids.overhang.back}"
 3. Fasten with lag screws per Applied Materials standard
 4. Verify clearances: W=${config.clearances.width}", L=${config.clearances.length}", H=${config.clearances.height}"`,

@@ -46,12 +46,12 @@ describe('NXExpressionGenerator', () => {
 
     it('should select appropriate skid size based on weight', async () => {
       const lightConfig = { ...defaultCrateConfiguration, product: { ...defaultCrateConfiguration.product, weight: 300 } }
-      const heavyConfig = { ...defaultCrateConfiguration, product: { ...defaultCrateConfiguration.product, weight: 1500 } }
+      const heavyConfig = { ...defaultCrateConfiguration, product: { ...defaultCrateConfiguration.product, weight: 5000 } }
 
       const lightExpressions = await generator.generateExpressions(lightConfig)
       const heavyExpressions = await generator.generateExpressions(heavyConfig)
 
-      expect(lightExpressions.skidSpecs.skid_lumber_size_callout).toBe('2x4')
+      expect(lightExpressions.skidSpecs.skid_lumber_size_callout).toBe('4x4')
       expect(heavyExpressions.skidSpecs.skid_lumber_size_callout).toBe('4x6')
     })
 
@@ -135,9 +135,9 @@ describe('NXExpressionGenerator', () => {
           ...defaultCrateConfiguration.product, 
           length: 200, 
           width: 200, 
-          height: 200, 
-          weight: 5000 
-        } 
+          height: 200,
+          weight: 25000
+        }
       }
       
       const expressions = await generator.generateExpressions(largeConfig)

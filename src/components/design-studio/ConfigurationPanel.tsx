@@ -1,11 +1,13 @@
 'use client'
 
+import { useMemo } from 'react'
 import { useCrateStore, useCrateConfiguration } from '@/stores/crate-store'
-import { useFormFieldAccessibility } from '@/hooks/useAccessibility'
+import { calculateSkidRequirements } from '@/lib/domain/calculations'
 
 export function ConfigurationPanel() {
   const configuration = useCrateConfiguration()
   const updateConfiguration = useCrateStore(state => state.updateConfiguration)
+  const skidRequirements = useMemo(() => calculateSkidRequirements(configuration), [configuration])
   
   return (
     <div className="p-6 section-spacing">
@@ -147,35 +149,37 @@ export function ConfigurationPanel() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Count
+              Count (auto)
             </label>
-            <input
-              type="number"
-              value={configuration.skids.count}
-              onChange={(e) => updateConfiguration({
-                skids: { ...configuration.skids, count: Number(e.target.value) }
-              })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              min="1"
-            />
+            <div className="w-full px-3 py-2 border border-gray-200 rounded-md bg-slate-50 text-slate-700">
+              {skidRequirements.count}
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              Calculated from product weight and crate width.
+            </p>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Pitch (in)
+              Skid Spacing (in)
             </label>
-            <input
-              type="number"
-              value={configuration.skids.pitch}
-              onChange={(e) => updateConfiguration({
-                skids: { ...configuration.skids, pitch: Number(e.target.value) }
-              })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              step="1"
-              min="12"
-            />
+            <div className="w-full px-3 py-2 border border-gray-200 rounded-md bg-slate-50 text-slate-700">
+              {skidRequirements.pitch.toFixed(2)}
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              Maximum allowed spacing: {skidRequirements.maxSpacing}" center-to-center.
+            </p>
           </div>
-          
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Lumber Size
+            </label>
+            <div className="w-full px-3 py-2 border border-gray-200 rounded-md bg-slate-50 text-slate-700">
+              {skidRequirements.lumberCallout}
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Front Overhang (in)

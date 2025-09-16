@@ -32,23 +32,71 @@ export const calculateCrateDimensions = (config: CrateConfiguration): CrateDimen
   }
 }
 
-// Calculate skid requirements based on product weight
+// Skid sizing table derived from Applied Materials Table 5-3 and 5-4
+const SKID_SPECIFICATIONS = [
+  {
+    maxWeight: 4500,
+    lumberCallout: '4x4',
+    width: 3.5, // actual width in inches
+    height: 3.5, // actual height in inches
+    maxSpacing: 30 // inches on center
+  },
+  {
+    maxWeight: 12000,
+    lumberCallout: '4x6',
+    width: 5.5,
+    height: 3.5,
+    maxSpacing: 24
+  },
+  {
+    maxWeight: 20000,
+    lumberCallout: '5x6',
+    width: 5.5,
+    height: 4.5,
+    maxSpacing: 24
+  },
+  {
+    maxWeight: 30000,
+    lumberCallout: '6x6',
+    width: 5.5,
+    height: 5.5,
+    maxSpacing: 20
+  },
+  {
+    maxWeight: Infinity,
+    lumberCallout: '6x8',
+    width: 7.5,
+    height: 5.5,
+    maxSpacing: 16
+  }
+]
+
+const selectSkidSpecification = (weight: number) => {
+  return SKID_SPECIFICATIONS.find(spec => weight <= spec.maxWeight) || SKID_SPECIFICATIONS[0]
+}
+
+// Calculate skid requirements based on product weight and crate width
 export const calculateSkidRequirements = (config: CrateConfiguration) => {
   const { product, skids } = config
-  const maxWeightPerSkid = 1000 // Applied Materials standard
-  
-  // Calculate required number of skids
-  const requiredSkids = Math.ceil(product.weight / maxWeightPerSkid)
-  
-  // Calculate skid dimensions (standard 4x4 lumber)
-  const skidWidth = 3.5 // Actual dimension of 4x4
-  const skidLength = config.product.length + skids.overhang.front + skids.overhang.back
-  
+  const dimensions = calculateCrateDimensions(config)
+  const specification = selectSkidSpecification(product.weight)
+
+  // Determine the number of runners required to satisfy spacing requirements
+  const span = Math.max(0, dimensions.overallWidth - specification.width)
+  const requiredCount = Math.max(2, Math.ceil(span / specification.maxSpacing) + 1)
+  const pitch = requiredCount > 1 ? span / (requiredCount - 1) : 0
+
+  // Skid length extends the full crate length plus any overhang allowance
+  const skidLength = dimensions.overallLength + skids.overhang.front + skids.overhang.back
+
   return {
-    count: Math.max(requiredSkids, skids.count),
-    width: skidWidth,
+    count: requiredCount,
+    width: specification.width,
+    height: specification.height,
     length: skidLength,
-    pitch: skids.pitch,
+    pitch,
+    maxSpacing: specification.maxSpacing,
+    lumberCallout: specification.lumberCallout,
     overhang: skids.overhang
   }
 }
@@ -245,14 +293,14 @@ export const generateBillOfMaterials = (config: CrateConfiguration): BillOfMater
   // Skids
   items.push({
     id: 'skid-lumber',
-    description: `Skid Lumber (${config.materials.lumber.grade})`,
+    description: `Skid Lumber (${skids.lumberCallout})`,
     quantity: Math.ceil((skids.length * skids.count) / 96), // 8-foot lengths
     unit: 'each',
     material: 'Lumber',
     dimensions: {
       length: 96, // 8 feet
-      width: 3.5,
-      thickness: 3.5
+      width: skids.width,
+      thickness: skids.height
     }
   })
   

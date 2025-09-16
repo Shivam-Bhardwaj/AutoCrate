@@ -197,6 +197,8 @@ class ProductionNXGenerator implements NXExpressionGenerator {
     }
 
     // Generate expressions with Applied Materials standards
+    const skidRequirements = calculateSkidRequirements(config)
+
     const expressions: NXExpressionFile = {
       metadata: {
         generatedAt: new Date().toISOString(),
@@ -229,11 +231,11 @@ class ProductionNXGenerator implements NXExpressionGenerator {
 
       // Skid specifications with weight-based selection
       skidSpecs: {
-        skid_lumber_size_callout: this.selectSkidSize(config.product.weight),
-        skid_actual_height_in: this.getSkidDimensions(config).height,
-        skid_actual_width_in: this.getSkidDimensions(config).width,
-        skid_count: this.calculateSkidCount(config),
-        skid_pitch_in: this.calculateSkidPitch(config),
+        skid_lumber_size_callout: skidRequirements.lumberCallout,
+        skid_actual_height_in: skidRequirements.height,
+        skid_actual_width_in: skidRequirements.width,
+        skid_count: skidRequirements.count,
+        skid_pitch_in: skidRequirements.pitch,
         skid_overhang_front_in: config.skids.overhang.front,
         skid_overhang_back_in: config.skids.overhang.back
       },

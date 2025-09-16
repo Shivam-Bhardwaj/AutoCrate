@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { CrateConfiguration, CrateDimensions } from '@/types/crate'
-import { calculateCrateDimensions, generateBillOfMaterials, calculateMaterialEfficiency, calculateCrateWeight } from '@/lib/domain/calculations'
+import { calculateCrateDimensions, generateBillOfMaterials, calculateMaterialEfficiency, calculateCrateWeight, calculateSkidRequirements } from '@/lib/domain/calculations'
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,14 +44,15 @@ export async function POST(request: NextRequest) {
 }
 
 function generatePDFContent(
-  config: CrateConfiguration, 
-  dimensions: CrateDimensions, 
-  bom: { items: Array<{ id: string; description: string; quantity: number; unit: string; cost?: number }>; totalCost: number; materialWaste: number }, 
-  efficiency: number, 
+  config: CrateConfiguration,
+  dimensions: CrateDimensions,
+  bom: { items: Array<{ id: string; description: string; quantity: number; unit: string; cost?: number }>; totalCost: number; materialWaste: number },
+  efficiency: number,
   weight: number
 ) {
   const timestamp = new Date().toISOString()
   const filename = `autocrate_drawing_${timestamp.split('T')[0]}.pdf`
+  const skidRequirements = calculateSkidRequirements(config)
   
   // Generate PDF content structure (simplified)
   // In a real implementation, this would use a PDF generation library like jsPDF or Puppeteer
@@ -96,8 +97,9 @@ function generatePDFContent(
     
     // Skid configuration
     skids: {
-      count: config.skids.count,
-      pitch: config.skids.pitch,
+      count: skidRequirements.count,
+      pitch: skidRequirements.pitch,
+      lumberSize: skidRequirements.lumberCallout,
       frontOverhang: config.skids.overhang.front,
       backOverhang: config.skids.overhang.back
     },
