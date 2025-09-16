@@ -23,7 +23,8 @@
     "test:install": "playwright install",
     "setup:admin": "powershell -ExecutionPolicy Bypass -File scripts/setup-admin-powershell.ps1",
     "vercel:setup": "npm install -g vercel && vercel login && vercel link && vercel domains add autocrate.shivambhardwaj.com",
-    "vercel:deploy": "vercel --prod"
+    "vercel:deploy": "vercel --prod",
+    "metadata:sync": "node scripts/update-product-metadata.js"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

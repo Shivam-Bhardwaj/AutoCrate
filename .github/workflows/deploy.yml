@@ -30,6 +30,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Sync product metadata from changelog
+        run: npm run metadata:sync
+
+      - name: Ensure metadata is up to date
+        run: git diff --exit-code -- src/data/product-metadata.ts
+
       - name: Pull Vercel environment information
         run: npx vercel pull --yes --environment=production --token=$VERCEL_TOKEN
 
