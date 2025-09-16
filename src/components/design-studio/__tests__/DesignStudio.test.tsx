@@ -1,13 +1,16 @@
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { DesignStudio } from '../DesignStudio'
-import { useCrateStore } from '../../../stores/crate-store'
+import { useCrateStore, useCrateConfiguration, useValidationResults, useViewport } from '../../../stores/crate-store'
 import { defaultCrateConfiguration } from '../../../types/crate'
+import { currentProductLabel } from '../../../data/product-metadata'
 
 // Mock the store
 jest.mock('../../../stores/crate-store', () => ({
   useCrateStore: jest.fn(),
-  useCrateConfiguration: jest.fn()
+  useCrateConfiguration: jest.fn(),
+  useValidationResults: jest.fn(),
+  useViewport: jest.fn()
 }))
 
 // Mock the child components
@@ -40,66 +43,101 @@ const mockImportConfiguration = jest.fn()
 describe('DesignStudio', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    const mockStoreState = {
+      configuration: defaultCrateConfiguration,
+      updateConfiguration: mockUpdateConfiguration,
+      resetConfiguration: mockResetConfiguration,
+      validateConfiguration: mockValidateConfiguration,
+      exportConfiguration: mockExportConfiguration,
+      importConfiguration: mockImportConfiguration,
+      updateViewport: jest.fn(),
+      validationResults: [
+        {
+          isValid: true,
+          errors: [],
+          warnings: [],
+          timestamp: new Date()
+        }
+      ],
+      viewport: {
+        camera: {
+          position: [136, 115, 136] as [number, number, number],
+          target: [0, 0, 0] as [number, number, number]
+        },
+        selectedComponents: [],
+        showDimensions: true,
+        showPMI: false,
+        showExploded: false,
+        enableMeasurement: false
+      },
+      getValidationErrors: jest.fn(() => []),
+      getValidationWarnings: jest.fn(() => []),
+      isConfigurationValid: jest.fn(() => true),
+      getConfigurationSummary: jest.fn(() => ({
+        totalCost: 150,
+        totalWeight: 200,
+        materialEfficiency: 85
+      })),
+      getEstimatedCost: jest.fn(() => 150),
+      getEstimatedWeight: jest.fn(() => 200),
+      getEstimatedDimensions: jest.fn(() => ({
+        overallWidth: 50,
+        overallLength: 45,
+        overallHeight: 95
+      })),
+      getBillOfMaterials: jest.fn(() => ({
+        items: [],
+        totalCost: 150,
+        materialWaste: 10,
+        generatedAt: new Date()
+      })),
+      getPerformanceMetrics: jest.fn(() => ({
+        fps: 60,
+        memoryUsage: 100,
+        drawCalls: 50
+      })),
+      getMaterialEfficiency: jest.fn(() => 85),
+      getOptimizationSuggestions: jest.fn(() => []),
+      applyOptimization: jest.fn(),
+      getConfigurationHistory: jest.fn(() => []),
+      undoConfiguration: jest.fn(),
+      redoConfiguration: jest.fn(),
+      canUndo: jest.fn(() => false),
+      canRedo: jest.fn(() => false),
+      clearHistory: jest.fn(),
+      getExportOptions: jest.fn(() => ({
+        step: true,
+        nx: true,
+        pdf: false
+      }))
+    }
+
     ;(useCrateStore as jest.Mock).mockImplementation((selector) => {
-      const state = {
-        configuration: defaultCrateConfiguration,
-        updateConfiguration: mockUpdateConfiguration,
-        resetConfiguration: mockResetConfiguration,
-        validateConfiguration: mockValidateConfiguration,
-        exportConfiguration: mockExportConfiguration,
-        importConfiguration: mockImportConfiguration,
-        getValidationErrors: jest.fn(() => []),
-        getValidationWarnings: jest.fn(() => []),
-        isConfigurationValid: jest.fn(() => true),
-        getConfigurationSummary: jest.fn(() => ({
-          totalCost: 150,
-          totalWeight: 200,
-          materialEfficiency: 85
-        })),
-        getEstimatedCost: jest.fn(() => 150),
-        getEstimatedWeight: jest.fn(() => 200),
-        getEstimatedDimensions: jest.fn(() => ({
-          overallWidth: 50,
-          overallLength: 45,
-          overallHeight: 95
-        })),
-        getBillOfMaterials: jest.fn(() => ({
-          items: [],
-          totalCost: 150,
-          materialWaste: 10,
-          generatedAt: new Date()
-        })),
-        getPerformanceMetrics: jest.fn(() => ({
-          fps: 60,
-          memoryUsage: 100,
-          drawCalls: 50
-        })),
-        getMaterialEfficiency: jest.fn(() => 85),
-        getOptimizationSuggestions: jest.fn(() => []),
-        applyOptimization: jest.fn(),
-        getConfigurationHistory: jest.fn(() => []),
-        undoConfiguration: jest.fn(),
-        redoConfiguration: jest.fn(),
-        canUndo: jest.fn(() => false),
-        canRedo: jest.fn(() => false),
-        clearHistory: jest.fn(),
-        getExportOptions: jest.fn(() => ({
-          step: true,
-          nx: true,
-          pdf: false
-        }))
-      }
       if (selector === undefined) {
-        return state
+        return mockStoreState
       }
-      return selector(state)
+      return selector(mockStoreState)
     })
+
+    ;(useCrateStore as unknown as { getState: jest.Mock }).getState = jest
+      .fn()
+      .mockReturnValue(mockStoreState)
+
+    ;(useCrateConfiguration as jest.Mock).mockReturnValue(
+      defaultCrateConfiguration
+    )
+
+    ;(useValidationResults as jest.Mock).mockReturnValue(
+      mockStoreState.validationResults
+    )
+
+    ;(useViewport as jest.Mock).mockReturnValue(mockStoreState.viewport)
   })
 
   it('renders the main design studio interface', () => {
     render(<DesignStudio />)
     
-    expect(screen.getByText('AutoCrate Design Studio')).toBeInTheDocument()
+    expect(screen.getByText(currentProductLabel)).toBeInTheDocument()
     expect(screen.getByText('Applied Materials Standards')).toBeInTheDocument()
   })
 
