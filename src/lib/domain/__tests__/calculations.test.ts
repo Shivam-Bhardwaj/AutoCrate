@@ -28,12 +28,36 @@ describe('Crate Calculations', () => {
         ...defaultCrateConfiguration,
         product: { ...defaultCrateConfiguration.product, weight: 1500 }
       }
-      
+
       const skids = calculateSkidRequirements(config)
-      
+
       // 1500 lbs / 1000 lbs per skid = 2 skids required
       expect(skids.count).toBe(2)
       expect(skids.length).toBe(50) // 46 + 2 + 2 (product + overhangs)
+    })
+
+    it('should return a single centered skid for narrow crates', () => {
+      const config = {
+        ...defaultCrateConfiguration,
+        product: {
+          ...defaultCrateConfiguration.product,
+          width: 0,
+          weight: 1500
+        },
+        clearances: {
+          ...defaultCrateConfiguration.clearances,
+          width: 0
+        },
+        skids: {
+          ...defaultCrateConfiguration.skids,
+          count: 2
+        }
+      }
+
+      const skids = calculateSkidRequirements(config)
+
+      expect(skids.count).toBe(1)
+      expect(skids.positions).toEqual([0])
     })
   })
   

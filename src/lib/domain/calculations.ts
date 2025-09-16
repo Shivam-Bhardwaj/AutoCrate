@@ -32,24 +32,48 @@ export const calculateCrateDimensions = (config: CrateConfiguration): CrateDimen
   }
 }
 
+const getSkidSpecification = (weight: number): { width: number } => {
+  if (weight < 1000) {
+    return { width: 3.5 }
+  }
+
+  return { width: 5.5 }
+}
+
 // Calculate skid requirements based on product weight
 export const calculateSkidRequirements = (config: CrateConfiguration) => {
   const { product, skids } = config
   const maxWeightPerSkid = 1000 // Applied Materials standard
-  
+
+  const dimensions = calculateCrateDimensions(config)
+  const specification = getSkidSpecification(product.weight)
+
   // Calculate required number of skids
   const requiredSkids = Math.ceil(product.weight / maxWeightPerSkid)
-  
-  // Calculate skid dimensions (standard 4x4 lumber)
-  const skidWidth = 3.5 // Actual dimension of 4x4
+  let count = Math.max(requiredSkids, skids.count, 1)
+
+  if (dimensions.overallWidth <= specification.width) {
+    count = 1
+  }
+
+  // Calculate skid dimensions
+  const skidWidth = specification.width
   const skidLength = config.product.length + skids.overhang.front + skids.overhang.back
-  
+  const pitch = count > 1 ? skids.pitch : 0
+  const positions = count === 1
+    ? [0]
+    : Array.from({ length: count }, (_, index) => {
+        const offset = (count - 1) / 2
+        return (index - offset) * pitch
+      })
+
   return {
-    count: Math.max(requiredSkids, skids.count),
+    count,
     width: skidWidth,
     length: skidLength,
-    pitch: skids.pitch,
-    overhang: skids.overhang
+    pitch,
+    overhang: skids.overhang,
+    positions
   }
 }
 
