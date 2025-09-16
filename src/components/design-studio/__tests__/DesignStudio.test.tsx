@@ -26,9 +26,38 @@ jest.mock('../ExportPanel', () => ({
   ExportPanel: () => <div data-testid="export-panel">Export Panel</div>
 }))
 
-jest.mock('../MaterialOptimizer', () => ({
-  MaterialOptimizer: () => <div data-testid="material-optimizer">Material Optimizer</div>
-}))
+jest.mock('../MaterialOptimizer', () => {
+  const { useCrateStore } = require('../../../stores/crate-store')
+
+  const MaterialOptimizer = () => {
+    const suggestions =
+      useCrateStore((state: any) =>
+        typeof state.getOptimizationSuggestions === 'function'
+          ? state.getOptimizationSuggestions()
+          : []
+      ) ?? []
+
+    return (
+      <div data-testid="material-optimizer">
+        <h2>Optimization Suggestions</h2>
+        {suggestions.length > 0 ? (
+          <ul>
+            {suggestions.map((suggestion: any, index: number) => (
+              <li key={index}>
+                <span>{suggestion.description}</span>
+                {suggestion.impact ? <span>{suggestion.impact}</span> : null}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No optimization suggestions available.</p>
+        )}
+      </div>
+    )
+  }
+
+  return { MaterialOptimizer }
+})
 
 jest.mock('../../cad-viewer/CrateVisualizer', () => ({
   CrateVisualizer: () => <div data-testid="crate-visualizer">Crate Visualizer</div>
