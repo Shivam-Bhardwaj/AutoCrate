@@ -1,11 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Performance optimizations
-  experimental: {
-    optimizePackageImports: ['@react-three/fiber', '@react-three/drei', 'three'],
-  },
-  
   // Bundle optimization
   webpack: (config, { isServer }) => {
     // Optimize Three.js bundle size
@@ -15,14 +10,7 @@ const nextConfig: NextConfig = {
         'three/examples/jsm': 'three/examples/jsm',
       }
     }
-    
-    // Tree shaking optimization
-    config.optimization = {
-      ...config.optimization,
-      usedExports: true,
-      sideEffects: false,
-    }
-    
+
     return config
   },
   
