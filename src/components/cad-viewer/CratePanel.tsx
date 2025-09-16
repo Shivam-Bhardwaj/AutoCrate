@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import type { ThreeEvent } from '@react-three/fiber'
 
 interface CratePanelProps {
   type: 'bottom' | 'top' | 'side' | 'end'
@@ -12,20 +13,36 @@ interface CratePanelProps {
   position: [number, number, number]
   rotation?: [number, number, number]
   material: string
+  metadataId?: string
+  onPointerOver?: (componentId: string, event: ThreeEvent<PointerEvent>) => void
+  onPointerMove?: (componentId: string, event: ThreeEvent<PointerEvent>) => void
+  onPointerOut?: (componentId: string, event: ThreeEvent<PointerEvent>) => void
 }
 
-export function CratePanel({ 
-  dimensions, 
-  position, 
+export function CratePanel({
+  dimensions,
+  position,
   rotation = [0, 0, 0],
-  material 
+  material,
+  metadataId,
+  onPointerOver,
+  onPointerMove,
+  onPointerOut
 }: CratePanelProps) {
   const materialColor = useMemo(() => getMaterialColor(material), [material])
-  
+
   return (
-    <mesh position={position} rotation={rotation} castShadow receiveShadow>
+    <mesh
+      position={position}
+      rotation={rotation}
+      castShadow
+      receiveShadow
+      onPointerOver={metadataId ? event => onPointerOver?.(metadataId, event) : undefined}
+      onPointerMove={metadataId ? event => onPointerMove?.(metadataId, event) : undefined}
+      onPointerOut={metadataId ? event => onPointerOut?.(metadataId, event) : undefined}
+    >
       <boxGeometry args={[dimensions.width, dimensions.thickness, dimensions.length]} />
-      <meshLambertMaterial 
+      <meshLambertMaterial
         color={materialColor}
         transparent
         opacity={0.8}
