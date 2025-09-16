@@ -36,6 +36,7 @@ describe('Crate Calculations', () => {
       expect(skids.length).toBe(50) // 46 + 2 + 2 (product + overhangs)
     })
 
+
     it('should return a single centered skid for narrow crates', () => {
       const config = {
         ...defaultCrateConfiguration,
@@ -58,6 +59,7 @@ describe('Crate Calculations', () => {
 
       expect(skids.count).toBe(1)
       expect(skids.positions).toEqual([0])
+
     })
   })
   
