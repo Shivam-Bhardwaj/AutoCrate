@@ -7,6 +7,7 @@ import { CrateConfiguration, CrateDimensions } from '@/types/crate'
 import { CratePanel } from './CratePanel'
 import { ProductModel } from './ProductModel'
 import { SkidModel } from './SkidModel'
+import { adjustColor, getLumberColor } from './utils/materialColors'
 
 interface CrateAssemblyProps {
   config: CrateConfiguration
@@ -212,13 +213,13 @@ const CornerPosts = memo(function CornerPosts({
   
   // Memoize geometry and material
   const geometry = useMemo(() => new THREE.BoxGeometry(frameThickness, height, frameThickness), [frameThickness, height])
-  const material_mesh = useMemo(() => new THREE.MeshLambertMaterial({ color: frameColor }), [frameColor])
+  const material = useMemo(() => new THREE.MeshLambertMaterial({ color: frameColor }), [frameColor])
   const edgeColor = adjustColor(frameColor, -0.25)
 
   return (
     <group>
       {cornerPositions.map((position, index) => (
-        <mesh key={index} position={position} castShadow receiveShadow geometry={geometry} material={material_mesh}>
+        <mesh key={index} position={position} castShadow receiveShadow geometry={geometry} material={material}>
           <Edges color={edgeColor} threshold={25} />
         </mesh>
       ))}
@@ -226,39 +227,3 @@ const CornerPosts = memo(function CornerPosts({
   )
 })
 
-function getLumberColor(material: string): string {
-  const colors: Record<string, string> = {
-    'Standard': '#c8894c',
-    '#2': '#d79b63',
-    '#1': '#e8ae78',
-    'Select': '#f4c999'
-  }
-
-  return colors[material] || '#c8894c'
-}
-
-function adjustColor(hex: string, factor: number): string {
-  const normalized = hex.replace('#', '')
-  if (normalized.length !== 6) {
-    return hex
-  }
-
-  const num = parseInt(normalized, 16)
-  let r = (num >> 16) & 0xff
-  let g = (num >> 8) & 0xff
-  let b = num & 0xff
-
-  const adjust = (value: number) => {
-    if (factor >= 0) {
-      return Math.min(255, Math.round(value + (255 - value) * factor))
-    }
-
-    return Math.max(0, Math.round(value + value * factor))
-  }
-
-  r = adjust(r)
-  g = adjust(g)
-  b = adjust(b)
-
-  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`
-}
