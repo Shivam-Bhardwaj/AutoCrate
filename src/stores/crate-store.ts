@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
+import type { StateStorage } from 'zustand/middleware'
 import { 
   CrateConfiguration, 
   ValidationResult, 
@@ -59,6 +60,16 @@ const defaultViewport: ViewportState = {
   showExploded: false,
   enableMeasurement: false
 }
+
+const noopStorage: StateStorage = {
+  getItem: () => null,
+  setItem: () => undefined,
+  removeItem: () => undefined
+}
+
+const storage = createJSONStorage<CrateStore>(() =>
+  typeof window === 'undefined' ? noopStorage : localStorage
+)
 
 // Validation function using domain logic
 const validateConfiguration = async (config: CrateConfiguration): Promise<ValidationResult> => {
@@ -206,7 +217,7 @@ export const useCrateStore = create<CrateStore>()(
     }),
     {
       name: 'autocrate-store',
-      storage: createJSONStorage(() => localStorage),
+      storage,
       partialize: (state) => ({ 
         configuration: state.configuration,
         viewport: state.viewport 
