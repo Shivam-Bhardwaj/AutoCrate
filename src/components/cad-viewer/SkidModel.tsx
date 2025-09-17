@@ -7,6 +7,9 @@ import { adjustColor, getSkidColor } from './utils/materialColors'
 
 interface SkidModelProps {
   length: number
+  runnerWidth: number
+  runnerHeight: number
+  floorboardThickness: number
   position: [number, number, number]
   material: string
   metadataId?: string
@@ -17,6 +20,9 @@ interface SkidModelProps {
 
 export function SkidModel({
   length,
+  runnerWidth,
+  runnerHeight,
+  floorboardThickness,
   position,
   material,
   metadataId,
@@ -26,47 +32,63 @@ export function SkidModel({
 }: SkidModelProps) {
   const skidColor = useMemo(() => getSkidColor(material), [material])
   const edgeColor = useMemo(() => adjustColor(skidColor, -0.25), [skidColor])
+  const runnerOffsetX = runnerWidth / 2
+  const crossMemberCount = useMemo(() => Math.max(2, Math.ceil(length / 16) + 1), [length])
+  const crossMemberDepth = runnerWidth
+  const crossMemberWidth = runnerWidth * 2
+  const crossMemberStart = useMemo(() => -length / 2 + crossMemberDepth / 2, [length, crossMemberDepth])
+  const crossMemberStep = useMemo(() => {
+    if (crossMemberCount <= 1) {
+      return 0
+    }
+
+    return (length - crossMemberDepth) / (crossMemberCount - 1)
+  }, [crossMemberCount, length, crossMemberDepth])
 
   return (
     <group position={position}>
       {/* Skid runners (2 pieces) - 4x4 lumber */}
       <mesh
-        position={[-1.75, 0, 0]}
+        position={[-runnerOffsetX, 0, 0]}
         castShadow
         receiveShadow
         onPointerOver={metadataId ? event => onPointerOver?.(metadataId, event) : undefined}
         onPointerMove={metadataId ? event => onPointerMove?.(metadataId, event) : undefined}
         onPointerOut={metadataId ? event => onPointerOut?.(metadataId, event) : undefined}
       >
-        <boxGeometry args={[3.5, 3.5, length]} />
+        <boxGeometry args={[runnerWidth, runnerHeight, length]} />
         <meshLambertMaterial color={skidColor} />
         <Edges color={edgeColor} threshold={25} />
       </mesh>
       <mesh
-        position={[1.75, 0, 0]}
+        position={[runnerOffsetX, 0, 0]}
         castShadow
         receiveShadow
         onPointerOver={metadataId ? event => onPointerOver?.(metadataId, event) : undefined}
         onPointerMove={metadataId ? event => onPointerMove?.(metadataId, event) : undefined}
         onPointerOut={metadataId ? event => onPointerOut?.(metadataId, event) : undefined}
       >
-        <boxGeometry args={[3.5, 3.5, length]} />
+        <boxGeometry args={[runnerWidth, runnerHeight, length]} />
         <meshLambertMaterial color={skidColor} />
         <Edges color={edgeColor} threshold={25} />
       </mesh>
 
       {/* Cross members (every 16 inches) - 2x4 lumber */}
-      {Array.from({ length: Math.floor(length / 16) + 1 }, (_, index) => (
+      {Array.from({ length: crossMemberCount }, (_, index) => (
         <mesh
           key={index}
-          position={[0, 1.75, (index * 16) - length / 2]}
+          position={[
+            0,
+            runnerHeight / 2 + floorboardThickness / 2,
+            crossMemberStart + index * crossMemberStep
+          ]}
           castShadow
           receiveShadow
           onPointerOver={metadataId ? event => onPointerOver?.(metadataId, event) : undefined}
           onPointerMove={metadataId ? event => onPointerMove?.(metadataId, event) : undefined}
           onPointerOut={metadataId ? event => onPointerOut?.(metadataId, event) : undefined}
         >
-          <boxGeometry args={[7, 1.5, 3.5]} />
+          <boxGeometry args={[crossMemberWidth, floorboardThickness, crossMemberDepth]} />
           <meshLambertMaterial color={skidColor} />
           <Edges color={edgeColor} threshold={25} />
         </mesh>
