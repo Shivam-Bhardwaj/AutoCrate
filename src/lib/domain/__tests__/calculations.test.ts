@@ -33,7 +33,7 @@ describe('Crate Calculations', () => {
 
       // 1500 lbs / 1000 lbs per skid = 2 skids required
       expect(skids.count).toBe(2)
-      expect(skids.length).toBe(50) // 46 + 2 + 2 (product + overhangs)
+      expect(skids.length).toBe(57) // Overall length 53 + 2" front + 2" back overhangs
     })
 
 

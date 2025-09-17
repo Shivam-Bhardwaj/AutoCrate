@@ -5,6 +5,7 @@ import type { ThreeEvent } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Edges } from '@react-three/drei'
 import { CrateConfiguration, CrateDimensions } from '@/types/crate'
+import { calculateSkidRequirements } from '@/lib/domain/calculations'
 import { CratePanel } from './CratePanel'
 import { ProductModel } from './ProductModel'
 import { SkidModel } from './SkidModel'
@@ -30,19 +31,41 @@ export const CrateAssembly = memo(function CrateAssembly({
   onComponentPointerOut
 }: CrateAssemblyProps) {
   const explosionOffset = useMemo(() => (showExploded ? 3 : 0), [showExploded])
+  const skidRequirements = useMemo(() => calculateSkidRequirements(config), [config])
+  const floorboardThickness = config.materials.lumber.thickness
+  const bottomPanelThickness = config.materials.plywood.thickness
+  const frameHeight = 3.5
+  const skidVerticalOffset = useMemo(
+    () =>
+      -bottomPanelThickness / 2 - floorboardThickness - skidRequirements.height / 2 -
+      explosionOffset * 0.5,
+    [bottomPanelThickness, floorboardThickness, skidRequirements.height, explosionOffset]
+  )
+  const bottomPanelPositionY = useMemo(
+    () => -bottomPanelThickness / 2 - explosionOffset,
+    [bottomPanelThickness, explosionOffset]
+  )
+  const bottomFramePositionY = useMemo(() => frameHeight / 2, [frameHeight])
+  const topFramePositionY = useMemo(
+    () => dimensions.overallHeight - bottomPanelThickness / 2 + explosionOffset,
+    [dimensions.overallHeight, bottomPanelThickness, explosionOffset]
+  )
+  const topPanelPositionY = useMemo(
+    () => dimensions.overallHeight + explosionOffset,
+    [dimensions.overallHeight, explosionOffset]
+  )
 
   return (
     <group>
       {/* Skids (bottom support) */}
-      {Array.from({ length: config.skids.count }, (_, index) => (
+      {skidRequirements.positions.map((positionZ, index) => (
         <SkidModel
           key={index}
-          length={config.product.length + config.skids.overhang.front + config.skids.overhang.back}
-          position={[
-            0,
-            -config.materials.plywood.thickness / 2 - explosionOffset * 0.5,
-            (index - (config.skids.count - 1) / 2) * config.skids.pitch
-          ]}
+          length={skidRequirements.length}
+          runnerWidth={skidRequirements.width}
+          runnerHeight={skidRequirements.height}
+          floorboardThickness={floorboardThickness}
+          position={[0, skidVerticalOffset, positionZ]}
           material={config.materials.lumber.grade}
           metadataId="skids"
           onPointerOver={onComponentPointerOver}
@@ -59,7 +82,7 @@ export const CrateAssembly = memo(function CrateAssembly({
           length: dimensions.overallLength,
           thickness: config.materials.plywood.thickness
         }}
-        position={[0, -explosionOffset, 0]}
+        position={[0, bottomPanelPositionY, 0]}
         material={config.materials.plywood.grade}
         metadataId="bottom-panel"
         onPointerOver={onComponentPointerOver}
@@ -70,7 +93,7 @@ export const CrateAssembly = memo(function CrateAssembly({
       {/* Bottom Frame (2x4 lumber around bottom panel) */}
       <CrateFrame
         dimensions={dimensions}
-        position={[0, config.materials.plywood.thickness / 2, 0]}
+        position={[0, bottomFramePositionY, 0]}
         material={config.materials.lumber.grade}
         metadataId="bottom-frame"
         onPointerOver={onComponentPointerOver}
@@ -158,7 +181,7 @@ export const CrateAssembly = memo(function CrateAssembly({
       {/* Top Frame (2x4 lumber around top) */}
       <CrateFrame
         dimensions={dimensions}
-        position={[0, dimensions.overallHeight - config.materials.plywood.thickness / 2 + explosionOffset, 0]}
+        position={[0, topFramePositionY, 0]}
         material={config.materials.lumber.grade}
         metadataId="top-frame"
         onPointerOver={onComponentPointerOver}
@@ -174,7 +197,7 @@ export const CrateAssembly = memo(function CrateAssembly({
           length: dimensions.overallLength,
           thickness: config.materials.plywood.thickness
         }}
-        position={[0, dimensions.overallHeight + explosionOffset, 0]}
+        position={[0, topPanelPositionY, 0]}
         material={config.materials.plywood.grade}
         metadataId="top-panel"
         onPointerOver={onComponentPointerOver}

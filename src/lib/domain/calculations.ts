@@ -32,12 +32,22 @@ export const calculateCrateDimensions = (config: CrateConfiguration): CrateDimen
   }
 }
 
-const getSkidSpecification = (weight: number): { width: number } => {
-  if (weight < 1000) {
-    return { width: 3.5 }
+const getSkidSpecification = (
+  weight: number
+): { width: number; height: number } => {
+  if (weight < 500) {
+    return { width: 3.5, height: 1.5 }
   }
 
-  return { width: 5.5 }
+  if (weight < 1000) {
+    return { width: 3.5, height: 3.5 }
+  }
+
+  if (weight < 2000) {
+    return { width: 5.5, height: 3.5 }
+  }
+
+  return { width: 5.5, height: 5.5 }
 }
 
 // Calculate skid requirements based on product weight
@@ -58,7 +68,8 @@ export const calculateSkidRequirements = (config: CrateConfiguration) => {
 
   // Calculate skid dimensions
   const skidWidth = specification.width
-  const skidLength = config.product.length + skids.overhang.front + skids.overhang.back
+  const skidHeight = specification.height
+  const skidLength = dimensions.overallLength + skids.overhang.front + skids.overhang.back
   const pitch = count > 1 ? skids.pitch : 0
   const positions = count === 1
     ? [0]
@@ -70,6 +81,7 @@ export const calculateSkidRequirements = (config: CrateConfiguration) => {
   return {
     count,
     width: skidWidth,
+    height: skidHeight,
     length: skidLength,
     pitch,
     overhang: skids.overhang,
@@ -80,7 +92,13 @@ export const calculateSkidRequirements = (config: CrateConfiguration) => {
 // Calculate lumber requirements for panels
 export const calculatePanelRequirements = (config: CrateConfiguration) => {
   const dimensions = calculateCrateDimensions(config)
-  
+  const sheetLength = 96 // Standard 8' plywood sheet length
+  const sidePanelSheetCount = Math.max(1, Math.ceil(dimensions.overallLength / sheetLength))
+  const sidePanelSplices = Math.max(0, sidePanelSheetCount - 1)
+  const sidePanels = 2
+  const sideCleatCount = sidePanelSplices * sidePanels
+  const sideCleatLength = dimensions.overallHeight - config.materials.plywood.thickness
+
   // Calculate panel dimensions
   const panels = {
     // Bottom panel
@@ -94,7 +112,15 @@ export const calculatePanelRequirements = (config: CrateConfiguration) => {
       width: dimensions.overallHeight,
       length: dimensions.overallLength,
       thickness: config.materials.plywood.thickness,
-      count: 2
+      count: sidePanels,
+      sheetCount: sidePanelSheetCount,
+      spliceCount: sidePanelSplices,
+      cleats: {
+        count: sideCleatCount,
+        length: sideCleatLength,
+        width: config.materials.lumber.width,
+        thickness: config.materials.lumber.thickness
+      }
     },
     // End panels (2 pieces)
     ends: {
@@ -148,11 +174,12 @@ export const calculateFramingRequirements = (config: CrateConfiguration) => {
 // Calculate hardware requirements
 export const calculateHardwareRequirements = (config: CrateConfiguration) => {
   const dimensions = calculateCrateDimensions(config)
-  
+  const panels = calculatePanelRequirements(config)
+
   // Lag screws for framing (every 16" on center)
   const lagScrewSpacing = 16
   const lagScrewCount = Math.ceil((dimensions.overallWidth + dimensions.overallLength) * 2 / lagScrewSpacing) * 2 // Top and bottom frames
-  
+
   // Klimp fasteners for panels (every 24" on center)
   const klimpSpacing = 24
   const panelPerimeter = (dimensions.overallWidth + dimensions.overallLength) * 2
@@ -162,8 +189,12 @@ export const calculateHardwareRequirements = (config: CrateConfiguration) => {
   const washerCount = lagScrewCount
   
   // Cleat screws (for internal cleats)
-  const cleatScrewCount = Math.ceil(dimensions.overallLength / 24) * 2 // Cleats every 2 feet
-  
+  const cleatData = panels.sides.cleats
+  const screwsPerCleat = cleatData.count > 0
+    ? Math.max(4, Math.ceil(cleatData.length / 16) * 2)
+    : 0
+  const cleatScrewCount = cleatData.count * screwsPerCleat
+
   return {
     lagScrews: {
       count: lagScrewCount,
@@ -275,10 +306,25 @@ export const generateBillOfMaterials = (config: CrateConfiguration): BillOfMater
     material: 'Lumber',
     dimensions: {
       length: 96, // 8 feet
-      width: 3.5,
-      thickness: 3.5
+      width: skids.width,
+      thickness: skids.height
     }
   })
+
+  if (panels.sides.cleats.count > 0) {
+    items.push({
+      id: 'side-cleats',
+      description: `Side Panel Cleats (${config.materials.lumber.grade})`,
+      quantity: panels.sides.cleats.count,
+      unit: 'each',
+      material: 'Lumber',
+      dimensions: {
+        length: panels.sides.cleats.length,
+        width: panels.sides.cleats.width,
+        thickness: panels.sides.cleats.thickness
+      }
+    })
+  }
   
   // Hardware
   items.push({
