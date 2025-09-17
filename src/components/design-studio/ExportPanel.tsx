@@ -4,6 +4,47 @@ import { useCrateStore, useExportQueue } from '@/stores/crate-store'
 import { useState, useEffect } from 'react'
 import { announceToScreenReader } from '@/lib/accessibility'
 
+const extractFilenameFromHeaders = (headers: Headers, fallback: string): string => {
+  const disposition = headers.get('Content-Disposition')
+  if (!disposition) {
+    return fallback
+  }
+
+  const utf8Match = disposition.match(/filename\*=UTF-8''([^;]+)/i)
+  if (utf8Match?.[1]) {
+    try {
+      return decodeURIComponent(utf8Match[1])
+    } catch {
+      return utf8Match[1]
+    }
+  }
+
+  const quotedMatch = disposition.match(/filename="([^"\\]+)"/i)
+  if (quotedMatch?.[1]) {
+    return quotedMatch[1]
+  }
+
+  const unquotedMatch = disposition.match(/filename=([^;]+)/i)
+  if (unquotedMatch?.[1]) {
+    return unquotedMatch[1]
+  }
+
+  return fallback
+}
+
+const initiateDownload = (blob: Blob, filename: string): string => {
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  document.body.appendChild(anchor)
+  anchor.click()
+  document.body.removeChild(anchor)
+  URL.revokeObjectURL(url)
+
+  return url
+}
+
 export function ExportPanel() {
   const exportQueue = useExportQueue()
   const configuration = useCrateStore(state => state.configuration)
@@ -73,46 +114,57 @@ export function ExportPanel() {
         },
         body: JSON.stringify(configuration),
       })
-      
+
       if (!response.ok) {
         throw new Error(`Export failed: ${response.statusText}`)
       }
-      
+
+      const contentType = response.headers.get('Content-Type') ?? ''
+      const dateStamp = new Date().toISOString().split('T')[0]
+      const fallbackFilename = `autocrate_${type.replace('-', '_')}_${dateStamp}.${fileExtension}`
+
       updateExportJob(jobId, { progress: 60 })
-      
-      const data = await response.json()
-      
-      if (!data.success) {
-        throw new Error(data.error || 'Export failed')
+
+      if (contentType.includes('application/json')) {
+        const data = await response.json()
+
+        if (!data.success) {
+          throw new Error(data.error || 'Export failed')
+        }
+
+        updateExportJob(jobId, { progress: 80 })
+
+        const filename = data.expressions?.filename || data.content?.filename || fallbackFilename
+        const content = data.expressions?.content || data.content?.content || JSON.stringify(data, null, 2)
+        const blobType = type === 'pdf-drawing'
+          ? 'application/pdf'
+          : type === 'bom-csv'
+            ? 'text/csv'
+            : 'text/plain'
+        const blob = new Blob([content], { type: blobType })
+        const downloadUrl = initiateDownload(blob, filename)
+
+        updateExportJob(jobId, {
+          status: 'completed',
+          progress: 100,
+          downloadUrl,
+          completedAt: new Date()
+        })
+      } else {
+        const blob = await response.blob()
+
+        updateExportJob(jobId, { progress: 80 })
+
+        const filename = extractFilenameFromHeaders(response.headers, fallbackFilename)
+        const downloadUrl = initiateDownload(blob, filename)
+
+        updateExportJob(jobId, {
+          status: 'completed',
+          progress: 100,
+          downloadUrl,
+          completedAt: new Date()
+        })
       }
-      
-      updateExportJob(jobId, { progress: 80 })
-      
-      // Create and download the file
-      const filename = data.expressions?.filename || data.content?.filename || `autocrate_${type.replace('-', '_')}_${new Date().toISOString().split('T')[0]}.${fileExtension}`
-      const content = data.expressions?.content || data.content?.content || JSON.stringify(data, null, 2)
-      
-      // Create blob and download
-      const blob = new Blob([content], { 
-        type: type === 'pdf-drawing' ? 'application/pdf' : 
-              type === 'bom-csv' ? 'text/csv' : 'text/plain' 
-      })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = filename
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-      
-      // Mark as completed
-      updateExportJob(jobId, {
-        status: 'completed',
-        progress: 100,
-        downloadUrl: url,
-        completedAt: new Date()
-      })
       
     } catch (error) {
       updateExportJob(jobId, {
