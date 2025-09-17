@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ensure full viewport usage */
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Fix canvas container sizing */
+#__next {
+  height: 100%;
+}
+
+/* Ensure Three.js canvas fills container */
+canvas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+}
