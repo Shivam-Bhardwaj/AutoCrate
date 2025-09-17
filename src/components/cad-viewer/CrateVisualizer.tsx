@@ -110,7 +110,13 @@ export const CrateVisualizer = memo(function CrateVisualizer({
   )
 
   return (
-    <div className={`${className} ${getMobileClasses()}`} role="img" aria-label="3D Crate Visualization" tabIndex={0}>
+    <div
+      className={`${className} ${getMobileClasses()}`}
+      role="img"
+      aria-label="3D Crate Visualization"
+      tabIndex={0}
+      data-touch-interactive="true"
+    >
       <Canvas
         camera={{
           position: cameraPosition,
