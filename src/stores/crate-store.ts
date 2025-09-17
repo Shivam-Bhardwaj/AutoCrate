@@ -75,6 +75,11 @@ const validateStandardsCompliance = (config: CrateConfiguration): ValidationResu
   return validateCrateConfiguration(config)
 }
 
+const storage =
+  typeof window !== 'undefined'
+    ? createJSONStorage(() => window.localStorage)
+    : undefined
+
 export const useCrateStore = create<CrateStore>()(
   persist(
     (set, get) => ({
@@ -206,8 +211,8 @@ export const useCrateStore = create<CrateStore>()(
     }),
     {
       name: 'autocrate-store',
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ 
+      ...(storage ? { storage } : {}),
+      partialize: (state) => ({
         configuration: state.configuration,
         viewport: state.viewport 
       }),
