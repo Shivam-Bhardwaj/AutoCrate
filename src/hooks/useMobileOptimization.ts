@@ -89,6 +89,41 @@ export const useMobileOptimization = (options: UseMobileOptimizationOptions = {}
   const longPressTimer = useRef<NodeJS.Timeout | null>(null)
   const lastGesture = useRef<TouchGesture | null>(null)
 
+  const shouldHandleTouchEvent = useCallback((event: TouchEvent) => {
+    const target = event.target
+
+    if (!(target instanceof HTMLElement)) {
+      return false
+    }
+
+    if (target.closest('[data-touch-default="allow"]')) {
+      return false
+    }
+
+    const interactiveSelector = [
+      'input',
+      'textarea',
+      'select',
+      'button',
+      'label',
+      'a[href]',
+      '[role="button"]',
+      '[role="link"]',
+      '[role="textbox"]',
+      '[role="combobox"]',
+      '[role="slider"]',
+      '[role="switch"]',
+      '[role="checkbox"]',
+      '[contenteditable="true"]'
+    ].join(',')
+
+    if (target.closest(interactiveSelector)) {
+      return false
+    }
+
+    return Boolean(target.closest('[data-touch-interactive="true"], canvas'))
+  }, [])
+
   // Detect mobile device
   useEffect(() => {
     const checkMobile = () => {
@@ -201,16 +236,22 @@ export const useMobileOptimization = (options: UseMobileOptimizationOptions = {}
 
   // Touch event handlers
   const handleTouchStart = useCallback((event: TouchEvent) => {
+    const shouldHandle = shouldHandleTouchEvent(event)
+
+    if (!shouldHandle) {
+      return
+    }
+
     event.preventDefault()
-    
-    const touches = Array.from(event.touches)
+
+    const touches = Array.from(event.changedTouches)
     touches.forEach(touch => {
       const point = getTouchPoint(touch)
       touchPoints.current.set(touch.identifier, point)
     })
 
     const currentPoints = Array.from(touchPoints.current.values())
-    
+
     // Long press detection
     if (enableLongPress && currentPoints.length === 1) {
       longPressTimer.current = setTimeout(() => {
@@ -224,20 +265,39 @@ export const useMobileOptimization = (options: UseMobileOptimizationOptions = {}
         triggerHapticFeedback('medium')
       }, longPressDelay)
     }
-  }, [enableLongPress, longPressDelay, getTouchPoint, getGestureCenter, onLongPress, triggerHapticFeedback])
+  }, [
+    enableLongPress,
+    longPressDelay,
+    getTouchPoint,
+    getGestureCenter,
+    onLongPress,
+    triggerHapticFeedback,
+    shouldHandleTouchEvent
+  ])
 
   const handleTouchMove = useCallback((event: TouchEvent) => {
+    const shouldHandle = touchPoints.current.size > 0 || shouldHandleTouchEvent(event)
+
+    if (!shouldHandle) {
+      return
+    }
+
     event.preventDefault()
-    
+
     // Clear long press timer if moving
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current)
       longPressTimer.current = null
     }
 
-    const touches = Array.from(event.touches)
-    const currentPoints = touches.map(touch => getTouchPoint(touch))
-    
+    const touches = Array.from(event.touches).filter(touch =>
+      touchPoints.current.has(touch.identifier)
+    )
+
+    if (touches.length === 0) {
+      return
+    }
+
     // Update touch points
     touches.forEach(touch => {
       const point = getTouchPoint(touch)
@@ -245,7 +305,7 @@ export const useMobileOptimization = (options: UseMobileOptimizationOptions = {}
     })
 
     const allPoints = Array.from(touchPoints.current.values())
-    
+
     if (allPoints.length === 2 && enablePinchZoom) {
       // Pinch gesture
       const scale = getGestureScale(allPoints)
@@ -284,20 +344,37 @@ export const useMobileOptimization = (options: UseMobileOptimizationOptions = {}
         }
       }
     }
-  }, [enablePinchZoom, enablePan, pinchThreshold, panThreshold, getTouchPoint, getGestureScale, getGestureRotation, getGestureCenter, onPinch, onPan])
+  }, [
+    enablePinchZoom,
+    enablePan,
+    pinchThreshold,
+    panThreshold,
+    getTouchPoint,
+    getGestureScale,
+    getGestureRotation,
+    getGestureCenter,
+    onPinch,
+    onPan,
+    shouldHandleTouchEvent
+  ])
 
   const handleTouchEnd = useCallback((event: TouchEvent) => {
+    const shouldHandle = touchPoints.current.size > 0 || shouldHandleTouchEvent(event)
+
+    if (!shouldHandle) {
+      return
+    }
+
     event.preventDefault()
-    
+
     // Clear long press timer
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current)
       longPressTimer.current = null
     }
 
-    const touches = Array.from(event.touches)
     const currentPoints = Array.from(touchPoints.current.values())
-    
+
     // Remove ended touches
     const endedTouches = Array.from(event.changedTouches)
     endedTouches.forEach(touch => {
@@ -333,7 +410,15 @@ export const useMobileOptimization = (options: UseMobileOptimizationOptions = {}
         lastTapTime.current = now
       }
     }
-  }, [enableTap, enableDoubleTap, doubleTapDelay, onTap, onDoubleTap, triggerHapticFeedback])
+  }, [
+    enableTap,
+    enableDoubleTap,
+    doubleTapDelay,
+    onTap,
+    onDoubleTap,
+    triggerHapticFeedback,
+    shouldHandleTouchEvent
+  ])
 
   // Add touch event listeners
   useEffect(() => {
