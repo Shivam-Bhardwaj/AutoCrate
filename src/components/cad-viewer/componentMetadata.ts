@@ -1,5 +1,11 @@
 import { CrateConfiguration, CrateDimensions } from '@/types/crate'
-import { generateBillOfMaterials, calculateMaterialEfficiency, calculateCrateWeight } from '@/lib/domain/calculations'
+import {
+  generateBillOfMaterials,
+  calculateMaterialEfficiency,
+  calculateCrateWeight,
+  calculateSkidRequirements,
+  calculatePanelRequirements
+} from '@/lib/domain/calculations'
 
 export type ComponentType =
   | 'panel'
@@ -38,6 +44,8 @@ export function generateComponentMetadata(
   const bom = generateBillOfMaterials(config)
   const efficiency = calculateMaterialEfficiency(config)
   const weight = calculateCrateWeight(config)
+  const skidSpecs = calculateSkidRequirements(config)
+  const panelSpecs = calculatePanelRequirements(config)
 
   const frameThickness = 1.5
   const frameHeight = 3.5
@@ -244,28 +252,32 @@ export function generateComponentMetadata(
       id: 'skids',
       name: 'Skids',
       type: 'skid',
-      position: [0, -dimensions.overallHeight / 2 - config.materials.lumber.thickness / 2, 0],
+      position: [
+        0,
+        -dimensions.overallHeight / 2 - (skidSpecs.height + config.materials.lumber.thickness) / 2,
+        0
+      ],
       dimensions: {
-        length: dimensions.overallLength + config.skids.overhang.front + config.skids.overhang.back,
-        width: config.materials.lumber.width,
-        height: config.materials.lumber.thickness
+        length: skidSpecs.length,
+        width: skidSpecs.width,
+        height: skidSpecs.height
       },
       material: {
         type: 'Lumber',
         grade: config.materials.lumber.grade,
-        thickness: config.materials.lumber.thickness
+        thickness: skidSpecs.height
       },
       weight:
-        config.skids.count *
-        (dimensions.overallLength + config.skids.overhang.front + config.skids.overhang.back) *
-        config.materials.lumber.width *
-        config.materials.lumber.thickness *
+        skidSpecs.count *
+        skidSpecs.length *
+        skidSpecs.width *
+        skidSpecs.height *
         0.02,
       cost: bom.items.find(item => item.description.includes('Skid'))?.cost || 0,
       specifications: [
         `Material: ${config.materials.lumber.grade} Lumber`,
-        `Count: ${config.skids.count} pieces`,
-        `Pitch: ${config.skids.pitch}"`,
+        `Count: ${skidSpecs.count} pieces`,
+        `Pitch: ${skidSpecs.pitch}"`,
         `Overhang: Front ${config.skids.overhang.front}", Back ${config.skids.overhang.back}"`
       ],
       manufacturingNotes: [
@@ -275,6 +287,40 @@ export function generateComponentMetadata(
         'Proper spacing for ventilation'
       ]
     },
+    ...(panelSpecs.sides.cleats.count > 0
+      ? [{
+          id: 'side-cleats',
+          name: 'Side Panel Cleats',
+          type: 'support',
+          position: [0, panelSpecs.sides.cleats.length / 2, 0],
+          dimensions: {
+            length: panelSpecs.sides.cleats.length,
+            width: panelSpecs.sides.cleats.width,
+            height: panelSpecs.sides.cleats.thickness
+          },
+          material: {
+            type: 'Lumber',
+            grade: config.materials.lumber.grade,
+            thickness: panelSpecs.sides.cleats.thickness
+          },
+          weight: panelSpecs.sides.cleats.count *
+            panelSpecs.sides.cleats.length *
+            panelSpecs.sides.cleats.width *
+            panelSpecs.sides.cleats.thickness *
+            0.02,
+          cost: bom.items.find(item => item.id === 'side-cleats')?.cost || 0,
+          specifications: [
+            `Cleats per side: ${panelSpecs.sides.spliceCount}`,
+            `Total Cleats: ${panelSpecs.sides.cleats.count}`,
+            `Fasteners Required: ${panelSpecs.sides.cleats.count * Math.max(4, Math.ceil(panelSpecs.sides.cleats.length / 16) * 2)}`
+          ],
+          manufacturingNotes: [
+            'Install cleats centered over each panel splice',
+            'Maintain full-height contact for structural load transfer',
+            'Attach with screws at 16" on center minimum'
+          ]
+        }]
+      : []),
     {
       id: 'bottom-frame',
       name: 'Bottom Frame',

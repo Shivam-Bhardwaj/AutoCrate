@@ -13,7 +13,15 @@ jest.mock('../../../lib/domain/calculations', () => ({
     internalWidth: 47,
     internalLength: 42,
     internalHeight: 93.5
-  }))
+  })),
+  generateBillOfMaterials: jest.fn(() => ({
+    items: [],
+    totalCost: 0,
+    materialWaste: 10,
+    generatedAt: new Date()
+  })),
+  calculateMaterialEfficiency: jest.fn(() => 90),
+  calculateCrateWeight: jest.fn(() => 850)
 }))
 
 // Mock the Html component from drei
