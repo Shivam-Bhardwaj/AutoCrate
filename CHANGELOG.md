@@ -5,6 +5,49 @@ All notable changes to AutoCrate NX Generator will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-09-18
+
+### Added
+
+#### STEP File Export
+- **Download STEP Files** - Export 3D models as STEP files for CAD software compatibility
+- **ISO 10303-21 Compliance** - Generates standard STEP AP203 format files
+- **Automatic Unit Conversion** - Converts dimensions from inches to millimeters
+- **Component Support** - Exports all crate components (skids, floorboards, panels, cleats)
+- **Visibility Respect** - Only exports visible components based on UI settings
+- **Purple Download Button** - Added distinctive purple button in header for STEP export
+
+#### Comprehensive Testing Architecture
+- **Jest Unit Testing** - Full unit test coverage for STEP generator and core components
+- **Playwright E2E Testing** - End-to-end tests for user workflows and file downloads
+- **Keploy Integration** - Docker-based API testing with record/replay capabilities
+- **Pre-commit Hooks** - Husky + lint-staged for automated validation before commits
+- **Test Runner Script** - Comprehensive test suite runner with reporting
+- **Coverage Tracking** - Test coverage metrics and reporting
+
+#### Error Handling
+- **Global Error Boundary** - Application-wide error catching and recovery
+- **3D Visualization Error Boundary** - Specialized error handling for Three.js components
+- **User-Friendly Messages** - Graceful error recovery with clear instructions
+- **Development Mode Details** - Detailed error information in development environment
+
+### Changed
+- Export buttons relocated to header for better accessibility and consistency
+- Test coverage thresholds configured for progressive improvement
+- Build process now includes comprehensive validation steps
+
+### Fixed
+- STEP file generator syntax errors that could cause parsing failures
+- Build-time validation now catches errors before production deployment
+- TypeScript strict checking integrated into pre-commit workflow
+
+### Developer Experience
+- Added TESTING.md with comprehensive testing documentation
+- Multiple test scripts for different testing scenarios (unit, e2e, all)
+- Docker configuration for Keploy testing environment
+- Automated security vulnerability scanning in test pipeline
+- TypeScript strict mode enforcement
+
 ## [1.3.0] - 2025-09-17
 
 ### Added

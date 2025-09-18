@@ -5,25 +5,58 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:all": "node scripts/test-runner.js",
+    "test:all:e2e": "node scripts/test-runner.js --e2e",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "prepare": "husky install",
+    "keploy:record": "docker-compose -f docker-compose.keploy.yml up",
+    "keploy:test": "docker-compose -f docker-compose.keploy.yml run -e KEPLOY_MODE=test keploy"
   },
   "dependencies": {
+    "@react-three/drei": "^9.92.0",
+    "@react-three/fiber": "^8.15.0",
     "next": "14.0.4",
     "react": "^18",
     "react-dom": "^18",
     "three": "^0.160.0",
-    "@react-three/fiber": "^8.15.0",
-    "@react-three/drei": "^9.92.0",
     "zustand": "^4.4.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/three": "^0.160.0",
-    "typescript": "^5",
-    "tailwindcss": "^3",
+    "autoprefixer": "^10",
+    "husky": "^9.1.7",
+    "jest": "^30.1.3",
+    "jest-environment-jsdom": "^30.1.2",
+    "lint-staged": "^16.1.6",
+    "playwright": "^1.55.0",
     "postcss": "^8",
-    "autoprefixer": "^10"
+    "tailwindcss": "^3",
+    "ts-jest": "^29.4.2",
+    "typescript": "^5"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "npx tsc --noEmit",
+      "jest --bail --findRelatedTests"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }

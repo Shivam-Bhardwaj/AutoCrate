@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import CrateVisualizer from '@/components/CrateVisualizer'
 import { NXGenerator, CrateConfig } from '@/lib/nx-generator'
 import { PlywoodPieceSelector } from '@/components/PlywoodPieceSelector'
+import { StepGenerator } from '@/lib/step-generator'
+import { VisualizationErrorBoundary } from '@/components/ErrorBoundary'
 
 export default function Home() {
   // Store input values as strings for better input handling
@@ -236,6 +238,30 @@ export default function Home() {
     }))
   }
 
+  const downloadStepFile = () => {
+    // Get filtered boxes for STEP generation
+    const boxes = getFilteredBoxes()
+
+    // Generate STEP file content using the more compatible basic blocks format
+    const stepGenerator = new StepGenerator(boxes)
+    const stepContent = stepGenerator.generateBasicBlocks()
+
+    // Create blob and download link
+    const blob = new Blob([stepContent], { type: 'application/STEP' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'crate_model.stp'
+
+    // Trigger download
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    // Clean up
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <main className="h-screen bg-gray-50 overflow-hidden flex flex-col">
       {/* Compact Header */}
@@ -267,6 +293,12 @@ export default function Home() {
               className="bg-green-600 text-white px-2 lg:px-3 py-1 text-xs lg:text-sm rounded hover:bg-green-700"
             >
               Export BOM
+            </button>
+            <button
+              onClick={downloadStepFile}
+              className="bg-purple-600 text-white px-2 lg:px-3 py-1 text-xs lg:text-sm rounded hover:bg-purple-700"
+            >
+              Download STEP
             </button>
           </div>
         </div>
@@ -512,7 +544,9 @@ export default function Home() {
             {activeTab === 'visualization' && (
               <div className="h-full flex flex-col">
                 <div className="flex-1 min-h-0">
-                  <CrateVisualizer boxes={getFilteredBoxes()} />
+                  <VisualizationErrorBoundary>
+                    <CrateVisualizer boxes={getFilteredBoxes()} />
+                  </VisualizationErrorBoundary>
                 </div>
                 <p className="text-xs text-gray-600 mt-1">
                   Rotate: Left drag | Pan: Right drag | Zoom: Scroll

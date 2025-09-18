@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # Keploy server for recording and replaying API tests
+  keploy:
+    image: ghcr.io/keploy/keploy:latest
+    container_name: keploy-server
+    ports:
+      - "6789:6789"  # Keploy UI
+      - "8081:8081"  # Keploy API
+    volumes:
+      - ./keploy-tests:/app/tests
+      - ./keploy-mocks:/app/mocks
+    environment:
+      - KEPLOY_MODE=record  # Change to 'test' for replay mode
+      - KEPLOY_APP_PORT=3000
+      - KEPLOY_APP_HOST=host.docker.internal
+    networks:
+      - keploy-network
+    command: ["serve"]
+
+  # Next.js application with Keploy integration
+  autocrate-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: autocrate-test
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=test
+      - KEPLOY_SDK_MODE=record
+      - KEPLOY_SERVER_URL=http://keploy:8081
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - keploy-network
+    depends_on:
+      - keploy
+
+networks:
+  keploy-network:
+    driver: bridge
