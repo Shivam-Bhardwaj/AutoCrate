@@ -46,6 +46,56 @@ export interface NXBox {
   panelName?: string          // Which panel this plywood belongs to
 }
 
+export interface LumberCutItem {
+  description: string
+  material: string
+  count: number
+  length: number
+  width?: number
+  thickness?: number
+  notes?: string
+}
+
+export interface CleatCutGroupItem {
+  orientation: 'horizontal' | 'vertical'
+  length: number
+  count: number
+  types: string[]
+}
+
+export interface CleatCutGroup {
+  panel: string
+  items: CleatCutGroupItem[]
+}
+
+export interface PlywoodCutPiece {
+  width: number
+  height: number
+  count: number
+}
+
+export interface PlywoodCutGroup {
+  panel: string
+  sheetCount: number
+  isRotated: boolean
+  pieces: PlywoodCutPiece[]
+}
+
+export interface LumberCutListSummary {
+  totalPlywoodSheets: number
+  plywoodThickness: number
+  cleatBoardCount: number
+  cleatLinearFeet: number
+}
+
+export interface LumberCutList {
+  skids: LumberCutItem[]
+  floorboards: LumberCutItem[]
+  cleats: CleatCutGroup[]
+  plywood: PlywoodCutGroup[]
+  summary: LumberCutListSummary
+}
+
 export class NXGenerator {
   private boxes: NXBox[] = []
   private expressions: Map<string, number> = new Map()
@@ -964,6 +1014,170 @@ export class NXGenerator {
     }
 
     return output
+  }
+
+  generateCutList(): LumberCutList {
+    const round = (value: number) => Math.round(value * 100) / 100
+
+    const skidDims = this.getSkidDimensions()
+    const skidCount = this.getSkidCount()
+    const overallLength = this.expressions.get('overall_length') || 0
+    const internalWidth = this.expressions.get('internal_width') || 0
+    const panelThickness = this.expressions.get('panel_thickness') || 0
+
+    const skidMaterial = skidDims.nominal
+      ? `${skidDims.nominal} (${round(skidDims.width)}" × ${round(skidDims.height)}")`
+      : `${round(skidDims.width)}" × ${round(skidDims.height)}"`
+
+    const skids: LumberCutItem[] = [
+      {
+        description: 'Skid',
+        material: skidMaterial,
+        count: skidCount,
+        length: round(overallLength),
+        width: round(skidDims.width),
+        thickness: round(skidDims.height),
+        notes: 'Cut skids to overall crate length (front to back).'
+      }
+    ]
+
+    const floorboardLayout = this.getFloorboardLayout()
+    const floorboardGroups = new Map<string, {
+      nominal: string
+      width: number
+      thickness: number
+      count: number
+      isCustom: boolean
+    }>()
+
+    for (const board of floorboardLayout) {
+      const key = board.nominal === 'CUSTOM'
+        ? `CUSTOM-${round(board.width)}`
+        : board.nominal
+
+      if (!floorboardGroups.has(key)) {
+        floorboardGroups.set(key, {
+          nominal: board.nominal,
+          width: board.width,
+          thickness: board.thickness,
+          count: 0,
+          isCustom: !!board.isCustom
+        })
+      }
+
+      floorboardGroups.get(key)!.count += 1
+    }
+
+    const floorboards: LumberCutItem[] = Array.from(floorboardGroups.values()).map(group => {
+      const actualWidth = round(group.width)
+      const actualThickness = round(group.thickness)
+      const materialLabel = group.nominal === 'CUSTOM'
+        ? `Custom rip (${actualWidth}" width)`
+        : `${group.nominal} (${actualWidth}" × ${actualThickness}")`
+
+      return {
+        description: group.nominal === 'CUSTOM' ? 'Custom floorboard' : `${group.nominal} floorboard`,
+        material: materialLabel,
+        count: group.count,
+        length: round(internalWidth),
+        width: actualWidth,
+        thickness: actualThickness,
+        notes: group.isCustom ? `Rip to ${actualWidth}" before cutting to length.` : undefined
+      }
+    }).sort((a, b) => (b.width || 0) - (a.width || 0))
+
+    const cleatGroups: CleatCutGroup[] = this.panelCleatLayouts.map(layout => {
+      const groupMap = new Map<string, {
+        orientation: 'horizontal' | 'vertical'
+        length: number
+        count: number
+        types: Set<string>
+      }>()
+
+      layout.cleats.forEach(cleat => {
+        const length = round(cleat.length)
+        const key = `${cleat.orientation}-${length}`
+
+        if (!groupMap.has(key)) {
+          groupMap.set(key, {
+            orientation: cleat.orientation,
+            length,
+            count: 0,
+            types: new Set<string>()
+          })
+        }
+
+        const entry = groupMap.get(key)!
+        entry.count += 1
+        entry.types.add(cleat.type)
+      })
+
+      const items: CleatCutGroupItem[] = Array.from(groupMap.values()).map(entry => ({
+        orientation: entry.orientation,
+        length: entry.length,
+        count: entry.count,
+        types: Array.from(entry.types)
+      })).sort((a, b) => b.length - a.length)
+
+      return {
+        panel: layout.panelName,
+        items
+      }
+    })
+
+    const plywoodGroups: PlywoodCutGroup[] = this.panelSpliceLayouts.map(layout => {
+      const sectionMap = new Map<string, {
+        width: number
+        height: number
+        count: number
+      }>()
+
+      layout.sheets.forEach(section => {
+        const width = round(section.width)
+        const height = round(section.height)
+        const key = `${width}x${height}`
+
+        if (!sectionMap.has(key)) {
+          sectionMap.set(key, {
+            width,
+            height,
+            count: 0
+          })
+        }
+
+        sectionMap.get(key)!.count += 1
+      })
+
+      const pieces: PlywoodCutPiece[] = Array.from(sectionMap.values()).sort((a, b) => {
+        if (Math.abs(b.height - a.height) > 0.01) {
+          return b.height - a.height
+        }
+        return b.width - a.width
+      })
+
+      return {
+        panel: layout.panelName,
+        sheetCount: layout.sheetCount,
+        isRotated: layout.isRotated,
+        pieces
+      }
+    })
+
+    const cleatUsage = CleatCalculator.calculateCleatMaterial(this.panelCleatLayouts)
+    const totalSheets = this.expressions.get('total_plywood_sheets') || 0
+
+    return {
+      skids,
+      floorboards,
+      cleats: cleatGroups,
+      plywood: plywoodGroups,
+      summary: {
+        totalPlywoodSheets: totalSheets,
+        plywoodThickness: panelThickness,
+        cleatBoardCount: cleatUsage.estimated1x4Count,
+        cleatLinearFeet: Math.round(cleatUsage.totalLinearFeet * 100) / 100
+      }
+    }
   }
 
   generateBOM() {

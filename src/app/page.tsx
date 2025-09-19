@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import CrateVisualizer from '@/components/CrateVisualizer'
 import { NXGenerator, CrateConfig } from '@/lib/nx-generator'
-import { PlywoodPieceSelector } from '@/components/PlywoodPieceSelector'
+import { LumberCutList } from '@/components/LumberCutList'
 
 export default function Home() {
   // Store input values as strings for better input handling
@@ -63,21 +63,8 @@ export default function Home() {
   })
 
   const [generator, setGenerator] = useState<NXGenerator>(() => new NXGenerator(config))
-  const [activeTab, setActiveTab] = useState<'visualization' | 'expressions' | 'bom' | 'plywood'>('visualization')
+  const [activeTab, setActiveTab] = useState<'visualization' | 'expressions' | 'bom' | 'lumber'>('visualization')
   const [showMobileInputs, setShowMobileInputs] = useState(false)
-  // Initialize all plywood pieces as visible by default
-  const [plywoodPieceVisibility, setPlywoodPieceVisibility] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {}
-    // Set all plywood pieces to visible by default
-    for (let i = 1; i <= 6; i++) {
-      initial[`FRONT_PANEL_PLY_${i}`] = true
-      initial[`BACK_PANEL_PLY_${i}`] = true
-      initial[`LEFT_END_PANEL_PLY_${i}`] = true
-      initial[`RIGHT_END_PANEL_PLY_${i}`] = true
-      initial[`TOP_PANEL_PLY_${i}`] = true
-    }
-    return initial
-  })
   const debounceTimeoutRef = useRef<{ [key: string]: NodeJS.Timeout }>({})
 
   // Update generator when config changes or 3x4 lumber permission changes
@@ -213,8 +200,6 @@ export default function Home() {
         if (box.panelName === 'LEFT_END_PANEL' && !displayOptions.visibility.leftPanel) return false
         if (box.panelName === 'RIGHT_END_PANEL' && !displayOptions.visibility.rightPanel) return false
         if (box.panelName === 'TOP_PANEL' && !displayOptions.visibility.topPanel) return false
-        // Check individual piece visibility (default to true if not set)
-        if (plywoodPieceVisibility[box.name] === false) return false
         return true
       }
 
@@ -227,13 +212,6 @@ export default function Home() {
 
       return true
     })
-  }
-
-  const handlePlywoodPieceToggle = (pieceName: string) => {
-    setPlywoodPieceVisibility(prev => ({
-      ...prev,
-      [pieceName]: !prev[pieceName]
-    }))
   }
 
   return (
@@ -495,14 +473,14 @@ export default function Home() {
                 BOM
               </button>
               <button
-                onClick={() => setActiveTab('plywood')}
+                onClick={() => setActiveTab('lumber')}
                 className={`px-4 py-2 text-sm font-medium ${
-                  activeTab === 'plywood'
+                  activeTab === 'lumber'
                     ? 'border-b-2 border-blue-500 text-blue-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Plywood Pieces
+                Lumber Cut List
               </button>
             </nav>
           </div>
@@ -553,12 +531,9 @@ export default function Home() {
               </div>
             )}
 
-            {activeTab === 'plywood' && (
+            {activeTab === 'lumber' && (
               <div className="h-full overflow-auto">
-                <PlywoodPieceSelector
-                  boxes={generator.getBoxes()}
-                  onPieceToggle={handlePlywoodPieceToggle}
-                />
+                <LumberCutList cutList={generator.generateCutList()} />
               </div>
             )}
           </div>
