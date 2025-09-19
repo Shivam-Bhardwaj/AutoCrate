@@ -1063,3 +1063,32 @@ export class NXGenerator {
     return bom
   }
 }
+
+// Wrapper function for API usage
+export function generateNXExpressions(
+  dimensions: { length: number; width: number; height: number },
+  weight: number,
+  materialType?: string
+): string {
+  const config: CrateConfig = {
+    product: {
+      length: dimensions.length,
+      width: dimensions.width,
+      height: dimensions.height,
+      weight: weight
+    },
+    clearances: {
+      side: 2,
+      end: 2,
+      top: 2
+    },
+    materials: {
+      skidSize: weight > 2000 ? '4x4' : '3x3',
+      panelThickness: 0.75,
+      cleatSize: '2x4'
+    }
+  }
+
+  const generator = new NXGenerator(config)
+  return generator.exportNXExpressions()
+}

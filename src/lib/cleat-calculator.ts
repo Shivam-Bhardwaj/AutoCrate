@@ -313,3 +313,18 @@ export class CleatCalculator {
     }
   }
 }
+
+// Export wrapper function for API usage
+export function calculateCleatPositions(
+  panelDimensions: { width: number; height: number },
+  panelName: string = 'PANEL',
+  splicePositions: { x: number; y: number; orientation: 'vertical' | 'horizontal' }[] = []
+): PanelCleatLayout {
+  return CleatCalculator.calculateCleatLayout(
+    panelName,
+    panelDimensions.width,
+    panelDimensions.height,
+    splicePositions,
+    false
+  );
+}
