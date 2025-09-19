@@ -3,16 +3,29 @@
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Box, Grid, Text, Html, Edges } from '@react-three/drei'
 import { NXBox } from '@/lib/nx-generator'
-import { Suspense, useState, useRef } from 'react'
+import { Suspense, useState, useRef, useEffect } from 'react'
 
 interface CrateVisualizerProps {
   boxes: NXBox[]
   showGrid?: boolean
   showLabels?: boolean
+  showOutlines?: boolean
 }
 
 // Component to render a single box from NX two-point definition
-function NXBoxMesh({ box, hoveredBox, setHoveredBox }: { box: NXBox; hoveredBox: string | null; setHoveredBox: (name: string | null) => void }) {
+function NXBoxMesh({
+  box,
+  hoveredBox,
+  setHoveredBox,
+  onHide,
+  showOutlines
+}: {
+  box: NXBox;
+  hoveredBox: string | null;
+  setHoveredBox: (name: string | null) => void;
+  onHide: (boxName: string) => void;
+  showOutlines: boolean;
+}) {
   const isHovered = hoveredBox === box.name
   // Calculate center and size from two diagonal points
   const center = {
@@ -61,17 +74,22 @@ function NXBoxMesh({ box, hoveredBox, setHoveredBox }: { box: NXBox; hoveredBox:
           e.stopPropagation()
           setHoveredBox(null)
         }}
+        onContextMenu={(e) => {
+          e.stopPropagation()
+          onHide(box.name)
+        }}
       >
         <meshStandardMaterial
-          color={box.color || '#8B4513'}
+          color={box.color || '#F4E4BC'}
           opacity={1}
           transparent={false}
         />
-        {/* Add edges for panels to make them more distinguishable */}
-        {box.type === 'panel' && (
+        {/* Add edges based on showOutlines prop or for panels */}
+        {(showOutlines || box.type === 'panel') && (
           <Edges
-            color="#2a2a2a"
+            color={box.type === 'panel' ? '#4a4a4a' : '#666666'}
             scale={1.001}
+            linewidth={1}
           />
         )}
       </Box>
@@ -97,23 +115,58 @@ function NXBoxMesh({ box, hoveredBox, setHoveredBox }: { box: NXBox; hoveredBox:
   )
 }
 
-export default function CrateVisualizer({ boxes, showGrid = true, showLabels = true }: CrateVisualizerProps) {
-  // Filter out suppressed components and sort by render priority
+export default function CrateVisualizer({ boxes, showGrid = true, showLabels = true, showOutlines = false }: CrateVisualizerProps) {
+  const [hiddenComponents, setHiddenComponents] = useState<Set<string>>(new Set())
+  const [hoveredBox, setHoveredBox] = useState<string | null>(null)
+  const [showHiddenList, setShowHiddenList] = useState(false)
+
+  // Filter out suppressed components and user-hidden components, then sort by render priority
   // Render order: skids first, then floorboards, then panels (so panels get hover priority)
   const visibleBoxes = boxes
-    .filter(box => !box.suppressed)
+    .filter(box => !box.suppressed && !hiddenComponents.has(box.name))
     .sort((a, b) => {
       const priority: { [key: string]: number } = {
         'skid': 1,
         'floor': 2,
         'panel': 3,
-        'cleat': 4
+        'cleat': 4,
+        'plywood': 5
       }
-      const aPriority = priority[a.type || ''] || 5
-      const bPriority = priority[b.type || ''] || 5
+      const aPriority = priority[a.type || ''] || 6
+      const bPriority = priority[b.type || ''] || 6
       return aPriority - bPriority
     })
-  const [hoveredBox, setHoveredBox] = useState<string | null>(null)
+
+  const handleHideComponent = (boxName: string) => {
+    setHiddenComponents(prev => {
+      const newSet = new Set(prev)
+      newSet.add(boxName)
+      return newSet
+    })
+  }
+
+  const handleShowComponent = (boxName: string) => {
+    setHiddenComponents(prev => {
+      const newSet = new Set(prev)
+      newSet.delete(boxName)
+      return newSet
+    })
+  }
+
+  const handleShowAll = () => {
+    setHiddenComponents(new Set())
+  }
+
+  // Prevent default context menu on canvas
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      if (e.target instanceof HTMLCanvasElement) {
+        e.preventDefault()
+      }
+    }
+    document.addEventListener('contextmenu', handleContextMenu)
+    return () => document.removeEventListener('contextmenu', handleContextMenu)
+  }, [])
 
   return (
     <div className="w-full h-full bg-gray-100 rounded-lg relative">
@@ -177,13 +230,15 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
             </>
           )}
 
-          {/* Render visible boxes only (filter out suppressed) */}
+          {/* Render visible boxes only (filter out suppressed and hidden) */}
           {visibleBoxes.map((box, index) => (
             <NXBoxMesh
               key={`${box.name}-${index}`}
               box={box}
               hoveredBox={hoveredBox}
               setHoveredBox={setHoveredBox}
+              onHide={handleHideComponent}
+              showOutlines={showOutlines}
             />
           ))}
 
@@ -198,6 +253,57 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
           />
         </Suspense>
       </Canvas>
+
+      {/* Hidden Components Panel */}
+      {hiddenComponents.size > 0 && (
+        <div className="absolute top-2 right-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 max-w-xs">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Hidden Components ({hiddenComponents.size})
+            </h3>
+            <button
+              onClick={() => setShowHiddenList(!showHiddenList)}
+              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              {showHiddenList ? 'Hide' : 'Show'}
+            </button>
+          </div>
+
+          {showHiddenList && (
+            <>
+              <div className="max-h-48 overflow-y-auto">
+                {Array.from(hiddenComponents).map(name => (
+                  <div
+                    key={name}
+                    className="flex justify-between items-center py-1 text-xs"
+                  >
+                    <span className="text-gray-600 dark:text-gray-400 truncate mr-2">
+                      {name}
+                    </span>
+                    <button
+                      onClick={() => handleShowComponent(name)}
+                      className="text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      Show
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={handleShowAll}
+                className="mt-2 w-full text-xs bg-blue-600 text-white rounded px-2 py-1 hover:bg-blue-700"
+              >
+                Show All
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Instructions */}
+      <div className="absolute bottom-2 left-2 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded px-2 py-1">
+        Right-click to hide component
+      </div>
     </div>
   )
 }

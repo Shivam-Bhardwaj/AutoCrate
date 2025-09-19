@@ -21,8 +21,9 @@ export interface CrateConfig {
   }
   materials: {
     skidSize: '2x4' | '3x3' | '4x4' | '4x6' | '6x6' | '8x8'
-    panelThickness: number
-    cleatSize: '2x3' | '2x4'
+    plywoodThickness: number  // Actual plywood thickness (0.25")
+    panelThickness: number    // Total panel thickness including cleats (1.0")
+    cleatSize: '1x4' | '2x3' | '2x4'
     allow3x4Lumber?: boolean // Optional: allow 3x4 lumber for weights under 4500 lbs
     availableLumber?: ('2x6' | '2x8' | '2x10' | '2x12')[] // Optional: restrict available lumber sizes
   }
@@ -347,7 +348,8 @@ export class NXGenerator {
     // Material dimensions
     const skidDims = this.getSkidDimensions()
     const floorboardDims = this.getFloorboardDimensions()
-    const panelThickness = materials.panelThickness
+    const plywoodThickness = materials.plywoodThickness || 0.25  // Default 0.25" plywood
+    const panelThickness = materials.panelThickness || 1.0       // Total thickness including cleats
 
     // Overall external dimensions
     const overallWidth = internalWidth + (2 * panelThickness)
@@ -368,6 +370,7 @@ export class NXGenerator {
     this.expressions.set('internal_length', internalLength)
     this.expressions.set('internal_height', internalHeight)
 
+    this.expressions.set('plywood_thickness', plywoodThickness)
     this.expressions.set('panel_thickness', panelThickness)
     this.expressions.set('skid_height', skidDims.height)
     this.expressions.set('skid_width', skidDims.width)
@@ -462,7 +465,7 @@ export class NXGenerator {
         name: i === 0 ? 'SKID' : `SKID_PATTERN_${i}`,
         point1: { x: skidX, y: skidStartY, z: 0 },
         point2: { x: skidX + skidDims.width, y: skidEndY, z: skidDims.height },
-        color: '#8B4513',
+        color: '#C8A882',
         type: 'skid',
         metadata: i === 0 ? 'Base skid (to be patterned in NX)' : `Pattern instance ${i}`
       })
@@ -487,7 +490,7 @@ export class NXGenerator {
           y: board.position + board.width,
           z: skidDims.height + board.thickness
         },
-        color: board.isCustom ? '#FFB347' : '#DEB887', // Orange for custom boards, tan for standard
+        color: board.isCustom ? '#D4B896' : '#E8D7B3', // Darker pine for custom, natural pine for standard
         type: 'floor',
         suppressed: false,
         metadata: `${board.nominal} (${board.width.toFixed(2)}" x ${board.thickness}")${board.isCustom ? ' - CUSTOM CUT' : ''}`
@@ -500,7 +503,7 @@ export class NXGenerator {
         name: `FLOORBOARD_${i + 1}`,
         point1: { x: 0, y: 0, z: skidDims.height },
         point2: { x: 0, y: 0, z: skidDims.height },
-        color: '#888888',
+        color: '#D4C4A0',
         type: 'floor',
         suppressed: true,
         metadata: 'UNUSED - SUPPRESSED'
@@ -512,6 +515,7 @@ export class NXGenerator {
     const internalWidth = this.expressions.get('internal_width')!
     const internalLength = this.expressions.get('internal_length')!
     const internalHeight = this.expressions.get('internal_height')!
+    const plywoodThickness = this.expressions.get('plywood_thickness')!
     const panelThickness = this.expressions.get('panel_thickness')!
     const skidHeight = this.expressions.get('skid_height')!
     const floorboardThickness = this.expressions.get('floorboard_thickness')!
@@ -527,20 +531,26 @@ export class NXGenerator {
       let isVerticalPanel = false
 
       if (layout.panelName === 'FRONT_PANEL') {
+        // Plywood is behind the cleats (cleats on outside)
         panelOriginX = -internalWidth/2 - panelThickness
-        panelOriginY = 0
-        panelOriginZ = skidHeight
+        panelOriginY = panelThickness - plywoodThickness  // Inner plywood surface touches floorboard edge
+        panelOriginZ = skidHeight  // Sits on top of skids
       } else if (layout.panelName === 'BACK_PANEL') {
+        // Back panel inner surface should be flush with inner edge of last floorboard
+        // Floorboards have 1" clearance from back, so panel needs to be 1" further back
         panelOriginX = -internalWidth/2 - panelThickness
-        panelOriginY = internalLength + panelThickness
-        panelOriginZ = skidHeight
+        panelOriginY = internalLength + 1  // Move 1 inch further back to align with last floorboard's inner edge
+        panelOriginZ = skidHeight  // Sits on top of skids
       } else if (layout.panelName === 'LEFT_END_PANEL') {
-        panelOriginX = -internalWidth/2 - panelThickness
+        // Left panel inner surface should be flush with the outer edge of floorboards
+        // Floorboards run from -internalWidth/2 to internalWidth/2
+        panelOriginX = -internalWidth/2 - plywoodThickness  // Panel's inner surface flush with floorboard edge
         panelOriginY = panelThickness
         panelOriginZ = sideGroundClearance
         isVerticalPanel = true
       } else if (layout.panelName === 'RIGHT_END_PANEL') {
-        panelOriginX = internalWidth/2
+        // Right panel inner surface should be flush with the outer edge of floorboards
+        panelOriginX = internalWidth/2  // Panel's inner surface flush with floorboard edge
         panelOriginY = panelThickness
         panelOriginZ = sideGroundClearance
         isVerticalPanel = true
@@ -566,7 +576,7 @@ export class NXGenerator {
           }
           point2 = {
             x: panelOriginX + section.x + section.width,
-            y: panelOriginY + panelThickness,
+            y: panelOriginY + plywoodThickness,
             z: panelOriginZ + section.y + section.height
           }
         } else if (layout.panelName === 'LEFT_END_PANEL') {
@@ -576,7 +586,7 @@ export class NXGenerator {
             z: panelOriginZ + section.y
           }
           point2 = {
-            x: panelOriginX + panelThickness,
+            x: panelOriginX + plywoodThickness,
             y: panelOriginY + section.x + section.width,
             z: panelOriginZ + section.y + section.height
           }
@@ -587,7 +597,7 @@ export class NXGenerator {
             z: panelOriginZ + section.y
           }
           point2 = {
-            x: panelOriginX + panelThickness,
+            x: panelOriginX + plywoodThickness,
             y: panelOriginY + section.x + section.width,
             z: panelOriginZ + section.y + section.height
           }
@@ -600,7 +610,7 @@ export class NXGenerator {
           point2 = {
             x: panelOriginX + section.x + section.width,
             y: panelOriginY + section.y + section.height,
-            z: panelOriginZ + panelThickness
+            z: panelOriginZ + plywoodThickness
           }
         } else {
           continue
@@ -611,9 +621,9 @@ export class NXGenerator {
           name: `${layout.panelName}_PLY_${pieceIndex + 1}`,
           point1: point1,
           point2: point2,
-          color: pieceIndex === 0 ? '#F5DEB3' : pieceIndex === 1 ? '#FFE4B5' :
-                 pieceIndex === 2 ? '#FFDEAD' : pieceIndex === 3 ? '#F4E4C1' :
-                 pieceIndex === 4 ? '#E6D2A3' : '#D4C29C',
+          color: pieceIndex === 0 ? '#DEB887' : pieceIndex === 1 ? '#D2B48C' :
+                 pieceIndex === 2 ? '#D9C2A3' : pieceIndex === 3 ? '#E3D4B8' :
+                 pieceIndex === 4 ? '#DCBF9F' : '#D7BFA5',
           type: 'plywood',
           plywoodPieceIndex: pieceIndex,
           panelName: layout.panelName,
@@ -630,7 +640,7 @@ export class NXGenerator {
           name: `${layout.panelName}_PLY_${pieceIndex + 1}`,
           point1: { x: 0, y: 0, z: 0 },
           point2: { x: 0, y: 0, z: 0 },
-          color: '#888888',
+          color: '#D4C4A0',
           type: 'plywood',
           plywoodPieceIndex: pieceIndex,
           panelName: layout.panelName,
@@ -641,35 +651,44 @@ export class NXGenerator {
       }
     }
 
-    // Generate cleats for each panel
+    // Generate cleats for each panel with proper 7-parameter system
+    const cleatThickness = 0.75  // 1x4 lumber thickness
+    const cleatWidth = 3.5       // 1x4 lumber width
+
     for (let i = 0; i < this.panelCleatLayouts.length; i++) {
       const cleatLayout = this.panelCleatLayouts[i]
       const panelLayout = this.panelSpliceLayouts[i]
 
-      // Determine panel position for cleats
+      // Determine panel position for cleats - cleats are attached to OUTSIDE face of panels
       let panelOriginX = 0, panelOriginY = 0, panelOriginZ = 0
-      let cleatDepth = panelThickness // Cleats are on the inside face of panels
 
       if (cleatLayout.panelName === 'FRONT_PANEL') {
-        panelOriginX = -internalWidth/2
-        panelOriginY = panelThickness // Inside face
-        panelOriginZ = skidHeight + floorboardThickness
+        // Front panel cleats are on the outside (front) face, flush with plywood
+        panelOriginX = -internalWidth/2 - panelThickness
+        panelOriginY = panelThickness - plywoodThickness - cleatThickness // Cleats on outside of plywood
+        panelOriginZ = skidHeight  // Match panel position
       } else if (cleatLayout.panelName === 'BACK_PANEL') {
-        panelOriginX = -internalWidth/2
-        panelOriginY = internalLength // Inside face
-        panelOriginZ = skidHeight + floorboardThickness
+        // Back panel cleats are on the outside (back) face, flush with plywood
+        panelOriginX = -internalWidth/2 - panelThickness
+        panelOriginY = internalLength + 1 + plywoodThickness // Cleats start after plywood (panel moved 1" back)
+        panelOriginZ = skidHeight  // Match panel position
       } else if (cleatLayout.panelName === 'LEFT_END_PANEL') {
-        panelOriginX = -internalWidth/2 // Inside face
+        // Left panel cleats are on the outside (left) face
+        // Panel is at -internalWidth/2 - plywoodThickness, cleats go even further out
+        panelOriginX = -internalWidth/2 - plywoodThickness - cleatThickness // Cleats on outside of panel
         panelOriginY = panelThickness
         panelOriginZ = sideGroundClearance
       } else if (cleatLayout.panelName === 'RIGHT_END_PANEL') {
-        panelOriginX = internalWidth/2 - 0.75 // Inside face (minus cleat thickness)
+        // Right panel cleats are on the outside (right) face
+        // Panel is at internalWidth/2, cleats go even further out
+        panelOriginX = internalWidth/2 + plywoodThickness // Cleats on outside of panel
         panelOriginY = panelThickness
         panelOriginZ = sideGroundClearance
       } else if (cleatLayout.panelName === 'TOP_PANEL') {
-        panelOriginX = -internalWidth/2
+        // Top panel cleats are on the outside (top) face
+        panelOriginX = -internalWidth/2 - panelThickness  // Match panel origin
         panelOriginY = 0
-        panelOriginZ = baseZ + internalHeight - 0.75 // Inside face (below panel)
+        panelOriginZ = baseZ + internalHeight + panelThickness - cleatThickness // Above panel
       }
 
       // Create boxes for each cleat
@@ -755,10 +774,11 @@ export class NXGenerator {
             name: cleat.id,
             point1: point1,
             point2: point2,
-            color: cleat.type === 'splice' ? '#CD853F' : '#8B4513', // Different colors for splice vs regular cleats
+            color: (cleat.type === 'splice' || cleat.id.includes('CLEAT_H_INTER')) ? '#E6C88A' :
+                   '#D4A76A', // Lighter yellowish brown for splice cleats and horizontal splice cleats, consistent yellowish brown for all others
             type: 'cleat',
-            suppressed: true, // Cleats hidden for now
-            metadata: `${cleat.type} cleat (${cleat.orientation}, ${cleat.length.toFixed(1)}" long)`
+            suppressed: false, // Cleats are now visible
+            metadata: `${cleat.type} cleat (${cleat.orientation}, ${cleat.length.toFixed(1)}" x ${cleatWidth}" x ${cleatThickness}")`
           })
         }
       }
@@ -946,7 +966,25 @@ export class NXGenerator {
         output += `${box.name}_WIDTH=${Math.abs(box.point2.x - box.point1.x).toFixed(3)}\n`
         output += `${box.name}_LENGTH=${Math.abs(box.point2.y - box.point1.y).toFixed(3)}\n`
         output += `${box.name}_HEIGHT=${Math.abs(box.point2.z - box.point1.z).toFixed(3)}\n`
-        output += `${box.name}_THICKNESS=${this.expressions.get('panel_thickness')?.toFixed(3) || '1.000'}\n`
+        output += `${box.name}_THICKNESS=${this.expressions.get('plywood_thickness')?.toFixed(3) || '0.250'}\n`
+        if (box.suppressed) {
+          output += `${box.name}_SUPPRESSED=TRUE\n`
+        }
+      } else if (box.type === 'cleat') {
+        // Export 7 parameters for cleat pieces
+        const suppressedText = box.suppressed ? ' (SUPPRESSED)' : ' (ACTIVE)'
+        output += `# Cleat component${suppressedText}\n`
+        if (box.metadata) {
+          output += `# ${box.metadata}\n`
+        }
+        output += `# 7 CLEAT PARAMETERS:\n`
+        output += `${box.name}_X=${box.point1.x.toFixed(3)}\n`
+        output += `${box.name}_Y=${box.point1.y.toFixed(3)}\n`
+        output += `${box.name}_Z=${box.point1.z.toFixed(3)}\n`
+        output += `${box.name}_WIDTH=${Math.abs(box.point2.x - box.point1.x).toFixed(3)}\n`
+        output += `${box.name}_LENGTH=${Math.abs(box.point2.y - box.point1.y).toFixed(3)}\n`
+        output += `${box.name}_HEIGHT=${Math.abs(box.point2.z - box.point1.z).toFixed(3)}\n`
+        output += `${box.name}_THICKNESS=0.750\n`  // 1x4 lumber thickness
         if (box.suppressed) {
           output += `${box.name}_SUPPRESSED=TRUE\n`
         }
@@ -1084,8 +1122,9 @@ export function generateNXExpressions(
     },
     materials: {
       skidSize: weight > 2000 ? '4x4' : '3x3',
-      panelThickness: 0.75,
-      cleatSize: '2x4'
+      plywoodThickness: 0.25,     // 1/4" plywood
+      panelThickness: 1.0,         // Total panel thickness with cleats
+      cleatSize: '1x4'             // Standard 1x4 lumber cleats
     }
   }
 

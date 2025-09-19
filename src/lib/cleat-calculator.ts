@@ -29,7 +29,7 @@ export interface PanelCleatLayout {
 }
 
 export class CleatCalculator {
-  private static readonly CLEAT_WIDTH = 3.5    // 1x4 actual width
+  private static readonly CLEAT_WIDTH = 3.5    // 1x4 nominal is 0.75" x 3.5" actual
   private static readonly CLEAT_THICKNESS = 0.75 // 1x4 actual thickness
   private static readonly MAX_CLEAT_SPACING = 24 // Maximum 24" between cleats
   private static readonly MIN_EDGE_DISTANCE = 2  // Minimum 2" from edge for intermediate cleats
@@ -84,25 +84,58 @@ export class CleatCalculator {
       )
     }
 
-    // Add intermediate vertical cleats (every 24" or less)
-    const intermediateVerticalCleats = this.calculateIntermediateVerticalCleats(
-      panelName,
+    // Calculate all vertical cleat positions (splice positions + intermediate as needed)
+    const verticalCleatPositions = this.calculateVerticalCleatPositions(
       panelWidth,
-      panelHeight,
-      isSide,
-      isRotated
+      splicePositions
     )
-    cleats.push(...intermediateVerticalCleats)
 
-    // Add splice cleats
-    const spliceCleats = this.calculateSpliceCleats(
-      panelName,
-      panelWidth,
-      panelHeight,
-      splicePositions,
-      isSide
-    )
-    cleats.push(...spliceCleats)
+    // Create vertical cleats at calculated positions
+    verticalCleatPositions.forEach((xPos, index) => {
+      // Check if this cleat is centered over a splice
+      const cleatCenter = xPos + (this.CLEAT_WIDTH / 2)
+      const isSplicePosition = splicePositions.some(s =>
+        s.orientation === 'vertical' && Math.abs(s.x - cleatCenter) < 1
+      )
+
+      // Vertical length depends on panel type
+      // For side panels: intermediate cleats are sandwiched between top and bottom cleats
+      const yStart = isSide ? this.CLEAT_WIDTH : this.CLEAT_WIDTH
+      const length = panelHeight - (2 * this.CLEAT_WIDTH)
+
+      cleats.push({
+        id: `${panelName}_CLEAT_V_${index}`,
+        type: isSplicePosition ? 'splice' : 'intermediate',
+        orientation: 'vertical',
+        position: 'intermediate',
+        x: xPos, // Position is already correct from calculateVerticalCleatPositions
+        y: yStart,
+        length,
+        width: this.CLEAT_WIDTH,
+        thickness: this.CLEAT_THICKNESS
+      })
+    })
+
+    // Add horizontal cleats at splice positions (cut to fit between verticals)
+    // For ALL panels that have horizontal splices
+    const allVerticalCleats = cleats.filter(c => c.orientation === 'vertical')
+
+    // Get horizontal splice positions - center cleats over splices
+    const horizontalPositions = splicePositions
+      .filter(s => s.orientation === 'horizontal')
+      .map(s => s.y) // Y position of the splice
+
+    // Generate cut horizontal cleats for each position
+    if (horizontalPositions.length > 0) {
+      const horizontalCleats = this.calculateCutHorizontalCleats(
+        panelName,
+        panelWidth,
+        panelHeight,
+        horizontalPositions,
+        allVerticalCleats
+      )
+      cleats.push(...horizontalCleats)
+    }
 
     return {
       panelName,
@@ -138,99 +171,172 @@ export class CleatCalculator {
   }
 
   /**
-   * Calculate intermediate vertical cleats
+   * Calculate vertical cleat positions with proper order:
+   * 1. Perimeter cleats (edges)
+   * 2. Cleats centered over vertical splices
+   * 3. Intermediate cleats if spacing > 24"
    */
-  private static calculateIntermediateVerticalCleats(
-    panelName: string,
+  private static calculateVerticalCleatPositions(
     panelWidth: number,
-    panelHeight: number,
-    isSide: boolean,
-    isRotated: boolean
-  ): Cleat[] {
-    const cleats: Cleat[] = []
+    splicePositions: { x: number; y: number; orientation: 'vertical' | 'horizontal' }[]
+  ): number[] {
+    const positions: number[] = []
 
-    // Calculate spacing between verticals
-    const availableWidth = panelWidth - (2 * this.CLEAT_WIDTH) // Subtract edge cleats
-    const minCleats = Math.ceil(availableWidth / this.MAX_CLEAT_SPACING) - 1 // -1 because we have edge cleats
+    // Get vertical splice positions
+    const verticalSplices = splicePositions
+      .filter(s => s.orientation === 'vertical')
+      .map(s => s.x)
+      .sort((a, b) => a - b)
 
-    if (minCleats > 0) {
-      // Always distribute evenly for symmetry, especially important when rotated
-      const spacing = availableWidth / (minCleats + 1)
+    // Step 1: Add perimeter cleats (edges)
+    // Position cleats so their centers are at the edges
+    positions.push(0) // Left edge - cleat starts at x=0
+    positions.push(panelWidth - this.CLEAT_WIDTH) // Right edge - cleat ends at panel width
 
-      for (let i = 0; i < minCleats; i++) {
-        const x = this.CLEAT_WIDTH + ((i + 1) * spacing) - (this.CLEAT_WIDTH / 2)
+    // Step 2: Add cleats centered over vertical splices
+    for (const spliceX of verticalSplices) {
+      // Center the cleat over the splice
+      const cleatX = spliceX - (this.CLEAT_WIDTH / 2)
 
-        // Vertical length depends on panel type
-        const yStart = isSide ? 0 : this.CLEAT_WIDTH
-        const length = isSide ? panelHeight : panelHeight - (2 * this.CLEAT_WIDTH)
-
-        cleats.push({
-          id: `${panelName}_CLEAT_VERT_${i + 1}`,
-          type: 'intermediate',
-          orientation: 'vertical',
-          position: 'intermediate',
-          x,
-          y: yStart,
-          length,
-          width: this.CLEAT_WIDTH,
-          thickness: this.CLEAT_THICKNESS
-        })
+      // Only add if cleat doesn't go beyond panel bounds
+      if (cleatX >= 0 && cleatX + this.CLEAT_WIDTH <= panelWidth) {
+        // Check if not too close to edges (within 2 inches)
+        if (cleatX > 2 && cleatX < panelWidth - this.CLEAT_WIDTH - 2) {
+          positions.push(cleatX)
+        }
       }
     }
 
-    return cleats
+    // Step 3: Add intermediate cleats if spacing > 24"
+    // Sort current positions to check gaps
+    let sortedPositions = [...new Set(positions)].sort((a, b) => a - b)
+    const intermediatePositions: number[] = []
+
+    for (let i = 0; i < sortedPositions.length - 1; i++) {
+      const currentCleatEnd = sortedPositions[i] + this.CLEAT_WIDTH
+      const nextCleatStart = sortedPositions[i + 1]
+      const gap = nextCleatStart - currentCleatEnd
+
+      // If gap between cleats is more than 24", add intermediate cleats
+      if (gap > this.MAX_CLEAT_SPACING) {
+        const numIntermediates = Math.ceil(gap / this.MAX_CLEAT_SPACING) - 1
+        const spacing = gap / (numIntermediates + 1)
+
+        for (let j = 1; j <= numIntermediates; j++) {
+          const intermediateX = currentCleatEnd + (j * spacing) - (this.CLEAT_WIDTH / 2)
+          // Ensure intermediate cleat is within bounds
+          if (intermediateX >= 0 && intermediateX + this.CLEAT_WIDTH <= panelWidth) {
+            intermediatePositions.push(intermediateX)
+          }
+        }
+      }
+    }
+
+    // Combine all positions
+    positions.push(...intermediatePositions)
+
+    // Remove duplicates and sort
+    const uniquePositions = [...new Set(positions.map(p => Math.round(p * 100) / 100))]
+      .sort((a, b) => a - b)
+
+    return uniquePositions
   }
 
+
   /**
-   * Calculate cleats for splice positions
+   * Calculate horizontal cleats cut to fit between vertical cleats
    */
-  private static calculateSpliceCleats(
+  private static calculateCutHorizontalCleats(
     panelName: string,
     panelWidth: number,
     panelHeight: number,
-    splicePositions: { x: number; y: number; orientation: 'vertical' | 'horizontal' }[],
-    isSide: boolean
+    horizontalPositions: number[],
+    verticalCleats: Cleat[]
   ): Cleat[] {
     const cleats: Cleat[] = []
 
-    splicePositions.forEach((splice, index) => {
-      if (splice.orientation === 'vertical') {
-        // Vertical splice cleat
-        const yStart = isSide ? 0 : this.CLEAT_WIDTH
-        const length = isSide ? panelHeight : panelHeight - (2 * this.CLEAT_WIDTH)
+    // Sort vertical cleats by X position
+    const sortedVerticals = verticalCleats.sort((a, b) => a.x - b.x)
 
+    // For each horizontal position, create cleats that fit between verticals
+    horizontalPositions.forEach((yPosition, rowIndex) => {
+      let cleatIndex = 0
+
+      // Add left edge cleat if there's space before first vertical
+      if (sortedVerticals.length === 0) {
+        // No verticals, create full-width cleat
         cleats.push({
-          id: `${panelName}_CLEAT_SPLICE_V_${index}`,
-          type: 'splice',
-          orientation: 'vertical',
+          id: `${panelName}_CLEAT_H_INTER_${rowIndex}_${cleatIndex}`,
+          type: 'intermediate',
+          orientation: 'horizontal',
           position: 'intermediate',
-          x: splice.x - (this.CLEAT_WIDTH / 2), // Center cleat on splice
-          y: yStart,
-          length,
+          x: 0,
+          y: yPosition - (this.CLEAT_WIDTH / 2),
+          length: panelWidth,
           width: this.CLEAT_WIDTH,
           thickness: this.CLEAT_THICKNESS
         })
       } else {
-        // Horizontal splice cleat
-        const xStart = isSide ? this.CLEAT_WIDTH : 0
-        const length = isSide ? panelWidth - (2 * this.CLEAT_WIDTH) : panelWidth
+        // Add cleat before first vertical if there's space
+        if (sortedVerticals[0].x > 0.5) {
+          cleats.push({
+            id: `${panelName}_CLEAT_H_INTER_${rowIndex}_${cleatIndex++}`,
+            type: 'intermediate',
+            orientation: 'horizontal',
+            position: 'intermediate',
+            x: 0,
+            y: yPosition - (this.CLEAT_WIDTH / 2),
+            length: sortedVerticals[0].x,
+            width: this.CLEAT_WIDTH,
+            thickness: this.CLEAT_THICKNESS
+          })
+        }
 
-        cleats.push({
-          id: `${panelName}_CLEAT_SPLICE_H_${index}`,
-          type: 'splice',
-          orientation: 'horizontal',
-          position: 'intermediate',
-          x: xStart,
-          y: splice.y - (this.CLEAT_WIDTH / 2), // Center cleat on splice
-          length,
-          width: this.CLEAT_WIDTH,
-          thickness: this.CLEAT_THICKNESS
-        })
+        // Add cleats between each pair of verticals
+        for (let i = 0; i < sortedVerticals.length - 1; i++) {
+          const startX = sortedVerticals[i].x + this.CLEAT_WIDTH
+          const endX = sortedVerticals[i + 1].x
+          const length = endX - startX
+
+          if (length > 0.5) { // Only add if there's meaningful space
+            cleats.push({
+              id: `${panelName}_CLEAT_H_INTER_${rowIndex}_${cleatIndex++}`,
+              type: 'intermediate',
+              orientation: 'horizontal',
+              position: 'intermediate',
+              x: startX,
+              y: yPosition - (this.CLEAT_WIDTH / 2),
+              length: length,
+              width: this.CLEAT_WIDTH,
+              thickness: this.CLEAT_THICKNESS
+            })
+          }
+        }
+
+        // Add right edge cleat if there's space after last vertical
+        const lastVertical = sortedVerticals[sortedVerticals.length - 1]
+        const startX = lastVertical.x + this.CLEAT_WIDTH
+        const remainingLength = panelWidth - startX
+
+        if (remainingLength > 0.5) {
+          cleats.push({
+            id: `${panelName}_CLEAT_H_INTER_${rowIndex}_${cleatIndex++}`,
+            type: 'intermediate',
+            orientation: 'horizontal',
+            position: 'intermediate',
+            x: startX,
+            y: yPosition - (this.CLEAT_WIDTH / 2),
+            length: remainingLength,
+            width: this.CLEAT_WIDTH,
+            thickness: this.CLEAT_THICKNESS
+          })
+        }
       }
     })
 
     return cleats
   }
+
 
   /**
    * Generate NX expressions for cleats

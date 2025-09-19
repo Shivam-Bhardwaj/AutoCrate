@@ -41,7 +41,9 @@ export default function Home() {
       '2x8': true,
       '2x10': true,
       '2x12': true
-    }
+    },
+    // View options
+    showOutlines: false
   })
 
   const [config, setConfig] = useState<CrateConfig>({
@@ -58,8 +60,9 @@ export default function Home() {
     },
     materials: {
       skidSize: '4x4',
-      panelThickness: 1,
-      cleatSize: '2x4',
+      plywoodThickness: 0.25,  // 1/4" plywood
+      panelThickness: 1,       // Total panel thickness with cleats
+      cleatSize: '1x4',        // 1x4 lumber for cleats (0.75" x 3.5")
       allow3x4Lumber: false
     }
   })
@@ -357,7 +360,25 @@ export default function Home() {
 
           {/* Clearances */}
           <div className="mb-2">
-            <h3 className="text-sm font-semibold mb-1.5">Clearances (inches)</h3>
+            <div className="flex items-center justify-between mb-1.5">
+              <h3 className="text-sm font-semibold">Clearances (inches)</h3>
+              <button
+                onClick={() => {
+                  const zeroValues = {
+                    sideClearance: '0',
+                    endClearance: '0',
+                    topClearance: '0'
+                  };
+                  setInputValues(prev => ({ ...prev, ...zeroValues }));
+                  Object.entries(zeroValues).forEach(([key, value]) => {
+                    handleInputBlur(key as keyof typeof inputValues);
+                  });
+                }}
+                className="text-xs bg-gray-600 text-white px-2 py-0.5 rounded hover:bg-gray-700"
+              >
+                Min ID/OD
+              </button>
+            </div>
             <div className="grid grid-cols-3 gap-1.5">
               <div>
                 <label className="text-xs text-gray-600">Side</label>
@@ -394,15 +415,29 @@ export default function Home() {
 
           {/* Calculated Dimensions */}
           <div className="mb-2 p-1.5 bg-gray-50 rounded">
-            <h3 className="text-sm font-semibold mb-0.5">Calculated</h3>
+            <h3 className="text-sm font-semibold mb-0.5">Calculated Dimensions</h3>
             <div className="space-y-1 text-xs">
               <div className="flex justify-between">
-                <span className="text-gray-600">Overall:</span>
+                <span className="text-gray-600">Interior (ID):</span>
+                <span className="font-medium">
+                  {generator.getExpressions().get('internal_width')?.toFixed(1) || '0.0'}" ×
+                  {generator.getExpressions().get('internal_length')?.toFixed(1) || '0.0'}" ×
+                  {generator.getExpressions().get('internal_height')?.toFixed(1) || '0.0'}"
+                </span>
+              </div>
+              <div className="text-gray-500 text-xs pl-2">
+                W(X) × L(Y) × H(Z)
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Exterior (OD):</span>
                 <span className="font-medium">
                   {generator.getExpressions().get('overall_width')?.toFixed(1)}" ×
                   {generator.getExpressions().get('overall_length')?.toFixed(1)}" ×
                   {generator.getExpressions().get('overall_height')?.toFixed(1)}"
                 </span>
+              </div>
+              <div className="text-gray-500 text-xs pl-2">
+                W(X) × L(Y) × H(Z)
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Skid:</span>
@@ -445,6 +480,20 @@ export default function Home() {
           {/* Display Options */}
           <div>
             <h3 className="text-sm font-semibold mb-1.5">Display Options</h3>
+
+            {/* View Options */}
+            <div className="space-y-0.5 mb-1.5">
+              <p className="text-xs font-medium">View Options</p>
+              <label className="flex items-center justify-between text-xs">
+                <span>Show Outlines</span>
+                <input
+                  type="checkbox"
+                  checked={displayOptions.showOutlines}
+                  onChange={() => setDisplayOptions(prev => ({ ...prev, showOutlines: !prev.showOutlines }))}
+                  className="h-3 w-3"
+                />
+              </label>
+            </div>
 
             {/* Component Visibility */}
             <div className="space-y-0.5 mb-1.5">
@@ -545,7 +594,10 @@ export default function Home() {
               <div className="h-full flex flex-col">
                 <div className="flex-1 min-h-0">
                   <VisualizationErrorBoundary>
-                    <CrateVisualizer boxes={getFilteredBoxes()} />
+                    <CrateVisualizer
+                      boxes={getFilteredBoxes()}
+                      showOutlines={displayOptions.showOutlines}
+                    />
                   </VisualizationErrorBoundary>
                 </div>
                 <p className="text-xs text-gray-600 mt-1">
