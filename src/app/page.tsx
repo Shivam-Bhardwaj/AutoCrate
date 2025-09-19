@@ -240,8 +240,9 @@ export default function Home() {
     <main className="h-screen bg-gray-50 overflow-hidden flex flex-col">
       {/* Compact Header */}
       <div className="bg-white shadow-sm px-4 py-1.5 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="grid grid-cols-3 items-center">
+          {/* Left Section - Mobile Menu */}
+          <div className="flex justify-start">
             <button
               onClick={() => setShowMobileInputs(!showMobileInputs)}
               className="lg:hidden p-1 hover:bg-gray-100 rounded"
@@ -250,12 +251,16 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showMobileInputs ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
               </svg>
             </button>
-            <div>
-              <h1 className="text-lg lg:text-xl font-bold text-gray-900">AutoCrate NX Generator</h1>
-              <p className="text-xs text-gray-600 hidden lg:block">Two Diagonal Points Method</p>
-            </div>
           </div>
-          <div className="flex gap-1 lg:gap-2">
+          
+          {/* Center Section - Title */}
+          <div className="flex flex-col items-center text-center">
+            <h1 className="text-lg lg:text-xl font-bold text-gray-900">AutoCrate NX Generator</h1>
+            <p className="text-xs text-gray-600 hidden lg:block">Two Diagonal Points Method</p>
+          </div>
+          
+          {/* Right Section - Export Buttons */}
+          <div className="flex justify-end gap-1 lg:gap-2">
             <button
               onClick={downloadExpressions}
               className="bg-blue-600 text-white px-2 lg:px-3 py-1 text-xs lg:text-sm rounded hover:bg-blue-700"
