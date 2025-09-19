@@ -482,21 +482,22 @@ export default function Home() {
             <h3 className="text-sm font-semibold mb-1.5">Display Options</h3>
 
             {/* View Options */}
-            <div className="space-y-0.5 mb-1.5">
-              <p className="text-xs font-medium">View Options</p>
-              <label className="flex items-center justify-between text-xs">
-                <span>Show Outlines</span>
-                <input
-                  type="checkbox"
-                  checked={displayOptions.showOutlines}
-                  onChange={() => setDisplayOptions(prev => ({ ...prev, showOutlines: !prev.showOutlines }))}
-                  className="h-3 w-3"
-                />
-              </label>
+            <div className="space-y-1 mb-2">
+              <p className="text-xs font-medium mb-1">View Options</p>
+              <button
+                onClick={() => setDisplayOptions(prev => ({ ...prev, showOutlines: !prev.showOutlines }))}
+                className={`w-full text-xs px-2 py-1.5 rounded border transition-all ${
+                  displayOptions.showOutlines
+                    ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                Show Outlines
+              </button>
             </div>
 
             {/* Component Visibility */}
-            <div className="space-y-0.5 mb-1.5">
+            <div className="grid grid-cols-2 gap-1 mb-2">
               {Object.entries(displayOptions.visibility).map(([component, isVisible]) => {
                 // Format display names
                 const displayName = component === 'frontPanel' ? 'Front Panel' :
@@ -509,33 +510,39 @@ export default function Home() {
                                    component === 'cleats' ? 'Cleats' : component;
 
                 return (
-                  <label key={component} className="flex items-center justify-between text-xs">
-                    <span>{displayName}</span>
-                    <input
-                      type="checkbox"
-                      checked={isVisible}
-                      onChange={() => toggleComponentVisibility(component as keyof typeof displayOptions.visibility)}
-                      className="h-3 w-3"
-                    />
-                  </label>
+                  <button
+                    key={component}
+                    onClick={() => toggleComponentVisibility(component as keyof typeof displayOptions.visibility)}
+                    className={`text-xs px-2 py-1.5 rounded border transition-all ${
+                      isVisible
+                        ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {displayName}
+                  </button>
                 )
               })}
             </div>
 
             {/* Lumber Sizes */}
-            <div className="space-y-0.5">
-              <p className="text-xs font-medium">Floor Sizes</p>
-              {Object.entries(displayOptions.lumberSizes).map(([size, isSelected]) => (
-                <label key={size} className="flex items-center justify-between text-xs">
-                  <span>{size}</span>
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => toggleLumberSize(size as keyof typeof displayOptions.lumberSizes)}
-                    className="h-3 w-3"
-                  />
-                </label>
-              ))}
+            <div className="space-y-1">
+              <p className="text-xs font-medium mb-1">Floor Sizes</p>
+              <div className="grid grid-cols-2 gap-1">
+                {Object.entries(displayOptions.lumberSizes).map(([size, isSelected]) => (
+                  <button
+                    key={size}
+                    onClick={() => toggleLumberSize(size as keyof typeof displayOptions.lumberSizes)}
+                    className={`text-xs px-2 py-1.5 rounded border transition-all ${
+                      isSelected
+                        ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
