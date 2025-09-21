@@ -1,16 +1,19 @@
 'use client'
 
 import { Canvas, ThreeEvent } from '@react-three/fiber'
-import { OrbitControls, Box, Grid, Text, Html, Edges, Plane } from '@react-three/drei'
-import { NXBox } from '@/lib/nx-generator'
+import { OrbitControls, Box, Grid, Text, Html, Edges, Plane, useGLTF, Clone } from '@react-three/drei'
+import { NXBox, NXGenerator } from '@/lib/nx-generator'
 import { Suspense, useState, useRef, useEffect, useMemo } from 'react'
 import * as THREE from 'three'
+import { MarkingVisualizer } from './MarkingVisualizer'
 
 interface CrateVisualizerProps {
   boxes: NXBox[]
   showGrid?: boolean
   showLabels?: boolean
   showOutlines?: boolean
+  generator?: NXGenerator
+  showMarkings?: boolean
 }
 
 // Represents a selected plane with its position and normal vector
@@ -107,6 +110,51 @@ function HighlightedFace({ plane }: { plane: SelectedPlane }) {
     </Plane>
   )
 }
+
+// Component to render Klimp 3D model
+function KlimpModel({ box, scale = 0.1 }: { box: NXBox; scale?: number }) {
+  const { scene } = useGLTF('/models/klimp.glb')
+
+  const center = {
+    x: (box.point1.x + box.point2.x) / 2,
+    y: (box.point1.y + box.point2.y) / 2,
+    z: (box.point1.z + box.point2.z) / 2,
+  }
+
+  // Determine rotation based on edge type from metadata
+  // IMPORTANT: Origin is at bottom of SHORT (3") side, not long side!
+  // Klimp bridges corners between perpendicular panels
+  // Default: stands vertical (4" tall), 3" depth
+  const getRotation = (): [number, number, number] => {
+    if (box.metadata?.includes('left edge')) {
+      // Left edge: 90 degree anticlockwise about Y (opposite of before)
+      return [0, -Math.PI / 2, 0] // Rotate 90° anticlockwise around Y axis
+    } else if (box.metadata?.includes('right edge')) {
+      // Right edge: 90 degree anticlockwise about Y (opposite of before)
+      return [0, -Math.PI / 2, 0] // Rotate 90° anticlockwise around Y axis
+    }
+    // Top edge: 90 degree clockwise about Y (opposite of before)
+    return [0, Math.PI / 2, 0] // Rotate 90° clockwise around Y axis
+  }
+
+  const rotation = getRotation()
+
+  // Position at calculated center point with -Y offset to move away from cleats
+  // Add 0.5" offset in -Y direction (outward from panel)
+  const yOffset = -0.5 * scale // 0.5 inch offset in -Y direction
+
+  return (
+    <Clone
+      object={scene}
+      position={[center.x * scale, center.z * scale, -center.y * scale + yOffset]}
+      rotation={rotation}
+      scale={[scale * 0.03, scale * 0.03, scale * 0.03]} // Scale for proper size
+    />
+  )
+}
+
+// Preload the klimp model
+useGLTF.preload('/models/klimp.glb')
 
 // Component to render a single box from NX two-point definition
 function NXBoxMesh({
@@ -210,6 +258,8 @@ function NXBoxMesh({
         return 'LUMBER'
       case 'panel':
         return 'PLYWOOD'
+      case 'klimp':
+        return 'HARDWARE'
       default:
         return 'LUMBER'
     }
@@ -270,7 +320,7 @@ function NXBoxMesh({
   )
 }
 
-export default function CrateVisualizer({ boxes, showGrid = true, showLabels = true, showOutlines = false }: CrateVisualizerProps) {
+export default function CrateVisualizer({ boxes, showGrid = true, showLabels = true, showOutlines = false, generator, showMarkings = true }: CrateVisualizerProps) {
   const [hiddenComponents, setHiddenComponents] = useState<Set<string>>(new Set())
   const [hoveredBox, setHoveredBox] = useState<string | null>(null)
   const [showHiddenList, setShowHiddenList] = useState(false)
@@ -287,7 +337,8 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
         'floor': 2,
         'panel': 3,
         'cleat': 4,
-        'plywood': 5
+        'plywood': 5,
+        'klimp': 6
       }
       const aPriority = priority[a.type || ''] || 6
       const bPriority = priority[b.type || ''] || 6
@@ -443,18 +494,30 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
           )}
 
           {/* Render visible boxes only (filter out suppressed and hidden) */}
-          {visibleBoxes.map((box, index) => (
-            <NXBoxMesh
-              key={`${box.name}-${index}`}
-              box={box}
-              hoveredBox={hoveredBox}
-              setHoveredBox={setHoveredBox}
-              onHide={handleHideComponent}
-              showOutlines={showOutlines}
-              selectedPlanes={selectedPlanes}
-              onPlaneClick={handlePlaneClick}
-            />
-          ))}
+          {visibleBoxes.map((box, index) =>
+            box.type === 'klimp' ? (
+              <KlimpModel
+                key={`${box.name}-${index}`}
+                box={box}
+              />
+            ) : (
+              <NXBoxMesh
+                key={`${box.name}-${index}`}
+                box={box}
+                hoveredBox={hoveredBox}
+                setHoveredBox={setHoveredBox}
+                onHide={handleHideComponent}
+                showOutlines={showOutlines}
+                selectedPlanes={selectedPlanes}
+                onPlaneClick={handlePlaneClick}
+              />
+            )
+          )}
+
+          {/* Render markings if generator is provided */}
+          {generator && showMarkings && (
+            <MarkingVisualizer boxes={visibleBoxes} generator={generator} />
+          )}
 
           {/* Render selected face planes */}
           {selectedPlanes.map((plane, index) => (

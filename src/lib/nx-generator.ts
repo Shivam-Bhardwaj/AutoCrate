@@ -4,12 +4,26 @@
 
 import { PlywoodSplicer, PanelSpliceLayout } from './plywood-splicing'
 import { CleatCalculator, PanelCleatLayout } from './cleat-calculator'
+import { KlimpCalculator, KlimpLayout, CleatInfo } from './klimp-calculator'
+import { KlimpSTEPIntegration, KlimpInstance } from './klimp-step-integration'
 
 export interface ProductDimensions {
   length: number  // Y-axis (front to back)
   width: number   // X-axis (left to right)
   height: number  // Z-axis (vertical)
   weight: number  // pounds
+}
+
+export interface MarkingConfig {
+  appliedMaterialsLogo: boolean  // Applied Materials logo (4 per crate)
+  fragileStencil: boolean        // Fragile markings (4 per crate)
+  handlingSymbols: boolean       // Glass, umbrella, up arrows (up to 4 per crate)
+}
+
+export interface MarkingDimensions {
+  width: number
+  height: number
+  partNumber: string
 }
 
 export interface CrateConfig {
@@ -27,6 +41,7 @@ export interface CrateConfig {
     allow3x4Lumber?: boolean // Optional: allow 3x4 lumber for weights under 4500 lbs
     availableLumber?: ('2x6' | '2x8' | '2x10' | '2x12')[] // Optional: restrict available lumber sizes
   }
+  markings?: MarkingConfig  // Optional marking configuration
 }
 
 export interface Point3D {
@@ -40,7 +55,7 @@ export interface NXBox {
   point1: Point3D
   point2: Point3D
   color?: string
-  type?: 'skid' | 'floor' | 'panel' | 'cleat' | 'plywood'
+  type?: 'skid' | 'floor' | 'panel' | 'cleat' | 'plywood' | 'klimp'
   suppressed?: boolean
   metadata?: string
   plywoodPieceIndex?: number  // For plywood pieces, track which piece (0-5)
@@ -52,6 +67,8 @@ export class NXGenerator {
   private expressions: Map<string, number> = new Map()
   private panelSpliceLayouts: PanelSpliceLayout[] = []
   private panelCleatLayouts: PanelCleatLayout[] = []
+  private klimpLayouts: KlimpLayout[] = []
+  private klimpInstances: KlimpInstance[] = []
 
   constructor(private config: CrateConfig) {
     this.calculate()
@@ -783,6 +800,156 @@ export class NXGenerator {
         }
       }
     }
+
+    // Generate Klimp 3D boxes for front panel
+    this.generateKlimpBoxes()
+  }
+
+  private generateKlimpBoxes() {
+    // Generate 3D boxes and instances for klimps
+    if (this.klimpLayouts.length === 0) {
+      return
+    }
+
+    const internalWidth = this.expressions.get('internal_width')!
+    const internalHeight = this.expressions.get('internal_height')!
+    const panelThickness = this.expressions.get('panel_thickness')!
+    const plywoodThickness = this.expressions.get('plywood_thickness')!
+    const skidHeight = this.expressions.get('skid_height')!
+    const floorboardThickness = this.expressions.get('floorboard_thickness')!
+
+    const klimpLayout = this.klimpLayouts[0]
+
+    // Get actual klimp geometry
+    const klimpGeometry = KlimpSTEPIntegration.getKlimpGeometry()
+    const longerSide = klimpGeometry.longerSideLength
+    const shorterSide = klimpGeometry.shorterSideLength
+    const klimpThickness = klimpGeometry.thickness
+    const klimpWidth = klimpGeometry.width
+
+    // Generate klimp instances for CAD
+    this.klimpInstances = KlimpSTEPIntegration.generateKlimpInstances(klimpLayout.klimps)
+
+    // Generate 3D visualization boxes for active klimps
+    for (let i = 0; i < klimpLayout.klimps.length; i++) {
+      const klimp = klimpLayout.klimps[i]
+      const instance = this.klimpInstances[i]
+      let point1: Point3D, point2: Point3D
+
+      // Position klimps on the front panel surface with small offset to prevent Z-fighting
+      // Add 0.05" offset outward from panel to ensure proper rendering without flickering
+      const frontPanelY = panelThickness - plywoodThickness - 0.75 - 0.05 // Front face of front panel with anti-Z-fighting offset
+
+      if (klimp.edge === 'top') {
+        // Top edge: longer side vertical, shorter side horizontal inward
+        point1 = {
+          x: klimp.x - klimpWidth/2,
+          y: frontPanelY,
+          z: skidHeight + floorboardThickness + internalHeight - longerSide
+        }
+        point2 = {
+          x: klimp.x + klimpWidth/2,
+          y: frontPanelY + shorterSide, // Shorter side extends inward
+          z: skidHeight + floorboardThickness + internalHeight
+        }
+      } else if (klimp.edge === 'left') {
+        // Left edge: rotated 90°, longer side horizontal, shorter vertical
+        point1 = {
+          x: -internalWidth/2 - panelThickness,
+          y: frontPanelY,
+          z: skidHeight + klimp.position - klimpWidth/2
+        }
+        point2 = {
+          x: -internalWidth/2 - panelThickness + shorterSide, // Shorter side extends inward
+          y: frontPanelY + longerSide, // Longer side extends horizontally
+          z: skidHeight + klimp.position + klimpWidth/2
+        }
+      } else { // right edge
+        // Right edge: rotated -90°, longer side horizontal, shorter vertical
+        point1 = {
+          x: internalWidth/2 + panelThickness - shorterSide, // Shorter side extends inward
+          y: frontPanelY,
+          z: skidHeight + klimp.position - klimpWidth/2
+        }
+        point2 = {
+          x: internalWidth/2 + panelThickness,
+          y: frontPanelY + longerSide, // Longer side extends horizontally
+          z: skidHeight + klimp.position + klimpWidth/2
+        }
+      }
+
+      this.boxes.push({
+        name: klimp.id,
+        point1: point1,
+        point2: point2,
+        color: '#8B7355', // Bronze/metal color for klimps
+        type: 'klimp',
+        suppressed: false,
+        metadata: `Spring clamp on ${klimp.edge} edge at position ${klimp.position.toFixed(1)}" (Instance ${i + 1}/${KlimpSTEPIntegration.getMaxKlimpCount()}) - STEP: "${KlimpSTEPIntegration.getKlimpSTEPPath()}"`
+      })
+    }
+
+    // Store the count of active klimps in expressions
+    this.expressions.set('klimp_instances_active', klimpLayout.klimps.length)
+    this.expressions.set('klimp_instances_total', KlimpSTEPIntegration.getMaxKlimpCount())
+  }
+
+  private calculateKlimps() {
+    const internalWidth = this.expressions.get('internal_width')!
+    const internalHeight = this.expressions.get('internal_height')!
+    const panelThickness = this.expressions.get('panel_thickness')!
+    const plywoodThickness = this.expressions.get('plywood_thickness')!
+    const skidHeight = this.expressions.get('skid_height')!
+    const floorboardThickness = this.expressions.get('floorboard_thickness')!
+
+    // Get front panel dimensions and cleats
+    const frontPanelLayout = this.panelSpliceLayouts.find(p => p.panelName === 'FRONT_PANEL')
+    const frontCleatLayout = this.panelCleatLayouts.find(p => p.panelName === 'FRONT_PANEL')
+
+    if (!frontPanelLayout || !frontCleatLayout) {
+      return
+    }
+
+    // Extract cleat positions for klimp avoidance
+    // Only include intermediate and splice cleats, NOT perimeter cleats
+    // Klimps go along the edges, so edge cleats don't block them
+    const topCleats: CleatInfo[] = []
+    const leftCleats: CleatInfo[] = []
+    const rightCleats: CleatInfo[] = []
+
+    for (const cleat of frontCleatLayout.cleats) {
+      // Skip perimeter cleats - they don't block klimps
+      if (cleat.type === 'perimeter') {
+        continue
+      }
+
+      // For intermediate and splice cleats, check which edge they might interfere with
+      if (cleat.orientation === 'vertical') {
+        // Vertical intermediate/splice cleats might interfere with top edge klimps
+        topCleats.push({ position: cleat.x, width: cleat.width })
+      } else if (cleat.orientation === 'horizontal') {
+        // Horizontal intermediate/splice cleats might interfere with side edge klimps
+        leftCleats.push({ position: cleat.y, width: cleat.width })
+        rightCleats.push({ position: cleat.y, width: cleat.width })
+      }
+    }
+
+    // Calculate optimal klimp positions
+    const klimpLayout = KlimpCalculator.calculateKlimpLayout(
+      frontPanelLayout.panelWidth,
+      frontPanelLayout.panelHeight,
+      topCleats,
+      leftCleats,
+      rightCleats
+    )
+
+    this.klimpLayouts = [klimpLayout]
+
+    // Store klimp count in expressions
+    this.expressions.set('klimp_count', klimpLayout.totalKlimps)
+    this.expressions.set('klimp_top_count', klimpLayout.klimps.filter(k => k.edge === 'top').length)
+    this.expressions.set('klimp_left_count', klimpLayout.klimps.filter(k => k.edge === 'left').length)
+    this.expressions.set('klimp_right_count', klimpLayout.klimps.filter(k => k.edge === 'right').length)
   }
 
   private calculatePanelSplicing() {
@@ -825,6 +992,9 @@ export class NXGenerator {
       this.panelCleatLayouts.push(cleatLayout)
     }
 
+    // Calculate klimps after cleats are positioned
+    this.calculateKlimps()
+
     // Store splice and cleat information in expressions for reference
     let totalSheets = 0
     let totalCleats = 0
@@ -849,6 +1019,13 @@ export class NXGenerator {
     const cleatUsage = CleatCalculator.calculateCleatMaterial(this.panelCleatLayouts)
     this.expressions.set('cleat_linear_feet', Math.round(cleatUsage.totalLinearFeet * 100) / 100)
     this.expressions.set('cleat_1x4_count', cleatUsage.estimated1x4Count)
+
+    // Calculate klimp material usage
+    if (this.klimpLayouts.length > 0) {
+      const klimpUsage = KlimpCalculator.calculateKlimpMaterial(this.klimpLayouts)
+      this.expressions.set('klimp_total_count', klimpUsage.totalKlimps)
+      this.expressions.set('klimp_packages', klimpUsage.estimatedPackages)
+    }
   }
 
   getBoxes(): NXBox[] {
@@ -865,6 +1042,14 @@ export class NXGenerator {
 
   getPanelCleatLayouts(): PanelCleatLayout[] {
     return this.panelCleatLayouts
+  }
+
+  getKlimpLayouts(): KlimpLayout[] {
+    return this.klimpLayouts
+  }
+
+  getKlimpInstances(): KlimpInstance[] {
+    return this.klimpInstances
   }
 
   exportNXExpressions(): string {
@@ -887,6 +1072,26 @@ export class NXGenerator {
     output += '#   * Spacing: pattern_spacing (center-to-center)\n'
     output += '# - Skids run along Y-axis (front to back)\n'
     output += '# \n'
+    output += '# KLIMP FASTENER INSTRUCTIONS:\n'
+    output += '# - L-shaped fasteners connecting front panel to adjacent panels\n'
+    output += '# - Positioned on top and side edges of front panel\n'
+    output += '# - Maximum 16" spacing, minimum 2" apart from each other\n'
+    output += '# - Minimum 1" clearance from cleats\n'
+    output += `# - Total klimps: ${this.expressions.get('klimp_count') || 0}\n`
+    output += `#   * Top edge: ${this.expressions.get('klimp_top_count') || 0}\n`
+    output += `#   * Left edge: ${this.expressions.get('klimp_left_count') || 0}\n`
+    output += `#   * Right edge: ${this.expressions.get('klimp_right_count') || 0}\n`
+    output += '# \n'
+    output += '# KLIMP INSTANCE MANAGEMENT:\n'
+    output += `# - Total pre-allocated instances: ${this.expressions.get('klimp_instances_total') || 20}\n`
+    output += `# - Active instances: ${this.expressions.get('klimp_instances_active') || 0}\n`
+    output += '# - STEP file: CAD FILES/Crate Spring Clamp.STEP\n'
+    output += '# - Import the STEP file once, then pattern/position instances\n'
+    output += '# \n'
+
+    // Add marking instructions if configured
+    output += this.getMarkingInstructions()
+
     output += '# FLOORBOARD INSTRUCTIONS:\n'
     output += '# - Optimized floorboard layout using available lumber sizes\n'
     output += '# - Floorboards run along X-axis (perpendicular to skids)\n'
@@ -988,6 +1193,26 @@ export class NXGenerator {
         if (box.suppressed) {
           output += `${box.name}_SUPPRESSED=TRUE\n`
         }
+      } else if (box.type === 'klimp') {
+        // Export klimp instance parameters
+        output += `# Klimp spring clamp instance\n`
+        if (box.metadata) {
+          output += `# ${box.metadata}\n`
+        }
+        // Find the corresponding instance
+        const instanceIndex = parseInt(box.name.split('_').pop() || '0') - 1
+        const instance = this.klimpInstances[instanceIndex]
+        if (instance) {
+          output += `# Instance configuration:\n`
+          output += `${box.name}_ACTIVE=${instance.active ? 'TRUE' : 'FALSE'}\n`
+          output += `${box.name}_EDGE="${instance.edge}"\n`
+          output += `${box.name}_POS_X=${instance.position.x.toFixed(3)}\n`
+          output += `${box.name}_POS_Y=${instance.position.y.toFixed(3)}\n`
+          output += `${box.name}_POS_Z=${instance.position.z.toFixed(3)}\n`
+          output += `${box.name}_ROT_X=${instance.rotation.x.toFixed(1)}\n`
+          output += `${box.name}_ROT_Y=${instance.rotation.y.toFixed(1)}\n`
+          output += `${box.name}_ROT_Z=${instance.rotation.z.toFixed(1)}\n`
+        }
       } else {
         if (box.suppressed) {
           output += `# ${box.name}_SUPPRESSED=TRUE\n`
@@ -998,6 +1223,28 @@ export class NXGenerator {
         output += `${box.name}_X2=${box.point2.x.toFixed(3)}\n`
         output += `${box.name}_Y2=${box.point2.y.toFixed(3)}\n`
         output += `${box.name}_Z2=${box.point2.z.toFixed(3)}\n`
+      }
+    }
+
+    // Export all klimp instance placeholders
+    output += '\n# KLIMP INSTANCE PLACEHOLDERS\n'
+    output += '# Import "CAD FILES/Crate Spring Clamp.STEP" once, then position these instances\n'
+    for (let i = 0; i < KlimpSTEPIntegration.getMaxKlimpCount(); i++) {
+      const instance = this.klimpInstances[i]
+      if (instance) {
+        output += `\n# KLIMP_${i + 1}:\n`
+        output += `KLIMP_${i + 1}_ACTIVE=${instance.active ? 'TRUE' : 'FALSE'}\n`
+        if (instance.active) {
+          output += `KLIMP_${i + 1}_EDGE="${instance.edge}"\n`
+          output += `KLIMP_${i + 1}_POS_X=${instance.position.x.toFixed(3)}\n`
+          output += `KLIMP_${i + 1}_POS_Y=${instance.position.y.toFixed(3)}\n`
+          output += `KLIMP_${i + 1}_POS_Z=${instance.position.z.toFixed(3)}\n`
+          output += `KLIMP_${i + 1}_ROT_X=${instance.rotation.x.toFixed(1)}\n`
+          output += `KLIMP_${i + 1}_ROT_Y=${instance.rotation.y.toFixed(1)}\n`
+          output += `KLIMP_${i + 1}_ROT_Z=${instance.rotation.z.toFixed(1)}\n`
+        } else {
+          output += `# Suppressed - not used for this crate size\n`
+        }
       }
     }
 
@@ -1098,7 +1345,99 @@ export class NXGenerator {
       note: `${cleatUsage.totalCleats} total cleats, ${cleatUsage.totalLinearFeet.toFixed(1)} linear feet`
     })
 
+    // Klimp Fasteners
+    if (this.klimpLayouts.length > 0) {
+      const klimpUsage = KlimpCalculator.calculateKlimpMaterial(this.klimpLayouts)
+      bom.push({
+        item: 'Klimp Fasteners',
+        size: 'L-shaped metal fastener',
+        quantity: klimpUsage.totalKlimps,
+        packages: klimpUsage.estimatedPackages,
+        material: 'Hardware',
+        note: `${klimpUsage.totalKlimps} klimps (${klimpUsage.estimatedPackages} packages of 25). Front panel connections.`
+      })
+    }
+
     return bom
+  }
+
+  // Calculate marking dimensions based on crate height
+  getMarkingDimensions(markingType: 'logo' | 'fragile' | 'handling'): MarkingDimensions | null {
+    if (!this.config.markings) {
+      return null
+    }
+
+    const overallHeight = this.expressions.get('overall_height') || 0
+
+    if (markingType === 'logo' && this.config.markings.appliedMaterialsLogo) {
+      // Applied Materials Logo specifications
+      if (overallHeight <= 37) {
+        return { width: 5.56, height: 4.00, partNumber: '0205-02548' }
+      } else if (overallHeight <= 73) {
+        return { width: 8.34, height: 6.00, partNumber: '0205-02548 (Scale 1.5X)' }
+      } else {
+        return { width: 11.13, height: 8.00, partNumber: '0205-02548 (Scale 2.0X)' }
+      }
+    }
+
+    if (markingType === 'fragile' && this.config.markings.fragileStencil) {
+      // Fragile Stencil specifications
+      if (overallHeight <= 73) {
+        return { width: 8.00, height: 2.31, partNumber: '0205-01930' }
+      } else {
+        return { width: 12.00, height: 3.50, partNumber: '0205-01930 (Scale 1.5X)' }
+      }
+    }
+
+    if (markingType === 'handling' && this.config.markings.handlingSymbols) {
+      // Handling Symbols specifications
+      if (overallHeight <= 37) {
+        return { width: 3.00, height: 8.25, partNumber: '0205-00606' }
+      } else {
+        return { width: 4.00, height: 11.00, partNumber: '0205-00605' }
+      }
+    }
+
+    return null
+  }
+
+  // Generate marking instructions for NX output
+  getMarkingInstructions(): string {
+    if (!this.config.markings) {
+      return ''
+    }
+
+    let instructions = '# MARKING AND DECAL SPECIFICATIONS:\n'
+
+    const logoDims = this.getMarkingDimensions('logo')
+    if (logoDims) {
+      instructions += `# Applied Materials Logo (${logoDims.partNumber}):\n`
+      instructions += `#   - Size: ${logoDims.width}" x ${logoDims.height}"\n`
+      instructions += '#   - Position: Upper left corner of each side and end panel\n'
+      instructions += '#   - Quantity: 4 per crate\n'
+      instructions += '#   - Note: If space between cleats is insufficient, use smaller size\n'
+    }
+
+    const fragileDims = this.getMarkingDimensions('fragile')
+    if (fragileDims) {
+      instructions += `# Fragile Stencil (${fragileDims.partNumber}):\n`
+      instructions += `#   - Size: ${fragileDims.width}" x ${fragileDims.height}"\n`
+      instructions += '#   - Position: Center on each side and end panel\n'
+      instructions += '#   - Orientation: 10 degree angle\n'
+      instructions += '#   - Quantity: 4 per crate\n'
+    }
+
+    const handlingDims = this.getMarkingDimensions('handling')
+    if (handlingDims) {
+      instructions += `# Handling Symbols (${handlingDims.partNumber}):\n`
+      instructions += `#   - Size: ${handlingDims.width}" x ${handlingDims.height}"\n`
+      instructions += '#   - Position: Upper right corner of each side and end panel\n'
+      instructions += '#   - Note: Horizontal orientation takes priority over vertical\n'
+      instructions += '#   - Quantity: Up to 4 per crate\n'
+    }
+
+    instructions += '# \n'
+    return instructions
   }
 }
 

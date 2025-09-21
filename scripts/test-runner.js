@@ -191,7 +191,7 @@ class TestRunner {
 
       try {
         const generator = new StepGenerator(testBoxes)
-        const output = generator.generateBasicBlocks()
+        const output = generator.generate()
 
         // Validate output structure
         if (!output.includes('ISO-10303-21')) throw new Error('Invalid STEP header')

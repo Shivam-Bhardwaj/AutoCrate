@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react'
 import CrateVisualizer from '@/components/CrateVisualizer'
-import { NXGenerator, CrateConfig } from '@/lib/nx-generator'
+import { NXGenerator, CrateConfig, MarkingConfig } from '@/lib/nx-generator'
 import { PlywoodPieceSelector } from '@/components/PlywoodPieceSelector'
 import { StepGenerator } from '@/lib/step-generator'
 import { VisualizationErrorBoundary } from '@/components/ErrorBoundary'
+import { MarkingsSection } from '@/components/MarkingsSection'
 
 export default function Home() {
   // Store input values as strings for better input handling
@@ -21,6 +22,13 @@ export default function Home() {
 
   // State for 3x4 lumber permission toggle
   const [allow3x4Lumber, setAllow3x4Lumber] = useState(false)
+
+  // State for markings configuration
+  const [markings, setMarkings] = useState<MarkingConfig>({
+    appliedMaterialsLogo: true,
+    fragileStencil: true,
+    handlingSymbols: true
+  })
 
   // State for display options
   const [displayOptions, setDisplayOptions] = useState({
@@ -43,7 +51,8 @@ export default function Home() {
       '2x12': true
     },
     // View options
-    showOutlines: false
+    showOutlines: false,
+    showMarkings: true
   })
 
   const [config, setConfig] = useState<CrateConfig>({
@@ -98,9 +107,10 @@ export default function Home() {
         ...config.materials,
         allow3x4Lumber: allow3x4Lumber,
         availableLumber: availableLumber
-      }
+      },
+      markings: markings
     }))
-  }, [config, allow3x4Lumber, displayOptions.lumberSizes])
+  }, [config, allow3x4Lumber, displayOptions.lumberSizes, markings])
 
   const handleInputChange = (field: keyof typeof inputValues, value: string) => {
     // Update input value immediately
@@ -245,9 +255,9 @@ export default function Home() {
     // Get filtered boxes for STEP generation
     const boxes = getFilteredBoxes()
 
-    // Generate STEP file content using the more compatible basic blocks format
-    const stepGenerator = new StepGenerator(boxes)
-    const stepContent = stepGenerator.generateBasicBlocks()
+    // Generate STEP file content (AP242 with PMI metadata)
+    const stepGenerator = new StepGenerator(boxes, { includePMI: true })
+    const stepContent = stepGenerator.generate()
 
     // Create blob and download link
     const blob = new Blob([stepContent], { type: 'application/STEP' })
@@ -477,6 +487,14 @@ export default function Home() {
             </p>
           </div>
 
+          {/* Markings Configuration */}
+          <div className="mb-2">
+            <MarkingsSection
+              config={config}
+              onMarkingsChange={setMarkings}
+            />
+          </div>
+
           {/* Display Options */}
           <div>
             <h3 className="text-sm font-semibold mb-1.5">Display Options</h3>
@@ -493,6 +511,19 @@ export default function Home() {
                 }`}
               >
                 Show Outlines
+              </button>
+              <button
+                onClick={() => setDisplayOptions(prev => ({
+                  ...prev,
+                  showMarkings: !prev.showMarkings
+                }))}
+                className={`text-xs px-2 py-1 rounded ${
+                  displayOptions.showMarkings
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700'
+                }`}
+              >
+                Show Markings
               </button>
             </div>
 
@@ -604,6 +635,8 @@ export default function Home() {
                     <CrateVisualizer
                       boxes={getFilteredBoxes()}
                       showOutlines={displayOptions.showOutlines}
+                      generator={generator}
+                      showMarkings={displayOptions.showMarkings}
                     />
                   </VisualizationErrorBoundary>
                 </div>

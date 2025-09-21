@@ -1,21 +1,24 @@
 import { StepGenerator } from '../step-generator'
 import { NXBox } from '../nx-generator'
 
-describe('StepGenerator', () => {
+const generate = (boxes: NXBox[], options?: ConstructorParameters<typeof StepGenerator>[1]) => {
+  const generator = new StepGenerator(boxes, options)
+  return generator.generate()
+}
+
+describe('StepGenerator (AP242)', () => {
   const mockBoxes: NXBox[] = [
     {
       name: 'TEST_BOX_1',
       point1: { x: 0, y: 0, z: 0 },
       point2: { x: 10, y: 10, z: 10 },
-      type: 'skid',
-      color: '#8B4513'
+      type: 'skid'
     },
     {
       name: 'TEST_BOX_2',
       point1: { x: 5, y: 5, z: 5 },
-      point2: { x: 15, y: 15, z: 15 },
-      type: 'panel',
-      color: '#D2691E'
+      point2: { x: 15, y: 15, z: 20 },
+      type: 'panel'
     },
     {
       name: 'SUPPRESSED_BOX',
@@ -26,222 +29,86 @@ describe('StepGenerator', () => {
     }
   ]
 
-  describe('constructor', () => {
-    it('should filter out suppressed boxes', () => {
-      const generator = new StepGenerator(mockBoxes)
-      const output = generator.generateBasicBlocks()
-
-      expect(output).toContain('TEST_BOX_1')
-      expect(output).toContain('TEST_BOX_2')
-      expect(output).not.toContain('SUPPRESSED_BOX')
-    })
-
-    it('should handle empty box array', () => {
-      const generator = new StepGenerator([])
-      const output = generator.generateBasicBlocks()
-
-      expect(output).toContain('ISO-10303-21')
-      expect(output).toContain('ENDSEC')
-      expect(output).toContain('END-ISO-10303-21')
-    })
+  it('filters out suppressed boxes', () => {
+    const output = generate(mockBoxes)
+    expect(output).toContain("MANIFOLD_SOLID_BREP('skid'")
+    expect(output).toContain("MANIFOLD_SOLID_BREP('panel'")
+    expect(output).not.toContain('SUPPRESSED_BOX')
   })
 
-  describe('generateBasicBlocks', () => {
-    it('should generate valid STEP header', () => {
-      const generator = new StepGenerator(mockBoxes)
-      const output = generator.generateBasicBlocks()
-
-      expect(output).toMatch(/^ISO-10303-21;/)
-      expect(output).toContain('HEADER;')
-      expect(output).toContain('FILE_DESCRIPTION')
-      expect(output).toContain('FILE_NAME')
-      expect(output).toContain('FILE_SCHEMA')
-      expect(output).toContain('CONFIG_CONTROL_DESIGN')
-    })
-
-    it('should generate proper units configuration', () => {
-      const generator = new StepGenerator(mockBoxes)
-      const output = generator.generateBasicBlocks()
-
-      expect(output).toContain('LENGTH_UNIT')
-      expect(output).toContain('NAMED_UNIT')
-      expect(output).toContain('SI_UNIT(.MILLI.,.METRE.)')
-      expect(output).toContain('PLANE_ANGLE_UNIT')
-      expect(output).toContain('RADIAN')
-    })
-
-    it('should convert dimensions from inches to millimeters', () => {
-      const generator = new StepGenerator([mockBoxes[0]])
-      const output = generator.generateBasicBlocks()
-
-      // 10 inches = 254mm
-      expect(output).toContain('254')
-      // Center position (5 inches = 127mm)
-      expect(output).toContain('127')
-    })
-
-    it('should create BLOCK entities for each box', () => {
-      const generator = new StepGenerator(mockBoxes)
-      const output = generator.generateBasicBlocks()
-
-      const blockMatches = output.match(/BLOCK\(/g)
-      expect(blockMatches).toHaveLength(2) // 2 non-suppressed boxes
-    })
-
-    it('should create proper product definitions', () => {
-      const generator = new StepGenerator(mockBoxes)
-      const output = generator.generateBasicBlocks()
-
-      expect(output).toContain('PRODUCT(')
-      expect(output).toContain('PRODUCT_DEFINITION_FORMATION')
-      expect(output).toContain('PRODUCT_DEFINITION')
-      expect(output).toContain('SHAPE_REPRESENTATION')
-      expect(output).toContain('SHAPE_DEFINITION_REPRESENTATION')
-    })
-
-    it('should include coordinate system definitions', () => {
-      const generator = new StepGenerator(mockBoxes)
-      const output = generator.generateBasicBlocks()
-
-      expect(output).toContain('CARTESIAN_POINT')
-      expect(output).toContain('DIRECTION')
-      expect(output).toContain('AXIS2_PLACEMENT_3D')
-    })
-
-    it('should handle boxes with negative coordinates', () => {
-      const negativeBox: NXBox = {
-        name: 'NEGATIVE_BOX',
-        point1: { x: -10, y: -10, z: -10 },
-        point2: { x: 10, y: 10, z: 10 },
-        type: 'panel'
-      }
-
-      const generator = new StepGenerator([negativeBox])
-      const output = generator.generateBasicBlocks()
-
-      expect(output).toContain('NEGATIVE_BOX')
-      expect(output).toContain('0,0,0') // Center should be at origin
-    })
-
-    it('should properly close STEP file structure', () => {
-      const generator = new StepGenerator(mockBoxes)
-      const output = generator.generateBasicBlocks()
-
-      expect(output).toContain('ENDSEC;')
-      expect(output.trim()).toMatch(/END-ISO-10303-21;$/)
-    })
+  it('emits an AP242 header and schema', () => {
+    const output = generate(mockBoxes)
+    expect(output).toMatch(/^ISO-10303-21;/)
+    expect(output).toContain("FILE_SCHEMA(('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LATEST'))")
+    expect(output).toContain('APPLICATION_PROTOCOL_DEFINITION')
   })
 
-  describe('generateSimplified', () => {
-    it('should generate valid AP214 format', () => {
-      const generator = new StepGenerator(mockBoxes)
-      const output = generator.generateSimplified()
-
-      expect(output).toContain('AUTOMOTIVE_DESIGN')
-      expect(output).toContain('APPLICATION_CONTEXT')
-      expect(output).toContain('PRODUCT_CONTEXT')
-    })
-
-    it('should not have syntax errors in string literals', () => {
-      const generator = new StepGenerator(mockBoxes)
-      const output = generator.generateSimplified()
-
-      // Check for proper string formatting
-      expect(output).not.toContain("'');',") // The error we had
-      expect(output).toContain("'');") // Correct format
-    })
-
-    it('should handle special characters in box names', () => {
-      const specialBox: NXBox = {
-        name: 'BOX_WITH-SPECIAL.CHARS#1',
-        point1: { x: 0, y: 0, z: 0 },
-        point2: { x: 10, y: 10, z: 10 },
-        type: 'panel'
-      }
-
-      const generator = new StepGenerator([specialBox])
-      const output = generator.generateBasicBlocks()
-
-      expect(output).toContain('BOX_WITH-SPECIAL.CHARS#1')
-      expect(() => generator.generateBasicBlocks()).not.toThrow()
-    })
+  it('creates manifold solid BREP entries per unsuppressed box', () => {
+    const output = generate(mockBoxes)
+    const breps = output.match(/MANIFOLD_SOLID_BREP\('/g) || []
+    expect(breps.length).toBe(2)
+    expect(output).toContain("PRODUCT('skid'")
+    expect(output).toContain("PRODUCT('panel'")
+    expect(output).toContain("SHAPE_REPRESENTATION('AUTOCRATE CRATE ASSEMBLY'")
+    expect(output).toContain("SHAPE_REPRESENTATION('SHIPPING_BASE'")
+    expect(output).toContain("SHAPE_REPRESENTATION('CRATE_CAP'")
+    expect(output).toContain("SHAPE_REPRESENTATION('KLIMP_FASTENERS'")
+    expect(output).toContain("SHAPE_REPRESENTATION('STENCILS'")
+    expect(output).toContain("SHAPE_REPRESENTATION('SKID_ASSEMBLY'")
+    expect(output).toContain("SHAPE_REPRESENTATION('CAP_MISC_ASSEMBLY'")
+    expect(output).toMatch(/NEXT_ASSEMBLY_USAGE_OCCURRENCE\('[^']+','SHIPPING_BASE'/)
+    expect(output).toMatch(/NEXT_ASSEMBLY_USAGE_OCCURRENCE\('[^']+','SKID_ASSEMBLY'/)
+    expect(output).toMatch(/NEXT_ASSEMBLY_USAGE_OCCURRENCE\('[^']+','CRATE_CAP'/)
+    expect(output).toMatch(/NEXT_ASSEMBLY_USAGE_OCCURRENCE\('[^']+','KLIMP_FASTENERS'/)
+    expect(output).toMatch(/NEXT_ASSEMBLY_USAGE_OCCURRENCE\('[^']+','STENCILS'/)
+    expect(output).toMatch(/NEXT_ASSEMBLY_USAGE_OCCURRENCE\('[^']+','CAP_MISC_ASSEMBLY'/)
   })
 
-  describe('error handling', () => {
-    it('should handle very large coordinates', () => {
-      const largeBox: NXBox = {
-        name: 'LARGE_BOX',
-        point1: { x: 0, y: 0, z: 0 },
-        point2: { x: 999999, y: 999999, z: 999999 },
-        type: 'panel'
-      }
-
-      const generator = new StepGenerator([largeBox])
-      expect(() => generator.generateBasicBlocks()).not.toThrow()
-    })
-
-    it('should handle zero-size boxes', () => {
-      const zeroBox: NXBox = {
-        name: 'ZERO_BOX',
-        point1: { x: 5, y: 5, z: 5 },
-        point2: { x: 5, y: 5, z: 5 },
-        type: 'panel'
-      }
-
-      const generator = new StepGenerator([zeroBox])
-      const output = generator.generateBasicBlocks()
-
-      expect(output).toContain('ZERO_BOX')
-      expect(output).toContain(',0,0,0);') // Zero dimensions
-    })
-
-    it('should handle mixed box types correctly', () => {
-      const mixedBoxes: NXBox[] = [
-        { name: 'SKID', point1: { x: 0, y: 0, z: 0 }, point2: { x: 10, y: 10, z: 10 }, type: 'skid' },
-        { name: 'FLOOR', point1: { x: 0, y: 0, z: 0 }, point2: { x: 10, y: 10, z: 10 }, type: 'floor' },
-        { name: 'PANEL', point1: { x: 0, y: 0, z: 0 }, point2: { x: 10, y: 10, z: 10 }, type: 'panel' },
-        { name: 'CLEAT', point1: { x: 0, y: 0, z: 0 }, point2: { x: 10, y: 10, z: 10 }, type: 'cleat' }
-      ]
-
-      const generator = new StepGenerator(mixedBoxes)
-      const output = generator.generateBasicBlocks()
-
-      expect(output).toContain('SKID')
-      expect(output).toContain('FLOOR')
-      expect(output).toContain('PANEL')
-      expect(output).toContain('CLEAT')
-    })
+  it('converts inches to millimetres for coordinates', () => {
+    const output = generate([mockBoxes[0]])
+    expect(output).toContain('(254') // 10 inches in mm
+    expect(output).toContain('(127') // 5 inches in mm (center)
   })
 
-  describe('STEP file validation', () => {
-    it('should have matching entity references', () => {
-      const generator = new StepGenerator(mockBoxes)
-      const output = generator.generateBasicBlocks()
+  it('adds PMI properties when enabled', () => {
+    const output = generate(mockBoxes, { includePMI: true })
+    expect(output).toContain('overall_length_mm')
+    expect(output).toContain('overall_width_mm')
+    expect(output).toContain('overall_height_mm')
+    expect(output).toContain('CRATE_PMI_NOTE')
+  })
 
-      // Extract all entity references
-      const entityRefs = output.match(/#\d+/g) || []
-      const uniqueRefs = new Set(entityRefs)
+  it('skips PMI when disabled', () => {
+    const output = generate(mockBoxes, { includePMI: false })
+    expect(output).not.toContain('overall_length_mm')
+    expect(output).not.toContain('CRATE_PMI_NOTE')
+  })
 
-      // Each reference should appear at least once as a definition
-      entityRefs.forEach(ref => {
-        const pattern = new RegExp(`^${ref}=`, 'm')
-        if (!ref.includes('#11') && !ref.includes('#13') && !ref.includes('#14') && !ref.includes('#19')) {
-          expect(output).toMatch(pattern)
-        }
-      })
-    })
+  it('supports negative coordinates', () => {
+    const negativeBox: NXBox = {
+      name: 'NEGATIVE_BOX',
+      point1: { x: -10, y: -10, z: -10 },
+      point2: { x: 0, y: 0, z: 0 },
+      type: 'panel'
+    }
+    const output = generate([negativeBox])
+    expect(output).toContain("MANIFOLD_SOLID_BREP('panel'")
+    expect(output).toContain('-254') // -10 inches in mm
+  })
 
-    it('should generate sequential entity numbers', () => {
-      const generator = new StepGenerator([mockBoxes[0]])
-      const output = generator.generateBasicBlocks()
+  it('produces a valid file for an empty model', () => {
+    const output = generate([])
+    expect(output).toContain('ISO-10303-21')
+    expect(output).toContain('ENDSEC;')
+    expect(output.trim()).toMatch(/END-ISO-10303-21;$/)
+  })
 
-      // Check that entity numbers are sequential
-      const entityDefinitions = output.match(/^#(\d+)=/gm) || []
-      const numbers = entityDefinitions.map(def => parseInt(def.match(/\d+/)?.[0] || '0'))
-
-      for (let i = 1; i < numbers.length; i++) {
-        expect(numbers[i]).toBeGreaterThanOrEqual(numbers[i - 1])
-      }
-    })
+  it('generates monotonically increasing entity identifiers', () => {
+    const output = generate([mockBoxes[0]])
+    const entityDefinitions = output.match(/^#(\d+)=/gm) || []
+    const numbers = entityDefinitions.map(def => parseInt(def.replace(/[^0-9]/g, ''), 10))
+    for (let i = 1; i < numbers.length; i++) {
+      expect(numbers[i]).toBeGreaterThanOrEqual(numbers[i - 1])
+    }
   })
 })
