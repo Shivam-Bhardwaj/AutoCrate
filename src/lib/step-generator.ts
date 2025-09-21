@@ -122,6 +122,7 @@ export class StepGenerator {
   private readonly options: StepGenerationOptions
   private directions = new Map<DirectionKey, string>()
   private contexts!: StepContexts
+  private colorStyles = new Map<string, string>()
 
   constructor(boxes: NXBox[], options: StepGenerationOptions = {}) {
     this.boxes = boxes.filter(box => !box.suppressed)
@@ -132,6 +133,7 @@ export class StepGenerator {
     this.entityId = 1
     this.entities = []
     this.directions = new Map()
+    this.colorStyles = new Map()
   }
 
   private getNextId(): string {
@@ -224,7 +226,9 @@ export class StepGenerator {
   }
 
   private toSnakeCase(value: string): string {
-    return value
+    const cleaned = value.replace(/\\/g, '/').split('/').pop() || value
+    const withoutExt = cleaned.replace(/\.[^\.]+$/, '')
+    return withoutExt
       .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
       .replace(/[^A-Za-z0-9]+/g, '_')
       .replace(/_+/g, '_')
@@ -397,6 +401,46 @@ export class StepGenerator {
     }
     usedNames.set(candidate, 1)
     return candidate
+  }
+
+  private ensureColorStyle(colorHex?: string): string | null {
+    if (!colorHex) {
+      return null
+    }
+
+    let hex = colorHex.trim()
+    if (hex.startsWith('#')) {
+      hex = hex.slice(1)
+    }
+    if (hex.length !== 6) {
+      return null
+    }
+    const key = hex.toUpperCase()
+    if (this.colorStyles.has(key)) {
+      return this.colorStyles.get(key)!
+    }
+
+    const r = parseInt(key.slice(0, 2), 16) / 255
+    const g = parseInt(key.slice(2, 4), 16) / 255
+    const b = parseInt(key.slice(4, 6), 16) / 255
+
+    const colourId = this.addEntity(`COLOUR_RGB('',${r.toFixed(6)},${g.toFixed(6)},${b.toFixed(6)})`)
+    const fillColourId = this.addEntity(`FILL_AREA_STYLE_COLOUR('',${colourId})`)
+    const fillAreaId = this.addEntity(`FILL_AREA_STYLE('',(${fillColourId}))`)
+    const surfaceFillId = this.addEntity(`SURFACE_STYLE_FILL_AREA(${fillAreaId})`)
+    const surfaceUsageId = this.addEntity(`SURFACE_STYLE_USAGE(.BOTH.,${surfaceFillId})`)
+    const styleAssignmentId = this.addEntity(`PRESENTATION_STYLE_ASSIGNMENT((${surfaceUsageId}))`)
+
+    this.colorStyles.set(key, styleAssignmentId)
+    return styleAssignmentId
+  }
+
+  private applyColorStyle(solidId: string, colorHex?: string) {
+    const styleId = this.ensureColorStyle(colorHex)
+    if (!styleId) {
+      return
+    }
+    this.addEntity(`STYLED_ITEM('',(${styleId}),${solidId})`)
   }
 
   private ensureTopLevelAssembly(
@@ -678,6 +722,8 @@ export class StepGenerator {
       if (!solidResult) {
         continue
       }
+
+      this.applyColorStyle(solidResult.solidId, boxes[0].box.color)
 
       const escapedName = this.escape(aggregatedName)
       const product = this.createComponentProduct(aggregatedName)

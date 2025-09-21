@@ -795,6 +795,7 @@ export class NXGenerator {
                    '#D4A76A', // Lighter yellowish brown for splice cleats and horizontal splice cleats, consistent yellowish brown for all others
             type: 'cleat',
             suppressed: false, // Cleats are now visible
+            panelName: cleatLayout.panelName,
             metadata: `${cleat.type} cleat (${cleat.orientation}, ${cleat.length.toFixed(1)}" x ${cleatWidth}" x ${cleatThickness}")`
           })
         }
