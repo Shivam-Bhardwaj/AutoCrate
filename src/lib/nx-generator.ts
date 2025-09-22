@@ -6,6 +6,7 @@ import { PlywoodSplicer, PanelSpliceLayout } from './plywood-splicing'
 import { CleatCalculator, PanelCleatLayout } from './cleat-calculator'
 import { KlimpCalculator, KlimpLayout, CleatInfo } from './klimp-calculator'
 import { KlimpSTEPIntegration, KlimpInstance } from './klimp-step-integration'
+import { LagSTEPIntegration } from './lag-step-integration'
 
 export interface ProductDimensions {
   length: number  // Y-axis (front to back)
@@ -55,7 +56,7 @@ export interface NXBox {
   point1: Point3D
   point2: Point3D
   color?: string
-  type?: 'skid' | 'floor' | 'panel' | 'cleat' | 'plywood' | 'klimp'
+  type?: 'skid' | 'floor' | 'panel' | 'cleat' | 'plywood' | 'klimp' | 'hardware'
   suppressed?: boolean
   metadata?: string
   plywoodPieceIndex?: number  // For plywood pieces, track which piece (0-5)
@@ -69,6 +70,7 @@ export class NXGenerator {
   private panelCleatLayouts: PanelCleatLayout[] = []
   private klimpLayouts: KlimpLayout[] = []
   private klimpInstances: KlimpInstance[] = []
+  private lagScrewCount = 0
 
   constructor(private config: CrateConfig) {
     this.calculate()
@@ -518,6 +520,8 @@ export class NXGenerator {
   private calculate() {
     const { product, clearances, materials } = this.config
 
+    this.lagScrewCount = 0
+
     // Internal dimensions
     const internalWidth = product.width + (2 * clearances.side)
     const internalLength = product.length + (2 * clearances.end)
@@ -961,10 +965,91 @@ export class NXGenerator {
           })
         }
       }
+      if (cleatLayout.panelName === 'LEFT_END_PANEL' || cleatLayout.panelName === 'RIGHT_END_PANEL') {
+        this.addLagHardwareForSidePanel(
+          cleatLayout,
+          panelOriginX,
+          panelOriginY,
+          panelOriginZ
+        )
+      }
     }
 
     // Generate Klimp 3D boxes for front panel
     this.generateKlimpBoxes()
+
+    this.expressions.set('lag_screw_count', this.lagScrewCount)
+  }
+
+  private addLagHardwareForSidePanel(
+    cleatLayout: PanelCleatLayout,
+    panelOriginX: number,
+    panelOriginY: number,
+    panelOriginZ: number
+  ) {
+    const geometry = LagSTEPIntegration.getGeometry()
+    const stepPath = LagSTEPIntegration.getStepPath()
+    const epsilon = 0.01
+
+    const intermediateCleats = cleatLayout.cleats.filter(
+      cleat => cleat.type === 'intermediate' && cleat.orientation === 'vertical'
+    )
+
+    intermediateCleats.forEach(cleat => {
+      const headRadius = geometry.headDiameter / 2
+      const shankRadius = geometry.shankDiameter / 2
+
+      const centerX = panelOriginX + cleat.thickness / 2
+      const centerY = panelOriginY + cleat.x + (cleat.width / 2)
+
+      const headTopZ = panelOriginZ + cleat.y - epsilon
+      const headBottomZ = headTopZ - geometry.headHeight
+      const shankBottomZ = Math.max(0, headBottomZ - geometry.shankLength)
+
+      const baseName = `${cleat.id}_LAG`
+
+      // Lag head - rendered just below the cleat
+      this.boxes.push({
+        name: `${baseName}_HEAD`,
+        point1: {
+          x: centerX - headRadius,
+          y: centerY - headRadius,
+          z: headBottomZ
+        },
+        point2: {
+          x: centerX + headRadius,
+          y: centerY + headRadius,
+          z: headTopZ
+        },
+        color: '#6B7280',
+        type: 'hardware',
+        suppressed: false,
+        panelName: cleatLayout.panelName,
+        metadata: `Lag screw head (3/8\" x 2.5\") beneath ${cleat.id} - STEP: "${stepPath}"`
+      })
+
+      // Lag shank - extends downward from the head
+      this.boxes.push({
+        name: `${baseName}_SHAFT`,
+        point1: {
+          x: centerX - shankRadius,
+          y: centerY - shankRadius,
+          z: shankBottomZ
+        },
+        point2: {
+          x: centerX + shankRadius,
+          y: centerY + shankRadius,
+          z: headBottomZ
+        },
+        color: '#4B5563',
+        type: 'hardware',
+        suppressed: false,
+        panelName: cleatLayout.panelName,
+        metadata: `Lag screw shank (3/8\" x 2.5\") beneath ${cleat.id} - STEP: "${stepPath}"`
+      })
+
+      this.lagScrewCount += 1
+    })
   }
 
   private generateKlimpBoxes() {
@@ -1249,6 +1334,12 @@ export class NXGenerator {
     output += `# - Active instances: ${this.expressions.get('klimp_instances_active') || 0}\n`
     output += '# - STEP file: CAD FILES/Crate Spring Clamp.STEP\n'
     output += '# - Import the STEP file once, then pattern/position instances\n'
+    output += '# \n'
+    output += '# LAG SCREW INSTALLATION:\n'
+    output += '# - 3/8" x 2.50" lag hardware under each intermediate side cleat\n'
+    output += `# - Total lag screws: ${this.expressions.get('lag_screw_count') || 0}\n`
+    output += '# - STEP file: CAD FILES/LAG SCREW_0.38 X 2.50.stp\n'
+    output += '# - Import once and reuse at generated positions\n'
     output += '# \n'
 
     // Add marking instructions if configured

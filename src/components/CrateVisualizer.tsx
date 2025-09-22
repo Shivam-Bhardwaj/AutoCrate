@@ -338,6 +338,7 @@ function NXBoxMesh({
       case 'panel':
         return 'PLYWOOD'
       case 'klimp':
+      case 'hardware':
         return 'HARDWARE'
       default:
         return 'LUMBER'
@@ -426,11 +427,12 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
         const priority: { [key: string]: number } = {
           'skid': 1,
           'floor': 2,
-          'panel': 3,
-          'cleat': 4,
-          'plywood': 5,
-          'klimp': 6
-        }
+        'panel': 3,
+        'cleat': 4,
+        'plywood': 5,
+        'klimp': 6,
+        'hardware': 7
+      }
         const aPriority = priority[a.type || ''] || 6
         const bPriority = priority[b.type || ''] || 6
         return aPriority - bPriority
