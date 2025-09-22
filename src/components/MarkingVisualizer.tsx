@@ -86,7 +86,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [logoDims.width * scale, logoDims.height * scale],
             text: 'AMAT\nLOGO',
-            color: '#0066CC',
+            color: '#000000',
             fontSize: logoDims.height * scale * 0.3,
             partNumber: logoDims.partNumber
           })
@@ -133,7 +133,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [logoDims.width * scale, logoDims.height * scale],
             text: 'AMAT\nLOGO',
-            color: '#0066CC',
+            color: '#000000',
             fontSize: logoDims.height * scale * 0.3,
             rotation: [0, Math.PI, 0],
             partNumber: logoDims.partNumber
@@ -182,7 +182,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [logoDims.width * scale, logoDims.height * scale],
             text: 'AMAT\nLOGO',
-            color: '#0066CC',
+            color: '#000000',
             fontSize: logoDims.height * scale * 0.3,
             rotation: [0, -Math.PI/2, 0],
             partNumber: logoDims.partNumber
@@ -231,7 +231,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [logoDims.width * scale, logoDims.height * scale],
             text: 'AMAT\nLOGO',
-            color: '#0066CC',
+            color: '#000000',
             fontSize: logoDims.height * scale * 0.3,
             rotation: [0, Math.PI/2, 0],
             partNumber: logoDims.partNumber

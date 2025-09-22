@@ -60,7 +60,7 @@ function MeasurementLine({ start, end }: { start: THREE.Vector3; end: THREE.Vect
           itemSize={3}
         />
       </bufferGeometry>
-      <lineBasicMaterial color="#0066CC" linewidth={3} />
+      <lineBasicMaterial color="#000000" linewidth={3} />
     </line>
   )
 }
@@ -292,7 +292,7 @@ function NXBoxMesh({
         {/* Add edges based on showOutlines prop or for panels */}
         {(showOutlines || box.type === 'panel') && (
           <Edges
-            color={box.type === 'panel' ? '#4a4a4a' : '#666666'}
+            color='#000000'
             scale={1.001}
             linewidth={1}
           />
