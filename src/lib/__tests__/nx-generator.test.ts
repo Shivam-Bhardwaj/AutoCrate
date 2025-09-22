@@ -151,21 +151,17 @@ describe('NXGenerator', () => {
       .map((value, index) => ({ value, index }))
       .filter(({ value }) => Math.abs(value - gap) > 1e-3)
 
+    expect(extraGapIndices.length).toBeLessThanOrEqual(1)
+
     if (extraGapIndices.length === 0) {
-      gaps.forEach(value => expect(value).toBeCloseTo(gap, 3))
-    } else if (floorboards.length % 2 === 0) {
-      expect(extraGapIndices).toHaveLength(1)
-      const expectedIndex = Math.floor(gaps.length / 2)
+      gaps.forEach(value => expect(Math.abs(value - gap)).toBeLessThanOrEqual(1e-3))
+    } else {
+      const expectedIndex = customIndices.length === 1
+        ? centerIndex
+        : Math.max(0, centerIndex - 1)
       expect(extraGapIndices[0].index).toBe(expectedIndex)
       expect(extraGapIndices[0].value).toBeGreaterThan(gap)
-    } else {
-      expect(extraGapIndices).toHaveLength(2)
-      const expectedLeft = centerIndex - 1
-      const expectedRight = centerIndex
-      expect(extraGapIndices[0].index).toBe(expectedLeft)
-      expect(extraGapIndices[1].index).toBe(expectedRight)
-      expect(Math.abs(extraGapIndices[0].value - extraGapIndices[1].value)).toBeLessThan(1e-3)
-      expect(extraGapIndices[0].value).toBeGreaterThan(gap)
+      expect(extraGapIndices[0].value).toBeLessThan(2.5 + 1e-3)
     }
 
     if (customIndices.length === 1) {
@@ -180,15 +176,15 @@ describe('NXGenerator', () => {
     }
 
     const totalWidth = rawWidths.reduce((acc, value) => acc + value, 0)
-    const usedLength = totalWidth + gap * Math.max(0, floorboards.length - 1)
+    const totalGap = gaps.reduce((acc, value) => acc + value, 0)
+    const usedLength = totalWidth + totalGap
     const leftover = Number((internalLength - usedLength).toFixed(3))
-    expect(leftover).toBeGreaterThanOrEqual(-1e-3)
+    expect(Math.abs(leftover)).toBeLessThanOrEqual(1e-3)
 
-    if (customIndices.length === 0) {
-      const maxAllowable = (floorboards.length > 0 ? gap : 0) + 2.5
-      expect(leftover).toBeLessThan(maxAllowable + 1e-3)
+    if (extraGapIndices.length === 1) {
+      expect(Math.abs(extraGapIndices[0].value - totalGap)).toBeLessThan(1e-3)
     } else {
-      expect(leftover).toBeLessThan(gap + 1e-3)
+      expect(Math.abs(totalGap - gap)).toBeLessThanOrEqual(1e-3)
     }
   })
 

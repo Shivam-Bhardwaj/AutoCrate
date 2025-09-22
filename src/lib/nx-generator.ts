@@ -234,7 +234,7 @@ export class NXGenerator {
     }
 
     const unit = 0.125 // work in 1/8" increments to keep integers
-    const gapBetweenBoards = 0.125
+    const gapBetweenBoards = 0
     const gapUnits = Math.round(gapBetweenBoards / unit)
     const lengthUnits = Math.max(0, Math.round(internalLength / unit))
     const minCustomWidth = 2.5
@@ -431,7 +431,7 @@ export class NXGenerator {
       if (board.isCustom && !customBoard) {
         customBoard = { ...board }
       } else {
-        standardCenterBoards.push({ ...board, isCustom: board.isCustom })
+        standardCenterBoards.push({ ...board })
       }
     }
 
@@ -465,7 +465,7 @@ export class NXGenerator {
     }
 
     const gapCount = Math.max(0, orderedBoards.length - 1)
-    const gaps = new Array(gapCount).fill(gapBetweenBoards)
+    const gaps = new Array(gapCount).fill(0)
     const sumWidths = orderedBoards.reduce((acc, board) => acc + board.width, 0)
     const baseGapTotal = gapBetweenBoards * gapCount
     const usedLength = sumWidths + baseGapTotal
@@ -476,16 +476,13 @@ export class NXGenerator {
     }
 
     if (leftover > 0 && gapCount > 0) {
-      if (orderedBoards.length % 2 === 0) {
-        const middleIndex = Math.floor(gapCount / 2)
-        gaps[middleIndex] += leftover
+      let gapIndex: number
+      if (customBoard) {
+        gapIndex = Math.min(gapCount - 1, leftSequence.length)
       } else {
-        const rightIndex = gapCount / 2
-        const leftIndex = rightIndex - 1
-        const extra = leftover / 2
-        gaps[leftIndex] += extra
-        gaps[rightIndex] += extra
+        gapIndex = Math.min(gapCount - 1, Math.max(0, leftSequence.length - 1))
       }
+      gaps[gapIndex] += leftover
     }
 
     const layout: Array<{
@@ -561,7 +558,7 @@ export class NXGenerator {
     this.expressions.set('floorboard_width', floorboardDims.width)
     this.expressions.set('floorboard_thickness', floorboardDims.thickness)
     this.expressions.set('floorboard_length', internalWidth)
-    this.expressions.set('floorboard_gap', 0.125)
+    this.expressions.set('floorboard_gap', 0)
     this.expressions.set('floorboard_count', this.getFloorboardCount())
 
     this.expressions.set('overall_width', overallWidth)
