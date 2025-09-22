@@ -113,7 +113,9 @@ function CameraResetter({
 
     const center = min.clone().add(max).multiplyScalar(0.5)
     const radius = center.distanceTo(max)
-    const fov = THREE.MathUtils.degToRad(camera.fov)
+    const isPerspective = (camera as THREE.PerspectiveCamera).isPerspectiveCamera
+    const perspectiveCamera = camera as THREE.PerspectiveCamera
+    const fov = isPerspective ? THREE.MathUtils.degToRad(perspectiveCamera.fov) : THREE.MathUtils.degToRad(45)
     const aspect = size.height === 0 ? 1 : size.width / size.height
     const horizontalFov = 2 * Math.atan(Math.tan(fov / 2) * aspect)
     const padding = 1.3
