@@ -1,10 +1,11 @@
 'use client'
 
-import { Canvas, ThreeEvent } from '@react-three/fiber'
-import { OrbitControls, Box, Grid, Text, Html, Edges, Plane, useGLTF, Clone } from '@react-three/drei'
+import { Canvas, ThreeEvent, useThree } from '@react-three/fiber'
+import { OrbitControls, Box, Text, Html, Edges, Plane, useGLTF, Clone } from '@react-three/drei'
 import { NXBox, NXGenerator } from '@/lib/nx-generator'
-import { Suspense, useState, useRef, useEffect, useMemo } from 'react'
+import { Suspense, useState, useRef, useEffect, useMemo, useCallback, type MutableRefObject } from 'react'
 import * as THREE from 'three'
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { MarkingVisualizer } from './MarkingVisualizer'
 
 interface CrateVisualizerProps {
@@ -63,6 +64,84 @@ function MeasurementLine({ start, end }: { start: THREE.Vector3; end: THREE.Vect
       <lineBasicMaterial color="#000000" linewidth={3} />
     </line>
   )
+}
+
+function CameraResetter({
+  boxes,
+  resetTrigger,
+  controlsRef,
+  onTargetChange
+}: {
+  boxes: NXBox[];
+  resetTrigger: number;
+  controlsRef: MutableRefObject<OrbitControlsImpl | null>;
+  onTargetChange: (target: [number, number, number]) => void;
+}) {
+  const { camera, size } = useThree()
+
+  useEffect(() => {
+    if (resetTrigger === 0 || boxes.length === 0) return
+
+    const scale = 0.1
+    const min = new THREE.Vector3(Infinity, Infinity, Infinity)
+    const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity)
+
+    boxes.forEach(box => {
+      const xValues = [box.point1.x, box.point2.x]
+      const yValues = [box.point1.y, box.point2.y]
+      const zValues = [box.point1.z, box.point2.z]
+
+      const boxMinX = Math.min(...xValues) * scale
+      const boxMaxX = Math.max(...xValues) * scale
+      const boxMinY = Math.min(...zValues) * scale
+      const boxMaxY = Math.max(...zValues) * scale
+      const boxSceneZValues = yValues.map(value => -value * scale)
+      const boxMinZ = Math.min(...boxSceneZValues)
+      const boxMaxZ = Math.max(...boxSceneZValues)
+
+      min.x = Math.min(min.x, boxMinX)
+      min.y = Math.min(min.y, boxMinY)
+      min.z = Math.min(min.z, boxMinZ)
+      max.x = Math.max(max.x, boxMaxX)
+      max.y = Math.max(max.y, boxMaxY)
+      max.z = Math.max(max.z, boxMaxZ)
+    })
+
+    if (!Number.isFinite(min.x) || !Number.isFinite(min.y) || !Number.isFinite(min.z)) {
+      return
+    }
+
+    const center = min.clone().add(max).multiplyScalar(0.5)
+    const radius = center.distanceTo(max)
+    const fov = THREE.MathUtils.degToRad(camera.fov)
+    const aspect = size.height === 0 ? 1 : size.width / size.height
+    const horizontalFov = 2 * Math.atan(Math.tan(fov / 2) * aspect)
+    const padding = 1.3
+    const minDistance = 5
+
+    const verticalDenominator = Math.sin(fov / 2) || 0.0001
+    const horizontalDenominator = Math.sin(horizontalFov / 2) || 0.0001
+
+    const verticalDistance = radius === 0 ? minDistance : radius / verticalDenominator
+    const horizontalDistance = radius === 0 ? minDistance : radius / horizontalDenominator
+
+    const distance = Math.max(verticalDistance, horizontalDistance, minDistance) * padding
+    const direction = new THREE.Vector3(1, 1, 1).normalize()
+    const newPosition = center.clone().add(direction.multiplyScalar(distance))
+
+    camera.position.copy(newPosition)
+    camera.lookAt(center)
+    camera.updateProjectionMatrix()
+
+    if (controlsRef.current) {
+      controlsRef.current.target.copy(center)
+      controlsRef.current.update()
+    }
+
+    onTargetChange([center.x, center.y, center.z])
+  }, [boxes, resetTrigger, camera, size, controlsRef, onTargetChange])
+
+  return null
 }
 
 // Component to render a highlighted face plane
@@ -327,25 +406,36 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
   const [selectedPlanes, setSelectedPlanes] = useState<SelectedPlane[]>([])
   const [measurementDistance, setMeasurementDistance] = useState<number | null>(null)
   const [selectionError, setSelectionError] = useState<string | null>(null)
+  const [resetCameraTrigger, setResetCameraTrigger] = useState(0)
+  const [controlTarget, setControlTarget] = useState<[number, number, number]>([0, 3, 0])
+  const controlsRef = useRef<OrbitControlsImpl | null>(null)
   const highlightColors = ['#00FF00', '#008CFF']
+
+  const clearSelections = useCallback(() => {
+    setSelectedPlanes([])
+    setMeasurementDistance(null)
+    setSelectionError(null)
+  }, [])
 
   // Filter out suppressed components and user-hidden components, then sort by render priority
   // Render order: skids first, then floorboards, then panels (so panels get hover priority)
-  const visibleBoxes = boxes
-    .filter(box => !box.suppressed && !hiddenComponents.has(box.name))
-    .sort((a, b) => {
-      const priority: { [key: string]: number } = {
-        'skid': 1,
-        'floor': 2,
-        'panel': 3,
-        'cleat': 4,
-        'plywood': 5,
-        'klimp': 6
-      }
-      const aPriority = priority[a.type || ''] || 6
-      const bPriority = priority[b.type || ''] || 6
-      return aPriority - bPriority
-    })
+  const visibleBoxes = useMemo(() => (
+    boxes
+      .filter(box => !box.suppressed && !hiddenComponents.has(box.name))
+      .sort((a, b) => {
+        const priority: { [key: string]: number } = {
+          'skid': 1,
+          'floor': 2,
+          'panel': 3,
+          'cleat': 4,
+          'plywood': 5,
+          'klimp': 6
+        }
+        const aPriority = priority[a.type || ''] || 6
+        const bPriority = priority[b.type || ''] || 6
+        return aPriority - bPriority
+      })
+  ), [boxes, hiddenComponents])
 
   const handleHideComponent = (boxName: string) => {
     setHiddenComponents(prev => {
@@ -366,6 +456,29 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
   const handleShowAll = () => {
     setHiddenComponents(new Set())
   }
+
+  useEffect(() => {
+    if (!controlsRef.current) return
+    controlsRef.current.target.set(controlTarget[0], controlTarget[1], controlTarget[2])
+    controlsRef.current.update()
+  }, [controlTarget])
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setHiddenComponents(new Set())
+        setShowHiddenList(false)
+        clearSelections()
+        setResetCameraTrigger(prev => prev + 1)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [clearSelections])
 
   // Handle plane selection
   const handlePlaneClick = (plane: SelectedPlane) => {
@@ -413,13 +526,6 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
     })
   }
 
-  // Clear selections
-  const clearSelections = () => {
-    setSelectedPlanes([])
-    setMeasurementDistance(null)
-    setSelectionError(null)
-  }
-
   // Prevent default context menu on canvas
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
@@ -442,6 +548,12 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
         }}
       >
         <Suspense fallback={null}>
+          <CameraResetter
+            boxes={visibleBoxes}
+            resetTrigger={resetCameraTrigger}
+            controlsRef={controlsRef}
+            onTargetChange={setControlTarget}
+          />
           {/* Lighting */}
           <ambientLight intensity={0.5} />
           <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
@@ -555,12 +667,13 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
 
           {/* Controls */}
           <OrbitControls
+            ref={controlsRef}
             enablePan={true}
             enableZoom={true}
             enableRotate={true}
             maxDistance={50}
             minDistance={2}
-            target={[0, 3, 0]}
+            target={controlTarget}
           />
         </Suspense>
       </Canvas>
@@ -648,7 +761,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
 
       {/* Instructions */}
       <div className="absolute bottom-2 left-2 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded px-2 py-1">
-        Click faces to measure • Right-click to hide component
+        Click faces to measure • Right-click to hide component • Esc to reset view
       </div>
     </div>
   )
