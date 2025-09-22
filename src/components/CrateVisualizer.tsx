@@ -67,16 +67,16 @@ function MeasurementLine({ start, end }: { start: THREE.Vector3; end: THREE.Vect
 
 // Component to render a highlighted face plane
 function HighlightedFace({ plane, color }: { plane: SelectedPlane; color: string }) {
-  const { center, size, normal } = plane
+  const { position: faceCenter, size, normal } = plane
   const scale = 0.1
 
   // Determine plane dimensions and rotation based on normal
   let planeArgs: [number, number] = [1, 1]
   let rotation = new THREE.Euler(0, 0, 0)
-  let position = center.clone()
+  const position = faceCenter.clone()
 
   // Adjust position to be on the surface of the box
-  const offset = 0.001 // Small offset to prevent z-fighting
+  const offset = 0.02 // Offset far enough to be clearly visible above surface
 
   if (Math.abs(normal.x) > 0.9) {
     // X-facing plane (YZ plane)
