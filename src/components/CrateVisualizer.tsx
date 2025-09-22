@@ -66,7 +66,7 @@ function MeasurementLine({ start, end }: { start: THREE.Vector3; end: THREE.Vect
 }
 
 // Component to render a highlighted face plane
-function HighlightedFace({ plane }: { plane: SelectedPlane }) {
+function HighlightedFace({ plane, color }: { plane: SelectedPlane; color: string }) {
   const { center, size, normal } = plane
   const scale = 0.1
 
@@ -102,7 +102,7 @@ function HighlightedFace({ plane }: { plane: SelectedPlane }) {
       rotation={rotation}
     >
       <meshBasicMaterial
-        color="#FFD700"
+        color={color}
         opacity={0.5}
         transparent
         side={THREE.DoubleSide}
@@ -326,6 +326,8 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
   const [showHiddenList, setShowHiddenList] = useState(false)
   const [selectedPlanes, setSelectedPlanes] = useState<SelectedPlane[]>([])
   const [measurementDistance, setMeasurementDistance] = useState<number | null>(null)
+  const [selectionError, setSelectionError] = useState<string | null>(null)
+  const highlightColors = ['#00FF00', '#008CFF']
 
   // Filter out suppressed components and user-hidden components, then sort by render priority
   // Render order: skids first, then floorboards, then panels (so panels get hover priority)
@@ -368,49 +370,46 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
   // Handle plane selection
   const handlePlaneClick = (plane: SelectedPlane) => {
     setSelectedPlanes(prev => {
-      // Check if this plane is already selected
       const existingIndex = prev.findIndex(p =>
         p.boxName === plane.boxName && p.faceIndex === plane.faceIndex
       )
 
       if (existingIndex >= 0) {
-        // Deselect if clicking same plane
-        const newSelection = prev.filter((_, i) => i !== existingIndex)
+        const updatedSelection = prev.filter((_, i) => i !== existingIndex)
         setMeasurementDistance(null)
-        return newSelection
+        setSelectionError(null)
+        return updatedSelection
       }
 
-      // Add new plane
-      let newSelection = [...prev, plane]
+      const candidateSelection = [...prev, plane]
+      const trimmedSelection = candidateSelection.slice(-2)
 
-      // Keep only last 2 selections
-      if (newSelection.length > 2) {
-        newSelection = newSelection.slice(-2)
+      if (trimmedSelection.length < 2) {
+        setMeasurementDistance(null)
+        setSelectionError(null)
+        return trimmedSelection
       }
 
-      // Check if we have two parallel planes
-      if (newSelection.length === 2) {
-        const [plane1, plane2] = newSelection
+      const [firstPlane, secondPlane] = trimmedSelection
+      const normalizedFirst = firstPlane.normal.clone().normalize()
+      const normalizedSecond = secondPlane.normal.clone().normalize()
+      const dotProduct = Math.abs(normalizedFirst.dot(normalizedSecond))
+      const isParallel = dotProduct > 0.99
 
-        // Check if planes are parallel (normals are parallel)
-        const dotProduct = Math.abs(plane1.normal.dot(plane2.normal))
-
-        // Planes are parallel if dot product is close to 1 (same direction) or -1 (opposite direction)
-        if (Math.abs(dotProduct) > 0.99) {
-          // Calculate distance between parallel planes
-          // Distance is the projection of the vector between centers onto the normal
-          const centerDiff = plane2.position.clone().sub(plane1.position)
-          const distance = Math.abs(centerDiff.dot(plane1.normal)) / 0.1 // Convert back to inches
-          setMeasurementDistance(distance)
-        } else {
-          // Not parallel
+      if (!isParallel) {
+        setSelectionError('Selected faces must be parallel')
+        if (prev.length < 2) {
           setMeasurementDistance(null)
         }
-      } else {
-        setMeasurementDistance(null)
+        return prev
       }
 
-      return newSelection
+      const centerDiff = secondPlane.position.clone().sub(firstPlane.position)
+      const distance = Math.abs(centerDiff.dot(normalizedFirst)) / 0.1
+      setMeasurementDistance(distance)
+      setSelectionError(null)
+
+      return trimmedSelection
     })
   }
 
@@ -418,6 +417,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
   const clearSelections = () => {
     setSelectedPlanes([])
     setMeasurementDistance(null)
+    setSelectionError(null)
   }
 
   // Prevent default context menu on canvas
@@ -521,7 +521,11 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
 
           {/* Render selected face planes */}
           {selectedPlanes.map((plane, index) => (
-            <HighlightedFace key={`plane-${index}`} plane={plane} />
+            <HighlightedFace
+              key={`plane-${index}`}
+              plane={plane}
+              color={highlightColors[index] ?? '#00FF00'}
+            />
           ))}
 
           {/* Render measurement line between parallel planes */}
@@ -620,9 +624,13 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
               </div>
             ))}
             <div className="pt-1 border-t border-gray-300 dark:border-gray-600">
-              {selectedPlanes.length === 1 && 'Select another plane to measure'}
-              {selectedPlanes.length === 2 && measurementDistance === null && 'Selected planes are not parallel'}
-              {selectedPlanes.length === 2 && measurementDistance !== null && (
+              {selectionError && (
+                <span className="font-semibold text-red-600 dark:text-red-400">
+                  {selectionError}
+                </span>
+              )}
+              {!selectionError && selectedPlanes.length === 1 && 'Select another plane to measure'}
+              {!selectionError && selectedPlanes.length === 2 && measurementDistance !== null && (
                 <span className="font-bold text-blue-600 dark:text-blue-400">
                   Distance: {toNearest16th(measurementDistance)}
                 </span>
