@@ -214,136 +214,164 @@ export class NXGenerator {
   private getFloorboardLayout() {
     const internalLength = this.config.product.length + (2 * this.config.clearances.end)
     const availableLumber = this.config.materials.availableLumber || ['2x6', '2x8', '2x10', '2x12']
-    const panelThickness = this.config.materials.panelThickness
+    const panelThickness = this.config.materials.panelThickness ?? 1
 
-    // Define all lumber options with their properties
-    const lumberOptions = [
+    type LumberOption = { nominal: string; width: number; thickness: number }
+
+    const lumberOptions: LumberOption[] = [
       { nominal: '2x6', width: 5.5, thickness: 1.5 },
       { nominal: '2x8', width: 7.25, thickness: 1.5 },
       { nominal: '2x10', width: 9.25, thickness: 1.5 },
       { nominal: '2x12', width: 11.25, thickness: 1.5 }
-    ] as const
+    ]
 
-    // Filter by available lumber sizes and sort by width (largest first for outside placement)
     const availableOptions = lumberOptions
       .filter(option => availableLumber.includes(option.nominal as '2x6' | '2x8' | '2x10' | '2x12'))
-      .sort((a, b) => b.width - a.width) // Largest first
+      .sort((a, b) => b.width - a.width)
 
-    // If no available lumber, fallback to 2x6
     if (availableOptions.length === 0) {
       availableOptions.push({ nominal: '2x6', width: 5.5, thickness: 1.5 })
     }
 
+    const unit = 0.125 // work in 1/8" increments to keep integers
+    const gapBetweenBoards = 0.125
+    const gapUnits = Math.round(gapBetweenBoards / unit)
+    const lengthUnits = Math.max(0, Math.round(internalLength / unit))
+    const minCustomWidth = 2.5
+    const maxCustomWidth = 5.5
+    const minCustomUnits = Math.round(minCustomWidth / unit)
+    const maxCustomUnits = Math.round(maxCustomWidth / unit)
     const maxBoards = 40
-    const gapBetweenBoards = 0.125 // 1/8" gap between boards
 
-    type FloorboardOption = { nominal: string; width: number; thickness: number }
+    const boardOptions = availableOptions.map(option => ({
+      nominal: option.nominal,
+      width: option.width,
+      widthUnits: Math.round(option.width / unit),
+      thickness: option.thickness
+    }))
 
-    const leftBoards: FloorboardOption[] = []
-    const rightBoards: FloorboardOption[] = []
-    let centerBoard: FloorboardOption | null = null
-    let customBoardWidth: number | null = null
-
-    const smallestOption = availableOptions[availableOptions.length - 1]
     const standardThickness = availableOptions[0]?.thickness || 1.5
 
-    let sumWidths = 0
-    let boardCount = 0
+    let bestUsedUnits = -Infinity
+    let bestCounts: number[] = new Array(boardOptions.length).fill(0)
+    let bestBoardTotal = 0
+    let bestCustomUnits: number | null = null
 
-    const totalUsed = (widthSum: number, count: number) => {
-      return widthSum + Math.max(0, count - 1) * gapBetweenBoards
-    }
+    const counts = new Array(boardOptions.length).fill(0)
 
-    const tryAddPair = (option: FloorboardOption) => {
-      if (boardCount + 2 > maxBoards) return false
-
-      const newSum = sumWidths + 2 * option.width
-      const newCount = boardCount + 2
-
-      if (totalUsed(newSum, newCount) > internalLength + 1e-6) {
-        return false
+    const updateBest = (usedUnits: number, totalBoards: number, customUnits: number | null) => {
+      if (usedUnits > lengthUnits + 1e-6) {
+        return
       }
 
-      leftBoards.push({ ...option })
-      rightBoards.push({ ...option })
-      sumWidths = newSum
-      boardCount = newCount
-      return true
-    }
-
-    const tryAddSingle = (option: FloorboardOption) => {
-      if (centerBoard || boardCount + 1 > maxBoards) return false
-
-      const newSum = sumWidths + option.width
-      const newCount = boardCount + 1
-
-      if (totalUsed(newSum, newCount) > internalLength + 1e-6) {
-        return false
-      }
-
-      centerBoard = { ...option }
-      sumWidths = newSum
-      boardCount = newCount
-      return true
-    }
-
-    let optionIndex = 0
-    const lastOptionIndex = availableOptions.length - 1
-
-    while (boardCount < maxBoards) {
-      const option = availableOptions[Math.min(optionIndex, lastOptionIndex)]
-
-      if (tryAddPair(option)) {
-        if (optionIndex < lastOptionIndex) {
-          optionIndex++
+      const preferWiderBoards = () => {
+        for (let i = 0; i < counts.length; i++) {
+          if (counts[i] !== bestCounts[i]) {
+            return counts[i] > bestCounts[i]
+          }
         }
-        continue
+        if (customUnits !== bestCustomUnits) {
+          return (customUnits ?? 0) > (bestCustomUnits ?? 0)
+        }
+        return false
       }
 
-      if (optionIndex < lastOptionIndex) {
-        optionIndex++
-        continue
-      }
+      const isBetter = (
+        usedUnits > bestUsedUnits + 1e-6 ||
+        (Math.abs(usedUnits - bestUsedUnits) <= 1e-6 && (
+          totalBoards < bestBoardTotal ||
+          (totalBoards === bestBoardTotal && preferWiderBoards())
+        ))
+      )
 
-      // Could not add another pair of the narrowest board; try a single center board
-      tryAddSingle(option)
-      break
-    }
-
-    // Determine if a custom board is needed for the last sliver (< 2x6 width)
-    const availableForCustom = internalLength - sumWidths - boardCount * gapBetweenBoards
-
-    if (availableForCustom >= 0.25 && boardCount < maxBoards) {
-      let roundedWidth = Math.round(availableForCustom * 4) / 4
-      if (roundedWidth > availableForCustom) {
-        roundedWidth -= 0.25
-      }
-
-      roundedWidth = parseFloat(Math.max(0, roundedWidth).toFixed(3))
-
-      if (roundedWidth >= 0.25 - 1e-6) {
-        customBoardWidth = roundedWidth
-        sumWidths += customBoardWidth
-        boardCount += 1
+      if (isBetter) {
+        bestUsedUnits = usedUnits
+        bestBoardTotal = totalBoards
+        bestCustomUnits = customUnits
+        bestCounts = counts.slice()
       }
     }
 
-    const orderedBoards: Array<FloorboardOption & { isCustom?: boolean }> = []
+    const evaluateCombination = (sumWidthUnits: number, totalBoards: number) => {
+      if (totalBoards > maxBoards) {
+        return
+      }
 
-    for (const board of leftBoards) {
-      orderedBoards.push(board)
+      const usedStandardUnits = sumWidthUnits + (totalBoards > 0 ? (totalBoards - 1) * gapUnits : 0)
+      updateBest(usedStandardUnits, totalBoards, null)
+
+      if (totalBoards >= maxBoards) {
+        return
+      }
+
+      const gapForCustom = totalBoards > 0 ? gapUnits : 0
+      let availableUnits = lengthUnits - usedStandardUnits - gapForCustom
+
+      if (availableUnits < minCustomUnits) {
+        return
+      }
+
+      availableUnits = Math.max(0, Math.min(availableUnits, maxCustomUnits))
+      let customUnits = Math.floor(availableUnits / 2) * 2 // enforce 0.25" increments
+
+      while (customUnits >= minCustomUnits && customUnits > lengthUnits - usedStandardUnits - gapForCustom) {
+        customUnits -= 2
+      }
+
+      if (customUnits >= minCustomUnits) {
+        const totalUsed = usedStandardUnits + gapForCustom + customUnits
+        updateBest(totalUsed, totalBoards + 1, customUnits)
+      }
     }
 
-    if (centerBoard) {
-      orderedBoards.push(centerBoard)
+    const search = (index: number, totalBoards: number, sumWidthUnits: number) => {
+      if (index === boardOptions.length) {
+        evaluateCombination(sumWidthUnits, totalBoards)
+        return
+      }
+
+      const option = boardOptions[index]
+      const remainingSlots = maxBoards - totalBoards
+
+      for (let count = 0; count <= remainingSlots; count++) {
+        counts[index] = count
+        const newTotalBoards = totalBoards + count
+        const newSumWidthUnits = sumWidthUnits + count * option.widthUnits
+        const usedUnits = newSumWidthUnits + (newTotalBoards > 0 ? (newTotalBoards - 1) * gapUnits : 0)
+
+        if (usedUnits > lengthUnits + 1e-6) {
+          break
+        }
+
+        search(index + 1, newTotalBoards, newSumWidthUnits)
+      }
+
+      counts[index] = 0
     }
 
-    if (customBoardWidth) {
-      orderedBoards.push({ nominal: 'CUSTOM', width: customBoardWidth, thickness: standardThickness, isCustom: true })
+    search(0, 0, 0)
+
+    const orderedBoards: Array<{ nominal: string; width: number; thickness: number; isCustom?: boolean }> = []
+
+    for (let i = 0; i < boardOptions.length; i++) {
+      const option = boardOptions[i]
+      for (let count = 0; count < bestCounts[i]; count++) {
+        orderedBoards.push({
+          nominal: option.nominal,
+          width: option.width,
+          thickness: option.thickness
+        })
+      }
     }
 
-    for (let i = rightBoards.length - 1; i >= 0; i--) {
-      orderedBoards.push(rightBoards[i])
+    if (bestCustomUnits !== null) {
+      const customWidth = Number((bestCustomUnits * unit).toFixed(3))
+      orderedBoards.push({
+        nominal: 'CUSTOM',
+        width: customWidth,
+        thickness: standardThickness,
+        isCustom: true
+      })
     }
 
     const layout: Array<{

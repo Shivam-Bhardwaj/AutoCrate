@@ -86,7 +86,7 @@ describe('NXGenerator', () => {
     expect(exported).toContain('pattern_spacing')
   })
 
-  it('lays out floorboards from widest edges to narrowest center with a single custom infill', () => {
+  it('lays out floorboards from widest to narrowest with a single custom infill when needed', () => {
     const generator = new NXGenerator(buildConfig())
 
     const floorboards = generator
@@ -97,32 +97,49 @@ describe('NXGenerator', () => {
     expect(floorboards.length).toBeGreaterThan(0)
 
     const widths = floorboards.map(board => Number((board.point2.y - board.point1.y).toFixed(3)))
+    const rawWidths = floorboards.map(board => board.point2.y - board.point1.y)
     const customIndices = floorboards
       .map((board, index) => ({ index, isCustom: board.metadata?.includes('CUSTOM CUT') }))
       .filter(entry => entry.isCustom)
       .map(entry => entry.index)
 
-    expect(customIndices.length).toBe(1)
+    expect(customIndices.length).toBeLessThanOrEqual(1)
 
-    const customIndex = customIndices[0]
-    const customWidth = widths[customIndex]
-
-    // Boards should get narrower as we walk from the edge toward the custom infill
-    let previousWidth = widths[0]
-    for (let i = 1; i <= customIndex; i++) {
-      expect(widths[i]).toBeLessThanOrEqual(previousWidth + 1e-3)
-      previousWidth = widths[i]
+    // Widths should be non-increasing from front to back (widest to narrowest)
+    for (let i = 1; i < widths.length; i++) {
+      expect(widths[i]).toBeLessThanOrEqual(widths[i - 1] + 1e-3)
     }
 
-    // Custom infill should be narrower than a 2x6 (5.5" actual width)
-    expect(customWidth).toBeLessThan(5.5 + 1e-3)
+    const expressions = generator.getExpressions()
+    const internalLength = expressions.get('internal_length') || 0
+    const gap = expressions.get('floorboard_gap') || 0
 
-    // Symmetry check: mirror widths across the center ignoring the custom board
-    for (let i = 0; i < floorboards.length; i++) {
-      const mirrorIndex = floorboards.length - 1 - i
-      if (i >= mirrorIndex) break
-      if (i === customIndex || mirrorIndex === customIndex) continue
-      expect(widths[i]).toBeCloseTo(widths[mirrorIndex], 3)
+    // Boards should be separated by the configured gap and flush otherwise
+    for (let i = 1; i < floorboards.length; i++) {
+      const previous = floorboards[i - 1]
+      const current = floorboards[i]
+      const measuredGap = Number((current.point1.y - previous.point2.y).toFixed(3))
+      expect(measuredGap).toBeCloseTo(gap, 3)
+    }
+
+    if (customIndices.length === 1) {
+      const customWidth = widths[customIndices[0]]
+      expect(customWidth).toBeGreaterThanOrEqual(2.5 - 1e-3)
+      expect(customWidth).toBeLessThanOrEqual(5.5 + 1e-3)
+      const roundedToQuarter = Math.round(customWidth * 4) / 4
+      expect(Math.abs(roundedToQuarter - customWidth)).toBeLessThan(1e-3)
+    }
+
+    const totalWidth = rawWidths.reduce((acc, value) => acc + value, 0)
+    const usedLength = totalWidth + gap * Math.max(0, floorboards.length - 1)
+    const leftover = Number((internalLength - usedLength).toFixed(3))
+    expect(leftover).toBeGreaterThanOrEqual(-1e-3)
+
+    if (customIndices.length === 0) {
+      const maxAllowable = (floorboards.length > 0 ? gap : 0) + 2.5
+      expect(leftover).toBeLessThan(maxAllowable + 1e-3)
+    } else {
+      expect(leftover).toBeLessThan(gap + 1e-3)
     }
   })
 
