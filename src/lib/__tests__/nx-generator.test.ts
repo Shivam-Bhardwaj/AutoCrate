@@ -105,27 +105,76 @@ describe('NXGenerator', () => {
 
     expect(customIndices.length).toBeLessThanOrEqual(1)
 
-    // Widths should be non-increasing from front to back (widest to narrowest)
-    for (let i = 1; i < widths.length; i++) {
-      expect(widths[i]).toBeLessThanOrEqual(widths[i - 1] + 1e-3)
-    }
-
     const expressions = generator.getExpressions()
     const internalLength = expressions.get('internal_length') || 0
     const gap = expressions.get('floorboard_gap') || 0
+    const panelThickness = expressions.get('panel_thickness') || 0
+    const centerIndex = Math.floor(floorboards.length / 2)
 
-    // Boards should be separated by the configured gap and flush otherwise
+    const leftWidths = widths.slice(0, centerIndex)
+    const rightWidths = widths.slice(-centerIndex).reverse()
+
+    for (let i = 1; i < leftWidths.length; i++) {
+      expect(leftWidths[i]).toBeLessThanOrEqual(leftWidths[i - 1] + 1e-3)
+    }
+
+    for (let i = 1; i < rightWidths.length; i++) {
+      expect(rightWidths[i]).toBeLessThanOrEqual(rightWidths[i - 1] + 1e-3)
+    }
+
+    if (centerIndex > 0 && floorboards.length % 2 === 1) {
+      expect(widths[centerIndex]).toBeLessThanOrEqual(widths[centerIndex - 1] + 1e-3)
+      expect(widths[centerIndex]).toBeLessThanOrEqual(rightWidths[rightWidths.length - 1] + 1e-3)
+    }
+
+    const startDelta = Number((floorboards[0].point1.y - panelThickness).toFixed(3))
+    expect(startDelta).toBeCloseTo(0, 3)
+    const endDelta = Number((panelThickness + internalLength - floorboards[floorboards.length - 1].point2.y).toFixed(3))
+    expect(endDelta).toBeCloseTo(0, 3)
+
+    for (let i = 0; i < Math.floor(floorboards.length / 2); i++) {
+      const front = floorboards[i]
+      const back = floorboards[floorboards.length - 1 - i]
+      const frontOffset = Number((front.point1.y - panelThickness).toFixed(3))
+      const backOffset = Number(((panelThickness + internalLength) - back.point2.y).toFixed(3))
+      expect(frontOffset).toBeCloseTo(backOffset, 3)
+    }
+
+    const gaps = [] as number[]
     for (let i = 1; i < floorboards.length; i++) {
       const previous = floorboards[i - 1]
       const current = floorboards[i]
-      const measuredGap = Number((current.point1.y - previous.point2.y).toFixed(3))
-      expect(measuredGap).toBeCloseTo(gap, 3)
+      gaps.push(Number((current.point1.y - previous.point2.y).toFixed(3)))
+    }
+
+    const extraGapIndices = gaps
+      .map((value, index) => ({ value, index }))
+      .filter(({ value }) => Math.abs(value - gap) > 1e-3)
+
+    if (extraGapIndices.length === 0) {
+      gaps.forEach(value => expect(value).toBeCloseTo(gap, 3))
+    } else if (floorboards.length % 2 === 0) {
+      expect(extraGapIndices).toHaveLength(1)
+      const expectedIndex = Math.floor(gaps.length / 2)
+      expect(extraGapIndices[0].index).toBe(expectedIndex)
+      expect(extraGapIndices[0].value).toBeGreaterThan(gap)
+    } else {
+      expect(extraGapIndices).toHaveLength(2)
+      const expectedLeft = centerIndex - 1
+      const expectedRight = centerIndex
+      expect(extraGapIndices[0].index).toBe(expectedLeft)
+      expect(extraGapIndices[1].index).toBe(expectedRight)
+      expect(Math.abs(extraGapIndices[0].value - extraGapIndices[1].value)).toBeLessThan(1e-3)
+      expect(extraGapIndices[0].value).toBeGreaterThan(gap)
     }
 
     if (customIndices.length === 1) {
+      expect(customIndices[0]).toBe(centerIndex)
       const customWidth = widths[customIndices[0]]
+      const standardWidths = widths.filter((_, idx) => idx !== customIndices[0])
+      const smallestStandard = standardWidths.length > 0 ? Math.min(...standardWidths) : customWidth
       expect(customWidth).toBeGreaterThanOrEqual(2.5 - 1e-3)
-      expect(customWidth).toBeLessThanOrEqual(5.5 + 1e-3)
+      expect(customWidth).toBeLessThanOrEqual(smallestStandard + 1e-3)
       const roundedToQuarter = Math.round(customWidth * 4) / 4
       expect(Math.abs(roundedToQuarter - customWidth)).toBeLessThan(1e-3)
     }

@@ -238,7 +238,8 @@ export class NXGenerator {
     const gapUnits = Math.round(gapBetweenBoards / unit)
     const lengthUnits = Math.max(0, Math.round(internalLength / unit))
     const minCustomWidth = 2.5
-    const maxCustomWidth = 5.5
+    const smallestAvailableWidth = availableOptions.reduce((min, option) => Math.min(min, option.width), availableOptions[0].width)
+    const maxCustomWidth = Math.max(minCustomWidth, smallestAvailableWidth)
     const minCustomUnits = Math.round(minCustomWidth / unit)
     const maxCustomUnits = Math.round(maxCustomWidth / unit)
     const maxBoards = 40
@@ -251,6 +252,37 @@ export class NXGenerator {
     }))
 
     const standardThickness = availableOptions[0]?.thickness || 1.5
+    const tolerance = 1e-6
+
+    const canArrangeSymmetrically = (countSnapshot: number[], customUnits: number | null) => {
+      let smallestPairWidth = Infinity
+      const centerWidths: number[] = []
+
+      for (let i = 0; i < boardOptions.length; i++) {
+        const count = countSnapshot[i]
+        const width = boardOptions[i].width
+        const pairCount = Math.floor(count / 2)
+
+        if (pairCount > 0) {
+          smallestPairWidth = width
+        }
+
+        if (count % 2 === 1) {
+          centerWidths.push(width)
+        }
+      }
+
+      if (customUnits !== null) {
+        const customWidth = Number((customUnits * unit).toFixed(3))
+        centerWidths.push(customWidth)
+      }
+
+      if (smallestPairWidth === Infinity) {
+        return true
+      }
+
+      return centerWidths.every(width => width <= smallestPairWidth + tolerance)
+    }
 
     let bestUsedUnits = -Infinity
     let bestCounts: number[] = new Array(boardOptions.length).fill(0)
@@ -260,7 +292,11 @@ export class NXGenerator {
     const counts = new Array(boardOptions.length).fill(0)
 
     const updateBest = (usedUnits: number, totalBoards: number, customUnits: number | null) => {
-      if (usedUnits > lengthUnits + 1e-6) {
+      if (usedUnits > lengthUnits + tolerance) {
+        return
+      }
+
+      if (!canArrangeSymmetrically(counts, customUnits)) {
         return
       }
 
@@ -277,8 +313,8 @@ export class NXGenerator {
       }
 
       const isBetter = (
-        usedUnits > bestUsedUnits + 1e-6 ||
-        (Math.abs(usedUnits - bestUsedUnits) <= 1e-6 && (
+        usedUnits > bestUsedUnits + tolerance ||
+        (Math.abs(usedUnits - bestUsedUnits) <= tolerance && (
           totalBoards < bestBoardTotal ||
           (totalBoards === bestBoardTotal && preferWiderBoards())
         ))
@@ -312,7 +348,7 @@ export class NXGenerator {
       }
 
       availableUnits = Math.max(0, Math.min(availableUnits, maxCustomUnits))
-      let customUnits = Math.floor(availableUnits / 2) * 2 // enforce 0.25" increments
+      let customUnits = Math.floor(availableUnits / 2) * 2
 
       while (customUnits >= minCustomUnits && customUnits > lengthUnits - usedStandardUnits - gapForCustom) {
         customUnits -= 2
@@ -339,7 +375,7 @@ export class NXGenerator {
         const newSumWidthUnits = sumWidthUnits + count * option.widthUnits
         const usedUnits = newSumWidthUnits + (newTotalBoards > 0 ? (newTotalBoards - 1) * gapUnits : 0)
 
-        if (usedUnits > lengthUnits + 1e-6) {
+        if (usedUnits > lengthUnits + tolerance) {
           break
         }
 
@@ -351,12 +387,26 @@ export class NXGenerator {
 
     search(0, 0, 0)
 
-    const orderedBoards: Array<{ nominal: string; width: number; thickness: number; isCustom?: boolean }> = []
+    type BoardInfo = { nominal: string; width: number; thickness: number; isCustom?: boolean }
+
+    const pairedBoards: BoardInfo[] = []
+    const centerBoards: BoardInfo[] = []
 
     for (let i = 0; i < boardOptions.length; i++) {
       const option = boardOptions[i]
-      for (let count = 0; count < bestCounts[i]; count++) {
-        orderedBoards.push({
+      const totalCount = bestCounts[i]
+      const pairCount = Math.floor(totalCount / 2)
+
+      for (let pairIndex = 0; pairIndex < pairCount; pairIndex++) {
+        pairedBoards.push({
+          nominal: option.nominal,
+          width: option.width,
+          thickness: option.thickness
+        })
+      }
+
+      if (totalCount % 2 === 1) {
+        centerBoards.push({
           nominal: option.nominal,
           width: option.width,
           thickness: option.thickness
@@ -366,12 +416,76 @@ export class NXGenerator {
 
     if (bestCustomUnits !== null) {
       const customWidth = Number((bestCustomUnits * unit).toFixed(3))
-      orderedBoards.push({
+      centerBoards.push({
         nominal: 'CUSTOM',
         width: customWidth,
         thickness: standardThickness,
         isCustom: true
       })
+    }
+
+    let customBoard: BoardInfo | undefined
+    const standardCenterBoards: BoardInfo[] = []
+
+    for (const board of centerBoards) {
+      if (board.isCustom && !customBoard) {
+        customBoard = { ...board }
+      } else {
+        standardCenterBoards.push({ ...board, isCustom: board.isCustom })
+      }
+    }
+
+    standardCenterBoards.sort((a, b) => b.width - a.width)
+
+    const leftSequence: BoardInfo[] = pairedBoards.map(board => ({ ...board }))
+    const rightSequence: BoardInfo[] = pairedBoards
+      .slice()
+      .reverse()
+      .map(board => ({ ...board }))
+
+    for (const board of standardCenterBoards) {
+      if (leftSequence.length <= rightSequence.length) {
+        leftSequence.push({ ...board })
+      } else {
+        rightSequence.push({ ...board })
+      }
+    }
+
+    const orderedBoards: BoardInfo[] = [
+      ...leftSequence.map(board => ({ ...board })),
+      ...(customBoard ? [{ ...customBoard }] : []),
+      ...rightSequence
+        .slice()
+        .reverse()
+        .map(board => ({ ...board }))
+    ]
+
+    if (orderedBoards.length === 0) {
+      return []
+    }
+
+    const gapCount = Math.max(0, orderedBoards.length - 1)
+    const gaps = new Array(gapCount).fill(gapBetweenBoards)
+    const sumWidths = orderedBoards.reduce((acc, board) => acc + board.width, 0)
+    const baseGapTotal = gapBetweenBoards * gapCount
+    const usedLength = sumWidths + baseGapTotal
+    let leftover = Number((internalLength - usedLength).toFixed(6))
+
+    if (leftover < 0 && Math.abs(leftover) <= 1e-4) {
+      leftover = 0
+    }
+
+    if (leftover > 0 && gapCount > 0) {
+      if (orderedBoards.length % 2 === 0) {
+        const middleIndex = Math.floor(gapCount / 2)
+        gaps[middleIndex] += leftover
+      } else {
+        const rightIndex = gapCount / 2
+        const leftIndex = rightIndex - 1
+        const extra = leftover / 2
+        gaps[leftIndex] += extra
+        gaps[rightIndex] += extra
+      }
     }
 
     const layout: Array<{
@@ -384,7 +498,8 @@ export class NXGenerator {
 
     let currentPosition = panelThickness
 
-    for (const board of orderedBoards) {
+    for (let i = 0; i < orderedBoards.length; i++) {
+      const board = orderedBoards[i]
       layout.push({
         nominal: board.nominal,
         width: board.width,
@@ -393,7 +508,11 @@ export class NXGenerator {
         isCustom: board.isCustom
       })
 
-      currentPosition += board.width + gapBetweenBoards
+      currentPosition += board.width
+
+      if (i < gapCount) {
+        currentPosition += gaps[i]
+      }
     }
 
     return layout
