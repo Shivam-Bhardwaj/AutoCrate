@@ -123,7 +123,7 @@ export default function Home() {
   const [generator, setGenerator] = useState<NXGenerator>(() => new NXGenerator(config))
   const [activeTab, setActiveTab] = useState<'visualization' | 'expressions' | 'bom' | 'plywood'>('visualization')
   const [showMobileInputs, setShowMobileInputs] = useState(false)
-  const [activeScenarioId, setActiveScenarioId] = useState<string>('default')
+  const [activeScenarioId, setActiveScenarioId] = useState<string | null>('default')
   // Initialize all plywood pieces as visible by default
   const [plywoodPieceVisibility, setPlywoodPieceVisibility] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {}
