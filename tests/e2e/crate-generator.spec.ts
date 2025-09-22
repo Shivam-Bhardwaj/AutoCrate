@@ -1,4 +1,6 @@
 import { test, expect, Page } from '@playwright/test'
+import { promises as fs } from 'fs'
+import path from 'path'
 
 const openInputsIfMobile = async (page: Page, isMobile: boolean) => {
   if (isMobile) {
@@ -34,14 +36,14 @@ test.describe('AutoCrate NX Generator (Chromium focus)', () => {
     await lengthInput.fill('200')
     await page.keyboard.press('Tab')
 
-    const exterior = page.getByTestId('exterior-dimensions')
-    await expect(exterior).toContainText('206.0', { timeout: 4000 })
+    await expect(page.getByTestId('exterior-dimensions')).toContainText('206.0', { timeout: 4000 })
   })
 
   test('shows BOM data when switching tabs', async ({ page }) => {
     await page.getByRole('button', { name: 'BOM', exact: true }).click()
-    await expect(page.getByTestId('bom-table')).toBeVisible()
-    await expect(page.getByTestId('bom-table')).toContainText('Plywood Sheet')
+    const bomTable = page.getByTestId('bom-table')
+    await expect(bomTable).toBeVisible({ timeout: 4000 })
+    await expect(bomTable).toContainText('Plywood Sheet')
   })
 
   test('loads preset scenarios without manual typing', async ({ page, isMobile }) => {
@@ -95,6 +97,17 @@ test.describe('AutoCrate NX Generator (Chromium focus)', () => {
     await page.getByRole('button', { name: 'Download STEP' }).click()
     const download = await downloadPromise
     await expect(download.suggestedFilename()).toContain('.stp')
+
+    const outputDir = testInfo.artifactsPath || testInfo.outputDir
+    const filename = `step-${testInfo.project.name}-${Date.now()}.stp`
+    const tempPath = path.join(outputDir, filename)
+    await download.saveAs(tempPath)
+
+    const content = await fs.readFile(tempPath, 'utf8')
+    await expect.soft(content).toContain('CARTESIAN_POINT')
+    await expect.soft(content).toContain('DIRECTION')
+    await expect.soft(content).toContain('MANIFOLD_SOLID_BREP')
+    await expect.soft(content).toContain('PRODUCT')
   })
 
   test('mobile menu toggle reveals inputs', async ({ page, isMobile }) => {

@@ -37,7 +37,13 @@ Open [http://localhost:3000](http://localhost:3000) to use the application.
 2. **View Results**
    - **3D Visualization**: Interactive 3D model of the crate
    - **NX Expressions**: Copy or download expressions for NX import
-   - **BOM**: View and download Bill of Materials
+- **BOM**: View and download Bill of Materials
+
+## Documentation
+
+- [Documentation index](docs/README.md)
+- [STEP to Web Conversion guide](docs/STEP_TO_WEB_CONVERSION.md)
+- [Web stack primer (HTML)](docs/web-stack-overview.html)
 
 3. **Export Files**
    - Click "Download NX Expressions" for .exp file

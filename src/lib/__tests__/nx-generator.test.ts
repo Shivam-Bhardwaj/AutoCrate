@@ -86,6 +86,46 @@ describe('NXGenerator', () => {
     expect(exported).toContain('pattern_spacing')
   })
 
+  it('lays out floorboards from widest edges to narrowest center with a single custom infill', () => {
+    const generator = new NXGenerator(buildConfig())
+
+    const floorboards = generator
+      .getBoxes()
+      .filter(box => box.type === 'floor' && !box.suppressed)
+      .sort((a, b) => a.point1.y - b.point1.y)
+
+    expect(floorboards.length).toBeGreaterThan(0)
+
+    const widths = floorboards.map(board => Number((board.point2.y - board.point1.y).toFixed(3)))
+    const customIndices = floorboards
+      .map((board, index) => ({ index, isCustom: board.metadata?.includes('CUSTOM CUT') }))
+      .filter(entry => entry.isCustom)
+      .map(entry => entry.index)
+
+    expect(customIndices.length).toBe(1)
+
+    const customIndex = customIndices[0]
+    const customWidth = widths[customIndex]
+
+    // Boards should get narrower as we walk from the edge toward the custom infill
+    let previousWidth = widths[0]
+    for (let i = 1; i <= customIndex; i++) {
+      expect(widths[i]).toBeLessThanOrEqual(previousWidth + 1e-3)
+      previousWidth = widths[i]
+    }
+
+    // Custom infill should be narrower than a 2x6 (5.5" actual width)
+    expect(customWidth).toBeLessThan(5.5 + 1e-3)
+
+    // Symmetry check: mirror widths across the center ignoring the custom board
+    for (let i = 0; i < floorboards.length; i++) {
+      const mirrorIndex = floorboards.length - 1 - i
+      if (i >= mirrorIndex) break
+      if (i === customIndex || mirrorIndex === customIndex) continue
+      expect(widths[i]).toBeCloseTo(widths[mirrorIndex], 3)
+    }
+  })
+
   it('computes marking dimensions across height thresholds', () => {
     const shortGenerator = new NXGenerator(
       buildConfig({

@@ -5,6 +5,18 @@ All notable changes to AutoCrate NX Generator will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Regression test that verifies the new floorboard layout behaviour (widest boards at the edges, mirrored narrowing, single custom infill)
+- Playwright STEP-download assertions that read the generated file from the run artifacts directory and check for BREP entities
+
+### Changed
+- Floorboard layout algorithm now places widest lumber at the edges, steps inward with narrower stock, and only produces a quarter-inch custom strip when required
+- Chromium Playwright flows now rely on test IDs for BOM tables, exterior dimensions, and the 3x4 toggle to reduce selector brittleness
+- Documentation index added under `docs/` for easier navigation
+
+
 ## [1.4.0] - 2025-09-18
 
 ### Added

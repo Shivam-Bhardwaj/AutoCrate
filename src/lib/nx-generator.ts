@@ -234,10 +234,117 @@ export class NXGenerator {
       availableOptions.push({ nominal: '2x6', width: 5.5, thickness: 1.5 })
     }
 
-    // Calculate effective length - floorboards run between the inside faces of panels
-    // From Y = panelThickness to Y = internalLength + panelThickness
-    const effectiveLength = internalLength // Just the internal length
+    const maxBoards = 40
     const gapBetweenBoards = 0.125 // 1/8" gap between boards
+
+    type FloorboardOption = { nominal: string; width: number; thickness: number }
+
+    const leftBoards: FloorboardOption[] = []
+    const rightBoards: FloorboardOption[] = []
+    let centerBoard: FloorboardOption | null = null
+    let customBoardWidth: number | null = null
+
+    const smallestOption = availableOptions[availableOptions.length - 1]
+    const standardThickness = availableOptions[0]?.thickness || 1.5
+
+    let sumWidths = 0
+    let boardCount = 0
+
+    const totalUsed = (widthSum: number, count: number) => {
+      return widthSum + Math.max(0, count - 1) * gapBetweenBoards
+    }
+
+    const tryAddPair = (option: FloorboardOption) => {
+      if (boardCount + 2 > maxBoards) return false
+
+      const newSum = sumWidths + 2 * option.width
+      const newCount = boardCount + 2
+
+      if (totalUsed(newSum, newCount) > internalLength + 1e-6) {
+        return false
+      }
+
+      leftBoards.push({ ...option })
+      rightBoards.push({ ...option })
+      sumWidths = newSum
+      boardCount = newCount
+      return true
+    }
+
+    const tryAddSingle = (option: FloorboardOption) => {
+      if (centerBoard || boardCount + 1 > maxBoards) return false
+
+      const newSum = sumWidths + option.width
+      const newCount = boardCount + 1
+
+      if (totalUsed(newSum, newCount) > internalLength + 1e-6) {
+        return false
+      }
+
+      centerBoard = { ...option }
+      sumWidths = newSum
+      boardCount = newCount
+      return true
+    }
+
+    let optionIndex = 0
+    const lastOptionIndex = availableOptions.length - 1
+
+    while (boardCount < maxBoards) {
+      const option = availableOptions[Math.min(optionIndex, lastOptionIndex)]
+
+      if (tryAddPair(option)) {
+        if (optionIndex < lastOptionIndex) {
+          optionIndex++
+        }
+        continue
+      }
+
+      if (optionIndex < lastOptionIndex) {
+        optionIndex++
+        continue
+      }
+
+      // Could not add another pair of the narrowest board; try a single center board
+      tryAddSingle(option)
+      break
+    }
+
+    // Determine if a custom board is needed for the last sliver (< 2x6 width)
+    const availableForCustom = internalLength - sumWidths - boardCount * gapBetweenBoards
+
+    if (availableForCustom >= 0.25 && boardCount < maxBoards) {
+      let roundedWidth = Math.round(availableForCustom * 4) / 4
+      if (roundedWidth > availableForCustom) {
+        roundedWidth -= 0.25
+      }
+
+      roundedWidth = parseFloat(Math.max(0, roundedWidth).toFixed(3))
+
+      if (roundedWidth >= 0.25 - 1e-6) {
+        customBoardWidth = roundedWidth
+        sumWidths += customBoardWidth
+        boardCount += 1
+      }
+    }
+
+    const orderedBoards: Array<FloorboardOption & { isCustom?: boolean }> = []
+
+    for (const board of leftBoards) {
+      orderedBoards.push(board)
+    }
+
+    if (centerBoard) {
+      orderedBoards.push(centerBoard)
+    }
+
+    if (customBoardWidth) {
+      orderedBoards.push({ nominal: 'CUSTOM', width: customBoardWidth, thickness: standardThickness, isCustom: true })
+    }
+
+    for (let i = rightBoards.length - 1; i >= 0; i--) {
+      orderedBoards.push(rightBoards[i])
+    }
 
     const layout: Array<{
       nominal: string
@@ -247,111 +354,21 @@ export class NXGenerator {
       isCustom?: boolean
     }> = []
 
-    let remainingLength = effectiveLength
-    let currentPosition = panelThickness // Start at inside face of front panel
+    let currentPosition = panelThickness
 
-    // Symmetric placement algorithm: place larger boards on outside, smaller toward center
-    const placedBoards: typeof layout = []
+    for (const board of orderedBoards) {
+      layout.push({
+        nominal: board.nominal,
+        width: board.width,
+        thickness: board.thickness,
+        position: currentPosition,
+        isCustom: board.isCustom
+      })
 
-    // Continue placing boards until we can't fit any more
-    while (remainingLength > 0.25 && layout.length < 40) { // Increased limit to 40 boards
-      let boardPlaced = false
-
-      // Try each available lumber size (largest first)
-      for (const lumber of availableOptions) {
-        const boardWithGap = lumber.width + gapBetweenBoards
-
-        if (boardWithGap <= remainingLength) {
-          layout.push({
-            nominal: lumber.nominal,
-            width: lumber.width,
-            thickness: lumber.thickness,
-            position: currentPosition
-          })
-
-          currentPosition += boardWithGap
-          remainingLength -= boardWithGap
-          boardPlaced = true
-          break
-        }
-      }
-
-      // If no standard board fits, try to add a custom board
-      if (!boardPlaced) {
-        // Check if remaining length can accommodate a custom board
-        // Custom board must be at least 0.25" wide
-        if (remainingLength >= 0.25) {
-          // Account for gap if there's a next board
-          const customWidth = remainingLength > gapBetweenBoards ?
-                             remainingLength - gapBetweenBoards :
-                             remainingLength
-
-          // Only add custom board if it's at least 0.25" wide
-          if (customWidth >= 0.25) {
-            layout.push({
-              nominal: 'CUSTOM',
-              width: customWidth,
-              thickness: availableOptions[0].thickness, // Use standard thickness
-              position: currentPosition,
-              isCustom: true
-            })
-          }
-        }
-        break
-      }
+      currentPosition += board.width + gapBetweenBoards
     }
 
-    // Create symmetric layout: larger boards on outside, smaller toward center
-    const symmetricLayout: typeof layout = []
-
-    if (layout.length === 0) {
-      return symmetricLayout
-    }
-
-    // Sort boards by size (largest first for outside placement)
-    const sortedBySize = [...layout].sort((a, b) => b.width - a.width)
-
-    // For symmetric placement, we'll place boards alternating from front and back
-    let frontPosition = panelThickness // Start at inside face of front panel
-    let backPosition = internalLength + panelThickness   // End at inside face of back panel
-
-    for (let i = 0; i < sortedBySize.length; i++) {
-      const board = sortedBySize[i]
-
-      if (i % 2 === 0) {
-        // Place on front side (moving forward)
-        symmetricLayout.push({
-          ...board,
-          position: frontPosition
-        })
-        frontPosition += board.width + gapBetweenBoards
-      } else {
-        // Place on back side (moving backward)
-        backPosition -= board.width
-        symmetricLayout.push({
-          ...board,
-          position: backPosition
-        })
-        backPosition -= gapBetweenBoards
-      }
-    }
-
-    // Validate that boards don't overlap and fit within bounds
-    const sortedByPosition = symmetricLayout.sort((a, b) => a.position - b.position)
-
-    // Check for overlaps and adjust if necessary
-    for (let i = 1; i < sortedByPosition.length; i++) {
-      const prevBoard = sortedByPosition[i - 1]
-      const currentBoard = sortedByPosition[i]
-      const prevEndPosition = prevBoard.position + prevBoard.width + gapBetweenBoards
-
-      if (currentBoard.position < prevEndPosition) {
-        // Overlap detected, adjust position
-        currentBoard.position = prevEndPosition
-      }
-    }
-
-    return sortedByPosition
+    return layout
   }
 
   private calculate() {
