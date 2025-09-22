@@ -1,0 +1,60 @@
+<testsuites id="" name="" tests="18" failures="0" skipped="3" errors="0" time="21.594151999999998">
+<testsuite name="crate-generator.spec.ts" timestamp="2025-09-22T03:13:07.195Z" hostname="chromium" tests="9" failures="0" skipped="1" time="50.577" errors="0">
+<testcase name="AutoCrate NX Generator (Chromium focus) › renders core controls on load" classname="crate-generator.spec.ts" time="4.862">
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › updates exterior dimensions when product length changes" classname="crate-generator.spec.ts" time="4.954">
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › shows BOM data when switching tabs" classname="crate-generator.spec.ts" time="5.332">
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › loads preset scenarios without manual typing" classname="crate-generator.spec.ts" time="5.108">
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › allows enabling 3x4 lumber for light products" classname="crate-generator.spec.ts" time="6.127">
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › selects heavier skid size for high weight loads" classname="crate-generator.spec.ts" time="6.108">
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › downloads NX expressions on desktop" classname="crate-generator.spec.ts" time="6.236">
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › downloads STEP file on desktop" classname="crate-generator.spec.ts" time="5.9">
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › mobile menu toggle reveals inputs" classname="crate-generator.spec.ts" time="5.95">
+<properties>
+<property name="skip" value="Navigation drawer is mobile only">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="crate-generator.spec.ts" timestamp="2025-09-22T03:13:07.195Z" hostname="Mobile Chrome" tests="9" failures="0" skipped="2" time="42.05" errors="0">
+<testcase name="AutoCrate NX Generator (Chromium focus) › renders core controls on load" classname="crate-generator.spec.ts" time="5.481">
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › updates exterior dimensions when product length changes" classname="crate-generator.spec.ts" time="5.807">
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › shows BOM data when switching tabs" classname="crate-generator.spec.ts" time="5.561">
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › loads preset scenarios without manual typing" classname="crate-generator.spec.ts" time="5.962">
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › allows enabling 3x4 lumber for light products" classname="crate-generator.spec.ts" time="5.671">
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › selects heavier skid size for high weight loads" classname="crate-generator.spec.ts" time="5.655">
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › downloads NX expressions on desktop" classname="crate-generator.spec.ts" time="5.443">
+<properties>
+<property name="skip" value="Download verification is desktop only">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › downloads STEP file on desktop" classname="crate-generator.spec.ts" time="1.202">
+<properties>
+<property name="skip" value="Download verification is desktop only">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › mobile menu toggle reveals inputs" classname="crate-generator.spec.ts" time="1.268">
+</testcase>
+</testsuite>
+</testsuites>

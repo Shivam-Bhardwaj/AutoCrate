@@ -1,4 +1,4 @@
-// Cleat Calculation and Placement Logic
+﻿// Cleat Calculation and Placement Logic
 // Cleats are 1x4 lumber strips for panel reinforcement
 // Rules:
 // 1. All panels have top, bottom, left, right cleats
@@ -171,16 +171,20 @@ export class CleatCalculator {
   }
 
   /**
-   * Calculate vertical cleat positions with proper order:
-   * 1. Perimeter cleats (edges)
-   * 2. Cleats centered over vertical splices
-   * 3. Intermediate cleats if spacing > 24"
+   * Calculate vertical cleat positions without duplicating perimeter cleats:
+   * 1. Treat perimeter cleats as spacing boundaries only
+   * 2. Center cleats over vertical splices when they respect edge clearance
+   * 3. Fill remaining spans larger than 24" with intermediate cleats
    */
   private static calculateVerticalCleatPositions(
     panelWidth: number,
     splicePositions: { x: number; y: number; orientation: 'vertical' | 'horizontal' }[]
   ): number[] {
-    const positions: number[] = []
+    // Candidate positions for additional vertical cleats (perimeter cleats are handled separately)
+    const candidatePositions: number[] = []
+
+    // Perimeter cleats act as boundaries for spacing checks
+    const perimeterPositions = [0, panelWidth - this.CLEAT_WIDTH]
 
     // Get vertical splice positions
     const verticalSplices = splicePositions
@@ -188,28 +192,25 @@ export class CleatCalculator {
       .map(s => s.x)
       .sort((a, b) => a - b)
 
-    // Step 1: Add perimeter cleats (edges)
-    // Position cleats so their centers are at the edges
-    positions.push(0) // Left edge - cleat starts at x=0
-    positions.push(panelWidth - this.CLEAT_WIDTH) // Right edge - cleat ends at panel width
-
-    // Step 2: Add cleats centered over vertical splices
+    // Add cleats centered over vertical splices
     for (const spliceX of verticalSplices) {
-      // Center the cleat over the splice
-      const cleatX = spliceX - (this.CLEAT_WIDTH / 2)
+      const cleatX = spliceX - this.CLEAT_WIDTH / 2
 
-      // Only add if cleat doesn't go beyond panel bounds
       if (cleatX >= 0 && cleatX + this.CLEAT_WIDTH <= panelWidth) {
-        // Check if not too close to edges (within 2 inches)
-        if (cleatX > 2 && cleatX < panelWidth - this.CLEAT_WIDTH - 2) {
-          positions.push(cleatX)
+        if (
+          cleatX > this.MIN_EDGE_DISTANCE &&
+          cleatX < panelWidth - this.CLEAT_WIDTH - this.MIN_EDGE_DISTANCE
+        ) {
+          candidatePositions.push(cleatX)
         }
       }
     }
 
-    // Step 3: Add intermediate cleats if spacing > 24"
-    // Sort current positions to check gaps
-    let sortedPositions = [...new Set(positions)].sort((a, b) => a - b)
+    // Evaluate gaps between perimeter boundaries and candidate cleats
+    const basePositions = [...perimeterPositions, ...candidatePositions]
+    const sortedPositions = [...new Set(basePositions.map(p => Math.round(p * 100) / 100))]
+      .sort((a, b) => a - b)
+
     const intermediatePositions: number[] = []
 
     for (let i = 0; i < sortedPositions.length - 1; i++) {
@@ -217,31 +218,29 @@ export class CleatCalculator {
       const nextCleatStart = sortedPositions[i + 1]
       const gap = nextCleatStart - currentCleatEnd
 
-      // If gap between cleats is more than 24", add intermediate cleats
       if (gap > this.MAX_CLEAT_SPACING) {
         const numIntermediates = Math.ceil(gap / this.MAX_CLEAT_SPACING) - 1
         const spacing = gap / (numIntermediates + 1)
 
         for (let j = 1; j <= numIntermediates; j++) {
-          const intermediateX = currentCleatEnd + (j * spacing) - (this.CLEAT_WIDTH / 2)
-          // Ensure intermediate cleat is within bounds
-          if (intermediateX >= 0 && intermediateX + this.CLEAT_WIDTH <= panelWidth) {
+          const intermediateX = currentCleatEnd + j * spacing - this.CLEAT_WIDTH / 2
+
+          if (
+            intermediateX > this.MIN_EDGE_DISTANCE &&
+            intermediateX + this.CLEAT_WIDTH < panelWidth - this.MIN_EDGE_DISTANCE
+          ) {
             intermediatePositions.push(intermediateX)
           }
         }
       }
     }
 
-    // Combine all positions
-    positions.push(...intermediatePositions)
-
-    // Remove duplicates and sort
-    const uniquePositions = [...new Set(positions.map(p => Math.round(p * 100) / 100))]
+    const allPositions = [...candidatePositions, ...intermediatePositions]
+    const uniquePositions = [...new Set(allPositions.map(p => Math.round(p * 100) / 100))]
       .sort((a, b) => a - b)
 
     return uniquePositions
   }
-
 
   /**
    * Calculate horizontal cleats cut to fit between vertical cleats

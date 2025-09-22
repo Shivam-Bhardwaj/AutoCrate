@@ -1,0 +1,786 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\autocrate\\playwright.config.ts",
+    "rootDir": "C:/Users/Curio/OneDrive/Desktop/SbT/autocrate/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 16
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "test-results/junit.xml"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/Curio/OneDrive/Desktop/SbT/autocrate/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 16
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/Curio/OneDrive/Desktop/SbT/autocrate/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/Curio/OneDrive/Desktop/SbT/autocrate/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 16
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "C:/Users/Curio/OneDrive/Desktop/SbT/autocrate/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.0",
+    "workers": 16,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://localhost:3000",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "crate-generator.spec.ts",
+      "file": "crate-generator.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "AutoCrate NX Generator (Chromium focus)",
+          "file": "crate-generator.spec.ts",
+          "line": 11,
+          "column": 6,
+          "specs": [
+            {
+              "title": "renders core controls on load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4862,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:11.376Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-518b8a746e5e0d13c6d7",
+              "file": "crate-generator.spec.ts",
+              "line": 17,
+              "column": 7
+            },
+            {
+              "title": "updates exterior dimensions when product length changes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 4954,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:11.599Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-ca256d27160876ea867a",
+              "file": "crate-generator.spec.ts",
+              "line": 30,
+              "column": 7
+            },
+            {
+              "title": "shows BOM data when switching tabs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 5332,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:11.743Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-0799935ba4f0d145f5ad",
+              "file": "crate-generator.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "loads preset scenarios without manual typing",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 5108,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:11.539Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-8467473b2f93b6fc6645",
+              "file": "crate-generator.spec.ts",
+              "line": 47,
+              "column": 7
+            },
+            {
+              "title": "allows enabling 3x4 lumber for light products",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 6127,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:11.839Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-46f622a640829b157fc7",
+              "file": "crate-generator.spec.ts",
+              "line": 56,
+              "column": 7
+            },
+            {
+              "title": "selects heavier skid size for high weight loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 6108,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:11.844Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-cb0c61651275a5ece01f",
+              "file": "crate-generator.spec.ts",
+              "line": 71,
+              "column": 7
+            },
+            {
+              "title": "downloads NX expressions on desktop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 6236,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:11.893Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-1372e8aaebe473b17e24",
+              "file": "crate-generator.spec.ts",
+              "line": 82,
+              "column": 7
+            },
+            {
+              "title": "downloads STEP file on desktop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 5900,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:12.134Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-1913593790925373cdd7",
+              "file": "crate-generator.spec.ts",
+              "line": 91,
+              "column": 7
+            },
+            {
+              "title": "mobile menu toggle reveals inputs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Navigation drawer is mobile only",
+                      "location": {
+                        "file": "C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\autocrate\\tests\\e2e\\crate-generator.spec.ts",
+                        "line": 101,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 8,
+                      "status": "skipped",
+                      "duration": 5950,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:12.038Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Navigation drawer is mobile only",
+                          "location": {
+                            "file": "C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\autocrate\\tests\\e2e\\crate-generator.spec.ts",
+                            "line": 101,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-07a43e31302c1e369c5c",
+              "file": "crate-generator.spec.ts",
+              "line": 100,
+              "column": 7
+            },
+            {
+              "title": "renders core controls on load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 9,
+                      "status": "passed",
+                      "duration": 5481,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:12.597Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-304519ccc35b7f826c17",
+              "file": "crate-generator.spec.ts",
+              "line": 17,
+              "column": 7
+            },
+            {
+              "title": "updates exterior dimensions when product length changes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 10,
+                      "status": "passed",
+                      "duration": 5807,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:12.589Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-9067a0d40454f8987cd0",
+              "file": "crate-generator.spec.ts",
+              "line": 30,
+              "column": 7
+            },
+            {
+              "title": "shows BOM data when switching tabs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 11,
+                      "status": "passed",
+                      "duration": 5561,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:12.383Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-a26ddb9c492792fa51d5",
+              "file": "crate-generator.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "loads preset scenarios without manual typing",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 12,
+                      "status": "passed",
+                      "duration": 5962,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:12.320Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-8b541d165ada3c7775e7",
+              "file": "crate-generator.spec.ts",
+              "line": 47,
+              "column": 7
+            },
+            {
+              "title": "allows enabling 3x4 lumber for light products",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 13,
+                      "status": "passed",
+                      "duration": 5671,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:12.637Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-475edcbfd9cff600a647",
+              "file": "crate-generator.spec.ts",
+              "line": 56,
+              "column": 7
+            },
+            {
+              "title": "selects heavier skid size for high weight loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 14,
+                      "status": "passed",
+                      "duration": 5655,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:12.710Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-ebf522e30b30f7e0debf",
+              "file": "crate-generator.spec.ts",
+              "line": 71,
+              "column": 7
+            },
+            {
+              "title": "downloads NX expressions on desktop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Download verification is desktop only",
+                      "location": {
+                        "file": "C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\autocrate\\tests\\e2e\\crate-generator.spec.ts",
+                        "line": 83,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 15,
+                      "status": "skipped",
+                      "duration": 5443,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:12.495Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Download verification is desktop only",
+                          "location": {
+                            "file": "C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\autocrate\\tests\\e2e\\crate-generator.spec.ts",
+                            "line": 83,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-40af9904da540d99ab20",
+              "file": "crate-generator.spec.ts",
+              "line": 82,
+              "column": 7
+            },
+            {
+              "title": "downloads STEP file on desktop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Download verification is desktop only",
+                      "location": {
+                        "file": "C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\autocrate\\tests\\e2e\\crate-generator.spec.ts",
+                        "line": 92,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 17,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 1202,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:20.377Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Download verification is desktop only",
+                          "location": {
+                            "file": "C:\\Users\\Curio\\OneDrive\\Desktop\\SbT\\autocrate\\tests\\e2e\\crate-generator.spec.ts",
+                            "line": 92,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-e22279c14ee3d43a5232",
+              "file": "crate-generator.spec.ts",
+              "line": 91,
+              "column": 7
+            },
+            {
+              "title": "mobile menu toggle reveals inputs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 1268,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-22T03:13:20.336Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b6af9dcb4fb4151f649e-6bdedba99efb3cf428c5",
+              "file": "crate-generator.spec.ts",
+              "line": 100,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-09-22T03:13:00.741Z",
+    "duration": 21594.152,
+    "expected": 15,
+    "skipped": 3,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

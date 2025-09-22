@@ -7,6 +7,50 @@ import { PlywoodPieceSelector } from '@/components/PlywoodPieceSelector'
 import { StepGenerator } from '@/lib/step-generator'
 import { VisualizationErrorBoundary } from '@/components/ErrorBoundary'
 import { MarkingsSection } from '@/components/MarkingsSection'
+import ScenarioSelector, { ScenarioPreset } from '@/components/ScenarioSelector'
+
+const SCENARIO_PRESETS: ScenarioPreset[] = [
+  {
+    id: 'default',
+    name: 'Default Production',
+    description: 'Large cubic crate suitable for the general AutoCrate setup.',
+    product: { length: 135, width: 135, height: 135, weight: 10000 },
+    clearances: { side: 2, end: 2, top: 3 },
+    allow3x4: false,
+    lumberSizes: { '2x6': true, '2x8': true, '2x10': true, '2x12': true },
+    note: 'Matches the initial values used throughout the documentation.'
+  },
+  {
+    id: 'lightweight-electronics',
+    name: 'Lightweight Electronics',
+    description: 'Compact build optimised for 3x4 lumber and tighter clearances.',
+    product: { length: 60, width: 40, height: 36, weight: 350 },
+    clearances: { side: 1.5, end: 1.5, top: 2 },
+    allow3x4: true,
+    lumberSizes: { '2x6': true, '2x8': false, '2x10': false, '2x12': false },
+    note: 'Enables the 3x4 toggle to demonstrate lighter skid configurations.'
+  },
+  {
+    id: 'heavy-industrial',
+    name: 'Heavy Industrial',
+    description: 'High-mass equipment requiring 6x6 skids and generous clearances.',
+    product: { length: 160, width: 120, height: 84, weight: 18000 },
+    clearances: { side: 3, end: 4, top: 6 },
+    allow3x4: false,
+    lumberSizes: { '2x6': false, '2x8': true, '2x10': true, '2x12': true },
+    note: 'Great for verifying heavy-load calculations and skid spacing.'
+  },
+  {
+    id: 'tall-precision',
+    name: 'Tall Precision Module',
+    description: 'Tall payload with higher top clearance for overhead fixtures.',
+    product: { length: 96, width: 72, height: 110, weight: 8000 },
+    clearances: { side: 2, end: 3, top: 8 },
+    allow3x4: false,
+    lumberSizes: { '2x6': true, '2x8': true, '2x10': true, '2x12': false },
+    note: 'Use to check plywood splicing and cap calculations for tall crates.'
+  }
+]
 
 export default function Home() {
   // Store input values as strings for better input handling
@@ -79,6 +123,7 @@ export default function Home() {
   const [generator, setGenerator] = useState<NXGenerator>(() => new NXGenerator(config))
   const [activeTab, setActiveTab] = useState<'visualization' | 'expressions' | 'bom' | 'plywood'>('visualization')
   const [showMobileInputs, setShowMobileInputs] = useState(false)
+  const [activeScenarioId, setActiveScenarioId] = useState<string>('default')
   // Initialize all plywood pieces as visible by default
   const [plywoodPieceVisibility, setPlywoodPieceVisibility] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {}
@@ -93,6 +138,52 @@ export default function Home() {
     return initial
   })
   const debounceTimeoutRef = useRef<{ [key: string]: NodeJS.Timeout }>({})
+
+  const applyScenario = (scenario: ScenarioPreset) => {
+    setActiveScenarioId(scenario.id)
+
+    // Clear any pending debounced updates so the scenario wins
+    Object.values(debounceTimeoutRef.current).forEach(timeout => clearTimeout(timeout))
+    debounceTimeoutRef.current = {}
+
+    setInputValues({
+      length: scenario.product.length.toString(),
+      width: scenario.product.width.toString(),
+      height: scenario.product.height.toString(),
+      weight: scenario.product.weight.toString(),
+      sideClearance: scenario.clearances.side.toString(),
+      endClearance: scenario.clearances.end.toString(),
+      topClearance: scenario.clearances.top.toString()
+    })
+
+    setConfig(prev => ({
+      ...prev,
+      product: {
+        ...prev.product,
+        ...scenario.product
+      },
+      clearances: {
+        ...prev.clearances,
+        ...scenario.clearances
+      },
+      materials: {
+        ...prev.materials,
+        allow3x4Lumber: scenario.allow3x4 ?? prev.materials.allow3x4Lumber
+      }
+    }))
+
+    setAllow3x4Lumber(scenario.allow3x4 ?? false)
+
+    if (scenario.lumberSizes) {
+      setDisplayOptions(prev => ({
+        ...prev,
+        lumberSizes: {
+          ...prev.lumberSizes,
+          ...scenario.lumberSizes
+        }
+      }))
+    }
+  }
 
   // Update generator when config changes or 3x4 lumber permission changes
   useEffect(() => {
@@ -114,6 +205,7 @@ export default function Home() {
 
   const handleInputChange = (field: keyof typeof inputValues, value: string) => {
     // Update input value immediately
+    setActiveScenarioId(null)
     setInputValues(prev => ({ ...prev, [field]: value }))
 
     // Clear existing timeout for this field
@@ -282,6 +374,8 @@ export default function Home() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
+              data-testid="mobile-menu-toggle"
+              aria-label="Toggle mobile inputs"
               onClick={() => setShowMobileInputs(!showMobileInputs)}
               className="lg:hidden p-1 hover:bg-gray-100 rounded"
             >
@@ -321,6 +415,16 @@ export default function Home() {
       <div className="flex-1 flex gap-2 p-2 min-h-0">
         {/* Left Panel - Inputs */}
         <div className={`${showMobileInputs ? 'block' : 'hidden'} lg:block w-64 bg-white rounded-lg shadow-sm p-2 overflow-y-auto flex-shrink-0`}>
+          <ScenarioSelector
+            scenarios={SCENARIO_PRESETS}
+            activeScenarioId={activeScenarioId}
+            onScenarioSelect={applyScenario}
+          />
+          <div className="mb-2">
+            <span className="text-[11px] text-gray-500" data-testid="scenario-status">
+              {activeScenarioId ? `Active scenario: ${SCENARIO_PRESETS.find(preset => preset.id === activeScenarioId)?.name ?? 'Custom'}` : 'Active scenario: Custom values'}
+            </span>
+          </div>
           {/* Product Dimensions */}
           <div className="mb-2">
             <h3 className="text-sm font-semibold mb-1.5">Product Dimensions</h3>
@@ -328,6 +432,7 @@ export default function Home() {
               <div>
                 <label className="text-xs text-gray-600">Length (Y)"</label>
                 <input
+                  data-testid="input-length"
                   type="text"
                   value={inputValues.length}
                   onChange={(e) => handleInputChange('length', e.target.value)}
@@ -358,6 +463,7 @@ export default function Home() {
               <div>
                 <label className="text-xs text-gray-600">Weight (lbs)</label>
                 <input
+                  data-testid="input-weight"
                   type="text"
                   value={inputValues.weight}
                   onChange={(e) => handleInputChange('weight', e.target.value)}
@@ -440,7 +546,7 @@ export default function Home() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Exterior (OD):</span>
-                <span className="font-medium">
+                <span className="font-medium" data-testid="exterior-dimensions">
                   {generator.getExpressions().get('overall_width')?.toFixed(1)}" ×
                   {generator.getExpressions().get('overall_length')?.toFixed(1)}" ×
                   {generator.getExpressions().get('overall_height')?.toFixed(1)}"
@@ -451,7 +557,7 @@ export default function Home() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Skid:</span>
-                <span className="font-medium">
+                <span className="font-medium" data-testid="skid-label">
                   {(() => {
                     const skidWidth = generator.getExpressions().get('skid_width');
                     if (skidWidth === 3.5) return '4x4 lumber';
@@ -470,6 +576,7 @@ export default function Home() {
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">3x4 Lumber</span>
               <button
+                data-testid="toggle-3x4"
                 onClick={() => setAllow3x4Lumber(!allow3x4Lumber)}
                 className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${
                   allow3x4Lumber ? 'bg-blue-600' : 'bg-gray-300'
@@ -482,7 +589,7 @@ export default function Home() {
                 />
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 mt-1" data-testid="toggle-3x4-status">
               {allow3x4Lumber ? 'For products < 500 lbs' : '4x4 for all < 4500 lbs'}
             </p>
           </div>
@@ -656,7 +763,7 @@ export default function Home() {
 
             {activeTab === 'bom' && (
               <div className="h-full overflow-auto">
-                <table className="w-full text-sm">
+                <table data-testid="bom-table" className="w-full text-sm">
                   <thead className="bg-gray-50 sticky top-0">
                     <tr>
                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
