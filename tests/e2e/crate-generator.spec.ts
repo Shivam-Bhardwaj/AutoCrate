@@ -98,7 +98,8 @@ test.describe('AutoCrate NX Generator (Chromium focus)', () => {
     const download = await downloadPromise
     await expect(download.suggestedFilename()).toContain('.stp')
 
-    const outputDir = testInfo.artifactsPath || testInfo.outputDir
+    const artifactsPath = (testInfo as { artifactsPath?: string }).artifactsPath
+    const outputDir = artifactsPath ?? testInfo.outputDir
     const filename = `step-${testInfo.project.name}-${Date.now()}.stp`
     const tempPath = path.join(outputDir, filename)
     await download.saveAs(tempPath)
@@ -119,3 +120,5 @@ test.describe('AutoCrate NX Generator (Chromium focus)', () => {
     await expect(page.getByTestId('input-length')).toBeVisible()
   })
 })
+
+

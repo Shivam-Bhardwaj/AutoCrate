@@ -972,6 +972,13 @@ export class NXGenerator {
           panelOriginY,
           panelOriginZ
         )
+      } else if (cleatLayout.panelName === 'BACK_PANEL') {
+        this.addLagHardwareForBackPanel(
+          cleatLayout,
+          panelOriginX,
+          panelOriginY,
+          panelOriginZ
+        )
       }
     }
 
@@ -985,67 +992,169 @@ export class NXGenerator {
     cleatLayout: PanelCleatLayout,
     panelOriginX: number,
     panelOriginY: number,
-    panelOriginZ: number
+    _panelOriginZ: number
   ) {
     const geometry = LagSTEPIntegration.getGeometry()
     const stepPath = LagSTEPIntegration.getStepPath()
-    const epsilon = 0.01
+    const floorboardThickness = this.expressions.get('floorboard_thickness') || 0
+    const skidHeight = this.expressions.get('skid_height') || 0
+    const floorboardMidZ = skidHeight + floorboardThickness / 2
+    const isLeftPanel = cleatLayout.panelName === 'LEFT_END_PANEL'
 
-    const intermediateCleats = cleatLayout.cleats.filter(
-      cleat => cleat.type === 'intermediate' && cleat.orientation === 'vertical'
+    const supportCleats = cleatLayout.cleats.filter(
+      cleat =>
+        cleat.orientation === 'vertical' &&
+        cleat.type !== 'perimeter'
     )
 
-    intermediateCleats.forEach(cleat => {
+    supportCleats.forEach(cleat => {
       const headRadius = geometry.headDiameter / 2
       const shankRadius = geometry.shankDiameter / 2
 
-      const centerX = panelOriginX + cleat.thickness / 2
-      const centerY = panelOriginY + cleat.x + (cleat.width / 2)
+      const centerY = panelOriginY + cleat.x + cleat.width / 2
+      const centerZ = floorboardMidZ
 
-      const headTopZ = panelOriginZ + cleat.y - epsilon
-      const headBottomZ = headTopZ - geometry.headHeight
-      const shankBottomZ = Math.max(0, headBottomZ - geometry.shankLength)
+      const outsideFaceX = isLeftPanel
+        ? panelOriginX
+        : panelOriginX + cleat.thickness
 
+      const headStartX = isLeftPanel
+        ? outsideFaceX - geometry.headHeight
+        : outsideFaceX
+      const headEndX = isLeftPanel
+        ? outsideFaceX
+        : outsideFaceX + geometry.headHeight
+
+      const shankStartX = isLeftPanel
+        ? outsideFaceX
+        : outsideFaceX - geometry.shankLength
+      const shankEndX = isLeftPanel
+        ? outsideFaceX + geometry.shankLength
+        : outsideFaceX
+
+      const headPoint1 = {
+        x: Math.min(headStartX, headEndX),
+        y: centerY - headRadius,
+        z: centerZ - headRadius
+      }
+      const headPoint2 = {
+        x: Math.max(headStartX, headEndX),
+        y: centerY + headRadius,
+        z: centerZ + headRadius
+      }
+
+      const shankPoint1 = {
+        x: Math.min(shankStartX, shankEndX),
+        y: centerY - shankRadius,
+        z: centerZ - shankRadius
+      }
+      const shankPoint2 = {
+        x: Math.max(shankStartX, shankEndX),
+        y: centerY + shankRadius,
+        z: centerZ + shankRadius
+      }
+
+      const orientation = isLeftPanel ? '+X inward' : '-X inward'
       const baseName = `${cleat.id}_LAG`
 
-      // Lag head - rendered just below the cleat
       this.boxes.push({
         name: `${baseName}_HEAD`,
-        point1: {
-          x: centerX - headRadius,
-          y: centerY - headRadius,
-          z: headBottomZ
-        },
-        point2: {
-          x: centerX + headRadius,
-          y: centerY + headRadius,
-          z: headTopZ
-        },
+        point1: headPoint1,
+        point2: headPoint2,
         color: '#6B7280',
         type: 'hardware',
         suppressed: false,
         panelName: cleatLayout.panelName,
-        metadata: `Lag screw head (3/8\" x 2.5\") beneath ${cleat.id} - STEP: "${stepPath}"`
+        metadata: `Lag screw head (3/8" x 2.5") on ${cleat.id} (${orientation}, floorboard centerline) - STEP: "${stepPath}"`
       })
 
-      // Lag shank - extends downward from the head
       this.boxes.push({
         name: `${baseName}_SHAFT`,
-        point1: {
-          x: centerX - shankRadius,
-          y: centerY - shankRadius,
-          z: shankBottomZ
-        },
-        point2: {
-          x: centerX + shankRadius,
-          y: centerY + shankRadius,
-          z: headBottomZ
-        },
+        point1: shankPoint1,
+        point2: shankPoint2,
         color: '#4B5563',
         type: 'hardware',
         suppressed: false,
         panelName: cleatLayout.panelName,
-        metadata: `Lag screw shank (3/8\" x 2.5\") beneath ${cleat.id} - STEP: "${stepPath}"`
+        metadata: `Lag screw shank (3/8" x 2.5") on ${cleat.id} (${orientation}, floorboard centerline) - STEP: "${stepPath}"`
+      })
+
+      this.lagScrewCount += 1
+    })
+  }
+
+  private addLagHardwareForBackPanel(
+    cleatLayout: PanelCleatLayout,
+    panelOriginX: number,
+    panelOriginY: number,
+    _panelOriginZ: number
+  ) {
+    const geometry = LagSTEPIntegration.getGeometry()
+    const stepPath = LagSTEPIntegration.getStepPath()
+    const floorboardThickness = this.expressions.get('floorboard_thickness') || 0
+    const skidHeight = this.expressions.get('skid_height') || 0
+    const floorboardMidZ = skidHeight + floorboardThickness / 2
+
+    const supportCleats = cleatLayout.cleats.filter(
+      cleat =>
+        cleat.orientation === 'vertical' &&
+        cleat.type !== 'perimeter'
+    )
+
+    supportCleats.forEach(cleat => {
+      const headRadius = geometry.headDiameter / 2
+      const shankRadius = geometry.shankDiameter / 2
+
+      const centerX = panelOriginX + cleat.x + cleat.width / 2
+      const centerZ = floorboardMidZ
+
+      const outsideFaceY = panelOriginY + cleat.thickness
+
+      const headPoint1 = {
+        x: centerX - headRadius,
+        y: outsideFaceY - geometry.headHeight,
+        z: centerZ - headRadius
+      }
+      const headPoint2 = {
+        x: centerX + headRadius,
+        y: outsideFaceY,
+        z: centerZ + headRadius
+      }
+
+      const shankPoint1 = {
+        x: centerX - shankRadius,
+        y: outsideFaceY - geometry.shankLength,
+        z: centerZ - shankRadius
+      }
+      const shankPoint2 = {
+        x: centerX + shankRadius,
+        y: outsideFaceY,
+        z: centerZ + shankRadius
+      }
+
+      const orientation = '-Y inward'
+      const baseName = `${cleat.id}_LAG`
+
+      this.boxes.push({
+        name: `${baseName}_HEAD`,
+        point1: headPoint1,
+        point2: headPoint2,
+        color: '#6B7280',
+        type: 'hardware',
+        suppressed: false,
+        panelName: cleatLayout.panelName,
+        metadata: `Lag screw head (3/8" x 2.5") on ${cleat.id} (${orientation}, floorboard centerline) - STEP: "${stepPath}"`
+      })
+
+      this.boxes.push({
+        name: `${baseName}_SHAFT`,
+        point1: shankPoint1,
+        point2: shankPoint2,
+        color: '#4B5563',
+        type: 'hardware',
+        suppressed: false,
+        panelName: cleatLayout.panelName,
+        metadata: `Lag screw shank (3/8" x 2.5") on ${cleat.id} (${orientation}, floorboard centerline) - STEP: "${stepPath}"`
       })
 
       this.lagScrewCount += 1
@@ -1336,7 +1445,7 @@ export class NXGenerator {
     output += '# - Import the STEP file once, then pattern/position instances\n'
     output += '# \n'
     output += '# LAG SCREW INSTALLATION:\n'
-    output += '# - 3/8" x 2.50" lag hardware under each intermediate side cleat\n'
+    output += '# - 3/8" x 2.50" lag hardware on each intermediate/splice side/back cleat (floorboard centerline, oriented inward)\n'
     output += `# - Total lag screws: ${this.expressions.get('lag_screw_count') || 0}\n`
     output += '# - STEP file: CAD FILES/LAG SCREW_0.38 X 2.50.stp\n'
     output += '# - Import once and reuse at generated positions\n'

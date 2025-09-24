@@ -35,9 +35,7 @@ describe('PlywoodSpliceVisualization', () => {
       }
     ],
     isRotated: false,
-    pieces: [],
-    panelWidth: 96,
-    panelHeight: 48
+    pieces: []
   } as unknown as PanelSpliceLayout
 
   it('renders panel overview and splice rules', () => {
@@ -53,3 +51,4 @@ describe('PlywoodSpliceVisualization', () => {
     expect(container.firstChild).toBeNull()
   })
 })
+

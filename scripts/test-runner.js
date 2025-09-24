@@ -178,6 +178,7 @@ class TestRunner {
 
     // Create a test to validate STEP file generation
     const testCode = `
+      require('ts-node/register/transpile-only')
       const { StepGenerator } = require('./src/lib/step-generator')
 
       const testBoxes = [
@@ -196,7 +197,7 @@ class TestRunner {
         // Validate output structure
         if (!output.includes('ISO-10303-21')) throw new Error('Invalid STEP header')
         if (!output.includes('ENDSEC')) throw new Error('Invalid STEP structure')
-        if (!output.includes('TEST_BOX')) throw new Error('Box not in output')
+        if (!output.includes('MANIFOLD_SOLID_BREP')) throw new Error('BREP entities missing')
 
         console.log('STEP generator validation passed')
         process.exit(0)
@@ -346,3 +347,4 @@ runner.run().catch(error => {
   console.error('Unexpected error:', error)
   process.exit(1)
 })
+

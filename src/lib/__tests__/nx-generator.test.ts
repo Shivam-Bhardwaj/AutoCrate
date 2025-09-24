@@ -1,4 +1,5 @@
 import { NXGenerator, CrateConfig, generateNXExpressions } from '../nx-generator'
+import { LagSTEPIntegration } from '../lag-step-integration'
 
 const baseConfig: CrateConfig = {
   product: {
@@ -215,6 +216,86 @@ describe('NXGenerator', () => {
     expect(tallGenerator.getMarkingDimensions('fragile')?.partNumber).toContain('Scale 1.5X')
   })
 
+  it('places inward-facing lag screws on side and back panels', () => {
+    const generator = new NXGenerator(buildConfig())
+
+    const leftLayout = generator
+      .getPanelCleatLayouts()
+      .find(layout => layout.panelName === 'LEFT_END_PANEL')
+    const rightLayout = generator
+      .getPanelCleatLayouts()
+      .find(layout => layout.panelName === 'RIGHT_END_PANEL')
+    const backLayout = generator
+      .getPanelCleatLayouts()
+      .find(layout => layout.panelName === 'BACK_PANEL')
+
+    expect(leftLayout).toBeDefined()
+    expect(rightLayout).toBeDefined()
+    expect(backLayout).toBeDefined()
+
+    const supportCleatsLeft = (leftLayout?.cleats || []).filter(
+      cleat => cleat.orientation === 'vertical' && cleat.type !== 'perimeter'
+    )
+    const supportCleatsRight = (rightLayout?.cleats || []).filter(
+      cleat => cleat.orientation === 'vertical' && cleat.type !== 'perimeter'
+    )
+    const supportCleatsBack = (backLayout?.cleats || []).filter(
+      cleat => cleat.orientation === 'vertical' && cleat.type !== 'perimeter'
+    )
+
+    const expressions = generator.getExpressions()
+    const expectedLagCount = supportCleatsLeft.length + supportCleatsRight.length + supportCleatsBack.length
+
+    expect(expressions.get('lag_screw_count')).toBe(expectedLagCount)
+
+    const geometry = LagSTEPIntegration.getGeometry()
+    const boxes = generator.getBoxes()
+    const cleatBoxes = new Map<string, typeof boxes[number]>()
+    boxes
+      .filter(box => box.type === 'cleat')
+      .forEach(box => cleatBoxes.set(box.name, box))
+
+    const lagShafts = boxes.filter(
+      box => box.type === 'hardware' && box.name.endsWith('_SHAFT')
+    )
+    expect(lagShafts.length).toBe(expectedLagCount)
+
+    const allSupportCleats = [...supportCleatsLeft, ...supportCleatsRight, ...supportCleatsBack]
+    const floorboardMidZ = (expressions.get('skid_height') || 0) + ((expressions.get('floorboard_thickness') || 0) / 2)
+
+    lagShafts.forEach(box => {
+      const cleatId = box.name.replace('_LAG_SHAFT', '')
+      const cleat = allSupportCleats.find(entry => entry.id === cleatId)
+      const cleatBox = cleatBoxes.get(cleatId)
+
+      if (!cleat || !cleatBox) {
+        throw new Error(`Missing cleat data for ${cleatId}`)
+      }
+
+      const centerZ = (box.point1.z + box.point2.z) / 2
+      expect(centerZ).toBeCloseTo(floorboardMidZ, 3)
+
+      if (box.panelName === 'LEFT_END_PANEL') {
+        const outsideFaceX = cleatBox.point1.x
+        expect(box.point1.x).toBeCloseTo(outsideFaceX, 3)
+        expect(Math.abs(box.point2.x - box.point1.x)).toBeCloseTo(geometry.shankLength, 3)
+        expect(box.metadata).toContain('+X inward')
+      } else if (box.panelName === 'RIGHT_END_PANEL') {
+        const outsideFaceX = cleatBox.point2.x
+        expect(box.point2.x).toBeCloseTo(outsideFaceX, 3)
+        expect(Math.abs(box.point2.x - box.point1.x)).toBeCloseTo(geometry.shankLength, 3)
+        expect(box.metadata).toContain('-X inward')
+      } else if (box.panelName === 'BACK_PANEL') {
+        const outsideFaceY = cleatBox.point2.y
+        expect(box.point2.y).toBeCloseTo(outsideFaceY, 3)
+        expect(Math.abs(box.point2.y - box.point1.y)).toBeCloseTo(geometry.shankLength, 3)
+        expect(box.metadata).toContain('-Y inward')
+      } else {
+        throw new Error(`Unexpected panel for lag screw: ${box.panelName}`)
+      }
+    })
+  })
+
   it('generateNXExpressions wrapper returns a populated expression bundle', () => {
     const bundle = generateNXExpressions({ length: 48, width: 40, height: 20 }, 2000)
 
@@ -223,3 +304,4 @@ describe('NXGenerator', () => {
     expect(bundle).toContain('skid_count=')
   })
 })
+
