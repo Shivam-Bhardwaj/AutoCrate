@@ -37,7 +37,8 @@ export function KlimpModel({ box, scale = 0.1, onError }: KlimpModelProps) {
     const { scene } = useGLTF('/models/klimp.glb', true)
 
     useEffect(() => {
-      if (groupRef.current && scene) {
+      const group = groupRef.current
+      if (group && scene) {
         // Clone the scene to avoid modifying the original
         const clonedScene = scene.clone()
 
@@ -63,10 +64,10 @@ export function KlimpModel({ box, scale = 0.1, onError }: KlimpModelProps) {
           }
         })
 
-        groupRef.current.add(clonedScene)
+        group.add(clonedScene)
 
         return () => {
-          groupRef.current?.remove(clonedScene)
+          group.remove(clonedScene)
         }
       }
     }, [scene])

@@ -35,7 +35,6 @@ describe('CrateVisualizer', () => {
           boxes={boxes}
           showGrid
           showLabels
-          showOutlines
           generator={generator}
           showMarkings
         />

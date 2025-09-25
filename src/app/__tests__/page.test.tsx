@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Home from '../page'
 import React from 'react'
+import { ThemeProvider } from '@/components/ThemeProvider'
 
 jest.mock('@/components/CrateVisualizer', () => ({
   __esModule: true,
@@ -34,7 +35,11 @@ jest.mock('@/components/ErrorBoundary', () => ({
   VisualizationErrorBoundary: ({ children }: { children: React.ReactNode }) => <>{children}</>
 }))
 
-const renderHome = () => render(<Home />)
+const renderHome = () => render(
+  <ThemeProvider>
+    <Home />
+  </ThemeProvider>
+)
 
 describe('Home Page', () => {
   it('shows scenario status and visualizer shell', async () => {

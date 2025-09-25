@@ -1,13 +1,14 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+set -euo pipefail
 
-echo "🔍 Running pre-commit checks..."
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null)"
+cd "$repo_root"
 
-# Run lint-staged
+echo "Running pre-commit checks..."
+
 npx lint-staged
 
-# Run tests
-echo "🧪 Running tests..."
+echo "Running tests..."
 node scripts/test-runner.js
 
-echo "✅ Pre-commit checks passed!"
+echo "Pre-commit checks passed!"

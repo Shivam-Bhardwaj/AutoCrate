@@ -109,6 +109,19 @@ jest.mock('@react-three/drei', () => ({
 global.URL.createObjectURL = jest.fn(() => 'blob:mock-url')
 global.URL.revokeObjectURL = jest.fn()
 
+if (typeof window !== 'undefined' && !window.matchMedia) {
+  window.matchMedia = () => ({
+    matches: false,
+    media: '',
+    onchange: null,
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    dispatchEvent: jest.fn()
+  })
+}
+
 // Suppress console errors in tests unless explicitly testing error handling
 const originalError = console.error
 beforeAll(() => {

@@ -42,6 +42,14 @@ export interface CrateConfig {
     allow3x4Lumber?: boolean // Optional: allow 3x4 lumber for weights under 4500 lbs
     availableLumber?: ('2x6' | '2x8' | '2x10' | '2x12')[] // Optional: restrict available lumber sizes
   }
+  hardware?: {
+    lagScrewsPerVerticalCleat?: number
+  }
+  identifiers?: {
+    basePartNumber?: string
+    cratePartNumber?: string
+    capPartNumber?: string
+  }
   markings?: MarkingConfig  // Optional marking configuration
 }
 
@@ -61,6 +69,18 @@ export interface NXBox {
   metadata?: string
   plywoodPieceIndex?: number  // For plywood pieces, track which piece (0-5)
   panelName?: string          // Which panel this plywood belongs to
+}
+
+export interface BillOfMaterialsRow {
+  item: string
+  size?: string
+  length?: number | string
+  totalLength?: number
+  thickness?: number
+  quantity?: number
+  packages?: number
+  material: string
+  note?: string
 }
 
 export class NXGenerator {
@@ -530,13 +550,14 @@ export class NXGenerator {
     // Material dimensions
     const skidDims = this.getSkidDimensions()
     const floorboardDims = this.getFloorboardDimensions()
+    const floorboardThickness = floorboardDims.thickness
     const plywoodThickness = materials.plywoodThickness || 0.25  // Default 0.25" plywood
     const panelThickness = materials.panelThickness || 1.0       // Total thickness including cleats
 
     // Overall external dimensions
     const overallWidth = internalWidth + (2 * panelThickness)
     const overallLength = internalLength + (2 * panelThickness)
-    const overallHeight = internalHeight + skidDims.height + floorboardDims.thickness + panelThickness
+    const overallHeight = internalHeight + skidDims.height + floorboardThickness + panelThickness
 
     // Store expressions
     this.expressions.set('product_length', product.length)
@@ -560,7 +581,7 @@ export class NXGenerator {
 
     // Floorboard expressions
     this.expressions.set('floorboard_width', floorboardDims.width)
-    this.expressions.set('floorboard_thickness', floorboardDims.thickness)
+    this.expressions.set('floorboard_thickness', floorboardThickness)
     this.expressions.set('floorboard_length', internalWidth)
     this.expressions.set('floorboard_gap', 0)
     this.expressions.set('floorboard_count', this.getFloorboardCount())
@@ -970,14 +991,17 @@ export class NXGenerator {
           cleatLayout,
           panelOriginX,
           panelOriginY,
-          panelOriginZ
+          panelOriginZ,
+          this.getLagScrewsPerCleat()
         )
-      } else if (cleatLayout.panelName === 'BACK_PANEL') {
-        this.addLagHardwareForBackPanel(
+      } else if (cleatLayout.panelName === 'FRONT_PANEL' || cleatLayout.panelName === 'BACK_PANEL') {
+        this.addLagHardwareForFrontBackPanel(
           cleatLayout,
           panelOriginX,
           panelOriginY,
-          panelOriginZ
+          panelOriginZ,
+          this.getLagScrewsPerCleat(),
+          floorboardThickness
         )
       }
     }
@@ -988,11 +1012,34 @@ export class NXGenerator {
     this.expressions.set('lag_screw_count', this.lagScrewCount)
   }
 
+  private computeLagOffsets(cleatLength: number, baseOffset: number, screwsPerCleat: number): number[] {
+    const count = Math.max(2, Math.floor(screwsPerCleat))
+    const clampedBase = Math.min(Math.max(baseOffset, 0), cleatLength / 2)
+    const start = clampedBase
+    const end = cleatLength - clampedBase
+
+    if (end <= start) {
+      return Array.from({ length: count }, () => cleatLength / 2)
+    }
+
+    if (count === 2) {
+      return [start, end]
+    }
+
+    const step = (end - start) / (count - 1)
+    const offsets: number[] = []
+    for (let i = 0; i < count; i++) {
+      offsets.push(start + step * i)
+    }
+    return offsets
+  }
+
   private addLagHardwareForSidePanel(
     cleatLayout: PanelCleatLayout,
     panelOriginX: number,
     panelOriginY: number,
-    _panelOriginZ: number
+    panelOriginZ: number,
+    screwsPerCleat: number
   ) {
     const geometry = LagSTEPIntegration.getGeometry()
     const stepPath = LagSTEPIntegration.getStepPath()
@@ -1002,163 +1049,292 @@ export class NXGenerator {
     const isLeftPanel = cleatLayout.panelName === 'LEFT_END_PANEL'
 
     const supportCleats = cleatLayout.cleats.filter(
-      cleat =>
-        cleat.orientation === 'vertical' &&
-        cleat.type !== 'perimeter'
+      cleat => cleat.orientation === 'vertical' && cleat.type !== 'perimeter'
     )
+
+    const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
+    const approxEqual = (a: number, b: number, tolerance = 1e-4) => Math.abs(a - b) <= tolerance
 
     supportCleats.forEach(cleat => {
       const headRadius = geometry.headDiameter / 2
       const shankRadius = geometry.shankDiameter / 2
 
-      const centerY = panelOriginY + cleat.x + cleat.width / 2
-      const centerZ = floorboardMidZ
+      const panelStartY = panelOriginY
+      const panelEndY = panelOriginY + cleatLayout.panelWidth
+      const minY = panelStartY + shankRadius
+      const maxY = panelEndY - shankRadius
 
-      const outsideFaceX = isLeftPanel
-        ? panelOriginX
-        : panelOriginX + cleat.thickness
+      const centerY = clamp(panelOriginY + cleat.x + cleat.width / 2, minY, maxY)
+      const frontCandidate = clamp(panelStartY + 0.5, minY, maxY)
+      const backCandidate = clamp(panelEndY - 0.5, minY, maxY)
 
-      const headStartX = isLeftPanel
-        ? outsideFaceX - geometry.headHeight
-        : outsideFaceX
-      const headEndX = isLeftPanel
-        ? outsideFaceX
-        : outsideFaceX + geometry.headHeight
+      const lateralPlacements: Array<{ center: number; label: 'CENTER' | 'NEAR_FRONT' | 'NEAR_BACK'; sideNote: string }>
+        = [{ center: centerY, label: 'CENTER', sideNote: 'centered between side cleats' }]
 
-      const shankStartX = isLeftPanel
-        ? outsideFaceX
-        : outsideFaceX - geometry.shankLength
-      const shankEndX = isLeftPanel
-        ? outsideFaceX + geometry.shankLength
-        : outsideFaceX
-
-      const headPoint1 = {
-        x: Math.min(headStartX, headEndX),
-        y: centerY - headRadius,
-        z: centerZ - headRadius
-      }
-      const headPoint2 = {
-        x: Math.max(headStartX, headEndX),
-        y: centerY + headRadius,
-        z: centerZ + headRadius
+      if (!approxEqual(frontCandidate, centerY)) {
+        lateralPlacements.push({
+          center: frontCandidate,
+          label: 'NEAR_FRONT',
+          sideNote: '0.5" inboard of front side cleat'
+        })
       }
 
-      const shankPoint1 = {
-        x: Math.min(shankStartX, shankEndX),
-        y: centerY - shankRadius,
-        z: centerZ - shankRadius
-      }
-      const shankPoint2 = {
-        x: Math.max(shankStartX, shankEndX),
-        y: centerY + shankRadius,
-        z: centerZ + shankRadius
+      if (!approxEqual(backCandidate, centerY)) {
+        lateralPlacements.push({
+          center: backCandidate,
+          label: 'NEAR_BACK',
+          sideNote: '0.5" inboard of rear side cleat'
+        })
       }
 
+      const cleatBottomZ = panelOriginZ + cleat.y
+      const cleatTopZ = cleatBottomZ + cleat.length
+      const verticalPlacements: Array<{ center: number; note: string; suffix: 'MID' | 'LOW' }>
+        = [{ center: floorboardMidZ, note: 'floorboard centerline', suffix: 'MID' }]
+
+      const lowCandidate = cleatBottomZ + 0.5
+      if (lowCandidate - headRadius >= cleatBottomZ && lowCandidate + headRadius <= cleatTopZ) {
+        verticalPlacements.push({
+          center: lowCandidate,
+          note: '0.5" above lower cleat',
+          suffix: 'LOW'
+        })
+      }
+
+      const axisTag = isLeftPanel ? '+X' : '-X'
+      const axisDirection = axisTag === '+X' ? 1 : -1
       const orientation = isLeftPanel ? '+X inward' : '-X inward'
+      const outsideFaceX = isLeftPanel ? panelOriginX : panelOriginX + cleat.thickness
+      const headOuterX = outsideFaceX - (axisDirection * geometry.headHeight)
+      const shankInnerX = outsideFaceX + (axisDirection * geometry.shankLength)
+      const headMinX = Math.min(headOuterX, outsideFaceX)
+      const headMaxX = Math.max(headOuterX, outsideFaceX)
+      const shankMinX = Math.min(shankInnerX, outsideFaceX)
+      const shankMaxX = Math.max(shankInnerX, outsideFaceX)
+
+      const orderedPlacements: Array<{ vertical: { center: number; note: string; suffix: 'MID' | 'LOW' }; lateral: { center: number; label: 'CENTER' | 'NEAR_FRONT' | 'NEAR_BACK'; sideNote: string } }> = []
+      lateralPlacements.forEach(lateral => {
+        verticalPlacements.forEach(vertical => {
+          orderedPlacements.push({ vertical, lateral })
+        })
+      })
+
+      const perLevelRequested = Math.max(2, Math.floor(screwsPerCleat))
+      const totalRequested = perLevelRequested * verticalPlacements.length
+      const selectedPlacements = orderedPlacements.slice(0, Math.min(totalRequested, orderedPlacements.length))
+
       const baseName = `${cleat.id}_LAG`
 
-      this.boxes.push({
-        name: `${baseName}_HEAD`,
-        point1: headPoint1,
-        point2: headPoint2,
-        color: '#6B7280',
-        type: 'hardware',
-        suppressed: false,
-        panelName: cleatLayout.panelName,
-        metadata: `Lag screw head (3/8" x 2.5") on ${cleat.id} (${orientation}, floorboard centerline) - STEP: "${stepPath}"`
-      })
+      selectedPlacements.forEach(({ vertical, lateral }) => {
+        const suffix = `${vertical.suffix}_${lateral.label}`
+        const locationNote = `${vertical.note}, ${lateral.sideNote}`
 
-      this.boxes.push({
-        name: `${baseName}_SHAFT`,
-        point1: shankPoint1,
-        point2: shankPoint2,
-        color: '#4B5563',
-        type: 'hardware',
-        suppressed: false,
-        panelName: cleatLayout.panelName,
-        metadata: `Lag screw shank (3/8" x 2.5") on ${cleat.id} (${orientation}, floorboard centerline) - STEP: "${stepPath}"`
-      })
+        const headPoint1 = {
+          x: headMinX,
+          y: lateral.center - headRadius,
+          z: vertical.center - headRadius
+        }
+        const headPoint2 = {
+          x: headMaxX,
+          y: lateral.center + headRadius,
+          z: vertical.center + headRadius
+        }
 
-      this.lagScrewCount += 1
+        const shankPoint1 = {
+          x: shankMinX,
+          y: lateral.center - shankRadius,
+          z: vertical.center - shankRadius
+        }
+        const shankPoint2 = {
+          x: shankMaxX,
+          y: lateral.center + shankRadius,
+          z: vertical.center + shankRadius
+        }
+
+        this.boxes.push({
+          name: `${baseName}_${suffix}_HEAD`,
+          point1: headPoint1,
+          point2: headPoint2,
+          color: '#6B7280',
+          type: 'hardware',
+          suppressed: false,
+          panelName: cleatLayout.panelName,
+          metadata: `Lag screw head (3/8" x 2.5") on ${cleat.id} (${orientation}, ${locationNote}, axis ${axisTag}) - STEP: "${stepPath}"`
+        })
+
+        this.boxes.push({
+          name: `${baseName}_${suffix}_SHAFT`,
+          point1: shankPoint1,
+          point2: shankPoint2,
+          color: '#4B5563',
+          type: 'hardware',
+          suppressed: false,
+          panelName: cleatLayout.panelName,
+          metadata: `Lag screw shank (3/8" x 2.5") on ${cleat.id} (${orientation}, ${locationNote}, axis ${axisTag}) - STEP: "${stepPath}"`
+        })
+
+        this.lagScrewCount += 1
+      })
     })
   }
 
-  private addLagHardwareForBackPanel(
+
+  private addLagHardwareForFrontBackPanel(
     cleatLayout: PanelCleatLayout,
     panelOriginX: number,
     panelOriginY: number,
-    _panelOriginZ: number
+    panelOriginZ: number,
+    screwsPerCleat: number,
+    floorboardThickness: number
   ) {
     const geometry = LagSTEPIntegration.getGeometry()
     const stepPath = LagSTEPIntegration.getStepPath()
-    const floorboardThickness = this.expressions.get('floorboard_thickness') || 0
-    const skidHeight = this.expressions.get('skid_height') || 0
-    const floorboardMidZ = skidHeight + floorboardThickness / 2
+    const isFrontPanel = cleatLayout.panelName === 'FRONT_PANEL'
+
+    if (isFrontPanel) {
+      return
+    }
+
+    const floorboardMidZ = (this.expressions.get('skid_height') || 0) + (floorboardThickness / 2)
 
     const supportCleats = cleatLayout.cleats.filter(
-      cleat =>
-        cleat.orientation === 'vertical' &&
-        cleat.type !== 'perimeter'
+      cleat => cleat.orientation === 'vertical' && cleat.type !== 'perimeter'
     )
+
+    const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
+    const approxEqual = (a: number, b: number, tolerance = 1e-4) => Math.abs(a - b) <= tolerance
 
     supportCleats.forEach(cleat => {
       const headRadius = geometry.headDiameter / 2
       const shankRadius = geometry.shankDiameter / 2
 
-      const centerX = panelOriginX + cleat.x + cleat.width / 2
-      const centerZ = floorboardMidZ
+      const panelStartX = panelOriginX
+      const panelEndX = panelOriginX + cleatLayout.panelWidth
+      const minX = panelStartX + shankRadius
+      const maxX = panelEndX - shankRadius
 
-      const outsideFaceY = panelOriginY + cleat.thickness
+      const centerX = clamp(panelOriginX + cleat.x + cleat.width / 2, minX, maxX)
+      const leftCandidate = clamp(panelStartX + 0.5, minX, maxX)
+      const rightCandidate = clamp(panelEndX - 0.5, minX, maxX)
 
-      const headPoint1 = {
-        x: centerX - headRadius,
-        y: outsideFaceY - geometry.headHeight,
-        z: centerZ - headRadius
-      }
-      const headPoint2 = {
-        x: centerX + headRadius,
-        y: outsideFaceY,
-        z: centerZ + headRadius
-      }
+      const lateralPlacements: Array<{ center: number; label: 'CENTER' | 'NEAR_LEFT' | 'NEAR_RIGHT'; sideNote: string }> = [
+        { center: centerX, label: 'CENTER', sideNote: 'centered between side cleats' }
+      ]
 
-      const shankPoint1 = {
-        x: centerX - shankRadius,
-        y: outsideFaceY - geometry.shankLength,
-        z: centerZ - shankRadius
-      }
-      const shankPoint2 = {
-        x: centerX + shankRadius,
-        y: outsideFaceY,
-        z: centerZ + shankRadius
+      if (!approxEqual(leftCandidate, centerX)) {
+        lateralPlacements.push({
+          center: leftCandidate,
+          label: 'NEAR_LEFT',
+          sideNote: '0.5" inboard of left side cleat'
+        })
       }
 
-      const orientation = '-Y inward'
+      if (!approxEqual(rightCandidate, centerX)) {
+        lateralPlacements.push({
+          center: rightCandidate,
+          label: 'NEAR_RIGHT',
+          sideNote: '0.5" inboard of right side cleat'
+        })
+      }
+
+      const cleatBottomZ = panelOriginZ + cleat.y
+      const cleatTopZ = cleatBottomZ + cleat.length
+      const verticalPlacements: Array<{ center: number; note: string; suffix: 'MID' | 'LOW' }> = [
+        { center: floorboardMidZ, note: 'floorboard centerline', suffix: 'MID' }
+      ]
+
+      const lowCandidate = cleatBottomZ + 0.5
+      if (lowCandidate - headRadius >= cleatBottomZ && lowCandidate + headRadius <= cleatTopZ) {
+        verticalPlacements.push({
+          center: lowCandidate,
+          note: '0.5" above lower cleat',
+          suffix: 'LOW'
+        })
+      }
+
+      const axisTag = isFrontPanel ? '+Y' : '-Y'
+      const axisDirection = axisTag === '+Y' ? 1 : -1
+      const orientation = isFrontPanel ? '+Y inward' : '-Y inward'
+      const outsideFaceY = isFrontPanel ? panelOriginY : panelOriginY + cleat.thickness
+      const headOuterY = outsideFaceY - (axisDirection * geometry.headHeight)
+      const shankInnerY = outsideFaceY + (axisDirection * geometry.shankLength)
+      const headMinY = Math.min(headOuterY, outsideFaceY)
+      const headMaxY = Math.max(headOuterY, outsideFaceY)
+      const shankMinY = Math.min(shankInnerY, outsideFaceY)
+      const shankMaxY = Math.max(shankInnerY, outsideFaceY)
+
+      const orderedPlacements: Array<{ vertical: { center: number; note: string; suffix: 'MID' | 'LOW' }; lateral: { center: number; label: 'CENTER' | 'NEAR_LEFT' | 'NEAR_RIGHT'; sideNote: string } }> = []
+      lateralPlacements.forEach(lateral => {
+        verticalPlacements.forEach(vertical => {
+          orderedPlacements.push({ vertical, lateral })
+        })
+      })
+
+      const perLevelRequested = Math.max(2, Math.floor(screwsPerCleat))
+      const totalRequested = perLevelRequested * verticalPlacements.length
+      const selectedPlacements = orderedPlacements.slice(0, Math.min(totalRequested, orderedPlacements.length))
+
       const baseName = `${cleat.id}_LAG`
 
-      this.boxes.push({
-        name: `${baseName}_HEAD`,
-        point1: headPoint1,
-        point2: headPoint2,
-        color: '#6B7280',
-        type: 'hardware',
-        suppressed: false,
-        panelName: cleatLayout.panelName,
-        metadata: `Lag screw head (3/8" x 2.5") on ${cleat.id} (${orientation}, floorboard centerline) - STEP: "${stepPath}"`
-      })
+      selectedPlacements.forEach(({ vertical, lateral }) => {
+        const suffix = `${vertical.suffix}_${lateral.label}`
+        const locationNote = `${vertical.note}, ${lateral.sideNote}`
 
-      this.boxes.push({
-        name: `${baseName}_SHAFT`,
-        point1: shankPoint1,
-        point2: shankPoint2,
-        color: '#4B5563',
-        type: 'hardware',
-        suppressed: false,
-        panelName: cleatLayout.panelName,
-        metadata: `Lag screw shank (3/8" x 2.5") on ${cleat.id} (${orientation}, floorboard centerline) - STEP: "${stepPath}"`
-      })
+        const headPoint1 = {
+          x: lateral.center - headRadius,
+          y: headMinY,
+          z: vertical.center - headRadius
+        }
+        const headPoint2 = {
+          x: lateral.center + headRadius,
+          y: headMaxY,
+          z: vertical.center + headRadius
+        }
 
-      this.lagScrewCount += 1
+        const shankPoint1 = {
+          x: lateral.center - shankRadius,
+          y: shankMinY,
+          z: vertical.center - shankRadius
+        }
+        const shankPoint2 = {
+          x: lateral.center + shankRadius,
+          y: shankMaxY,
+          z: vertical.center + shankRadius
+        }
+
+        this.boxes.push({
+          name: `${baseName}_${suffix}_HEAD`,
+          point1: headPoint1,
+          point2: headPoint2,
+          color: '#6B7280',
+          type: 'hardware',
+          suppressed: false,
+          panelName: cleatLayout.panelName,
+          metadata: `Lag screw head (3/8" x 2.5") on ${cleat.id} (${orientation}, ${locationNote}, axis ${axisTag}) - STEP: "${stepPath}"`
+        })
+
+        this.boxes.push({
+          name: `${baseName}_${suffix}_SHAFT`,
+          point1: shankPoint1,
+          point2: shankPoint2,
+          color: '#4B5563',
+          type: 'hardware',
+          suppressed: false,
+          panelName: cleatLayout.panelName,
+          metadata: `Lag screw shank (3/8" x 2.5") on ${cleat.id} (${orientation}, ${locationNote}, axis ${axisTag}) - STEP: "${stepPath}"`
+        })
+
+        this.lagScrewCount += 1
+      })
     })
+  }
+
+  private getLagScrewsPerCleat(): number {
+    const configured = this.config.hardware?.lagScrewsPerVerticalCleat
+    if (!configured || Number.isNaN(configured)) {
+      return 2
+    }
+    return Math.max(2, Math.floor(configured))
   }
 
   private generateKlimpBoxes() {
@@ -1445,7 +1621,7 @@ export class NXGenerator {
     output += '# - Import the STEP file once, then pattern/position instances\n'
     output += '# \n'
     output += '# LAG SCREW INSTALLATION:\n'
-    output += '# - 3/8" x 2.50" lag hardware on each intermediate/splice side/back cleat (floorboard centerline, oriented inward)\n'
+    output += '# - 3/8" x 2.50" lag hardware under each intermediate side cleat\n'
     output += `# - Total lag screws: ${this.expressions.get('lag_screw_count') || 0}\n`
     output += '# - STEP file: CAD FILES/LAG SCREW_0.38 X 2.50.stp\n'
     output += '# - Import once and reuse at generated positions\n'
@@ -1613,8 +1789,8 @@ export class NXGenerator {
     return output
   }
 
-  generateBOM() {
-    const bom = []
+  generateBOM(): BillOfMaterialsRow[] {
+    const bom: BillOfMaterialsRow[] = []
     const skidCount = this.getSkidCount()
     const skidDims = this.getSkidDimensions()
     const internalLength = this.expressions.get('internal_length')!
@@ -1717,6 +1893,17 @@ export class NXGenerator {
         packages: klimpUsage.estimatedPackages,
         material: 'Hardware',
         note: `${klimpUsage.totalKlimps} klimps (${klimpUsage.estimatedPackages} packages of 25). Front panel connections.`
+      })
+    }
+
+    const lagScrews = this.expressions.get('lag_screw_count') || 0
+    if (lagScrews > 0) {
+      bom.push({
+        item: 'Lag Screw',
+        size: '3/8" x 2.5"',
+        quantity: lagScrews,
+        material: 'Hardware',
+        note: 'Lag screws centered on vertical cleats.'
       })
     }
 
@@ -1832,3 +2019,7 @@ export function generateNXExpressions(
   const generator = new NXGenerator(config)
   return generator.exportNXExpressions()
 }
+
+
+
+

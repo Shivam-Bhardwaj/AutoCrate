@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "jest",
+    "test": "jest --runInBand",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e": "playwright test",
@@ -62,7 +62,7 @@
       "jest --bail --findRelatedTests"
     ],
     "*.{json,md,yml,yaml}": [
-      "prettier --write"
+      "npx prettier --write"
     ]
   }
 }

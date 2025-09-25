@@ -32,7 +32,9 @@ export class LagSTEPIntegration {
 # LAG SCREW IMPORT INSTRUCTIONS:
 # - File -> Import -> STEP214 -> "${this.STEP_PATH}"
 # - Reuse this component for every lag screw instance positioned by the generator
-# - Orient with shank along +Z when importing to match automatic placements
+# - Align the shank so the default component axis matches the metadata tag (left panels: +X, right panels: -X, back panel: -Y) before placement
     `.trim()
   }
 }
+
+

@@ -1,13 +1,14 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import CrateVisualizer from '@/components/CrateVisualizer'
-import { NXGenerator, CrateConfig, MarkingConfig } from '@/lib/nx-generator'
+import { NXGenerator, CrateConfig, MarkingConfig, BillOfMaterialsRow } from '@/lib/nx-generator'
 import { PlywoodPieceSelector } from '@/components/PlywoodPieceSelector'
 import { StepGenerator } from '@/lib/step-generator'
 import { VisualizationErrorBoundary } from '@/components/ErrorBoundary'
 import { MarkingsSection } from '@/components/MarkingsSection'
 import ScenarioSelector, { ScenarioPreset } from '@/components/ScenarioSelector'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 const SCENARIO_PRESETS: ScenarioPreset[] = [
   {
@@ -74,6 +75,21 @@ export default function Home() {
     handlingSymbols: true
   })
 
+  const [partNumbers, setPartNumbers] = useState({
+    base: '0205-XXXXX',
+    crate: '0205-XXXXX',
+    cap: '0205-XXXXX'
+  })
+
+  const [lagScrewsPerCleat, setLagScrewsPerCleat] = useState(2)
+
+  const [pmiVisibility, setPmiVisibility] = useState({
+    totalDimensions: true,
+    skids: false,
+    cleats: false,
+    floor: false
+  })
+
   // State for display options
   const [displayOptions, setDisplayOptions] = useState({
     // Component visibility toggles
@@ -94,8 +110,6 @@ export default function Home() {
       '2x10': true,
       '2x12': true
     },
-    // View options
-    showOutlines: false,
     showMarkings: true
   })
 
@@ -117,6 +131,14 @@ export default function Home() {
       panelThickness: 1,       // Total panel thickness with cleats
       cleatSize: '1x4',        // 1x4 lumber for cleats (0.75" x 3.5")
       allow3x4Lumber: false
+    },
+    hardware: {
+      lagScrewsPerVerticalCleat: 2
+    },
+    identifiers: {
+      basePartNumber: '0205-XXXXX',
+      cratePartNumber: '0205-XXXXX',
+      capPartNumber: '0205-XXXXX'
     }
   })
 
@@ -199,9 +221,19 @@ export default function Home() {
         allow3x4Lumber: allow3x4Lumber,
         availableLumber: availableLumber
       },
-      markings: markings
+      markings: markings,
+      hardware: {
+        ...(config.hardware ?? {}),
+        lagScrewsPerVerticalCleat: lagScrewsPerCleat
+      },
+      identifiers: {
+        ...(config.identifiers ?? {}),
+        basePartNumber: partNumbers.base,
+        cratePartNumber: partNumbers.crate,
+        capPartNumber: partNumbers.cap
+      }
     }))
-  }, [config, allow3x4Lumber, displayOptions.lumberSizes, markings])
+  }, [config, allow3x4Lumber, displayOptions.lumberSizes, lagScrewsPerCleat, partNumbers, markings])
 
   const handleInputChange = (field: keyof typeof inputValues, value: string) => {
     // Update input value immediately
@@ -258,7 +290,13 @@ export default function Home() {
   }
 
   const downloadExpressions = () => {
-    const expressions = generator.exportNXExpressions()
+    const header = [
+      `# Base Part Number: ${partNumbers.base}`,
+      `# Crate Part Number: ${partNumbers.crate}`,
+      `# Cap Part Number: ${partNumbers.cap}`,
+      ''
+    ].join('\n')
+    const expressions = `${header}${generator.exportNXExpressions()}`
     const blob = new Blob([expressions], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -269,10 +307,35 @@ export default function Home() {
   }
 
   const downloadBOM = () => {
-    const bom = generator.generateBOM()
-    const csv = 'Item,Size,Quantity,Material\n' +
-      bom.map(row => `${row.item},"${row.size}",${row.quantity},${row.material}`).join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
+    const bom: BillOfMaterialsRow[] = generator.generateBOM()
+    const header = ['Item', 'Size', 'Length', 'Quantity', 'Material', 'Note']
+    const csvLines: string[] = [
+      'Metadata,Value',
+      `Base Part Number,${partNumbers.base}`,
+      `Crate Part Number,${partNumbers.crate}`,
+      `Cap Part Number,${partNumbers.cap}`,
+      '',
+      header.join(',')
+    ]
+
+    bom.forEach(row => {
+      const size = row.size ? `"${String(row.size).replace(/"/g, '')}"` : ''
+      const lengthValue = row.length !== undefined && row.length !== null
+        ? (typeof row.length === 'number' ? row.length.toFixed(2) : String(row.length))
+        : ''
+      const noteValue = row.note ? `"${row.note.replace(/"/g, '')}"` : ''
+
+      csvLines.push([
+        row.item ?? '',
+        size,
+        String(lengthValue ?? ''),
+        String(row.quantity ?? ''),
+        row.material ?? '',
+        noteValue
+      ].join(','))
+    })
+
+    const blob = new Blob([csvLines.join('\n')], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -292,13 +355,13 @@ export default function Home() {
     }))
   }
 
-  const toggleLumberSize = (size: keyof typeof displayOptions.lumberSizes) => {
-    setDisplayOptions(prev => ({
+  const togglePmiLayer = (layer: keyof typeof pmiVisibility) => {
+    if (layer === 'totalDimensions') {
+      return
+    }
+    setPmiVisibility(prev => ({
       ...prev,
-      lumberSizes: {
-        ...prev.lumberSizes,
-        [size]: !prev.lumberSizes[size]
-      }
+      [layer]: !prev[layer]
     }))
   }
 
@@ -368,42 +431,43 @@ export default function Home() {
   }
 
   return (
-    <main className="h-screen bg-gray-50 overflow-hidden flex flex-col">
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 overflow-x-hidden flex flex-col transition-colors duration-300">
       {/* Compact Header */}
-      <div className="bg-white shadow-sm px-4 py-1.5 flex-shrink-0">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none px-4 py-1.5 flex-shrink-0 transition-colors duration-300">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               data-testid="mobile-menu-toggle"
               aria-label="Toggle mobile inputs"
               onClick={() => setShowMobileInputs(!showMobileInputs)}
-              className="lg:hidden p-1 hover:bg-gray-100 rounded"
+              className="lg:hidden p-1 rounded text-gray-600 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showMobileInputs ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
               </svg>
             </button>
             <div>
-              <h1 className="text-lg lg:text-xl font-bold text-gray-900">AutoCrate NX Generator</h1>
-              <p className="text-xs text-gray-600 hidden lg:block">Two Diagonal Points Method</p>
+              <h1 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-gray-100">AutoCrate NX Generator</h1>
+              <p className="text-xs text-gray-600 dark:text-gray-400 hidden lg:block">Two Diagonal Points Method</p>
             </div>
           </div>
-          <div className="flex gap-1 lg:gap-2">
+          <div className="flex items-center gap-1 lg:gap-2">
+            <ThemeToggle />
             <button
               onClick={downloadExpressions}
-              className="bg-blue-600 text-white px-2 lg:px-3 py-1 text-xs lg:text-sm rounded hover:bg-blue-700"
+              className="bg-blue-600 text-white px-2 lg:px-3 py-1 text-xs lg:text-sm rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
             >
               Export NX
             </button>
             <button
               onClick={downloadBOM}
-              className="bg-green-600 text-white px-2 lg:px-3 py-1 text-xs lg:text-sm rounded hover:bg-green-700"
+              className="bg-green-600 text-white px-2 lg:px-3 py-1 text-xs lg:text-sm rounded hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors"
             >
               Export BOM
             </button>
             <button
               onClick={downloadStepFile}
-              className="bg-purple-600 text-white px-2 lg:px-3 py-1 text-xs lg:text-sm rounded hover:bg-purple-700"
+              className="bg-purple-600 text-white px-2 lg:px-3 py-1 text-xs lg:text-sm rounded hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 transition-colors"
             >
               Download STEP
             </button>
@@ -414,279 +478,199 @@ export default function Home() {
       {/* Main Content Grid */}
       <div className="flex-1 flex gap-2 p-2 min-h-0">
         {/* Left Panel - Inputs */}
-        <div className={`${showMobileInputs ? 'block' : 'hidden'} lg:block w-64 bg-white rounded-lg shadow-sm p-2 overflow-y-auto flex-shrink-0`}>
-          <ScenarioSelector
-            scenarios={SCENARIO_PRESETS}
-            activeScenarioId={activeScenarioId}
-            onScenarioSelect={applyScenario}
-          />
-          <div className="mb-2">
-            <span className="text-[11px] text-gray-500" data-testid="scenario-status">
-              {activeScenarioId ? `Active scenario: ${SCENARIO_PRESETS.find(preset => preset.id === activeScenarioId)?.name ?? 'Custom'}` : 'Active scenario: Custom values'}
-            </span>
-          </div>
-          {/* Product Dimensions */}
-          <div className="mb-2">
-            <h3 className="text-sm font-semibold mb-1.5">Product Dimensions</h3>
-            <div className="grid grid-cols-2 gap-1.5">
-              <div>
-                <label className="text-xs text-gray-600">Length (Y)"</label>
-                <input
-                  data-testid="input-length"
-                  type="text"
-                  value={inputValues.length}
-                  onChange={(e) => handleInputChange('length', e.target.value)}
-                  onBlur={() => handleInputBlur('length')}
-                  className="w-full text-sm border rounded px-2 py-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-gray-600">Width (X)"</label>
-                <input
-                  type="text"
-                  value={inputValues.width}
-                  onChange={(e) => handleInputChange('width', e.target.value)}
-                  onBlur={() => handleInputBlur('width')}
-                  className="w-full text-sm border rounded px-2 py-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-gray-600">Height (Z)"</label>
-                <input
-                  type="text"
-                  value={inputValues.height}
-                  onChange={(e) => handleInputChange('height', e.target.value)}
-                  onBlur={() => handleInputBlur('height')}
-                  className="w-full text-sm border rounded px-2 py-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-gray-600">Weight (lbs)</label>
-                <input
-                  data-testid="input-weight"
-                  type="text"
-                  value={inputValues.weight}
-                  onChange={(e) => handleInputChange('weight', e.target.value)}
-                  onBlur={() => handleInputBlur('weight')}
-                  className="w-full text-sm border rounded px-2 py-1"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Clearances */}
-          <div className="mb-2">
-            <div className="flex items-center justify-between mb-1.5">
-              <h3 className="text-sm font-semibold">Clearances (inches)</h3>
-              <button
-                onClick={() => {
-                  const zeroValues = {
-                    sideClearance: '0',
-                    endClearance: '0',
-                    topClearance: '0'
-                  };
-                  setInputValues(prev => ({ ...prev, ...zeroValues }));
-                  Object.entries(zeroValues).forEach(([key, value]) => {
-                    handleInputBlur(key as keyof typeof inputValues);
-                  });
-                }}
-                className="text-xs bg-gray-600 text-white px-2 py-0.5 rounded hover:bg-gray-700"
-              >
-                Min ID/OD
-              </button>
-            </div>
-            <div className="grid grid-cols-3 gap-1.5">
-              <div>
-                <label className="text-xs text-gray-600">Side</label>
-                <input
-                  type="text"
-                  value={inputValues.sideClearance}
-                  onChange={(e) => handleInputChange('sideClearance', e.target.value)}
-                  onBlur={() => handleInputBlur('sideClearance')}
-                  className="w-full text-sm border rounded px-2 py-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-gray-600">End</label>
-                <input
-                  type="text"
-                  value={inputValues.endClearance}
-                  onChange={(e) => handleInputChange('endClearance', e.target.value)}
-                  onBlur={() => handleInputBlur('endClearance')}
-                  className="w-full text-sm border rounded px-2 py-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-gray-600">Top</label>
-                <input
-                  type="text"
-                  value={inputValues.topClearance}
-                  onChange={(e) => handleInputChange('topClearance', e.target.value)}
-                  onBlur={() => handleInputBlur('topClearance')}
-                  className="w-full text-sm border rounded px-2 py-1"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Calculated Dimensions */}
-          <div className="mb-2 p-1.5 bg-gray-50 rounded">
-            <h3 className="text-sm font-semibold mb-0.5">Calculated Dimensions</h3>
-            <div className="space-y-1 text-xs">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Interior (ID):</span>
-                <span className="font-medium">
-                  {generator.getExpressions().get('internal_width')?.toFixed(1) || '0.0'}" ×
-                  {generator.getExpressions().get('internal_length')?.toFixed(1) || '0.0'}" ×
-                  {generator.getExpressions().get('internal_height')?.toFixed(1) || '0.0'}"
-                </span>
-              </div>
-              <div className="text-gray-500 text-xs pl-2">
-                W(X) × L(Y) × H(Z)
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Exterior (OD):</span>
-                <span className="font-medium" data-testid="exterior-dimensions">
-                  {generator.getExpressions().get('overall_width')?.toFixed(1)}" ×
-                  {generator.getExpressions().get('overall_length')?.toFixed(1)}" ×
-                  {generator.getExpressions().get('overall_height')?.toFixed(1)}"
-                </span>
-              </div>
-              <div className="text-gray-500 text-xs pl-2">
-                W(X) × L(Y) × H(Z)
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Skid:</span>
-                <span className="font-medium" data-testid="skid-label">
-                  {(() => {
-                    const skidWidth = generator.getExpressions().get('skid_width');
-                    if (skidWidth === 3.5) return '4x4 lumber';
-                    if (skidWidth === 2.5) return '3x4 lumber';
-                    if (skidWidth === 5.5) return '6x6 lumber';
-                    if (skidWidth === 7.25) return '8x8 lumber';
-                    return `${skidWidth?.toFixed(1)}"`;
-                  })()}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Materials Toggle */}
-          <div className="mb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">3x4 Lumber</span>
-              <button
-                data-testid="toggle-3x4"
-                onClick={() => setAllow3x4Lumber(!allow3x4Lumber)}
-                className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${
-                  allow3x4Lumber ? 'bg-blue-600' : 'bg-gray-300'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    allow3x4Lumber ? 'translate-x-5' : 'translate-x-0.5'
-                  }`}
-                />
-              </button>
-            </div>
-            <p className="text-xs text-gray-500 mt-1" data-testid="toggle-3x4-status">
-              {allow3x4Lumber ? 'For products < 500 lbs' : '4x4 for all < 4500 lbs'}
-            </p>
-          </div>
-
-          {/* Markings Configuration */}
-          <div className="mb-2">
-            <MarkingsSection
-              config={config}
-              onMarkingsChange={setMarkings}
+        <aside className={`${showMobileInputs ? 'block' : 'hidden'} lg:flex lg:flex-col w-72 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none p-3 flex-shrink-0 transition-colors overflow-y-auto lg:max-h-full`}>
+          <div className="flex-1 flex flex-col gap-3">
+            <ScenarioSelector
+              scenarios={SCENARIO_PRESETS}
+              activeScenarioId={activeScenarioId}
+              onScenarioSelect={applyScenario}
             />
-          </div>
-
-          {/* Display Options */}
-          <div>
-            <h3 className="text-sm font-semibold mb-1.5">Display Options</h3>
-
-            {/* View Options */}
-            <div className="space-y-1 mb-2">
-              <p className="text-xs font-medium mb-1">View Options</p>
-              <button
-                onClick={() => setDisplayOptions(prev => ({ ...prev, showOutlines: !prev.showOutlines }))}
-                className={`w-full text-xs px-2 py-1.5 rounded border transition-all ${
-                  displayOptions.showOutlines
-                    ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                Show Outlines
-              </button>
-              <button
-                onClick={() => setDisplayOptions(prev => ({
-                  ...prev,
-                  showMarkings: !prev.showMarkings
-                }))}
-                className={`text-xs px-2 py-1 rounded ${
-                  displayOptions.showMarkings
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700'
-                }`}
-              >
-                Show Markings
-              </button>
+            <div className="text-[11px] text-gray-500 dark:text-gray-400" data-testid="scenario-status">
+              {activeScenarioId ? `Active scenario: ${SCENARIO_PRESETS.find(preset => preset.id === activeScenarioId)?.name ?? 'Custom'}` : 'Active scenario: Custom values'}
             </div>
 
-            {/* Component Visibility */}
-            <div className="grid grid-cols-2 gap-1 mb-2">
-              {Object.entries(displayOptions.visibility).map(([component, isVisible]) => {
-                // Format display names
-                const displayName = component === 'frontPanel' ? 'Front Panel' :
-                                   component === 'backPanel' ? 'Back Panel' :
-                                   component === 'leftPanel' ? 'Left Panel' :
-                                   component === 'rightPanel' ? 'Right Panel' :
-                                   component === 'topPanel' ? 'Top Panel' :
-                                   component === 'floorboards' ? 'Floorboards' :
-                                   component === 'skids' ? 'Skids' :
-                                   component === 'cleats' ? 'Cleats' : component;
-
-                return (
-                  <button
-                    key={component}
-                    onClick={() => toggleComponentVisibility(component as keyof typeof displayOptions.visibility)}
-                    className={`text-xs px-2 py-1.5 rounded border transition-all ${
-                      isVisible
-                        ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {displayName}
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Lumber Sizes */}
-            <div className="space-y-1">
-              <p className="text-xs font-medium mb-1">Floor Sizes</p>
-              <div className="grid grid-cols-2 gap-1">
-                {Object.entries(displayOptions.lumberSizes).map(([size, isSelected]) => (
-                  <button
-                    key={size}
-                    onClick={() => toggleLumberSize(size as keyof typeof displayOptions.lumberSizes)}
-                    className={`text-xs px-2 py-1.5 rounded border transition-all ${
-                      isSelected
-                        ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+            <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-2">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Part Numbers</h3>
+              <div className="mt-1 space-y-2">
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Base</span>
+                  <input
+                    value={partNumbers.base}
+                    onChange={(e) => setPartNumbers(prev => ({ ...prev, base: e.target.value }))}
+                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="0205-XXXXX"
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Crate</span>
+                  <input
+                    value={partNumbers.crate}
+                    onChange={(e) => setPartNumbers(prev => ({ ...prev, crate: e.target.value }))}
+                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="0205-XXXXX"
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Cap</span>
+                  <input
+                    value={partNumbers.cap}
+                    onChange={(e) => setPartNumbers(prev => ({ ...prev, cap: e.target.value }))}
+                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="0205-XXXXX"
+                  />
+                </label>
               </div>
-            </div>
+            </section>
+
+            <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-2">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">Product Dimensions</h3>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex flex-col gap-0.5">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Length (Y)"</span>
+                  <input
+                    data-testid="input-length"
+                    type="text"
+                    value={inputValues.length}
+                    onChange={(e) => handleInputChange('length', e.target.value)}
+                    onBlur={() => handleInputBlur('length')}
+                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </label>
+                <label className="flex flex-col gap-0.5">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Width (X)"</span>
+                  <input
+                    data-testid="input-width"
+                    type="text"
+                    value={inputValues.width}
+                    onChange={(e) => handleInputChange('width', e.target.value)}
+                    onBlur={() => handleInputBlur('width')}
+                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </label>
+                <label className="flex flex-col gap-0.5">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Height (Z)"</span>
+                  <input
+                    data-testid="input-height"
+                    type="text"
+                    value={inputValues.height}
+                    onChange={(e) => handleInputChange('height', e.target.value)}
+                    onBlur={() => handleInputBlur('height')}
+                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </label>
+                <label className="flex flex-col gap-0.5">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Weight (lb)</span>
+                  <input
+                    data-testid="input-weight"
+                    type="text"
+                    value={inputValues.weight}
+                    onChange={(e) => handleInputChange('weight', e.target.value)}
+                    onBlur={() => handleInputBlur('weight')}
+                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </label>
+              </div>
+            </section>
+
+            <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-2">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">Clearances</h3>
+              <div className="grid grid-cols-3 gap-2">
+                <label className="flex flex-col gap-0.5">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Side</span>
+                  <input
+                    data-testid="input-side-clearance"
+                    type="text"
+                    value={inputValues.sideClearance}
+                    onChange={(e) => handleInputChange('sideClearance', e.target.value)}
+                    onBlur={() => handleInputBlur('sideClearance')}
+                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </label>
+                <label className="flex flex-col gap-0.5">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">End</span>
+                  <input
+                    data-testid="input-end-clearance"
+                    type="text"
+                    value={inputValues.endClearance}
+                    onChange={(e) => handleInputChange('endClearance', e.target.value)}
+                    onBlur={() => handleInputBlur('endClearance')}
+                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </label>
+                <label className="flex flex-col gap-0.5">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Top</span>
+                  <input
+                    data-testid="input-top-clearance"
+                    type="text"
+                    value={inputValues.topClearance}
+                    onChange={(e) => handleInputChange('topClearance', e.target.value)}
+                    onBlur={() => handleInputBlur('topClearance')}
+                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </label>
+              </div>
+            </section>
+
+            <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">3x4 Lumber</h3>
+                <button
+                  data-testid="toggle-3x4"
+                  onClick={() => setAllow3x4Lumber(!allow3x4Lumber)}
+                  className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${allow3x4Lumber ? 'bg-blue-600' : 'bg-gray-300'}`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${allow3x4Lumber ? 'translate-x-5' : 'translate-x-0.5'}`}
+                  />
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1" data-testid="toggle-3x4-status">
+                {allow3x4Lumber ? 'For products < 500 lbs' : '4x4 for all < 4500 lbs'}
+              </p>
+            </section>
+
+            <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Lag Screws</h3>
+                <span className="text-[11px] text-gray-500 dark:text-gray-400">per vertical cleat</span>
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <input
+                  type="range"
+                  min={2}
+                  max={6}
+                  value={lagScrewsPerCleat}
+                  onChange={(e) => setLagScrewsPerCleat(Math.max(2, Math.round(Number(e.target.value))))}
+                  className="flex-1"
+                />
+                <input
+                  type="number"
+                  min={2}
+                  max={6}
+                  value={lagScrewsPerCleat}
+                  onChange={(e) => {
+                    const parsed = Number(e.target.value)
+                    if (!Number.isNaN(parsed)) {
+                      setLagScrewsPerCleat(Math.min(6, Math.max(2, Math.round(parsed))))
+                    }
+                  }}
+                  className="w-12 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">Spacing balances automatically; screws stay centred on cleats.</p>
+            </section>
+
+            <details className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <summary className="cursor-pointer select-none px-2 py-1.5 text-sm font-semibold text-gray-700 dark:text-gray-200">Markings &amp; Labels</summary>
+              <div className="px-2 pb-2 pt-1">
+                <MarkingsSection config={config} onMarkingsChange={setMarkings} />
+              </div>
+            </details>
           </div>
-        </div>
+        </aside>
 
         {/* Right Panel - Visualization/Output */}
-        <div className={`${showMobileInputs ? 'hidden' : 'block'} lg:block flex-1 bg-white rounded-lg shadow-sm flex flex-col min-h-0`}>
+        <div className={`${showMobileInputs ? 'hidden' : 'block'} lg:block flex-1 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none flex flex-col min-h-0 transition-colors`}>
           {/* Tabs */}
           <div className="border-b border-gray-200">
             <nav className="flex">
@@ -734,35 +718,40 @@ export default function Home() {
           </div>
 
           {/* Tab Content */}
-          <div className="flex-1 p-4 min-h-0 overflow-hidden">
+          <div className="flex-1 p-4 min-h-0 flex flex-col">
             {activeTab === 'visualization' && (
-              <div className="h-full flex flex-col">
+              <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex-1 min-h-0">
                   <VisualizationErrorBoundary>
                     <CrateVisualizer
                       boxes={getFilteredBoxes()}
-                      showOutlines={displayOptions.showOutlines}
                       generator={generator}
                       showMarkings={displayOptions.showMarkings}
+                      visibility={displayOptions.visibility}
+                      onToggleVisibility={toggleComponentVisibility}
+                      onToggleMarkings={() => setDisplayOptions(prev => ({ ...prev, showMarkings: !prev.showMarkings }))}
+                      pmiVisibility={pmiVisibility}
+                      onTogglePmi={togglePmiLayer}
+                      partNumbers={partNumbers}
                     />
                   </VisualizationErrorBoundary>
                 </div>
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
                   Rotate: Left drag | Pan: Right drag | Zoom: Scroll
                 </p>
               </div>
             )}
 
             {activeTab === 'expressions' && (
-              <div className="h-full overflow-y-auto overflow-x-auto">
-                <pre className="text-xs bg-gray-50 p-3 rounded font-mono whitespace-pre">
+              <div className="flex-1 overflow-auto rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                <pre className="text-xs text-gray-800 dark:text-gray-100 p-3 font-mono whitespace-pre">
                   {generator.exportNXExpressions()}
                 </pre>
               </div>
             )}
 
             {activeTab === 'bom' && (
-              <div className="h-full overflow-auto">
+              <div className="flex-1 overflow-auto">
                 <table data-testid="bom-table" className="w-full text-sm">
                   <thead className="bg-gray-50 sticky top-0">
                     <tr>
@@ -787,7 +776,7 @@ export default function Home() {
             )}
 
             {activeTab === 'plywood' && (
-              <div className="h-full overflow-auto">
+              <div className="flex-1 overflow-auto">
                 <PlywoodPieceSelector
                   boxes={generator.getBoxes()}
                   onPieceToggle={handlePlywoodPieceToggle}
@@ -800,3 +789,5 @@ export default function Home() {
     </main>
   )
 }
+
+

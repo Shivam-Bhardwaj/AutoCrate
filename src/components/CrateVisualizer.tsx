@@ -3,18 +3,45 @@
 import { Canvas, ThreeEvent, useThree } from '@react-three/fiber'
 import { OrbitControls, Box, Text, Html, Edges, Plane, useGLTF, Clone } from '@react-three/drei'
 import { NXBox, NXGenerator } from '@/lib/nx-generator'
-import { Suspense, useState, useRef, useEffect, useMemo, useCallback, type MutableRefObject } from 'react'
+import { Suspense, useState, useRef, useEffect, useMemo, useCallback, Fragment, type MutableRefObject, type ReactNode } from 'react'
 import * as THREE from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { MarkingVisualizer } from './MarkingVisualizer'
+
+type ComponentVisibility = {
+  skids: boolean
+  floorboards: boolean
+  frontPanel: boolean
+  backPanel: boolean
+  leftPanel: boolean
+  rightPanel: boolean
+  topPanel: boolean
+  cleats: boolean
+}
+
+type PmiVisibilityState = {
+  totalDimensions: boolean
+  skids: boolean
+  cleats: boolean
+  floor: boolean
+}
 
 interface CrateVisualizerProps {
   boxes: NXBox[]
   showGrid?: boolean
   showLabels?: boolean
-  showOutlines?: boolean
   generator?: NXGenerator
   showMarkings?: boolean
+  visibility?: ComponentVisibility
+  onToggleVisibility?: (component: keyof ComponentVisibility) => void
+  onToggleMarkings?: () => void
+  pmiVisibility?: PmiVisibilityState
+  onTogglePmi?: (layer: keyof PmiVisibilityState) => void
+  partNumbers?: {
+    base?: string
+    crate?: string
+    cap?: string
+  }
 }
 
 // Represents a selected plane with its position and normal vector
@@ -64,6 +91,207 @@ function MeasurementLine({ start, end }: { start: THREE.Vector3; end: THREE.Vect
       <lineBasicMaterial color="#000000" linewidth={3} />
     </line>
   )
+}
+
+type SceneBounds = {
+  minX: number
+  maxX: number
+  minY: number
+  maxY: number
+  minZ: number
+  maxZ: number
+}
+
+function PMIFrame({ cells }: { cells: string[] }) {
+  return (
+    <div className="flex divide-x divide-gray-700 dark:divide-gray-400 border border-gray-700 dark:border-gray-400 bg-white/90 dark:bg-gray-900/90 text-[11px] font-mono text-gray-900 dark:text-gray-100 rounded-[2px] shadow-sm">
+      {cells.map((cell, index) => (
+        <span key={`${cell}-${index}`} className="px-1 py-[2px] whitespace-nowrap">
+          {cell}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function ScenePMIOverlays({
+  bounds,
+  totalDimensions,
+  skidInfo,
+  cleatSummary,
+  floorInfo,
+  pmiState
+}: {
+  bounds: SceneBounds;
+  totalDimensions: {
+    overallWidth: number;
+    overallLength: number;
+    overallHeight: number;
+  } | null;
+  skidInfo: {
+    count: number;
+    spacing: number;
+    width: number;
+    length: number;
+  } | null;
+  cleatSummary: {
+    vertical: number;
+    horizontal: number;
+    totalLength: number;
+  } | null;
+  floorInfo: {
+    count: number;
+    width: number;
+    thickness: number;
+    gap: number;
+  } | null;
+  pmiState: PmiVisibilityState;
+}) {
+  const scale = 0.1
+  const formatInches = (value: number) => `${value.toFixed(2)}"`
+
+  const centerX = (bounds.minX + bounds.maxX) / 2
+  const centerY = (bounds.minY + bounds.maxY) / 2
+
+  const annotations: ReactNode[] = []
+
+  if (totalDimensions && pmiState.totalDimensions) {
+    const widthOffset = 8
+    const lengthOffset = 10
+    const heightOffset = 6
+
+    // Width dimension (X axis)
+    const widthLineStart = new THREE.Vector3(bounds.minX * scale, (bounds.maxZ + widthOffset) * scale, -centerY * scale)
+    const widthLineEnd = new THREE.Vector3(bounds.maxX * scale, (bounds.maxZ + widthOffset) * scale, -centerY * scale)
+    const widthLabel = widthLineStart.clone().add(widthLineEnd).multiplyScalar(0.5)
+    widthLabel.y += 0.3
+
+    const widthExtLeftStart = new THREE.Vector3(bounds.minX * scale, bounds.maxZ * scale, -centerY * scale)
+    const widthExtLeftEnd = new THREE.Vector3(bounds.minX * scale, (bounds.maxZ + widthOffset) * scale, -centerY * scale)
+    const widthExtRightStart = new THREE.Vector3(bounds.maxX * scale, bounds.maxZ * scale, -centerY * scale)
+    const widthExtRightEnd = new THREE.Vector3(bounds.maxX * scale, (bounds.maxZ + widthOffset) * scale, -centerY * scale)
+
+    annotations.push(
+      <Fragment key="dim-width">
+        <MeasurementLine start={widthExtLeftStart} end={widthExtLeftEnd} />
+        <MeasurementLine start={widthExtRightStart} end={widthExtRightEnd} />
+        <MeasurementLine start={widthLineStart} end={widthLineEnd} />
+        <Html position={[widthLabel.x, widthLabel.y, widthLabel.z]} center distanceFactor={10} style={{ pointerEvents: 'none' }}>
+          <PMIFrame cells={[
+            'W',
+            formatInches(totalDimensions.overallWidth),
+            'DAT A'
+          ]} />
+        </Html>
+      </Fragment>
+    )
+
+    // Length dimension (Y axis in NX -> -Z in Three)
+    const lengthLineStart = new THREE.Vector3(centerX * scale, (bounds.maxZ + lengthOffset) * scale, -bounds.minY * scale)
+    const lengthLineEnd = new THREE.Vector3(centerX * scale, (bounds.maxZ + lengthOffset) * scale, -bounds.maxY * scale)
+    const lengthLabel = lengthLineStart.clone().add(lengthLineEnd).multiplyScalar(0.5)
+    lengthLabel.y += 0.3
+
+    const lengthExtFrontStart = new THREE.Vector3(centerX * scale, bounds.maxZ * scale, -bounds.minY * scale)
+    const lengthExtFrontEnd = new THREE.Vector3(centerX * scale, (bounds.maxZ + lengthOffset) * scale, -bounds.minY * scale)
+    const lengthExtBackStart = new THREE.Vector3(centerX * scale, bounds.maxZ * scale, -bounds.maxY * scale)
+    const lengthExtBackEnd = new THREE.Vector3(centerX * scale, (bounds.maxZ + lengthOffset) * scale, -bounds.maxY * scale)
+
+    annotations.push(
+      <Fragment key="dim-length">
+        <MeasurementLine start={lengthExtFrontStart} end={lengthExtFrontEnd} />
+        <MeasurementLine start={lengthExtBackStart} end={lengthExtBackEnd} />
+        <MeasurementLine start={lengthLineStart} end={lengthLineEnd} />
+        <Html position={[lengthLabel.x, lengthLabel.y, lengthLabel.z - 0.2]} center distanceFactor={10} style={{ pointerEvents: 'none' }}>
+          <PMIFrame cells={[
+            'L',
+            formatInches(totalDimensions.overallLength),
+            'DAT B'
+          ]} />
+        </Html>
+      </Fragment>
+    )
+
+    // Height dimension (Z axis)
+    const heightX = bounds.maxX + heightOffset
+    const heightLineStart = new THREE.Vector3(heightX * scale, bounds.minZ * scale, -bounds.maxY * scale)
+    const heightLineEnd = new THREE.Vector3(heightX * scale, bounds.maxZ * scale, -bounds.maxY * scale)
+    const heightLabel = heightLineStart.clone().add(heightLineEnd).multiplyScalar(0.5)
+    heightLabel.x += 0.3
+
+    const heightExtBottomStart = new THREE.Vector3(bounds.maxX * scale, bounds.minZ * scale, -bounds.maxY * scale)
+    const heightExtBottomEnd = new THREE.Vector3(heightX * scale, bounds.minZ * scale, -bounds.maxY * scale)
+    const heightExtTopStart = new THREE.Vector3(bounds.maxX * scale, bounds.maxZ * scale, -bounds.maxY * scale)
+    const heightExtTopEnd = new THREE.Vector3(heightX * scale, bounds.maxZ * scale, -bounds.maxY * scale)
+
+    annotations.push(
+      <Fragment key="dim-height">
+        <MeasurementLine start={heightExtBottomStart} end={heightExtBottomEnd} />
+        <MeasurementLine start={heightExtTopStart} end={heightExtTopEnd} />
+        <MeasurementLine start={heightLineStart} end={heightLineEnd} />
+        <Html position={[heightLabel.x, heightLabel.y, heightLabel.z]} center distanceFactor={10} style={{ pointerEvents: 'none' }}>
+          <PMIFrame cells={[
+            'H',
+            formatInches(totalDimensions.overallHeight),
+            'DAT C'
+          ]} />
+        </Html>
+      </Fragment>
+    )
+  }
+
+  if (pmiState.skids && skidInfo) {
+    const anchor = new THREE.Vector3(centerX * scale, bounds.minZ * scale + 0.2, -(bounds.maxY - 4) * scale)
+    const labelPosition = new THREE.Vector3(centerX * scale, (bounds.minZ + 2.5) * scale, -(bounds.maxY + 8) * scale)
+    annotations.push(
+      <Fragment key="callout-skids">
+        <MeasurementLine start={anchor} end={labelPosition} />
+        <Html position={[labelPosition.x, labelPosition.y, labelPosition.z]} center distanceFactor={10} style={{ pointerEvents: 'none' }}>
+          <PMIFrame cells={[
+            'SKID',
+            `QTY ${skidInfo.count}`,
+            `SP ${formatInches(skidInfo.spacing)}`
+          ]} />
+        </Html>
+      </Fragment>
+    )
+  }
+
+  if (pmiState.cleats && cleatSummary) {
+    const anchor = new THREE.Vector3((bounds.minX + 4) * scale, (bounds.maxZ - 10) * scale, -centerY * scale)
+    const labelPosition = new THREE.Vector3((bounds.minX - 8) * scale, (bounds.maxZ - 6) * scale, -centerY * scale)
+    annotations.push(
+      <Fragment key="callout-cleats">
+        <MeasurementLine start={anchor} end={labelPosition} />
+        <Html position={[labelPosition.x, labelPosition.y, labelPosition.z]} center distanceFactor={10} style={{ pointerEvents: 'none' }}>
+          <PMIFrame cells={[
+            'CLEAT',
+            `V ${cleatSummary.vertical}`,
+            `H ${cleatSummary.horizontal}`
+          ]} />
+        </Html>
+      </Fragment>
+    )
+  }
+
+  if (pmiState.floor && floorInfo) {
+    const anchor = new THREE.Vector3(centerX * scale, bounds.minZ * scale + 0.1, -centerY * scale)
+    const labelPosition = new THREE.Vector3((bounds.maxX + 6) * scale, (bounds.minZ + 1.5) * scale, -centerY * scale)
+    annotations.push(
+      <Fragment key="callout-floor">
+        <MeasurementLine start={anchor} end={labelPosition} />
+        <Html position={[labelPosition.x, labelPosition.y, labelPosition.z]} center distanceFactor={10} style={{ pointerEvents: 'none' }}>
+          <PMIFrame cells={[
+            'FLOOR',
+            `QTY ${floorInfo.count}`,
+            `WD ${formatInches(floorInfo.width)}`
+          ]} />
+        </Html>
+      </Fragment>
+    )
+  }
+
+  return <>{annotations}</>
 }
 
 function CameraResetter({
@@ -243,7 +471,6 @@ function NXBoxMesh({
   hoveredBox,
   setHoveredBox,
   onHide,
-  showOutlines,
   selectedPlanes,
   onPlaneClick
 }: {
@@ -251,7 +478,6 @@ function NXBoxMesh({
   hoveredBox: string | null;
   setHoveredBox: (name: string | null) => void;
   onHide: (boxName: string) => void;
-  showOutlines: boolean;
   selectedPlanes: SelectedPlane[];
   onPlaneClick: (plane: SelectedPlane) => void;
 }) {
@@ -371,14 +597,10 @@ function NXBoxMesh({
           opacity={1}
           transparent={false}
         />
-        {/* Add edges based on showOutlines prop or for panels */}
-        {(showOutlines || box.type === 'panel') && (
-          <Edges
-            color='#000000'
-            scale={1.001}
-            linewidth={1}
-          />
-        )}
+        <Edges
+          color='#1f2937'
+          scale={1.0006}
+        />
       </Box>
 
       {isHovered && (
@@ -402,7 +624,7 @@ function NXBoxMesh({
   )
 }
 
-export default function CrateVisualizer({ boxes, showGrid = true, showLabels = true, showOutlines = false, generator, showMarkings = true }: CrateVisualizerProps) {
+export default function CrateVisualizer({ boxes, showGrid = true, showLabels = true, generator, showMarkings = true, visibility, onToggleVisibility, onToggleMarkings, pmiVisibility, onTogglePmi, partNumbers }: CrateVisualizerProps) {
   const [hiddenComponents, setHiddenComponents] = useState<Set<string>>(new Set())
   const [hoveredBox, setHoveredBox] = useState<string | null>(null)
   const [showHiddenList, setShowHiddenList] = useState(false)
@@ -414,11 +636,131 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
   const controlsRef = useRef<OrbitControlsImpl | null>(null)
   const highlightColors = ['#00FF00', '#008CFF']
 
+  const componentVisibility: ComponentVisibility = visibility ?? {
+    skids: true,
+    floorboards: true,
+    frontPanel: true,
+    backPanel: true,
+    leftPanel: true,
+    rightPanel: true,
+    topPanel: true,
+    cleats: true,
+  }
+
+  const pmiState: PmiVisibilityState = pmiVisibility ?? {
+    totalDimensions: true,
+    skids: false,
+    cleats: false,
+    floor: false,
+  }
+
+  const derivedPartNumbers = {
+    base: partNumbers?.base?.trim() || 'N/A',
+    crate: partNumbers?.crate?.trim() || 'N/A',
+    cap: partNumbers?.cap?.trim() || 'N/A',
+  }
+
+  const visibilityLabels: Record<keyof ComponentVisibility, string> = {
+    skids: 'Skids',
+    floorboards: 'Floorboards',
+    frontPanel: 'Front Panel',
+    backPanel: 'Back Panel',
+    leftPanel: 'Left Panel',
+    rightPanel: 'Right Panel',
+    topPanel: 'Top Panel',
+    cleats: 'Cleats',
+  }
+
+  const pmiLabels: Record<keyof PmiVisibilityState, string> = {
+    totalDimensions: 'Total',
+    skids: 'Skids',
+    cleats: 'Cleats',
+    floor: 'Floor',
+  }
+
   const clearSelections = useCallback(() => {
     setSelectedPlanes([])
     setMeasurementDistance(null)
     setSelectionError(null)
   }, [])
+
+  const handleResetView = useCallback(() => {
+    setHiddenComponents(new Set())
+    setShowHiddenList(false)
+    clearSelections()
+    setResetCameraTrigger(prev => prev + 1)
+  }, [clearSelections])
+
+  const totalDimensions = useMemo(() => {
+    if (!generator) {
+      return null
+    }
+    const expressions = generator.getExpressions()
+    return {
+      overallWidth: expressions.get('overall_width') ?? 0,
+      overallLength: expressions.get('overall_length') ?? 0,
+      overallHeight: expressions.get('overall_height') ?? 0,
+      internalWidth: expressions.get('internal_width') ?? 0,
+      internalLength: expressions.get('internal_length') ?? 0,
+      internalHeight: expressions.get('internal_height') ?? 0,
+    }
+  }, [generator])
+
+  const skidInfo = useMemo(() => {
+    if (!generator) {
+      return null
+    }
+    const expressions = generator.getExpressions()
+    return {
+      count: expressions.get('skid_count') ?? 0,
+      spacing: expressions.get('pattern_spacing') ?? 0,
+      width: expressions.get('skid_width') ?? 0,
+      length: expressions.get('internal_length') ?? 0,
+    }
+  }, [generator])
+
+  const floorInfo = useMemo(() => {
+    if (!generator) {
+      return null
+    }
+    const expressions = generator.getExpressions()
+    return {
+      count: expressions.get('floorboard_count') ?? 0,
+      width: expressions.get('floorboard_width') ?? 0,
+      thickness: expressions.get('floorboard_thickness') ?? 0,
+      gap: expressions.get('floorboard_gap') ?? 0,
+    }
+  }, [generator])
+
+  const cleatSummary = useMemo(() => {
+    if (!generator) {
+      return null
+    }
+    const layouts = generator.getPanelCleatLayouts()
+    let vertical = 0
+    let horizontal = 0
+    let totalLength = 0
+
+    layouts.forEach(layout => {
+      layout.cleats.forEach(cleat => {
+        if (cleat.orientation === 'vertical') {
+          vertical += 1
+        } else if (cleat.orientation === 'horizontal') {
+          horizontal += 1
+        }
+        totalLength += cleat.length
+      })
+    })
+
+    return { vertical, horizontal, totalLength }
+  }, [generator])
+
+  const formatDimension = (value: number | null | undefined) => {
+    if (value === null || value === undefined) {
+      return 'N/A'
+    }
+    return toNearest16th(value)
+  }
 
   // Filter out suppressed components and user-hidden components, then sort by render priority
   // Render order: skids first, then floorboards, then panels (so panels get hover priority)
@@ -440,6 +782,40 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
         return aPriority - bPriority
       })
   ), [boxes, hiddenComponents])
+
+  const sceneBounds = useMemo<SceneBounds | null>(() => {
+    if (visibleBoxes.length === 0) {
+      return null
+    }
+
+    const bounds: SceneBounds = {
+      minX: Number.POSITIVE_INFINITY,
+      maxX: Number.NEGATIVE_INFINITY,
+      minY: Number.POSITIVE_INFINITY,
+      maxY: Number.NEGATIVE_INFINITY,
+      minZ: Number.POSITIVE_INFINITY,
+      maxZ: Number.NEGATIVE_INFINITY
+    }
+
+    visibleBoxes.forEach(box => {
+      const xValues = [box.point1.x, box.point2.x]
+      const yValues = [box.point1.y, box.point2.y]
+      const zValues = [box.point1.z, box.point2.z]
+
+      bounds.minX = Math.min(bounds.minX, ...xValues)
+      bounds.maxX = Math.max(bounds.maxX, ...xValues)
+      bounds.minY = Math.min(bounds.minY, ...yValues)
+      bounds.maxY = Math.max(bounds.maxY, ...yValues)
+      bounds.minZ = Math.min(bounds.minZ, ...zValues)
+      bounds.maxZ = Math.max(bounds.maxZ, ...zValues)
+    })
+
+    if (!Number.isFinite(bounds.minX) || !Number.isFinite(bounds.minY) || !Number.isFinite(bounds.minZ)) {
+      return null
+    }
+
+    return bounds
+  }, [visibleBoxes])
 
   const handleHideComponent = (boxName: string) => {
     setHiddenComponents(prev => {
@@ -623,7 +999,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                 hoveredBox={hoveredBox}
                 setHoveredBox={setHoveredBox}
                 onHide={handleHideComponent}
-                showOutlines={showOutlines}
+
                 selectedPlanes={selectedPlanes}
                 onPlaneClick={handlePlaneClick}
               />
@@ -643,6 +1019,17 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
               color={highlightColors[index] ?? '#00FF00'}
             />
           ))}
+
+          {sceneBounds && (
+            <ScenePMIOverlays
+              bounds={sceneBounds}
+              totalDimensions={totalDimensions}
+              skidInfo={skidInfo}
+              cleatSummary={cleatSummary}
+              floorInfo={floorInfo}
+              pmiState={pmiState}
+            />
+          )}
 
           {/* Render measurement line between parallel planes */}
           {selectedPlanes.length === 2 && measurementDistance !== null && (
@@ -682,56 +1069,161 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
         </Suspense>
       </Canvas>
 
-      {/* Hidden Components Panel */}
-      {hiddenComponents.size > 0 && (
-        <div className="absolute top-2 right-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 max-w-xs">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Hidden Components ({hiddenComponents.size})
-            </h3>
+      {/* Overlay Panels */}
+      <div className="absolute top-2 right-2 flex w-64 flex-col gap-2 pointer-events-auto">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Visibility</h3>
             <button
-              onClick={() => setShowHiddenList(!showHiddenList)}
+              onClick={handleResetView}
               className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
             >
-              {showHiddenList ? 'Hide' : 'Show'}
+              Reset view
             </button>
           </div>
-
-          {showHiddenList && (
-            <>
-              <div className="max-h-48 overflow-y-auto">
-                {Array.from(hiddenComponents).map(name => (
-                  <div
-                    key={name}
-                    className="flex justify-between items-center py-1 text-xs"
-                  >
-                    <span className="text-gray-600 dark:text-gray-400 truncate mr-2">
-                      {name}
-                    </span>
-                    <button
-                      onClick={() => handleShowComponent(name)}
-                      className="text-blue-600 dark:text-blue-400 hover:underline"
-                    >
-                      Show
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={handleShowAll}
-                className="mt-2 w-full text-xs bg-blue-600 text-white rounded px-2 py-1 hover:bg-blue-700"
-              >
-                Show All
-              </button>
-            </>
-          )}
+          <div className="flex flex-wrap gap-1">
+            {(Object.keys(componentVisibility) as (keyof ComponentVisibility)[]).map(key => {
+              const isEnabled = componentVisibility[key]
+              return (
+                <button
+                  key={key}
+                  onClick={() => onToggleVisibility?.(key)}
+                  className={`px-2 py-1.5 text-xs rounded border transition-colors ${
+                    isEnabled
+                      ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:border-blue-400 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {visibilityLabels[key]}
+                </button>
+              )
+            })}
+          </div>
+          <div className="mt-2 flex flex-wrap gap-1">
+            <button
+              onClick={() => onToggleMarkings?.()}
+              className={`px-2 py-1.5 text-xs rounded border transition-colors ${
+                showMarkings
+                  ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:border-blue-400 dark:hover:bg-gray-700'
+              }`}
+            >
+              {showMarkings ? 'Markings On' : 'Markings Off'}
+            </button>
+          </div>
         </div>
-      )}
 
-      {/* Measurement Status */}
+        {hiddenComponents.size > 0 && (
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                Hidden Components ({hiddenComponents.size})
+              </h3>
+              <button
+                onClick={() => setShowHiddenList(!showHiddenList)}
+                className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                {showHiddenList ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            {showHiddenList && (
+              <>
+                <div className="max-h-40 overflow-y-auto space-y-1 text-xs">
+                  {Array.from(hiddenComponents).map(name => (
+                    <div key={name} className="flex justify-between items-center">
+                      <span className="text-gray-600 dark:text-gray-400 truncate mr-2">{name}</span>
+                      <button
+                        onClick={() => handleShowComponent(name)}
+                        className="text-blue-600 dark:text-blue-400 hover:underline"
+                      >
+                        Show
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={handleShowAll}
+                  className="mt-2 w-full text-xs bg-blue-600 text-white rounded px-2 py-1 hover:bg-blue-700"
+                >
+                  Show All
+                </button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="absolute top-2 left-2 w-64 max-w-xs pointer-events-auto">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 space-y-2">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">PMI Snapshot</h3>
+            <p className="text-[11px] text-gray-500 dark:text-gray-400">Totals stay on. Toggle more detail below.</p>
+          </div>
+          {totalDimensions && (
+            <div className="text-xs space-y-1">
+              <div className="font-medium text-gray-700 dark:text-gray-200">
+                Total: {formatDimension(totalDimensions.overallWidth)} W x {formatDimension(totalDimensions.overallLength)} L x {formatDimension(totalDimensions.overallHeight)} H
+              </div>
+              <div className="text-gray-500 dark:text-gray-400">
+                Internal: {formatDimension(totalDimensions.internalWidth)} W x {formatDimension(totalDimensions.internalLength)} L x {formatDimension(totalDimensions.internalHeight)} H
+              </div>
+            </div>
+          )}
+          {pmiState.skids && skidInfo && (
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-2 text-xs space-y-1">
+              <div className="font-medium text-gray-700 dark:text-gray-200">Skids</div>
+              <div>Count: {skidInfo.count}</div>
+              <div>Center spacing: {formatDimension(skidInfo.spacing)}</div>
+              <div>Nominal width: {formatDimension(skidInfo.width)}</div>
+              <div>Length: {formatDimension(skidInfo.length)}</div>
+            </div>
+          )}
+          {pmiState.cleats && cleatSummary && (
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-2 text-xs space-y-1">
+              <div className="font-medium text-gray-700 dark:text-gray-200">Cleats</div>
+              <div>Vertical: {cleatSummary.vertical}</div>
+              <div>Horizontal: {cleatSummary.horizontal}</div>
+              <div>Total linear inches: {formatDimension(cleatSummary.totalLength)}</div>
+            </div>
+          )}
+          {pmiState.floor && floorInfo && (
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-2 text-xs space-y-1">
+              <div className="font-medium text-gray-700 dark:text-gray-200">Floorboards</div>
+              <div>Boards: {floorInfo.count}</div>
+              <div>Width: {formatDimension(floorInfo.width)}</div>
+              <div>Thickness: {formatDimension(floorInfo.thickness)}</div>
+              <div>Gap: {formatDimension(floorInfo.gap)}</div>
+            </div>
+          )}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-2 flex flex-wrap gap-1">
+            {(Object.keys(pmiLabels) as (keyof PmiVisibilityState)[]).filter(layer => layer !== 'totalDimensions').map(layer => {
+              const active = pmiState[layer]
+              return (
+                <button
+                  key={layer}
+                  onClick={() => onTogglePmi?.(layer)}
+                  className={`px-2 py-1 text-xs rounded border transition-colors ${
+                    active
+                      ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:border-blue-400 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {pmiLabels[layer]}
+                </button>
+              )
+            })}
+          </div>
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-2 text-[11px] text-gray-600 dark:text-gray-400 space-y-1">
+            <div>Base: {derivedPartNumbers.base}</div>
+            <div>Crate: {derivedPartNumbers.crate}</div>
+            <div>Cap: {derivedPartNumbers.cap}</div>
+          </div>
+        </div>
+      </div>
+
       {selectedPlanes.length > 0 && (
-        <div className="absolute top-2 left-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3">
-          <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+        <div className="absolute bottom-20 left-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg p-3">
+          <div className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
             Measurement Mode
           </div>
           <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
@@ -740,7 +1232,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                 Plane {index + 1}: {plane.boxName}
               </div>
             ))}
-            <div className="pt-1 border-t border-gray-300 dark:border-gray-600">
+            <div className="pt-1 border-t border-gray-300 dark:border-gray-700">
               {selectionError && (
                 <span className="font-semibold text-red-600 dark:text-red-400">
                   {selectionError}
@@ -770,3 +1262,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
     </div>
   )
 }
+
+
+
+

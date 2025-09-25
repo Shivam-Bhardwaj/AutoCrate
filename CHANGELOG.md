@@ -9,9 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Regression test that verifies the new floorboard layout behaviour (widest boards at the edges, mirrored narrowing, single custom infill)
-- Playwright STEP-download assertions that read the generated file from the run artifacts directory and check for BREP entities
-- Jest safeguards for lag hardware placement across side and back panels
+- Regression test that verifies the new floorboard layout behaviour (widest boards at the edges, mirrored narrowing, single custom infill)\n- Playwright STEP-download assertions that read the generated file from the run artifacts directory and check for BREP entities\n- Jest safeguards for lag hardware placement across side and back panels\n- Contributor guide (AGENTS.md) refreshed with current structure, workflows, and deployment expectations
 
 ### Changed
 

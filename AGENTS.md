@@ -1,31 +1,36 @@
-﻿# Repository Guidelines
+# Repository Guidelines
 
 ## Project Structure & Module Organization
-Core Next.js app lives in src/app, with route layout, shared CSS, and API handlers. Reusable React/Three components are under src/components; shared utilities like NXGenerator and StepGenerator are in src/lib. Browser-exposed assets live in public and large STEP or GLB payloads belong in publicmodels and CAD FILES. Acceptance docs and diagrams sit in docs. Playwright specs and supporting fixtures live under 	ests/e2e, while unit tests belong alongside code or in 	ests/ (see klimp-calculator.test.ts). Generated coverage snapshots should stay in coverage/ and not be edited manually.
+
+- Keep all Next.js routes, layouts, and API handlers under `src/app`; colocate shared UI primitives in `src/components` and utilities (e.g., step generators) in `src/lib`.
+- Store acceptance docs inside `docs/`, ship public assets from `public/`, and stage heavy CAD payloads in `publicmodels/` or `CAD FILES/` to avoid inflating the client bundle.
+- Jest unit specs live beside their sources or under `test/`, while Playwright flows stay in `tests/e2e/`. Never touch generated coverage inside `coverage/`.
 
 ## Build, Test, and Development Commands
-Run 
-pm install once to pull dependencies. 
-pm run dev starts the Next.js dev server with hot reload. 
-pm run build compiles production assets; follow with 
-pm run start to smoke-test the build. Use 
-pm run lint for ESLint, 
-pm run type-check for 	sc --noEmit, and 
-pm run test for Jest unit suites. 
-pm run test:coverage reports coverage; 
-pm run test:e2e executes Playwright headless, while 
-pm run test:e2e:ui is helpful for debugging. End-to-end and unit suites can be orchestrated via 
-pm run test:all. For Keploy snapshots, use 
-pm run keploy:record and 
-pm run keploy:test.
+
+- `npm install`: refresh dependencies whenever `package-lock.json` changes.
+- `npm run dev`: launch the hot-reload Next.js server.
+- `npm run build && npm run start`: validate production output locally.
+- `npm run lint`, `npm run type-check`, `npm run test`: enforce code quality gates; reach for `npm run test:coverage` and `npm run test:e2e` before shipping UI changes.
 
 ## Coding Style & Naming Conventions
-TypeScript is required for application code; prefer function components and hooks. Use two-space indentation, trailing commas, and descriptive camelCase for variables. Components exported from src/components should remain PascalCase and exported as defaults when they map to one file. Leverage Tailwind utility classes defined in 	ailwind.config.js and keep styles in CSS modules only when utilities fall short. ESLint (eslint-config-next) enforces formatting; Prettier runs via lint-staged for JSON, Markdown, and YAML.
+
+- Author application code in TypeScript with 2-space indentation, trailing commas, and camelCase locals; export React or Three components in PascalCase.
+- Favor functional React components and hooks, lean on Tailwind utilities from `tailwind.config.js`, and reserve CSS modules for gaps.
+- eslint-config-next and Prettier (via lint-staged) manage formatting; do not bypass lint fixes.
 
 ## Testing Guidelines
-Keep unit tests colocated with the code they cover or inside 	ests/ with a .test.tsx or .test.ts suffix. Align component tests with realistic user flows using React Testing Library. For Playwright specs, follow the 	ests/e2e/*.spec.ts pattern and stub network calls when possible. Target 80%+ coverage, and update baseline metrics intentionally—failing to justify drops may block PRs. Always run 
-pm run test:coverage and, when UI changes occur, 
-pm run test:e2e.
+
+- Write unit specs as `.test.ts(x)` files positioned beside features; use React Testing Library for component flows.
+- Keep Playwright specs in `tests/e2e/*.spec.ts`, stubbing remote calls when feasible.
+- Maintain ≥80% coverage; call out intentional dips in PRs and rerun `npm run test:coverage` on every feature branch.
 
 ## Commit & Pull Request Guidelines
-Adopt concise subject lines using conventional prefixes (eat:, ix:, chore:), mirroring recent history. Bundle related changes per commit and describe the technical intent. PRs must include a summary, before/after context or screenshots for UI tweaks, linked issues or tickets, and a checklist of tests executed. Ensure CI passes locally prior to requesting review.
+
+- Follow Conventional Commits (`feat:`, `fix:`, `chore:`) with focused scope; stage related changes together.
+- PR descriptions should summarize the change set, link issues, list the checks you ran, and share before/after screenshots for UI updates.
+- Ensure linting, type checks, unit, and relevant Playwright suites pass locally before requesting review.
+
+## Deployment Prep Checklist
+
+- Update `CHANGELOG.md`, run `npm run build`, and confirm geometry updates by executing `npm run test` plus `npm run test:e2e`.

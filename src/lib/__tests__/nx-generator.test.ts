@@ -1,5 +1,6 @@
 import { NXGenerator, CrateConfig, generateNXExpressions } from '../nx-generator'
 import { LagSTEPIntegration } from '../lag-step-integration'
+import { Cleat } from '../cleat-calculator'
 
 const baseConfig: CrateConfig = {
   product: {
@@ -244,54 +245,145 @@ describe('NXGenerator', () => {
     )
 
     const expressions = generator.getExpressions()
-    const expectedLagCount = supportCleatsLeft.length + supportCleatsRight.length + supportCleatsBack.length
-
-    expect(expressions.get('lag_screw_count')).toBe(expectedLagCount)
-
     const geometry = LagSTEPIntegration.getGeometry()
     const boxes = generator.getBoxes()
+
     const cleatBoxes = new Map<string, typeof boxes[number]>()
+    const panelExtents = new Map<string, { minX: number; maxX: number; minY: number; maxY: number }>()
     boxes
       .filter(box => box.type === 'cleat')
-      .forEach(box => cleatBoxes.set(box.name, box))
+      .forEach(box => {
+        cleatBoxes.set(box.name, box)
+
+        if (!box.panelName) {
+          return
+        }
+
+        const extents = panelExtents.get(box.panelName) || {
+          minX: Number.POSITIVE_INFINITY,
+          maxX: Number.NEGATIVE_INFINITY,
+          minY: Number.POSITIVE_INFINITY,
+          maxY: Number.NEGATIVE_INFINITY
+        }
+
+        extents.minX = Math.min(extents.minX, box.point1.x, box.point2.x)
+        extents.maxX = Math.max(extents.maxX, box.point1.x, box.point2.x)
+        extents.minY = Math.min(extents.minY, box.point1.y, box.point2.y)
+        extents.maxY = Math.max(extents.maxY, box.point1.y, box.point2.y)
+        panelExtents.set(box.panelName, extents)
+      })
+
+    const supportCleatsById = new Map<string, { panelName: string; cleat: Cleat }>()
+    const registerCleats = (panelName: string, cleats: Cleat[]) => {
+      cleats.forEach(cleat => {
+        supportCleatsById.set(cleat.id, { panelName, cleat })
+      })
+    }
+
+    registerCleats('LEFT_END_PANEL', supportCleatsLeft)
+    registerCleats('RIGHT_END_PANEL', supportCleatsRight)
+    registerCleats('BACK_PANEL', supportCleatsBack)
 
     const lagShafts = boxes.filter(
       box => box.type === 'hardware' && box.name.endsWith('_SHAFT')
     )
-    expect(lagShafts.length).toBe(expectedLagCount)
 
-    const allSupportCleats = [...supportCleatsLeft, ...supportCleatsRight, ...supportCleatsBack]
+    expect(expressions.get('lag_screw_count')).toBe(lagShafts.length)
+
     const floorboardMidZ = (expressions.get('skid_height') || 0) + ((expressions.get('floorboard_thickness') || 0) / 2)
+    const placementTracker = new Map<string, { mid: Set<string>; low: Set<string> }>()
 
     lagShafts.forEach(box => {
-      const cleatId = box.name.replace('_LAG_SHAFT', '')
-      const cleat = allSupportCleats.find(entry => entry.id === cleatId)
+      const [cleatId, suffixPart] = box.name.split('_LAG_')
+      const cleatData = supportCleatsById.get(cleatId)
       const cleatBox = cleatBoxes.get(cleatId)
 
-      if (!cleat || !cleatBox) {
+      if (!cleatData || !cleatBox) {
         throw new Error(`Missing cleat data for ${cleatId}`)
       }
 
-      const centerZ = (box.point1.z + box.point2.z) / 2
-      expect(centerZ).toBeCloseTo(floorboardMidZ, 3)
+      const suffix = suffixPart.replace('_SHAFT', '')
+      const [level, ...locationSegments] = suffix.split('_')
+      const location = locationSegments.join('_')
 
-      if (box.panelName === 'LEFT_END_PANEL') {
+      const tracker = placementTracker.get(cleatId) || { mid: new Set<string>(), low: new Set<string>() }
+      if (level === 'MID') {
+        tracker.mid.add(location)
+      } else if (level === 'LOW') {
+        tracker.low.add(location)
+      }
+      placementTracker.set(cleatId, tracker)
+
+      const cleatBottomZ = Math.min(cleatBox.point1.z, cleatBox.point2.z)
+      const centerZ = (box.point1.z + box.point2.z) / 2
+
+      if (level === 'MID') {
+        expect(centerZ).toBeCloseTo(floorboardMidZ, 3)
+        expect(box.metadata).toContain('floorboard centerline')
+      } else {
+        expect(centerZ).toBeCloseTo(cleatBottomZ + 0.5, 3)
+        expect(box.metadata).toContain('0.5" above lower cleat')
+      }
+
+      const axis = cleatData.panelName === 'BACK_PANEL' ? 'x' : 'y'
+      const cleatCenterAxis = axis === 'x'
+        ? (cleatBox.point1.x + cleatBox.point2.x) / 2
+        : (cleatBox.point1.y + cleatBox.point2.y) / 2
+      const placementCenterAxis = axis === 'x'
+        ? (box.point1.x + box.point2.x) / 2
+        : (box.point1.y + box.point2.y) / 2
+
+      if (location === 'CENTER') {
+        expect(placementCenterAxis).toBeCloseTo(cleatCenterAxis, 3)
+      } else {
+        const extents = panelExtents.get(cleatData.panelName) || { minX: 0, maxX: 0, minY: 0, maxY: 0 }
+        let expected = cleatCenterAxis
+        if (location === 'NEAR_FRONT') {
+          expected = extents.minY + 0.5
+        } else if (location === 'NEAR_BACK') {
+          expected = extents.maxY - 0.5
+        } else if (location === 'NEAR_LEFT') {
+          expected = extents.minX + 0.5
+        } else if (location === 'NEAR_RIGHT') {
+          expected = extents.maxX - 0.5
+        } else {
+          throw new Error(`Unexpected placement location ${location}`)
+        }
+        expect(placementCenterAxis).toBeCloseTo(expected, 3)
+        expect(box.metadata).toContain('0.5" inboard')
+      }
+
+      if (cleatData.panelName === 'LEFT_END_PANEL') {
         const outsideFaceX = cleatBox.point1.x
         expect(box.point1.x).toBeCloseTo(outsideFaceX, 3)
         expect(Math.abs(box.point2.x - box.point1.x)).toBeCloseTo(geometry.shankLength, 3)
-        expect(box.metadata).toContain('+X inward')
-      } else if (box.panelName === 'RIGHT_END_PANEL') {
+        expect(box.metadata).toContain('axis +X')
+      } else if (cleatData.panelName === 'RIGHT_END_PANEL') {
         const outsideFaceX = cleatBox.point2.x
         expect(box.point2.x).toBeCloseTo(outsideFaceX, 3)
         expect(Math.abs(box.point2.x - box.point1.x)).toBeCloseTo(geometry.shankLength, 3)
-        expect(box.metadata).toContain('-X inward')
-      } else if (box.panelName === 'BACK_PANEL') {
+        expect(box.metadata).toContain('axis -X')
+      } else if (cleatData.panelName === 'BACK_PANEL') {
         const outsideFaceY = cleatBox.point2.y
         expect(box.point2.y).toBeCloseTo(outsideFaceY, 3)
         expect(Math.abs(box.point2.y - box.point1.y)).toBeCloseTo(geometry.shankLength, 3)
-        expect(box.metadata).toContain('-Y inward')
+        expect(box.metadata).toContain('axis -Y')
       } else {
         throw new Error(`Unexpected panel for lag screw: ${box.panelName}`)
+      }
+    })
+
+    const expectedLocations = new Set(['CENTER', 'NEAR_FRONT', 'NEAR_BACK', 'NEAR_LEFT', 'NEAR_RIGHT'])
+    placementTracker.forEach(tracker => {
+      expect(tracker.mid.has('CENTER')).toBe(true)
+      expect(
+        [...tracker.mid].some(location => location !== 'CENTER' && expectedLocations.has(location))
+      ).toBe(true)
+      if (tracker.low.size > 0) {
+        expect(tracker.low.has('CENTER')).toBe(true)
+        expect(
+          [...tracker.low].some(location => location !== 'CENTER' && expectedLocations.has(location))
+        ).toBe(true)
       }
     })
   })
@@ -304,4 +396,3 @@ describe('NXGenerator', () => {
     expect(bundle).toContain('skid_count=')
   })
 })
-
