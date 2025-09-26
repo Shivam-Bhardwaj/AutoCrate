@@ -78,6 +78,14 @@ if (typeof global.Response === 'undefined') {
   global.Response = MockResponse
 }
 
+if (typeof global.fetch === 'undefined') {
+  global.fetch = jest.fn(() =>
+    Promise.resolve(
+      MockResponse.json({ lastUpdate: new Date().toISOString() })
+    )
+  )
+}
+
 // Mock the Three.js components that don't work in test environment
 jest.mock('@react-three/fiber', () => ({
   Canvas: ({ children }) => children,

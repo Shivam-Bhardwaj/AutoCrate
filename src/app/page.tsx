@@ -83,6 +83,7 @@ export default function Home() {
 
   const [lagSpacing, setLagSpacing] = useState(21)
   const [sideGroundClearance, setSideGroundClearance] = useState(0.25)
+  const [lastUpdate, setLastUpdate] = useState<string>('')
 
   const [pmiVisibility, setPmiVisibility] = useState({
     totalDimensions: true,
@@ -438,8 +439,34 @@ export default function Home() {
     URL.revokeObjectURL(url)
   }
 
+  useEffect(() => {
+    let cancelled = false
+
+    fetch('/api/last-update')
+      .then(res => res.json())
+      .then(data => {
+        if (!cancelled && typeof data?.lastUpdate === 'string') {
+          setLastUpdate(new Date(data.lastUpdate).toLocaleString())
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLastUpdate('Unavailable')
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 overflow-x-hidden flex flex-col transition-colors duration-300">
+      {lastUpdate ? (
+        <div className="bg-blue-600 text-white text-xs md:text-sm px-4 py-1.5 text-center shadow-sm">
+          Last update: {lastUpdate}
+        </div>
+      ) : null}
       {/* Compact Header */}
       <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none px-4 py-1.5 flex-shrink-0 transition-colors duration-300">
         <div className="flex items-center justify-between">
