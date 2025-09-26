@@ -81,7 +81,8 @@ export default function Home() {
     cap: '0205-XXXXX'
   })
 
-  const [lagScrewsPerCleat, setLagScrewsPerCleat] = useState(2)
+  const [lagSpacing, setLagSpacing] = useState(21)
+  const [sideGroundClearance, setSideGroundClearance] = useState(0.25)
 
   const [pmiVisibility, setPmiVisibility] = useState({
     totalDimensions: true,
@@ -133,7 +134,10 @@ export default function Home() {
       allow3x4Lumber: false
     },
     hardware: {
-      lagScrewsPerVerticalCleat: 2
+      lagScrewSpacing: 21
+    },
+    geometry: {
+      sidePanelGroundClearance: 0.25
     },
     identifiers: {
       basePartNumber: '0205-XXXXX',
@@ -224,7 +228,11 @@ export default function Home() {
       markings: markings,
       hardware: {
         ...(config.hardware ?? {}),
-        lagScrewsPerVerticalCleat: lagScrewsPerCleat
+        lagScrewSpacing: lagSpacing
+      },
+      geometry: {
+        ...(config.geometry ?? {}),
+        sidePanelGroundClearance: sideGroundClearance
       },
       identifiers: {
         ...(config.identifiers ?? {}),
@@ -233,7 +241,7 @@ export default function Home() {
         capPartNumber: partNumbers.cap
       }
     }))
-  }, [config, allow3x4Lumber, displayOptions.lumberSizes, lagScrewsPerCleat, partNumbers, markings])
+  }, [config, allow3x4Lumber, displayOptions.lumberSizes, lagSpacing, sideGroundClearance, partNumbers, markings])
 
   const handleInputChange = (field: keyof typeof inputValues, value: string) => {
     // Update input value immediately
@@ -632,32 +640,91 @@ export default function Home() {
             <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-2">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Lag Screws</h3>
-                <span className="text-[11px] text-gray-500 dark:text-gray-400">per vertical cleat</span>
+                <span className="text-[11px] text-gray-500 dark:text-gray-400">Spacing (inches on-center)</span>
               </div>
-              <div className="mt-2 flex items-center gap-2">
+              <div className="mt-2 space-y-2">
                 <input
                   type="range"
-                  min={2}
-                  max={6}
-                  value={lagScrewsPerCleat}
-                  onChange={(e) => setLagScrewsPerCleat(Math.max(2, Math.round(Number(e.target.value))))}
-                  className="flex-1"
-                />
-                <input
-                  type="number"
-                  min={2}
-                  max={6}
-                  value={lagScrewsPerCleat}
-                  onChange={(e) => {
-                    const parsed = Number(e.target.value)
-                    if (!Number.isNaN(parsed)) {
-                      setLagScrewsPerCleat(Math.min(6, Math.max(2, Math.round(parsed))))
+                  min={18}
+                  max={24}
+                  step={0.0625}
+                  value={lagSpacing}
+                  onChange={event => {
+                    const raw = Number(event.target.value)
+                    if (!Number.isNaN(raw)) {
+                      const snapped = Math.round(raw * 16) / 16
+                      setLagSpacing(Math.min(24, Math.max(18, snapped)))
                     }
                   }}
-                  className="w-12 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full"
                 />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={18}
+                    max={24}
+                    step={0.0625}
+                    value={lagSpacing}
+                    onChange={event => {
+                      const raw = Number(event.target.value)
+                      if (!Number.isNaN(raw)) {
+                        const snapped = Math.round(raw * 16) / 16
+                        setLagSpacing(Math.min(24, Math.max(18, snapped)))
+                      }
+                    }}
+                    className="w-20 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-gray-600 dark:text-gray-400">{lagSpacing.toFixed(2)}" O.C.</span>
+                </div>
               </div>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">Spacing balances automatically; screws stay centred on cleats.</p>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+                Side fasteners stay centred in the cleat, with spacing adjustable between 18" and 24" in 1/16" increments.
+              </p>
+            </section>
+
+            <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Side Panel Ground Clearance</h3>
+                <span className="text-[11px] text-gray-500 dark:text-gray-400">inches above skid datum</span>
+              </div>
+              <div className="mt-2 space-y-2">
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.0625}
+                  value={sideGroundClearance}
+                  onChange={event => {
+                    const raw = Number(event.target.value)
+                    if (!Number.isNaN(raw)) {
+                      const snapped = Math.round(raw * 16) / 16
+                      setSideGroundClearance(Math.max(0, snapped))
+                    }
+                  }}
+                  className="w-full"
+                />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    max={1}
+                    step={0.0625}
+                    value={sideGroundClearance}
+                    onChange={event => {
+                      const raw = Number(event.target.value)
+                      if (!Number.isNaN(raw)) {
+                        const snapped = Math.round(raw * 16) / 16
+                        setSideGroundClearance(Math.max(0, snapped))
+                      }
+                    }}
+                    className="w-20 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-gray-600 dark:text-gray-400">{sideGroundClearance.toFixed(3)}"</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+                Sets the height of the side panels above the skid deck (0" = flush). Screws target the bottom cleat centre and continue into the skid.
+              </p>
             </section>
 
             <details className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -789,5 +856,3 @@ export default function Home() {
     </main>
   )
 }
-
-

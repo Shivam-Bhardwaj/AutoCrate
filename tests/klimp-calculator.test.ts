@@ -2,7 +2,7 @@ import { KlimpCalculator, CleatInfo } from '../src/lib/klimp-calculator'
 
 describe('KlimpCalculator', () => {
   describe('calculateKlimpLayout', () => {
-    it('should place corner klimps strategically', () => {
+    it('maintains 18-24" spacing along the top edge', () => {
       const panelWidth = 48
       const panelHeight = 36
 
@@ -20,16 +20,23 @@ describe('KlimpCalculator', () => {
       // Should have 2 corner klimps (1 on each corner)
       expect(topKlimps.length).toBeGreaterThanOrEqual(2)
 
-      // Check left corner klimp
-      const leftCornerKlimps = topKlimps.filter(k => k.position < 10)
-      expect(leftCornerKlimps.length).toBe(1)
+      const positions = topKlimps
+        .map(k => k.position)
+        .sort((a, b) => a - b)
 
-      // Check right corner klimp
-      const rightCornerKlimps = topKlimps.filter(k => k.position > panelWidth - 10)
-      expect(rightCornerKlimps.length).toBe(1)
+      for (let i = 1; i < positions.length; i++) {
+        const spacing = positions[i] - positions[i - 1]
+        expect(spacing).toBeGreaterThanOrEqual(18 - 1e-3)
+        expect(spacing).toBeLessThanOrEqual(24 + 1e-3)
+      }
+
+      const first = positions[0]
+      const last = positions[positions.length - 1]
+      expect(first).toBeGreaterThanOrEqual(4 - 1e-3)
+      expect(last).toBeLessThanOrEqual(panelWidth - 4 + 1e-3)
     })
 
-    it('should place klimps between vertical cleats', () => {
+    it('keeps clamps offset from vertical cleats while respecting spacing', () => {
       const panelWidth = 48
       const panelHeight = 36
 
@@ -53,12 +60,24 @@ describe('KlimpCalculator', () => {
       // Should have corner klimps plus klimps between cleats
       expect(topKlimps.length).toBeGreaterThanOrEqual(2) // At least 2 corner klimps
 
-      // Check for klimps between cleats (around position 12 and 34)
-      const middleKlimps = topKlimps.filter(k => k.position > 10 && k.position < 38)
-      expect(middleKlimps.length).toBeGreaterThan(0)
+      const positions = topKlimps
+        .map(k => k.position)
+        .sort((a, b) => a - b)
+
+      for (let i = 1; i < positions.length; i++) {
+        const spacing = positions[i] - positions[i - 1]
+        expect(spacing).toBeGreaterThanOrEqual(18 - 1e-3)
+        expect(spacing).toBeLessThanOrEqual(24 + 1e-3)
+      }
+
+      const cleatRanges = topCleats.map(cleat => [cleat.position, cleat.position + cleat.width])
+      positions.forEach(position => {
+        const isInsideCleat = cleatRanges.some(([start, end]) => position >= start && position <= end)
+        expect(isInsideCleat).toBe(false)
+      })
     })
 
-    it('should place side klimps symmetrically at 24 inch intervals', () => {
+    it('places side klimps symmetrically with controlled spacing', () => {
       const panelWidth = 48
       const panelHeight = 36
 
@@ -84,7 +103,8 @@ describe('KlimpCalculator', () => {
       // Check spacing (should be approximately 24" but may be slightly more for even distribution)
       for (let i = 1; i < leftKlimps.length; i++) {
         const spacing = leftKlimps[i].position - leftKlimps[i - 1].position
-        expect(spacing).toBeLessThanOrEqual(30) // Allow some flexibility for symmetric distribution
+        expect(spacing).toBeGreaterThanOrEqual(18 - 1e-3)
+        expect(spacing).toBeLessThanOrEqual(24 + 1e-3)
       }
     })
 

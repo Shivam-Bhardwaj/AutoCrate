@@ -26,11 +26,10 @@ export interface CleatInfo {
 }
 
 export class KlimpCalculator {
-  private static readonly SIDE_SPACING = 24 // 24" between side klimps
+  private static readonly EDGE_MIN_SPACING = 18 // Minimum 18" between hardware
+  private static readonly EDGE_MAX_SPACING = 24 // Maximum 24" between hardware
   private static readonly CLEAT_OFFSET = 1 // 1" from vertical cleat for corner klimps
   private static readonly BOTTOM_CLEAT_OFFSET = 2 // 2" above bottom horizontal cleat
-  private static readonly MIN_CLEAT_SPACING = 1 // Minimum 1" from cleats
-  private static readonly KLIMP_SIZE = 0.5 // Klimp width/thickness (symbolic L-shape)
   private static readonly CLEAT_WIDTH = 3.5 // Standard 1x4 cleat width
 
   /**
@@ -49,146 +48,52 @@ export class KlimpCalculator {
   static calculateKlimpLayout(
     panelWidth: number,
     panelHeight: number,
-    topCleats: CleatInfo[] = [],
-    leftCleats: CleatInfo[] = [],
-    rightCleats: CleatInfo[] = []
+    _topCleats: CleatInfo[] = [],
+    _leftCleats: CleatInfo[] = [],
+    _rightCleats: CleatInfo[] = []
   ): KlimpLayout {
     const klimps: Klimp[] = []
     let klimpId = 0
     const bottomCleatHeight = 3.5 // Standard 1x4 cleat height
 
     // === TOP EDGE KLIMPS ===
-    // Strategy: One klimp at each corner (1" from vertical cleat) and between vertical cleats
+    const topStart = this.CLEAT_WIDTH + this.CLEAT_OFFSET
+    const topEnd = panelWidth - this.CLEAT_WIDTH - this.CLEAT_OFFSET
+    const topPositions = this.generatePositionsWithSpacing(
+      topStart,
+      topEnd,
+      this.EDGE_MIN_SPACING,
+      this.EDGE_MAX_SPACING,
+      2
+    )
 
-    // Sort vertical cleats by position
-    const sortedVerticalCleats = [...topCleats].sort((a, b) => a.position - b.position)
-
-    // Add corner klimps - ONE per corner
-    // Position between edge cleat and first intermediate cleat for optimal placement
-
-    let leftKlimpPosition = 0
-    let rightKlimpPosition = panelWidth
-
-    // If we have intermediate cleats, position klimps strategically
-    if (sortedVerticalCleats.length >= 2) {
-      // Find first intermediate cleat (not edge cleat)
-      const firstIntermediateCleat = sortedVerticalCleats.find(c => c.position > this.CLEAT_WIDTH)
-      const lastIntermediateCleat = sortedVerticalCleats.slice().reverse().find(c => c.position < panelWidth - this.CLEAT_WIDTH)
-
-      if (firstIntermediateCleat) {
-        // Position left corner klimp halfway between edge and first intermediate cleat
-        // But ensure at least 1" from both cleats
-        const midpoint = (this.CLEAT_WIDTH + firstIntermediateCleat.position) / 2
-        leftKlimpPosition = midpoint
-
-        // Ensure minimum clearance from cleats
-        if (leftKlimpPosition < this.CLEAT_WIDTH + this.CLEAT_OFFSET) {
-          leftKlimpPosition = this.CLEAT_WIDTH + this.CLEAT_OFFSET
-        }
-        if (leftKlimpPosition > firstIntermediateCleat.position - this.CLEAT_OFFSET) {
-          leftKlimpPosition = firstIntermediateCleat.position - this.CLEAT_OFFSET
-        }
-      } else {
-        // No intermediate cleats, just position 1" from edge cleat
-        leftKlimpPosition = this.CLEAT_WIDTH + this.CLEAT_OFFSET
-      }
-
-      if (lastIntermediateCleat) {
-        // Position right corner klimp halfway between last intermediate cleat and edge
-        const midpoint = (lastIntermediateCleat.position + lastIntermediateCleat.width + (panelWidth - this.CLEAT_WIDTH)) / 2
-        rightKlimpPosition = midpoint
-
-        // Ensure minimum clearance from cleats
-        if (rightKlimpPosition > panelWidth - this.CLEAT_WIDTH - this.CLEAT_OFFSET) {
-          rightKlimpPosition = panelWidth - this.CLEAT_WIDTH - this.CLEAT_OFFSET
-        }
-        if (rightKlimpPosition < lastIntermediateCleat.position + lastIntermediateCleat.width + this.CLEAT_OFFSET) {
-          rightKlimpPosition = lastIntermediateCleat.position + lastIntermediateCleat.width + this.CLEAT_OFFSET
-        }
-      } else {
-        // No intermediate cleats, just position 1" from edge cleat
-        rightKlimpPosition = panelWidth - this.CLEAT_WIDTH - this.CLEAT_OFFSET
-      }
-    } else {
-      // No intermediate cleats, position near corners with clearance
-      leftKlimpPosition = this.CLEAT_WIDTH + this.CLEAT_OFFSET
-      rightKlimpPosition = panelWidth - this.CLEAT_WIDTH - this.CLEAT_OFFSET
-    }
-
-    // Add left corner klimp
-    klimps.push({
-      id: `KLIMP_TOP_${klimpId++}`,
-      edge: 'top',
-      position: leftKlimpPosition,
-      x: leftKlimpPosition - panelWidth / 2,
-      y: 0,
-      z: panelHeight
-    })
-
-    // Add right corner klimp
-    klimps.push({
-      id: `KLIMP_TOP_${klimpId++}`,
-      edge: 'top',
-      position: rightKlimpPosition,
-      x: rightKlimpPosition - panelWidth / 2,
-      y: 0,
-      z: panelHeight
-    })
-
-    // Add klimps between INTERMEDIATE vertical cleats only (skip the first gap)
-    // Start from index 1 to skip the gap between edge cleat and first intermediate
-    for (let i = 1; i < sortedVerticalCleats.length - 2; i++) {
-      const cleat1 = sortedVerticalCleats[i]
-      const cleat2 = sortedVerticalCleats[i + 1]
-
-      // Skip if either cleat is an edge cleat
-      if (cleat1.position <= this.CLEAT_WIDTH || cleat2.position >= panelWidth - this.CLEAT_WIDTH) {
-        continue
-      }
-
-      // Calculate midpoint between cleats
-      const midpoint = (cleat1.position + cleat1.width + cleat2.position) / 2
-
-      // Only add if not too close to corner klimps (at least 6" away for better spacing)
-      if (midpoint > leftKlimpPosition + 6 && midpoint < rightKlimpPosition - 6) {
-        klimps.push({
-          id: `KLIMP_TOP_${klimpId++}`,
-          edge: 'top',
-          position: midpoint,
-          x: midpoint - panelWidth / 2,
-          y: 0,
-          z: panelHeight
-        })
-      }
+    for (const position of topPositions) {
+      klimps.push({
+        id: `KLIMP_TOP_${klimpId++}`,
+        edge: 'top',
+        position,
+        x: position - panelWidth / 2,
+        y: 0,
+        z: panelHeight
+      })
     }
 
     // === SIDE EDGE KLIMPS ===
-    // Strategy: Symmetric placement every 24" from top and bottom
+    // Strategy: Symmetric placement with 18"-24" spacing from bottom and top
 
-    // Calculate positions for side klimps
-    const sideKlimpPositions: number[] = []
-
-    // Start from bottom (above bottom cleat)
     const bottomStart = bottomCleatHeight + this.BOTTOM_CLEAT_OFFSET
-    const topStart = panelHeight - 4 // 4" from top to avoid interference
+    const sideTopLimit = panelHeight - 4 // 4" from top to avoid interference
 
-    // Calculate how many klimps we can fit
-    const availableHeight = topStart - bottomStart
-    const numSideKlimps = Math.floor(availableHeight / this.SIDE_SPACING) + 1
-
-    // Distribute symmetrically
-    if (numSideKlimps > 1) {
-      const actualSpacing = availableHeight / (numSideKlimps - 1)
-      for (let i = 0; i < numSideKlimps; i++) {
-        sideKlimpPositions.push(bottomStart + i * actualSpacing)
-      }
-    } else if (numSideKlimps === 1) {
-      // Single klimp in the middle
-      sideKlimpPositions.push(bottomStart + availableHeight / 2)
-    }
+    const sidePositions = this.generatePositionsWithSpacing(
+      bottomStart,
+      sideTopLimit,
+      this.EDGE_MIN_SPACING,
+      this.EDGE_MAX_SPACING,
+      2
+    )
 
     // Add left edge klimps
-    for (const pos of sideKlimpPositions) {
+    for (const pos of sidePositions) {
       klimps.push({
         id: `KLIMP_LEFT_${klimpId++}`,
         edge: 'left',
@@ -200,7 +105,7 @@ export class KlimpCalculator {
     }
 
     // Add right edge klimps (same positions as left for symmetry)
-    for (const pos of sideKlimpPositions) {
+    for (const pos of sidePositions) {
       klimps.push({
         id: `KLIMP_RIGHT_${klimpId++}`,
         edge: 'right',
@@ -216,6 +121,94 @@ export class KlimpCalculator {
       klimps,
       totalKlimps: klimps.length
     }
+  }
+
+  private static generatePositionsWithSpacing(
+    start: number,
+    end: number,
+    minSpacing: number,
+    maxSpacing: number,
+    minCount: number
+  ): number[] {
+    const tolerance = 1e-6
+
+    if (end <= start) {
+      return [start]
+    }
+
+    const span = end - start
+    if (span < minSpacing && minCount <= 1) {
+      return [start + span / 2]
+    }
+
+    const baseCount = Math.max(minCount, span >= minSpacing ? 2 : 1)
+    const maxCandidate = Math.max(baseCount, Math.floor(span / minSpacing) + 2)
+    const targetSpacing = (minSpacing + maxSpacing) / 2
+
+    let bestPositions: number[] | null = null
+    let bestScore = Number.POSITIVE_INFINITY
+    let bestCount = Number.POSITIVE_INFINITY
+
+    for (let count = baseCount; count <= maxCandidate + 4; count++) {
+      if (count <= 1) {
+        continue
+      }
+
+      const intervals = count - 1
+      const minOffset = Math.max(0, (span - maxSpacing * intervals) / 2)
+      const maxOffset = Math.max(0, (span - minSpacing * intervals) / 2)
+
+      if (minOffset > maxOffset + tolerance) {
+        continue
+      }
+
+      let offset = (span - targetSpacing * intervals) / 2
+      offset = Math.max(minOffset, Math.min(maxOffset, offset))
+
+      if (offset > span / 2) {
+        continue
+      }
+
+      const run = span - 2 * offset
+      if (run < -tolerance) {
+        continue
+      }
+
+      const spacing = intervals > 0 ? run / intervals : 0
+
+      if (spacing < minSpacing - tolerance || spacing > maxSpacing + tolerance) {
+        continue
+      }
+
+      const actualStart = start + offset
+      const positions = Array.from({ length: count }, (_, index) => actualStart + index * spacing)
+      const score = Math.abs(spacing - targetSpacing)
+
+      if (
+        !bestPositions ||
+        score < bestScore - tolerance ||
+        (Math.abs(score - bestScore) <= tolerance && count < bestCount)
+      ) {
+        bestPositions = positions
+        bestScore = score
+        bestCount = count
+      }
+    }
+
+    if (!bestPositions) {
+      if (span < minSpacing - tolerance) {
+        return [start + span / 2]
+      }
+
+      const count = Math.max(baseCount, 2)
+      const intervals = count - 1
+      const spacing = Math.min(maxSpacing, Math.max(span / intervals, minSpacing))
+      const offset = Math.max(0, (span - spacing * intervals) / 2)
+      const actualStart = start + offset
+      bestPositions = Array.from({ length: count }, (_, index) => actualStart + index * spacing)
+    }
+
+    return bestPositions.map(value => Number(value.toFixed(6)))
   }
 
   /**

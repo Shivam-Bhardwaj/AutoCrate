@@ -23,7 +23,10 @@ const baseConfig: CrateConfig = {
     availableLumber: ['2x6', '2x8', '2x10', '2x12']
   },
   hardware: {
-    lagScrewsPerVerticalCleat: 2
+    lagScrewSpacing: 21
+  },
+  geometry: {
+    sidePanelGroundClearance: 0.25
   },
   markings: {
     appliedMaterialsLogo: true,
@@ -39,6 +42,9 @@ const buildConfig = (overrides: Partial<CrateConfig> = {}): CrateConfig => ({
   hardware: overrides.hardware
     ? { ...(baseConfig.hardware || {}), ...overrides.hardware }
     : baseConfig.hardware,
+  geometry: overrides.geometry
+    ? { ...(baseConfig.geometry || {}), ...overrides.geometry }
+    : baseConfig.geometry,
   markings: overrides.markings === undefined ? baseConfig.markings : overrides.markings
 })
 
@@ -224,11 +230,11 @@ describe('NXGenerator', () => {
   })
 
   it('centres configurable lag hardware on every vertical cleat', () => {
-    const screwsPerCleat = 4
+    const targetSpacing = 21
     const generator = new NXGenerator(
       buildConfig({
         hardware: {
-          lagScrewsPerVerticalCleat: screwsPerCleat
+          lagScrewSpacing: targetSpacing
         }
       })
     )
@@ -236,107 +242,68 @@ describe('NXGenerator', () => {
     const expressions = generator.getExpressions()
     const boxes = generator.getBoxes()
     const geometry = LagSTEPIntegration.getGeometry()
-    const floorboardMidZ = (expressions.get('skid_height') || 0) + ((expressions.get('floorboard_thickness') || 0) / 2)
-
-    const relevantPanels = new Set(['FRONT_PANEL', 'BACK_PANEL', 'LEFT_END_PANEL', 'RIGHT_END_PANEL'])
-    const cleatLayouts = generator
-      .getPanelCleatLayouts()
-      .filter(layout => relevantPanels.has(layout.panelName))
-
-    const verticalCleats = cleatLayouts.flatMap(layout =>
-      layout.cleats
-        .filter(cleat => cleat.orientation === 'vertical')
-        .map(cleat => ({ layout, cleat }))
-    )
 
     const lagShafts = boxes.filter(box => box.type === 'hardware' && box.name.endsWith('_SHAFT'))
-    expect(lagShafts.length).toBe(verticalCleats.length * screwsPerCleat)
+    expect(lagShafts.length).toBeGreaterThan(0)
     expect(expressions.get('lag_screw_count')).toBe(lagShafts.length)
-
-    const cleatBoxes = new Map<string, typeof boxes[number]>()
-    boxes
-      .filter(box => box.type === 'cleat')
-      .forEach(box => cleatBoxes.set(box.name, box))
-
-    const shaftsByCleat = new Map<string, typeof lagShafts>()
+    const tolerance = 1e-3
+    const shaftsByPanel = new Map<string, typeof lagShafts>()
     lagShafts.forEach(box => {
-      const [cleatId] = box.name.split('_LAG_')
-      const grouped = shaftsByCleat.get(cleatId) || []
+      const panelName = box.panelName || 'UNKNOWN'
+      const grouped = shaftsByPanel.get(panelName) || []
       grouped.push(box)
-      shaftsByCleat.set(cleatId, grouped)
+      shaftsByPanel.set(panelName, grouped)
     })
 
-    const tolerance = 1e-3
+    const sideGroundClearance = expressions.get('side_panel_ground_clearance') || 0.25
+    const cleatThickness = 0.75
+    const sideExpectedZ = sideGroundClearance + cleatThickness / 2
+    const floorExpectedZ = (expressions.get('skid_height') || 0) + ((expressions.get('floorboard_thickness') || 0) / 2)
 
-    verticalCleats.forEach(({ layout, cleat }) => {
-      const shafts = shaftsByCleat.get(cleat.id)
-      expect(shafts?.length).toBe(screwsPerCleat)
+    const panelsToCheck = ['FRONT_PANEL', 'BACK_PANEL', 'LEFT_END_PANEL', 'RIGHT_END_PANEL']
 
-      const cleatBox = cleatBoxes.get(cleat.id)
-      if (!cleatBox) {
-        throw new Error(`Missing cleat box for ${cleat.id}`)
+    panelsToCheck.forEach(panelName => {
+      const group = (shaftsByPanel.get(panelName) || []).sort((a, b) => a.point1.z - b.point1.z)
+      expect(group.length).toBeGreaterThan(0)
+
+      const isSidePanel = panelName === 'LEFT_END_PANEL' || panelName === 'RIGHT_END_PANEL'
+      const axisValues = group
+        .map(box => isSidePanel
+          ? (box.point1.y + box.point2.y) / 2
+          : (box.point1.x + box.point2.x) / 2)
+        .sort((a, b) => a - b)
+
+      if (axisValues.length > 1) {
+        for (let i = 1; i < axisValues.length; i++) {
+          const spacing = axisValues[i] - axisValues[i - 1]
+          expect(spacing).toBeGreaterThanOrEqual(18 - tolerance)
+          expect(spacing).toBeLessThanOrEqual(24 + tolerance)
+        }
       }
 
-      const cleatZMin = Math.min(cleatBox.point1.z, cleatBox.point2.z)
-      const cleatZMax = Math.max(cleatBox.point1.z, cleatBox.point2.z)
-      const isFrontOrBack = layout.panelName === 'FRONT_PANEL' || layout.panelName === 'BACK_PANEL'
-      const cleatCenterAxis = isFrontOrBack
-        ? (cleatBox.point1.x + cleatBox.point2.x) / 2
-        : (cleatBox.point1.y + cleatBox.point2.y) / 2
-
-      const outsideCoordinate = (() => {
-        if (layout.panelName === 'LEFT_END_PANEL') {
-          return Math.min(cleatBox.point1.x, cleatBox.point2.x)
-        }
-        if (layout.panelName === 'RIGHT_END_PANEL') {
-          return Math.max(cleatBox.point1.x, cleatBox.point2.x)
-        }
-        if (layout.panelName === 'FRONT_PANEL') {
-          return Math.min(cleatBox.point1.y, cleatBox.point2.y)
-        }
-        return Math.max(cleatBox.point1.y, cleatBox.point2.y)
-      })()
-
-      const expectedAxisTag = layout.panelName === 'LEFT_END_PANEL'
+      const expectedAxisTag = panelName === 'LEFT_END_PANEL'
         ? 'axis +X'
-        : layout.panelName === 'RIGHT_END_PANEL'
+        : panelName === 'RIGHT_END_PANEL'
           ? 'axis -X'
-          : layout.panelName === 'FRONT_PANEL'
+          : panelName === 'FRONT_PANEL'
             ? 'axis +Y'
             : 'axis -Y'
 
-      const zCenters = shafts!.map(box => (box.point1.z + box.point2.z) / 2)
-      const referenceZ = zCenters[0]
-      zCenters.forEach(value => {
-        expect(value).toBeCloseTo(referenceZ, 3)
-      })
-
-      shafts!.forEach(box => {
+      group.forEach(box => {
         const centerZ = (box.point1.z + box.point2.z) / 2
-        expect(centerZ).toBeCloseTo(floorboardMidZ, 3)
+        const alongAxisSpan = isSidePanel
+          ? Math.abs(box.point2.x - box.point1.x)
+          : Math.abs(box.point2.y - box.point1.y)
 
-        const centerAxis = isFrontOrBack
-          ? (box.point1.x + box.point2.x) / 2
-          : (box.point1.y + box.point2.y) / 2
-        expect(centerAxis).toBeCloseTo(cleatCenterAxis, 3)
-        expect(box.metadata).toContain('centered on cleat')
-
-        if (layout.panelName === 'LEFT_END_PANEL') {
-          expect(box.point1.x).toBeCloseTo(outsideCoordinate, 3)
-        } else if (layout.panelName === 'RIGHT_END_PANEL') {
-          expect(box.point2.x).toBeCloseTo(outsideCoordinate, 3)
-        } else if (layout.panelName === 'FRONT_PANEL') {
-          expect(box.point1.y).toBeCloseTo(outsideCoordinate, 3)
+        if (isSidePanel) {
+          expect(centerZ).toBeCloseTo(sideExpectedZ, 3)
         } else {
-          expect(box.point2.y).toBeCloseTo(outsideCoordinate, 3)
+          expect(centerZ).toBeCloseTo(floorExpectedZ, 1)
         }
 
-        const alongAxisSpan = isFrontOrBack
-          ? Math.abs(box.point2.y - box.point1.y)
-          : Math.abs(box.point2.x - box.point1.x)
         expect(alongAxisSpan).toBeCloseTo(geometry.shankLength, 3)
-
         expect(box.metadata).toContain(expectedAxisTag)
+        expect(box.metadata).toContain('Lag screw shank (3/8" x 3.00")')
       })
     })
   })

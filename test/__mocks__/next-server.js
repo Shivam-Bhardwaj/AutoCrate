@@ -1,3 +1,14 @@
+const RequestCtor = typeof globalThis.Request !== 'undefined'
+  ? globalThis.Request
+  : class MockRequest {
+      constructor(input, init = {}) {
+        this.url = typeof input === 'string' ? input : input?.url ?? ''
+        this.method = init.method || 'GET'
+        this.headers = init.headers || {}
+        this.body = init.body
+      }
+    }
+
 class MockNextResponse {
   constructor(body, init = {}) {
     this.bodyValue = body
@@ -14,7 +25,7 @@ class MockNextResponse {
   }
 }
 
-class MockNextRequest extends Request {}
+class MockNextRequest extends RequestCtor {}
 
 module.exports = {
   NextResponse: MockNextResponse,
