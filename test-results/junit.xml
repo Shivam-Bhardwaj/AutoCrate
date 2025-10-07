@@ -1,0 +1,384 @@
+<testsuites id="" name="" tests="18" failures="18" skipped="0" errors="0" time="16.509879">
+<testsuite name="crate-generator.spec.ts" timestamp="2025-09-25T10:45:45.670Z" hostname="chromium" tests="9" failures="9" skipped="0" time="0.132" errors="0">
+<testcase name="AutoCrate NX Generator (Chromium focus) › renders core controls on load" classname="crate-generator.spec.ts" time="0.015">
+<failure message="crate-generator.spec.ts:19:7 renders core controls on load" type="FAILURE">
+<![CDATA[  [chromium] › crate-generator.spec.ts:19:7 › AutoCrate NX Generator (Chromium focus) › renders core controls on load 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › updates exterior dimensions when product length changes" classname="crate-generator.spec.ts" time="0.014">
+<failure message="crate-generator.spec.ts:32:7 updates exterior dimensions when product length changes" type="FAILURE">
+<![CDATA[  [chromium] › crate-generator.spec.ts:32:7 › AutoCrate NX Generator (Chromium focus) › updates exterior dimensions when product length changes 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › shows BOM data when switching tabs" classname="crate-generator.spec.ts" time="0.019">
+<failure message="crate-generator.spec.ts:42:7 shows BOM data when switching tabs" type="FAILURE">
+<![CDATA[  [chromium] › crate-generator.spec.ts:42:7 › AutoCrate NX Generator (Chromium focus) › shows BOM data when switching tabs 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › loads preset scenarios without manual typing" classname="crate-generator.spec.ts" time="0.014">
+<failure message="crate-generator.spec.ts:49:7 loads preset scenarios without manual typing" type="FAILURE">
+<![CDATA[  [chromium] › crate-generator.spec.ts:49:7 › AutoCrate NX Generator (Chromium focus) › loads preset scenarios without manual typing 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › allows enabling 3x4 lumber for light products" classname="crate-generator.spec.ts" time="0.016">
+<failure message="crate-generator.spec.ts:58:7 allows enabling 3x4 lumber for light products" type="FAILURE">
+<![CDATA[  [chromium] › crate-generator.spec.ts:58:7 › AutoCrate NX Generator (Chromium focus) › allows enabling 3x4 lumber for light products 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › selects heavier skid size for high weight loads" classname="crate-generator.spec.ts" time="0.012">
+<failure message="crate-generator.spec.ts:73:7 selects heavier skid size for high weight loads" type="FAILURE">
+<![CDATA[  [chromium] › crate-generator.spec.ts:73:7 › AutoCrate NX Generator (Chromium focus) › selects heavier skid size for high weight loads 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › downloads NX expressions on desktop" classname="crate-generator.spec.ts" time="0.012">
+<failure message="crate-generator.spec.ts:84:7 downloads NX expressions on desktop" type="FAILURE">
+<![CDATA[  [chromium] › crate-generator.spec.ts:84:7 › AutoCrate NX Generator (Chromium focus) › downloads NX expressions on desktop 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › downloads STEP file on desktop" classname="crate-generator.spec.ts" time="0.014">
+<failure message="crate-generator.spec.ts:93:7 downloads STEP file on desktop" type="FAILURE">
+<![CDATA[  [chromium] › crate-generator.spec.ts:93:7 › AutoCrate NX Generator (Chromium focus) › downloads STEP file on desktop 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › mobile menu toggle reveals inputs" classname="crate-generator.spec.ts" time="0.016">
+<failure message="crate-generator.spec.ts:114:7 mobile menu toggle reveals inputs" type="FAILURE">
+<![CDATA[  [chromium] › crate-generator.spec.ts:114:7 › AutoCrate NX Generator (Chromium focus) › mobile menu toggle reveals inputs 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+</testsuite>
+<testsuite name="crate-generator.spec.ts" timestamp="2025-09-25T10:45:45.670Z" hostname="Mobile Chrome" tests="9" failures="9" skipped="0" time="0.141" errors="0">
+<testcase name="AutoCrate NX Generator (Chromium focus) › renders core controls on load" classname="crate-generator.spec.ts" time="0.019">
+<failure message="crate-generator.spec.ts:19:7 renders core controls on load" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › crate-generator.spec.ts:19:7 › AutoCrate NX Generator (Chromium focus) › renders core controls on load 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › updates exterior dimensions when product length changes" classname="crate-generator.spec.ts" time="0.021">
+<failure message="crate-generator.spec.ts:32:7 updates exterior dimensions when product length changes" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › crate-generator.spec.ts:32:7 › AutoCrate NX Generator (Chromium focus) › updates exterior dimensions when product length changes 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › shows BOM data when switching tabs" classname="crate-generator.spec.ts" time="0.026">
+<failure message="crate-generator.spec.ts:42:7 shows BOM data when switching tabs" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › crate-generator.spec.ts:42:7 › AutoCrate NX Generator (Chromium focus) › shows BOM data when switching tabs 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › loads preset scenarios without manual typing" classname="crate-generator.spec.ts" time="0.019">
+<failure message="crate-generator.spec.ts:49:7 loads preset scenarios without manual typing" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › crate-generator.spec.ts:49:7 › AutoCrate NX Generator (Chromium focus) › loads preset scenarios without manual typing 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › allows enabling 3x4 lumber for light products" classname="crate-generator.spec.ts" time="0.019">
+<failure message="crate-generator.spec.ts:58:7 allows enabling 3x4 lumber for light products" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › crate-generator.spec.ts:58:7 › AutoCrate NX Generator (Chromium focus) › allows enabling 3x4 lumber for light products 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › selects heavier skid size for high weight loads" classname="crate-generator.spec.ts" time="0.014">
+<failure message="crate-generator.spec.ts:73:7 selects heavier skid size for high weight loads" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › crate-generator.spec.ts:73:7 › AutoCrate NX Generator (Chromium focus) › selects heavier skid size for high weight loads 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › downloads NX expressions on desktop" classname="crate-generator.spec.ts" time="0.013">
+<failure message="crate-generator.spec.ts:84:7 downloads NX expressions on desktop" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › crate-generator.spec.ts:84:7 › AutoCrate NX Generator (Chromium focus) › downloads NX expressions on desktop 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › downloads STEP file on desktop" classname="crate-generator.spec.ts" time="0.005">
+<failure message="crate-generator.spec.ts:93:7 downloads STEP file on desktop" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › crate-generator.spec.ts:93:7 › AutoCrate NX Generator (Chromium focus) › downloads STEP file on desktop 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="AutoCrate NX Generator (Chromium focus) › mobile menu toggle reveals inputs" classname="crate-generator.spec.ts" time="0.005">
+<failure message="crate-generator.spec.ts:114:7 mobile menu toggle reveals inputs" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › crate-generator.spec.ts:114:7 › AutoCrate NX Generator (Chromium focus) › mobile menu toggle reveals inputs 
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+</testsuite>
+</testsuites>

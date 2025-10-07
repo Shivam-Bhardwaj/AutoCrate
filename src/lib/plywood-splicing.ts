@@ -322,3 +322,16 @@ export class PlywoodSplicer {
     return totalSheets <= 6
   }
 }
+
+// Export wrapper function for API usage
+export function calculatePlywoodPieces(
+  panelDimensions: { width: number; height: number },
+  panelName: string = 'PANEL'
+): PanelSpliceLayout {
+  return PlywoodSplicer.calculateOptimizedSpliceLayout(
+    panelDimensions.width,
+    panelDimensions.height,
+    panelName,
+    true
+  );
+}

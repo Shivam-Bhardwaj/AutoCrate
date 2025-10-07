@@ -65,4 +65,4 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
-*.swo
+*.swotest-report.json
