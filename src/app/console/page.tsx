@@ -144,12 +144,20 @@ export default function ConsolePage() {
                 Manage changes without touching code
               </p>
             </div>
-            <button
-              onClick={() => router.push('/')}
-              className="text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              Back to App →
-            </button>
+            <div className="flex gap-4">
+              <button
+                onClick={() => router.push('/terminal')}
+                className="text-green-600 dark:text-green-400 hover:underline"
+              >
+                Terminal →
+              </button>
+              <button
+                onClick={() => router.push('/')}
+                className="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                Back to App →
+              </button>
+            </div>
           </div>
         </div>
       </div>
