@@ -24,6 +24,7 @@ type PmiVisibilityState = {
   skids: boolean
   cleats: boolean
   floor: boolean
+  datumPlanes: boolean
 }
 
 interface CrateVisualizerProps {
@@ -102,7 +103,23 @@ type SceneBounds = {
   maxZ: number
 }
 
-function PMIFrame({ cells }: { cells: string[] }) {
+function PMIFrame({ cells, isDatumLabel = false }: { cells: string[], isDatumLabel?: boolean }) {
+  if (isDatumLabel) {
+    // ASME Y14.5 datum symbol: square box with filled triangle
+    return (
+      <div className="flex items-center gap-0">
+        {/* Triangle pointing to datum */}
+        <div className="w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[8px] border-r-gray-900 dark:border-r-gray-100" />
+        {/* Datum letter in box */}
+        <div className="border-2 border-gray-900 dark:border-gray-100 bg-white dark:bg-gray-900 px-2 py-1">
+          <span className="text-sm font-bold font-mono text-gray-900 dark:text-gray-100">
+            {cells[0]}
+          </span>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex divide-x divide-gray-700 dark:divide-gray-400 border border-gray-700 dark:border-gray-400 bg-white/90 dark:bg-gray-900/90 text-[11px] font-mono text-gray-900 dark:text-gray-100 rounded-[2px] shadow-sm">
       {cells.map((cell, index) => (
@@ -111,6 +128,73 @@ function PMIFrame({ cells }: { cells: string[] }) {
         </span>
       ))}
     </div>
+  )
+}
+
+// Component for visualizing datum planes according to ASME Y14.5
+function DatumPlanes({ bounds, scale, distanceFactor }: { bounds: SceneBounds; scale: number; distanceFactor: number }) {
+  const planeSize = Math.max(
+    bounds.maxX - bounds.minX,
+    bounds.maxY - bounds.minY,
+    bounds.maxZ - bounds.minZ
+  ) * 1.2
+
+  return (
+    <>
+      {/* Datum A - Bottom plane (XY plane at Z=0) */}
+      <mesh position={[0, 0, 0]} rotation={[0, 0, 0]}>
+        <planeGeometry args={[planeSize * scale, planeSize * scale]} />
+        <meshBasicMaterial color="#ff0000" opacity={0.1} transparent side={THREE.DoubleSide} />
+      </mesh>
+      <Html
+        position={[
+          (bounds.maxX + 10) * scale,
+          0,
+          -(bounds.maxY + 10) * scale
+        ]}
+        center
+        distanceFactor={distanceFactor}
+        style={{ pointerEvents: 'none' }}
+      >
+        <PMIFrame cells={['A']} isDatumLabel={true} />
+      </Html>
+
+      {/* Datum B - Front plane (XZ plane at Y=0) */}
+      <mesh position={[0, 0, -bounds.minY * scale]} rotation={[Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[planeSize * scale, planeSize * scale]} />
+        <meshBasicMaterial color="#00ff00" opacity={0.1} transparent side={THREE.DoubleSide} />
+      </mesh>
+      <Html
+        position={[
+          (bounds.maxX + 10) * scale,
+          (bounds.maxZ / 2) * scale,
+          -bounds.minY * scale
+        ]}
+        center
+        distanceFactor={distanceFactor}
+        style={{ pointerEvents: 'none' }}
+      >
+        <PMIFrame cells={['B']} isDatumLabel={true} />
+      </Html>
+
+      {/* Datum C - Left plane (YZ plane at X=0) */}
+      <mesh position={[bounds.minX * scale, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+        <planeGeometry args={[planeSize * scale, planeSize * scale]} />
+        <meshBasicMaterial color="#0000ff" opacity={0.1} transparent side={THREE.DoubleSide} />
+      </mesh>
+      <Html
+        position={[
+          bounds.minX * scale,
+          (bounds.maxZ / 2) * scale,
+          -(bounds.maxY + 10) * scale
+        ]}
+        center
+        distanceFactor={distanceFactor}
+        style={{ pointerEvents: 'none' }}
+      >
+        <PMIFrame cells={['C']} isDatumLabel={true} />
+      </Html>
+    </>
   )
 }
 
@@ -147,7 +231,16 @@ function ScenePMIOverlays({
   } | null;
   pmiState: PmiVisibilityState;
 }) {
-  const scale = 0.1
+  // Calculate dynamic scale based on the largest dimension of the crate
+  const crateWidth = bounds.maxX - bounds.minX
+  const crateLength = bounds.maxY - bounds.minY
+  const crateHeight = bounds.maxZ - bounds.minZ
+  const maxDimension = Math.max(crateWidth, crateLength, crateHeight)
+
+  // Scale factor that adjusts based on crate size
+  // Smaller crates get larger scale, larger crates get smaller scale
+  const scale = Math.min(0.2, Math.max(0.05, 10 / maxDimension))
+
   const formatInches = (value: number) => `${value.toFixed(2)}"`
 
   const centerX = (bounds.minX + bounds.maxX) / 2
@@ -155,10 +248,15 @@ function ScenePMIOverlays({
 
   const annotations: ReactNode[] = []
 
+  // Calculate dynamic distance factor for Html elements
+  // Inverse relationship with scale to maintain consistent text size
+  const distanceFactor = Math.min(20, Math.max(5, 1 / scale))
+
   if (totalDimensions && pmiState.totalDimensions) {
-    const widthOffset = 8
-    const lengthOffset = 10
-    const heightOffset = 6
+    // Make offsets proportional to crate dimensions
+    const widthOffset = Math.max(8, crateHeight * 0.1)
+    const lengthOffset = Math.max(10, crateHeight * 0.12)
+    const heightOffset = Math.max(6, crateWidth * 0.08)
 
     // Width dimension (X axis)
     const widthLineStart = new THREE.Vector3(bounds.minX * scale, (bounds.maxZ + widthOffset) * scale, -centerY * scale)
@@ -176,11 +274,11 @@ function ScenePMIOverlays({
         <MeasurementLine start={widthExtLeftStart} end={widthExtLeftEnd} />
         <MeasurementLine start={widthExtRightStart} end={widthExtRightEnd} />
         <MeasurementLine start={widthLineStart} end={widthLineEnd} />
-        <Html position={[widthLabel.x, widthLabel.y, widthLabel.z]} center distanceFactor={10} style={{ pointerEvents: 'none' }}>
+        <Html position={[widthLabel.x, widthLabel.y, widthLabel.z]} center distanceFactor={distanceFactor} style={{ pointerEvents: 'none' }}>
           <PMIFrame cells={[
-            'W',
+            'WIDTH',
             formatInches(totalDimensions.overallWidth),
-            'DAT A'
+            '⊥ A'
           ]} />
         </Html>
       </Fragment>
@@ -202,11 +300,11 @@ function ScenePMIOverlays({
         <MeasurementLine start={lengthExtFrontStart} end={lengthExtFrontEnd} />
         <MeasurementLine start={lengthExtBackStart} end={lengthExtBackEnd} />
         <MeasurementLine start={lengthLineStart} end={lengthLineEnd} />
-        <Html position={[lengthLabel.x, lengthLabel.y, lengthLabel.z - 0.2]} center distanceFactor={10} style={{ pointerEvents: 'none' }}>
+        <Html position={[lengthLabel.x, lengthLabel.y, lengthLabel.z - 0.2]} center distanceFactor={distanceFactor} style={{ pointerEvents: 'none' }}>
           <PMIFrame cells={[
-            'L',
+            'LENGTH',
             formatInches(totalDimensions.overallLength),
-            'DAT B'
+            '⊥ B'
           ]} />
         </Html>
       </Fragment>
@@ -229,11 +327,11 @@ function ScenePMIOverlays({
         <MeasurementLine start={heightExtBottomStart} end={heightExtBottomEnd} />
         <MeasurementLine start={heightExtTopStart} end={heightExtTopEnd} />
         <MeasurementLine start={heightLineStart} end={heightLineEnd} />
-        <Html position={[heightLabel.x, heightLabel.y, heightLabel.z]} center distanceFactor={10} style={{ pointerEvents: 'none' }}>
+        <Html position={[heightLabel.x, heightLabel.y, heightLabel.z]} center distanceFactor={distanceFactor} style={{ pointerEvents: 'none' }}>
           <PMIFrame cells={[
-            'H',
+            'HEIGHT',
             formatInches(totalDimensions.overallHeight),
-            'DAT C'
+            '⊥ C'
           ]} />
         </Html>
       </Fragment>
@@ -246,7 +344,7 @@ function ScenePMIOverlays({
     annotations.push(
       <Fragment key="callout-skids">
         <MeasurementLine start={anchor} end={labelPosition} />
-        <Html position={[labelPosition.x, labelPosition.y, labelPosition.z]} center distanceFactor={10} style={{ pointerEvents: 'none' }}>
+        <Html position={[labelPosition.x, labelPosition.y, labelPosition.z]} center distanceFactor={distanceFactor} style={{ pointerEvents: 'none' }}>
           <PMIFrame cells={[
             'SKID',
             `QTY ${skidInfo.count}`,
@@ -263,7 +361,7 @@ function ScenePMIOverlays({
     annotations.push(
       <Fragment key="callout-cleats">
         <MeasurementLine start={anchor} end={labelPosition} />
-        <Html position={[labelPosition.x, labelPosition.y, labelPosition.z]} center distanceFactor={10} style={{ pointerEvents: 'none' }}>
+        <Html position={[labelPosition.x, labelPosition.y, labelPosition.z]} center distanceFactor={distanceFactor} style={{ pointerEvents: 'none' }}>
           <PMIFrame cells={[
             'CLEAT',
             `V ${cleatSummary.vertical}`,
@@ -280,7 +378,7 @@ function ScenePMIOverlays({
     annotations.push(
       <Fragment key="callout-floor">
         <MeasurementLine start={anchor} end={labelPosition} />
-        <Html position={[labelPosition.x, labelPosition.y, labelPosition.z]} center distanceFactor={10} style={{ pointerEvents: 'none' }}>
+        <Html position={[labelPosition.x, labelPosition.y, labelPosition.z]} center distanceFactor={distanceFactor} style={{ pointerEvents: 'none' }}>
           <PMIFrame cells={[
             'FLOOR',
             `QTY ${floorInfo.count}`,
@@ -291,7 +389,14 @@ function ScenePMIOverlays({
     )
   }
 
-  return <>{annotations}</>
+  return (
+    <>
+      {pmiState.datumPlanes && (
+        <DatumPlanes bounds={bounds} scale={scale} distanceFactor={distanceFactor} />
+      )}
+      {annotations}
+    </>
+  )
 }
 
 function CameraResetter({
@@ -652,6 +757,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
     skids: false,
     cleats: false,
     floor: false,
+    datumPlanes: true,
   }
 
   const derivedPartNumbers = {
@@ -672,10 +778,11 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
   }
 
   const pmiLabels: Record<keyof PmiVisibilityState, string> = {
-    totalDimensions: 'Total',
+    totalDimensions: 'Dimensions',
     skids: 'Skids',
     cleats: 'Cleats',
     floor: 'Floor',
+    datumPlanes: 'Datum Planes',
   }
 
   const clearSelections = useCallback(() => {
@@ -1113,6 +1220,29 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
           </div>
         </div>
 
+        {/* PMI Visibility Controls */}
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">PMI Visibility</h3>
+          <div className="flex flex-wrap gap-1">
+            {(Object.keys(pmiLabels) as (keyof PmiVisibilityState)[]).map(layer => {
+              const active = pmiState[layer]
+              return (
+                <button
+                  key={layer}
+                  onClick={() => onTogglePmi?.(layer)}
+                  className={`px-2 py-1.5 text-xs rounded border transition-colors ${
+                    active
+                      ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:border-blue-400 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {pmiLabels[layer]}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         {hiddenComponents.size > 0 && (
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
             <div className="flex justify-between items-center mb-2">
@@ -1153,67 +1283,10 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
         )}
       </div>
 
+      {/* PMI controls moved to right-side control panel */}
       <div className="absolute top-2 left-2 w-64 max-w-xs pointer-events-auto">
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 space-y-2">
-          <div>
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">PMI Snapshot</h3>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400">Totals stay on. Toggle more detail below.</p>
-          </div>
-          {totalDimensions && (
-            <div className="text-xs space-y-1">
-              <div className="font-medium text-gray-700 dark:text-gray-200">
-                Total: {formatDimension(totalDimensions.overallWidth)} W x {formatDimension(totalDimensions.overallLength)} L x {formatDimension(totalDimensions.overallHeight)} H
-              </div>
-              <div className="text-gray-500 dark:text-gray-400">
-                Internal: {formatDimension(totalDimensions.internalWidth)} W x {formatDimension(totalDimensions.internalLength)} L x {formatDimension(totalDimensions.internalHeight)} H
-              </div>
-            </div>
-          )}
-          {pmiState.skids && skidInfo && (
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-2 text-xs space-y-1">
-              <div className="font-medium text-gray-700 dark:text-gray-200">Skids</div>
-              <div>Count: {skidInfo.count}</div>
-              <div>Center spacing: {formatDimension(skidInfo.spacing)}</div>
-              <div>Nominal width: {formatDimension(skidInfo.width)}</div>
-              <div>Length: {formatDimension(skidInfo.length)}</div>
-            </div>
-          )}
-          {pmiState.cleats && cleatSummary && (
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-2 text-xs space-y-1">
-              <div className="font-medium text-gray-700 dark:text-gray-200">Cleats</div>
-              <div>Vertical: {cleatSummary.vertical}</div>
-              <div>Horizontal: {cleatSummary.horizontal}</div>
-              <div>Total linear inches: {formatDimension(cleatSummary.totalLength)}</div>
-            </div>
-          )}
-          {pmiState.floor && floorInfo && (
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-2 text-xs space-y-1">
-              <div className="font-medium text-gray-700 dark:text-gray-200">Floorboards</div>
-              <div>Boards: {floorInfo.count}</div>
-              <div>Width: {formatDimension(floorInfo.width)}</div>
-              <div>Thickness: {formatDimension(floorInfo.thickness)}</div>
-              <div>Gap: {formatDimension(floorInfo.gap)}</div>
-            </div>
-          )}
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-2 flex flex-wrap gap-1">
-            {(Object.keys(pmiLabels) as (keyof PmiVisibilityState)[]).filter(layer => layer !== 'totalDimensions').map(layer => {
-              const active = pmiState[layer]
-              return (
-                <button
-                  key={layer}
-                  onClick={() => onTogglePmi?.(layer)}
-                  className={`px-2 py-1 text-xs rounded border transition-colors ${
-                    active
-                      ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
-                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:border-blue-400 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  {pmiLabels[layer]}
-                </button>
-              )
-            })}
-          </div>
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-2 text-[11px] text-gray-600 dark:text-gray-400 space-y-1">
+          <div className="text-[11px] text-gray-600 dark:text-gray-400 space-y-1">
             <div>Base: {derivedPartNumbers.base}</div>
             <div>Crate: {derivedPartNumbers.crate}</div>
             <div>Cap: {derivedPartNumbers.cap}</div>

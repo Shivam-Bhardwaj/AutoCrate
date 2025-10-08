@@ -91,7 +91,8 @@ export default function Home() {
     totalDimensions: true,
     skids: false,
     cleats: false,
-    floor: false
+    floor: false,
+    datumPlanes: true
   })
 
   // State for display options
