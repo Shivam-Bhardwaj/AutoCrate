@@ -534,6 +534,12 @@ export default function Home() {
             >
               Download STEP
             </button>
+            <a
+              href="/docs"
+              className="bg-gray-600 text-white px-2 lg:px-3 py-1 text-xs lg:text-sm rounded hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600 transition-colors inline-block"
+            >
+              📚 Team Docs
+            </a>
           </div>
         </div>
       </div>
