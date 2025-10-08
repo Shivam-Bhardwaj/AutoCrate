@@ -2,6 +2,8 @@
   "name": "autocrate-app",
   "version": "1.0.0",
   "private": true,
+  "tiNumber": "TI-123",
+  "maintainer": "shivam@designviz.com",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
