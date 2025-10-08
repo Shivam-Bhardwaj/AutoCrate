@@ -1,0 +1,70 @@
+{
+  "currentVersion": "13.1.0",
+  "lastDeployment": {
+    "timestamp": "2025-10-08T12:31:58Z",
+    "commit": "195ab5f",
+    "branch": "main",
+    "status": "success",
+    "vercelUrl": "https://autocrate.vercel.app"
+  },
+  "activeFeatures": [
+    "Comprehensive metadata banner with version tracking",
+    "Klimp fastener calculation system",
+    "Lag screw integration with CAD files",
+    "STEP file export (ISO 10303-21)",
+    "NX expression generation",
+    "Plywood optimization and splicing",
+    "3D visualization with React Three Fiber",
+    "Dark/light theme support",
+    "Scenario presets",
+    "Bill of Materials calculator",
+    "Lumber cut list generator",
+    "Cleat placement calculator"
+  ],
+  "recentChanges": [
+    {
+      "version": "13.1.0",
+      "date": "2025-10-08",
+      "type": "feature",
+      "description": "Added comprehensive metadata banner with no hardcoded values"
+    },
+    {
+      "version": "13.0.0",
+      "date": "2025-10-08",
+      "type": "docs",
+      "description": "Updated CLAUDE.md and cleaned up repository"
+    }
+  ],
+  "knownIssues": [
+    {
+      "severity": "low",
+      "description": "Playwright E2E tests require system browser dependencies",
+      "impact": "Tests fail locally without deps, but don't block deployment",
+      "workaround": "Run in CI/CD or install deps: sudo npx playwright install-deps"
+    }
+  ],
+  "upcomingFeatures": [],
+  "technicalDebt": [],
+  "dependencies": {
+    "runtime": {
+      "nextjs": "14.2.33",
+      "react": "18",
+      "three": "0.160.0"
+    },
+    "testing": {
+      "jest": "30.1.3",
+      "playwright": "1.55.0"
+    }
+  },
+  "deployment": {
+    "platform": "Vercel",
+    "autoDeployBranch": "main",
+    "productionUrl": "https://autocrate.vercel.app",
+    "previewUrlPattern": "autocrate-git-{branch}-shivams-projects-1d3fe872.vercel.app"
+  },
+  "maintenance": {
+    "lastCodeReview": "2025-10-08",
+    "lastDependencyUpdate": "2025-10-08",
+    "lastSecurityAudit": "N/A"
+  }
+}

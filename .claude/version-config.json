@@ -1,0 +1,26 @@
+{
+  "version": "13.1.0",
+  "versionScheme": {
+    "overall": 13,
+    "current": 1,
+    "change": 0
+  },
+  "lastUpdate": "2025-10-08T12:55:08.756Z",
+  "tiNumber": "TI-123",
+  "maintainer": "shivam@designviz.com",
+  "rules": {
+    "incrementChange": "Bug fixes, minor tweaks, documentation updates, small UI changes",
+    "incrementCurrent": "New features, significant updates, new components, API changes",
+    "incrementOverall": "Major milestones, breaking changes, architecture overhauls, framework upgrades"
+  },
+  "autoSync": {
+    "enabled": true,
+    "sources": ["package.json"],
+    "targets": [".claude/version-config.json", ".claude/project-status.json"]
+  },
+  "git": {
+    "tagOnCommit": true,
+    "tagPrefix": "v",
+    "requireVersionBump": true
+  }
+}

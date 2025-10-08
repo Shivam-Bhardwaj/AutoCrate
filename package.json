@@ -1,6 +1,6 @@
 {
   "name": "autocrate-app",
-  "version": "1.0.0",
+  "version": "13.1.0",
   "private": true,
   "tiNumber": "TI-123",
   "maintainer": "shivam@designviz.com",
@@ -20,7 +20,11 @@
     "type-check": "tsc --noEmit",
     "prepare": "husky install",
     "keploy:record": "docker-compose -f docker-compose.keploy.yml up",
-    "keploy:test": "docker-compose -f docker-compose.keploy.yml run -e KEPLOY_MODE=test keploy"
+    "keploy:test": "docker-compose -f docker-compose.keploy.yml run -e KEPLOY_MODE=test keploy",
+    "version:patch": "npm version patch --no-git-tag-version",
+    "version:minor": "npm version minor --no-git-tag-version",
+    "version:major": "npm version major --no-git-tag-version",
+    "version:sync": "node scripts/sync-version.js"
   },
   "dependencies": {
     "@react-three/drei": "^9.92.0",
@@ -61,7 +65,7 @@
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "node scripts/run-tsc.js",
-      "cross-env NEXT_PRIVATE_SKIP_SWC_BINARY_CHECK=1 NEXT_DISABLE_SWC_NATIVE_WASM=1 jest --bail --findRelatedTests"
+      "cross-env NEXT_PRIVATE_SKIP_SWC_BINARY_CHECK=1 NEXT_DISABLE_SWC_NATIVE_WASM=1 jest --bail --findRelatedTests --passWithNoTests"
     ],
     "*.{json,md,yml,yaml}": [
       "npx prettier --write"

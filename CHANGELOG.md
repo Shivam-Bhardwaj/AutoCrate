@@ -7,12 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [13.1.0] - 2025-10-08
+
 ### Added
 
-- Regression test that verifies the new floorboard layout behaviour (widest boards at the edges, mirrored narrowing, single custom infill)\n- Playwright STEP-download assertions that read the generated file from the run artifacts directory and check for BREP entities\n- Jest safeguards for lag hardware placement across side and back panels\n- Contributor guide (AGENTS.md) refreshed with current structure, workflows, and deployment expectations
+#### LLM Workflow System
+
+- **Complete LLM Workflow Documentation** - Added `.claude/workflows/` with comprehensive guides
+  - `MAKING_CHANGES.md` - Step-by-step workflow for every commit
+  - `VERSION_BUMPING.md` - Detailed version management guide
+  - `DEPLOYMENT.md` - Deployment procedures and verification
+  - `REVERTING.md` - Emergency rollback procedures
+- **Version Configuration** - `.claude/version-config.json` with version rules and metadata
+- **Project Status Tracking** - `.claude/project-status.json` for current state snapshot
+- **Version Sync Script** - Automated version synchronization across all files
+- **NPM Version Scripts** - Added `version:patch`, `version:minor`, `version:major`, `version:sync`
+- **Git Tag Support** - Automatic tagging for easy rollback to any version
+
+#### Comprehensive Metadata Banner
+
+- **Rich Project Metadata** - Banner displays version, TI number, branch, commit, maintainer
+- **Full Commit Messages** - Shows complete last change description
+- **No Hardcoded Values** - All metadata sourced from package.json and git
+- **Mobile Responsive** - Stacks appropriately on small screens
+- **Theme Compatible** - Works on both light and dark modes
 
 ### Changed
 
+#### Version Numbering
+
+- **New Versioning Scheme**: OVERALL.CURRENT.CHANGE (was 1.x.x, now 13.1.0)
+  - 13 = Overall major version (milestones)
+  - 1 = Current iteration (features)
+  - 0 = Change number (patches)
+- **Updated CLAUDE.md** - Added LLM Quick Start Workflow section
+- **Every Commit Requires Version Bump** - Enforced through documentation
+
+#### Metadata System
+
+- **package.json** - Added `tiNumber` and `maintainer` fields
+- **API Enhancement** - `/api/last-update` returns 7-field `ProjectMetadata` interface
+- **Banner Redesign** - Subtle gray styling, two-row layout, professional appearance
+
+### Technical
+
+- Regression test that verifies the new floorboard layout behaviour (widest boards at the edges, mirrored narrowing, single custom infill)
+- Playwright STEP-download assertions that read the generated file from the run artifacts directory and check for BREP entities
+- Jest safeguards for lag hardware placement across side and back panels
+- Contributor guide (AGENTS.md) refreshed with current structure, workflows, and deployment expectations
 - Floorboard layout algorithm now places widest lumber at the edges, steps inward with narrower stock, and only produces a quarter-inch custom strip when required
 - Chromium Playwright flows now rely on test IDs for BOM tables, exterior dimensions, and the 3x4 toggle to reduce selector brittleness
 - Documentation index added under `docs/` for easier navigation
