@@ -1197,7 +1197,9 @@ export class NXGenerator {
     const bottomCleat = cleatLayout.cleats.find(c => c.orientation === 'horizontal' && c.position === 'bottom')
     const bottomCleatThickness = bottomCleat?.thickness ?? 0.75
     const groundClearance = this.getSidePanelGroundClearance()
-    const centerZ = groundClearance + bottomCleatThickness / 2
+    const targetSkidMidHeight = skidHeight / 2
+    const cleatCenterZ = groundClearance + bottomCleatThickness / 2
+    const centerZ = Math.max(cleatCenterZ, targetSkidMidHeight)
 
     rowPositions.forEach((centerY, index) => {
       const baseName = `${cleatLayout.panelName}_LAG_${index + 1}`
@@ -1547,7 +1549,9 @@ export class NXGenerator {
     const frontBackWidth = internalWidth + 2 * panelThickness
     const frontBackHeight = internalHeight + floorboardThickness
     const sideWidth = internalLength
-    const sideHeight = internalHeight + floorboardThickness + skidHeight - 2 // Side panels extend lower
+    const sideGroundClearance = this.expressions.get('side_panel_ground_clearance') ?? this.getSidePanelGroundClearance()
+    // Sides hang past the floor by the configured clearance to maintain lift space
+    const sideHeight = internalHeight + floorboardThickness + skidHeight - sideGroundClearance
     const topWidth = internalWidth + 2 * panelThickness
     const topLength = internalLength + 2 * panelThickness
 

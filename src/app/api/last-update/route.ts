@@ -12,43 +12,54 @@ export interface ProjectMetadata {
   updatedBy: string
 }
 
-export async function GET() {
+async function readPackageJson() {
   try {
-    const { execSync } = await import('node:child_process')
-
-    // Read package.json for version, TI number, and maintainer
     const packageJsonPath = join(process.cwd(), 'package.json')
     const packageJsonContent = await readFile(packageJsonPath, 'utf-8')
-    const packageJson = JSON.parse(packageJsonContent)
-
-    // Get git metadata
-    const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).trim()
-    const lastCommit = execSync('git log -1 --format=%h', { encoding: 'utf-8' }).trim()
-    const lastChange = execSync('git log -1 --format=%s', { encoding: 'utf-8' }).trim()
-    const timestamp = execSync('git log -1 --format=%cI', { encoding: 'utf-8' }).trim()
-
-    const metadata: ProjectMetadata = {
-      version: packageJson.version || '1.0.0',
-      tiNumber: packageJson.tiNumber || 'TI-000',
-      branch,
-      lastCommit,
-      lastChange,
-      timestamp,
-      updatedBy: packageJson.maintainer || 'unknown@designviz.com'
-    }
-
-    return NextResponse.json(metadata)
-  } catch (error) {
-    // Fallback when git or file system is unavailable
-    const fallbackMetadata: ProjectMetadata = {
-      version: '1.0.0',
-      tiNumber: 'TI-000',
-      branch: 'unknown',
-      lastCommit: 'unknown',
-      lastChange: 'Git metadata unavailable',
-      timestamp: new Date().toISOString(),
-      updatedBy: 'unknown@designviz.com'
-    }
-    return NextResponse.json(fallbackMetadata, { status: 200 })
+    return JSON.parse(packageJsonContent)
+  } catch {
+    return {}
   }
+}
+
+export async function GET() {
+  const packageJson = await readPackageJson()
+
+  const { execSync } = await import('node:child_process')
+  const safeExec = (command: string) => {
+    try {
+      return execSync(command, { encoding: 'utf-8' }).trim()
+    } catch {
+      return undefined
+    }
+  }
+
+  const vercelBranch = process.env.VERCEL_GIT_COMMIT_REF
+  const vercelSha = process.env.VERCEL_GIT_COMMIT_SHA
+  const vercelMessage = process.env.VERCEL_GIT_COMMIT_MESSAGE
+  const vercelTimestamp = process.env.VERCEL_GIT_COMMIT_AUTHOR_DATE || process.env.VERCEL_GIT_COMMIT_COMMITTED_AT
+  const vercelAuthor =
+    process.env.VERCEL_GIT_COMMIT_AUTHOR_LOGIN ||
+    process.env.VERCEL_GIT_COMMIT_AUTHOR_NAME ||
+    process.env.VERCEL_GIT_COMMIT_AUTHOR_EMAIL
+
+  const branch = vercelBranch || safeExec('git rev-parse --abbrev-ref HEAD') || 'unknown'
+  const lastCommit =
+    (vercelSha && vercelSha.substring(0, 7)) || safeExec('git log -1 --format=%h') || 'unknown'
+  const lastChange = vercelMessage || safeExec('git log -1 --format=%s') || 'Git metadata unavailable'
+  const timestamp =
+    vercelTimestamp || safeExec('git log -1 --format=%cI') || new Date().toISOString()
+  const updatedBy = packageJson.maintainer || vercelAuthor || 'unknown@designviz.com'
+
+  const metadata: ProjectMetadata = {
+    version: packageJson.version || '1.0.0',
+    tiNumber: packageJson.tiNumber || 'TI-000',
+    branch,
+    lastCommit,
+    lastChange,
+    timestamp,
+    updatedBy
+  }
+
+  return NextResponse.json(metadata)
 }

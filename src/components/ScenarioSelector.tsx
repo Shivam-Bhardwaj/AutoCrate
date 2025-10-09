@@ -24,6 +24,7 @@ interface ScenarioSelectorProps {
   scenarios: ScenarioPreset[]
   activeScenarioId: string | null
   onScenarioSelect: (scenario: ScenarioPreset) => void
+  showHeading?: boolean
 }
 
 /**
@@ -33,14 +34,17 @@ interface ScenarioSelectorProps {
 const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
   scenarios,
   activeScenarioId,
-  onScenarioSelect
+  onScenarioSelect,
+  showHeading = true
 }) => {
   return (
-    <div data-testid="scenario-panel" className="mb-3 text-gray-700 dark:text-gray-200">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold">Quick Scenarios</h3>
-        <span className="text-[11px] text-gray-500 dark:text-gray-400">Loads sample dimensions</span>
-      </div>
+    <div data-testid="scenario-panel" className="text-gray-700 dark:text-gray-200">
+      {showHeading ? (
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-semibold">Quick Scenarios</h3>
+          <span className="text-[11px] text-gray-500 dark:text-gray-400">Loads sample dimensions</span>
+        </div>
+      ) : null}
       <div className="space-y-1.5">
         {scenarios.map(scenario => {
           const isActive = scenario.id === activeScenarioId

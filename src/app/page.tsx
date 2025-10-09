@@ -553,17 +553,8 @@ export default function Home() {
       {/* Main Content Grid */}
       <div className="flex-1 flex gap-2 p-2 min-h-0">
         {/* Left Panel - Inputs */}
-        <aside className={`${showMobileInputs ? 'block' : 'hidden'} lg:flex lg:flex-col w-72 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none p-3 flex-shrink-0 transition-colors overflow-y-auto lg:max-h-full`}>
+        <aside className={`${showMobileInputs ? 'block' : 'hidden'} lg:flex lg:flex-col w-72 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none p-3 flex-shrink-0 transition-colors overflow-y-auto lg:h-[calc(100vh-160px)] lg:max-h-[calc(100vh-160px)]`}>
           <div className="flex-1 flex flex-col gap-3">
-            <ScenarioSelector
-              scenarios={SCENARIO_PRESETS}
-              activeScenarioId={activeScenarioId}
-              onScenarioSelect={applyScenario}
-            />
-            <div className="text-[11px] text-gray-500 dark:text-gray-400" data-testid="scenario-status">
-              {activeScenarioId ? `Active scenario: ${SCENARIO_PRESETS.find(preset => preset.id === activeScenarioId)?.name ?? 'Custom'}` : 'Active scenario: Custom values'}
-            </div>
-
             <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-2">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Part Numbers</h3>
               <div className="mt-1 space-y-2">
@@ -798,6 +789,21 @@ export default function Home() {
               <summary className="cursor-pointer select-none px-2 py-1.5 text-sm font-semibold text-gray-700 dark:text-gray-200">Markings &amp; Labels</summary>
               <div className="px-2 pb-2 pt-1">
                 <MarkingsSection config={config} onMarkingsChange={setMarkings} />
+              </div>
+            </details>
+
+            <details className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <summary className="cursor-pointer select-none px-2 py-1.5 text-sm font-semibold text-gray-700 dark:text-gray-200">Quick Scenarios</summary>
+              <div className="px-2 pb-2 pt-1 space-y-2">
+                <ScenarioSelector
+                  scenarios={SCENARIO_PRESETS}
+                  activeScenarioId={activeScenarioId}
+                  onScenarioSelect={applyScenario}
+                  showHeading={false}
+                />
+                <div className="text-[11px] text-gray-500 dark:text-gray-400" data-testid="scenario-status">
+                  {activeScenarioId ? `Active scenario: ${SCENARIO_PRESETS.find(preset => preset.id === activeScenarioId)?.name ?? 'Custom'}` : 'Active scenario: Custom values'}
+                </div>
               </div>
             </details>
           </div>

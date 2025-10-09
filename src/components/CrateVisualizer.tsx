@@ -133,24 +133,28 @@ function PMIFrame({ cells, isDatumLabel = false }: { cells: string[], isDatumLab
 
 // Component for visualizing datum planes according to ASME Y14.5
 function DatumPlanes({ bounds, scale, distanceFactor }: { bounds: SceneBounds; scale: number; distanceFactor: number }) {
-  const planeSize = Math.max(
-    bounds.maxX - bounds.minX,
-    bounds.maxY - bounds.minY,
-    bounds.maxZ - bounds.minZ
-  ) * 1.2
+  const spanX = bounds.maxX - bounds.minX
+  const spanY = bounds.maxY - bounds.minY
+  const spanZ = bounds.maxZ - bounds.minZ
+  const planeSize = Math.max(spanX, spanY, spanZ) * 1.2
+
+  const centerX = (bounds.minX + bounds.maxX) / 2
+  const centerY = (bounds.minY + bounds.maxY) / 2
+  const centerZ = (bounds.minZ + bounds.maxZ) / 2
+  const labelOffset = Math.max(spanX, spanY, spanZ) * 0.2
 
   return (
     <>
       {/* Datum A - Bottom plane (XY plane at Z=0) */}
-      <mesh position={[0, 0, 0]} rotation={[0, 0, 0]}>
+      <mesh position={[centerX * scale, bounds.minZ * scale, -centerY * scale]} rotation={[0, 0, 0]}>
         <planeGeometry args={[planeSize * scale, planeSize * scale]} />
         <meshBasicMaterial color="#ff0000" opacity={0.1} transparent side={THREE.DoubleSide} />
       </mesh>
       <Html
         position={[
-          (bounds.maxX + 10) * scale,
-          0,
-          -(bounds.maxY + 10) * scale
+          (centerX + labelOffset) * scale,
+          (bounds.minZ + labelOffset * 0.1) * scale,
+          -(centerY + labelOffset) * scale
         ]}
         center
         distanceFactor={distanceFactor}
@@ -160,15 +164,15 @@ function DatumPlanes({ bounds, scale, distanceFactor }: { bounds: SceneBounds; s
       </Html>
 
       {/* Datum B - Front plane (XZ plane at Y=0) */}
-      <mesh position={[0, 0, -bounds.minY * scale]} rotation={[Math.PI / 2, 0, 0]}>
+      <mesh position={[centerX * scale, centerZ * scale, -centerY * scale]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[planeSize * scale, planeSize * scale]} />
         <meshBasicMaterial color="#00ff00" opacity={0.1} transparent side={THREE.DoubleSide} />
       </mesh>
       <Html
         position={[
-          (bounds.maxX + 10) * scale,
-          (bounds.maxZ / 2) * scale,
-          -bounds.minY * scale
+          (centerX + labelOffset) * scale,
+          centerZ * scale,
+          -(centerY - labelOffset) * scale
         ]}
         center
         distanceFactor={distanceFactor}
@@ -178,15 +182,15 @@ function DatumPlanes({ bounds, scale, distanceFactor }: { bounds: SceneBounds; s
       </Html>
 
       {/* Datum C - Left plane (YZ plane at X=0) */}
-      <mesh position={[bounds.minX * scale, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+      <mesh position={[centerX * scale, centerZ * scale, -centerY * scale]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[planeSize * scale, planeSize * scale]} />
         <meshBasicMaterial color="#0000ff" opacity={0.1} transparent side={THREE.DoubleSide} />
       </mesh>
       <Html
         position={[
-          bounds.minX * scale,
-          (bounds.maxZ / 2) * scale,
-          -(bounds.maxY + 10) * scale
+          (centerX - labelOffset) * scale,
+          centerZ * scale,
+          -(centerY + labelOffset) * scale
         ]}
         center
         distanceFactor={distanceFactor}
@@ -1335,7 +1339,6 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
     </div>
   )
 }
-
 
 
 

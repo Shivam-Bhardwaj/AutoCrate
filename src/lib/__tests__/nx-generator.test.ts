@@ -257,7 +257,8 @@ describe('NXGenerator', () => {
 
     const sideGroundClearance = expressions.get('side_panel_ground_clearance') || 0.25
     const cleatThickness = 0.75
-    const sideExpectedZ = sideGroundClearance + cleatThickness / 2
+    const skidMidHeight = (expressions.get('skid_height') || 0) / 2
+    const sideExpectedZ = Math.max(sideGroundClearance + cleatThickness / 2, skidMidHeight)
     const floorExpectedZ = (expressions.get('skid_height') || 0) + ((expressions.get('floorboard_thickness') || 0) / 2)
 
     const panelsToCheck = ['FRONT_PANEL', 'BACK_PANEL', 'LEFT_END_PANEL', 'RIGHT_END_PANEL']
