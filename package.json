@@ -1,0 +1,74 @@
+{
+  "name": "autocrate-app",
+  "version": "13.1.1",
+  "private": true,
+  "tiNumber": "TI-124-QUICK-TEST",
+  "maintainer": "shivam@designviz.com",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:all": "node scripts/test-runner.js",
+    "test:all:e2e": "node scripts/test-runner.js --e2e",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "prepare": "husky install",
+    "keploy:record": "docker-compose -f docker-compose.keploy.yml up",
+    "keploy:test": "docker-compose -f docker-compose.keploy.yml run -e KEPLOY_MODE=test keploy",
+    "version:patch": "npm version patch --no-git-tag-version",
+    "version:minor": "npm version minor --no-git-tag-version",
+    "version:major": "npm version major --no-git-tag-version",
+    "version:sync": "node scripts/sync-version.js"
+  },
+  "dependencies": {
+    "@react-three/drei": "^9.92.0",
+    "@react-three/fiber": "^8.15.0",
+    "next": "^14.2.33",
+    "react": "^18",
+    "react-dom": "^18",
+    "three": "^0.160.0",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/three": "^0.160.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "autoprefixer": "^10",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^15.5.3",
+    "husky": "^9.1.7",
+    "jest": "^30.1.3",
+    "jest-environment-jsdom": "^30.1.2",
+    "lint-staged": "^16.1.6",
+    "playwright": "^1.55.0",
+    "postcss": "^8",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^3",
+    "ts-jest": "^29.4.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "node scripts/run-tsc.js",
+      "cross-env NEXT_PRIVATE_SKIP_SWC_BINARY_CHECK=1 NEXT_DISABLE_SWC_NATIVE_WASM=1 jest --bail --findRelatedTests --passWithNoTests"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "npx prettier --write"
+    ]
+  }
+}

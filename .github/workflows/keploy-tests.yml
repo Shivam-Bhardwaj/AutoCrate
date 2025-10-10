@@ -1,0 +1,302 @@
+name: Keploy API Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "src/**"
+      - "package.json"
+      - "scripts/**"
+      - ".github/workflows/keploy-tests.yml"
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "18"
+  KEPLOY_VERSION: "latest"
+
+jobs:
+  test-preparation:
+    name: Prepare Test Environment
+    runs-on: ubuntu-latest
+    outputs:
+      test-matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Set test matrix
+        id: set-matrix
+        run: |
+          echo "matrix={\"test-suite\":[\"standard-crates\",\"optimization\",\"cleats\",\"nx-export\",\"edge-cases\"]}" >> $GITHUB_OUTPUT
+
+  keploy-record:
+    name: Record Tests - ${{ matrix.test-suite }}
+    needs: test-preparation
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.test-preparation.outputs.test-matrix)}}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start application
+        run: |
+          npm run dev &
+          sleep 10
+
+      - name: Pull Keploy image
+        run: docker pull ghcr.io/keploy/keploy:${{ env.KEPLOY_VERSION }}
+
+      - name: Record ${{ matrix.test-suite }} tests
+        run: |
+          docker run --rm \
+            --name keploy-recorder \
+            --network host \
+            -v "$(pwd)/keploy-tests:/app/tests" \
+            -v "$(pwd)/keploy-mocks:/app/mocks" \
+            ghcr.io/keploy/keploy:${{ env.KEPLOY_VERSION }} \
+            record \
+            -c "node scripts/run-scenario.js ${{ matrix.test-suite }}" \
+            --path "./tests/${{ matrix.test-suite }}" \
+            --app-name "autocrate-nx-generator"
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: keploy-tests-${{ matrix.test-suite }}
+          path: |
+            keploy-tests/${{ matrix.test-suite }}
+            keploy-mocks/
+
+  keploy-test:
+    name: Run Tests - ${{ matrix.test-suite }}
+    needs: keploy-record
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.test-preparation.outputs.test-matrix)}}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download test artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: keploy-tests-${{ matrix.test-suite }}
+          path: .
+
+      - name: Start application
+        run: |
+          npm run dev &
+          sleep 10
+
+      - name: Run Keploy tests for ${{ matrix.test-suite }}
+        run: |
+          docker run --rm \
+            --name keploy-tester \
+            --network host \
+            -v "$(pwd)/keploy-tests:/app/tests" \
+            -v "$(pwd)/keploy-mocks:/app/mocks" \
+            -v "$(pwd)/test-results:/app/results" \
+            ghcr.io/keploy/keploy:${{ env.KEPLOY_VERSION }} \
+            test \
+            --path "./tests/${{ matrix.test-suite }}" \
+            --app-name "autocrate-nx-generator" \
+            --test-set "${{ matrix.test-suite }}"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.test-suite }}
+          path: test-results/
+
+  coverage-report:
+    name: Generate Coverage Report
+    needs: keploy-test
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download all test results
+        uses: actions/download-artifact@v3
+        with:
+          path: all-results/
+
+      - name: Generate consolidated report
+        run: |
+          mkdir -p test-reports
+          docker run --rm \
+            -v "$(pwd)/all-results:/app/results" \
+            -v "$(pwd)/test-reports:/app/reports" \
+            ghcr.io/keploy/keploy:${{ env.KEPLOY_VERSION }} \
+            report \
+            --path "/app/results" \
+            --output "/app/reports" \
+            --format "json,html,junit"
+
+      - name: Upload final report
+        uses: actions/upload-artifact@v3
+        with:
+          name: keploy-test-report
+          path: test-reports/
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            test-reports/**/*.xml
+            test-reports/**/*.junit.xml
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const reportPath = 'test-reports/summary.json';
+
+            if (fs.existsSync(reportPath)) {
+              const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+
+              const comment = `## 🎯 Keploy Test Results
+
+              | Test Suite | Passed | Failed | Coverage |
+              |------------|--------|--------|----------|
+              | Standard Crates | ${report.standard?.passed || 0} | ${report.standard?.failed || 0} | ${report.standard?.coverage || 'N/A'} |
+              | Optimization | ${report.optimization?.passed || 0} | ${report.optimization?.failed || 0} | ${report.optimization?.coverage || 'N/A'} |
+              | Cleats | ${report.cleats?.passed || 0} | ${report.cleats?.failed || 0} | ${report.cleats?.coverage || 'N/A'} |
+              | NX Export | ${report.nxExport?.passed || 0} | ${report.nxExport?.failed || 0} | ${report.nxExport?.coverage || 'N/A'} |
+
+              **Total Coverage:** ${report.totalCoverage || 'N/A'}
+
+              [View Full Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
+
+  performance-benchmark:
+    name: Performance Benchmarking
+    needs: test-preparation
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start application
+        run: |
+          npm run dev &
+          sleep 10
+
+      - name: Run performance tests
+        run: |
+          # Run load testing with Keploy
+          for endpoint in calculate-crate plywood-optimization cleat-placement nx-export; do
+            echo "Testing /api/$endpoint performance..."
+
+            docker run --rm \
+              --network host \
+              -v "$(pwd)/performance-results:/results" \
+              ghcr.io/keploy/keploy:${{ env.KEPLOY_VERSION }} \
+              test \
+              --path "./tests/performance" \
+              --app-name "autocrate-nx-generator" \
+              --benchmark \
+              --concurrent 10 \
+              --iterations 100 \
+              --output "/results/$endpoint.json"
+          done
+
+      - name: Analyze performance results
+        run: |
+          node scripts/analyze-performance.js performance-results/
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-report
+          path: performance-results/
+
+  notify-results:
+    name: Notify Results
+    needs: [keploy-test, coverage-report, performance-benchmark]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Determine status
+        id: status
+        run: |
+          if [ "${{ needs.keploy-test.result }}" == "success" ] && \
+             [ "${{ needs.coverage-report.result }}" == "success" ] && \
+             [ "${{ needs.performance-benchmark.result }}" == "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack notification
+        if: vars.SLACK_WEBHOOK_URL != ''
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ steps.status.outputs.status }}
+          text: |
+            ${{ steps.status.outputs.emoji }} Keploy Tests ${{ steps.status.outputs.status }}
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref }}
+            Commit: ${{ github.sha }}
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
