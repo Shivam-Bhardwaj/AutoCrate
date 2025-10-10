@@ -893,7 +893,7 @@ export default function Home() {
             )}
 
             {activeTab === 'expressions' && (
-              <div className="flex-1 overflow-auto rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+              <div className="flex-1 min-h-0 overflow-auto rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                 <pre className="text-xs text-gray-800 dark:text-gray-100 p-3 font-mono whitespace-pre">
                   {generator.exportNXExpressions()}
                 </pre>
