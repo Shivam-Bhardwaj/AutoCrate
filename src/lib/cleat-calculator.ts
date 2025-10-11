@@ -8,6 +8,11 @@
 // 5. Cleats placed at all splice positions
 // 6. When panels are rotated, cleats maintain symmetry with uniform gaps
 
+import {
+  CLEAT_STANDARDS,
+  getLumberDimensions
+} from './crate-constants'
+
 export interface Cleat {
   id: string
   type: 'perimeter' | 'intermediate' | 'splice'
@@ -29,9 +34,9 @@ export interface PanelCleatLayout {
 }
 
 export class CleatCalculator {
-  private static readonly CLEAT_WIDTH = 3.5    // 1x4 nominal is 0.75" x 3.5" actual
-  private static readonly CLEAT_THICKNESS = 0.75 // 1x4 actual thickness
-  private static readonly MAX_CLEAT_SPACING = 24 // Maximum 24" between cleats
+  private static readonly CLEAT_WIDTH = CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width    // 1x4 nominal is 0.75" x 3.5" actual
+  private static readonly CLEAT_THICKNESS = CLEAT_STANDARDS.DEFAULT_DIMENSIONS.thickness // 1x4 actual thickness
+  private static readonly MAX_CLEAT_SPACING = CLEAT_STANDARDS.MAX_VERTICAL_SPACING // Maximum 24" between cleats
   private static readonly MIN_EDGE_DISTANCE = 2  // Minimum 2" from edge for intermediate cleats
 
   /**

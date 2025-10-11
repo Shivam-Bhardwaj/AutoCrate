@@ -5,6 +5,11 @@
 // 2. Klimps between vertical cleats for panel support
 // 3. Symmetric side klimps at regular intervals
 
+import {
+  FASTENER_STANDARDS,
+  CLEAT_STANDARDS
+} from './crate-constants'
+
 export interface Klimp {
   id: string
   edge: 'top' | 'left' | 'right' // Which edge of front panel
@@ -26,11 +31,11 @@ export interface CleatInfo {
 }
 
 export class KlimpCalculator {
-  private static readonly EDGE_MIN_SPACING = 18 // Minimum 18" between hardware
-  private static readonly EDGE_MAX_SPACING = 24 // Maximum 24" between hardware
+  private static readonly EDGE_MIN_SPACING = FASTENER_STANDARDS.KLIMP.EDGE_MIN_SPACING // Minimum 18" between hardware
+  private static readonly EDGE_MAX_SPACING = FASTENER_STANDARDS.KLIMP.EDGE_MAX_SPACING // Maximum 24" between hardware
   private static readonly CLEAT_OFFSET = 1 // 1" from vertical cleat for corner klimps
   private static readonly BOTTOM_CLEAT_OFFSET = 2 // 2" above bottom horizontal cleat
-  private static readonly CLEAT_WIDTH = 3.5 // Standard 1x4 cleat width
+  private static readonly CLEAT_WIDTH = CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width // Standard 1x4 cleat width
 
   /**
    * Calculate strategic klimp positions for the front panel
@@ -54,7 +59,7 @@ export class KlimpCalculator {
   ): KlimpLayout {
     const klimps: Klimp[] = []
     let klimpId = 0
-    const bottomCleatHeight = 3.5 // Standard 1x4 cleat height
+    const bottomCleatHeight = CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width // Standard 1x4 cleat height
 
     // === TOP EDGE KLIMPS ===
     const topStart = this.CLEAT_WIDTH + this.CLEAT_OFFSET

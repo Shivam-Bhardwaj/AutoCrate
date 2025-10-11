@@ -11,6 +11,7 @@ import ScenarioSelector, { ScenarioPreset } from '@/components/ScenarioSelector'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { LumberCutList } from '@/components/LumberCutList'
 import type { ProjectMetadata } from '@/app/api/last-update/route'
+import { PART_NUMBER_STANDARDS, FASTENER_STANDARDS } from '@/lib/crate-constants'
 
 const SCENARIO_PRESETS: ScenarioPreset[] = [
   {
@@ -77,10 +78,14 @@ export default function Home() {
     handlingSymbols: true
   })
 
-  const [partNumbers, setPartNumbers] = useState({
-    base: '0205-XXXXX',
-    crate: '0205-XXXXX',
-    cap: '0205-XXXXX'
+  const [partNumbers, setPartNumbers] = useState<{
+    base: string
+    crate: string
+    cap: string
+  }>({
+    base: PART_NUMBER_STANDARDS.PLACEHOLDER,
+    crate: PART_NUMBER_STANDARDS.PLACEHOLDER,
+    cap: PART_NUMBER_STANDARDS.PLACEHOLDER
   })
 
   const [lagSpacing, setLagSpacing] = useState(21)
@@ -144,9 +149,9 @@ export default function Home() {
       sidePanelGroundClearance: 0.25
     },
     identifiers: {
-      basePartNumber: '0205-XXXXX',
-      cratePartNumber: '0205-XXXXX',
-      capPartNumber: '0205-XXXXX'
+      basePartNumber: PART_NUMBER_STANDARDS.PLACEHOLDER,
+      cratePartNumber: PART_NUMBER_STANDARDS.PLACEHOLDER,
+      capPartNumber: PART_NUMBER_STANDARDS.PLACEHOLDER
     }
   })
 
@@ -564,7 +569,7 @@ export default function Home() {
                     value={partNumbers.base}
                     onChange={(e) => setPartNumbers(prev => ({ ...prev, base: e.target.value }))}
                     className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    placeholder="0205-XXXXX"
+                    placeholder={PART_NUMBER_STANDARDS.PLACEHOLDER}
                   />
                 </label>
                 <label className="flex flex-col gap-1">
@@ -573,7 +578,7 @@ export default function Home() {
                     value={partNumbers.crate}
                     onChange={(e) => setPartNumbers(prev => ({ ...prev, crate: e.target.value }))}
                     className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    placeholder="0205-XXXXX"
+                    placeholder={PART_NUMBER_STANDARDS.PLACEHOLDER}
                   />
                 </label>
                 <label className="flex flex-col gap-1">
@@ -582,7 +587,7 @@ export default function Home() {
                     value={partNumbers.cap}
                     onChange={(e) => setPartNumbers(prev => ({ ...prev, cap: e.target.value }))}
                     className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    placeholder="0205-XXXXX"
+                    placeholder={PART_NUMBER_STANDARDS.PLACEHOLDER}
                   />
                 </label>
               </div>
@@ -736,7 +741,7 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
-                Side fasteners stay centred in the cleat, with spacing adjustable between 18" and 24" in 1/16" increments.
+                Side fasteners stay centred in the cleat, with spacing adjustable between {FASTENER_STANDARDS.LAG_SCREW.MIN_SPACING}" and {FASTENER_STANDARDS.LAG_SCREW.MAX_SPACING}" in 1/16" increments.
               </p>
             </section>
 

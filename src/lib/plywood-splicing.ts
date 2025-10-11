@@ -2,6 +2,8 @@
 // Optimizes panel layouts for 48x96 inch plywood sheets
 // Splicing rules: Vertical splices on right, Horizontal splices on bottom
 
+import { PLYWOOD_STANDARDS } from './crate-constants'
+
 export interface PlywoodSheet {
   width: number  // 48 inches max
   height: number // 96 inches max
@@ -55,8 +57,8 @@ export interface PlywoodSection {
 }
 
 export class PlywoodSplicer {
-  private static readonly MAX_SHEET_WIDTH = 48
-  private static readonly MAX_SHEET_HEIGHT = 96
+  private static readonly MAX_SHEET_WIDTH = PLYWOOD_STANDARDS.SHEET_WIDTH
+  private static readonly MAX_SHEET_HEIGHT = PLYWOOD_STANDARDS.SHEET_LENGTH
   private static readonly SPLICE_WIDTH = 0.125 // 1/8" for splice overlap
 
   /**

@@ -7,6 +7,12 @@ import { CleatCalculator, PanelCleatLayout, type Cleat } from './cleat-calculato
 import { KlimpCalculator, KlimpLayout, CleatInfo } from './klimp-calculator'
 import { KlimpSTEPIntegration, KlimpInstance } from './klimp-step-integration'
 import { LagSTEPIntegration } from './lag-step-integration'
+import {
+  PLYWOOD_STANDARDS,
+  LUMBER_DIMENSIONS,
+  SKID_STANDARDS,
+  GEOMETRY_STANDARDS
+} from './crate-constants'
 
 export interface ProductDimensions {
   length: number  // Y-axis (front to back)
@@ -158,24 +164,24 @@ export class NXGenerator {
     if (weight <= 500 && allow3x4) {
       // 3x4 skids - rotated so height remains 3.5" for forklift access
       // Only use if explicitly allowed
-      return { height: 3.5, width: 2.5, nominal: '3x4' }
-    } else if (weight <= 4500) {
+      return { height: LUMBER_DIMENSIONS['3x4'].height, width: LUMBER_DIMENSIONS['3x4'].width, nominal: '3x4' }
+    } else if (weight <= SKID_STANDARDS.LIGHTWEIGHT_WEIGHT_THRESHOLD) {
       // 4x4 skids (or replace 3x4 when not allowed)
       // Note: "Any existing crate design drawings requiring 4 x 6 skids for product under 4500lbs
       // can have the 4 x 6 skids replaced with an equal or greater number of 4 x 4 skids"
-      return { height: 3.5, width: 3.5, nominal: '4x4' }
+      return { height: LUMBER_DIMENSIONS['4x4'].height, width: LUMBER_DIMENSIONS['4x4'].width, nominal: '4x4' }
     } else if (weight <= 20000) {
       // 4x6 skids
-      return { height: 3.5, width: 5.5, nominal: '4x6' }
+      return { height: LUMBER_DIMENSIONS['4x6'].height, width: LUMBER_DIMENSIONS['4x6'].width, nominal: '4x6' }
     } else if (weight <= 40000) {
       // 6x6 skids
-      return { height: 5.5, width: 5.5, nominal: '6x6' }
+      return { height: LUMBER_DIMENSIONS['6x6'].height, width: LUMBER_DIMENSIONS['6x6'].width, nominal: '6x6' }
     } else if (weight <= 60000) {
       // 8x8 skids
-      return { height: 7.25, width: 7.25, nominal: '8x8' }
+      return { height: LUMBER_DIMENSIONS['8x8'].height, width: LUMBER_DIMENSIONS['8x8'].width, nominal: '8x8' }
     } else {
       // Maximum supported weight exceeded, default to 8x8
-      return { height: 7.25, width: 7.25, nominal: '8x8' }
+      return { height: LUMBER_DIMENSIONS['8x8'].height, width: LUMBER_DIMENSIONS['8x8'].width, nominal: '8x8' }
     }
   }
 
@@ -605,7 +611,7 @@ export class NXGenerator {
     const skidDims = this.getSkidDimensions()
     const floorboardDims = this.getFloorboardDimensions()
     const floorboardThickness = floorboardDims.thickness
-    const plywoodThickness = materials.plywoodThickness || 0.25  // Default 0.25" plywood
+    const plywoodThickness = materials.plywoodThickness || PLYWOOD_STANDARDS.DEFAULT_THICKNESS  // Default 0.25" plywood
     const panelThickness = materials.panelThickness || 1.0       // Total thickness including cleats
 
     // Overall external dimensions
@@ -910,8 +916,8 @@ export class NXGenerator {
     }
 
     // Generate cleats for each panel with proper 7-parameter system
-    const cleatThickness = 0.75  // 1x4 lumber thickness
-    const cleatWidth = 3.5       // 1x4 lumber width
+    const cleatThickness = LUMBER_DIMENSIONS['1x4'].height  // 1x4 lumber thickness
+    const cleatWidth = LUMBER_DIMENSIONS['1x4'].width       // 1x4 lumber width
 
     for (let i = 0; i < this.panelCleatLayouts.length; i++) {
       const cleatLayout = this.panelCleatLayouts[i]
@@ -1372,7 +1378,7 @@ export class NXGenerator {
   private getSidePanelGroundClearance(): number {
     const configured = this.config.geometry?.sidePanelGroundClearance
     if (configured === undefined || Number.isNaN(configured)) {
-      return 0.25
+      return GEOMETRY_STANDARDS.SIDE_PANEL_GROUND_CLEARANCE
     }
     return Math.max(0, configured)
   }
@@ -1646,7 +1652,7 @@ export class NXGenerator {
     output += '# Origin at center of crate floor (Z=0)\n'
     output += '# \n'
     output += '# PLYWOOD SPLICING INFORMATION:\n'
-    output += '# - Maximum sheet size: 48" x 96"\n'
+    output += `# - Maximum sheet size: ${PLYWOOD_STANDARDS.SHEET_WIDTH}" x ${PLYWOOD_STANDARDS.SHEET_LENGTH}"\n`
     output += '# - Vertical splices positioned on RIGHT side\n'
     output += '# - Horizontal splices positioned on BOTTOM\n'
     output += `# - Total plywood sheets required: ${this.expressions.get('total_plywood_sheets') || 0}\n`
@@ -2029,7 +2035,7 @@ export class NXGenerator {
       length: internalLength,
       quantity: skidCount,
       material: 'Lumber',
-      note: `Min 3.5" height required for forklift access. Single component patterned ${skidCount} times.`
+      note: `Min ${SKID_STANDARDS.MIN_FORKLIFT_HEIGHT}" height required for forklift access. Single component patterned ${skidCount} times.`
     })
 
     // Floorboards (individual lumber pieces with varied sizes)
@@ -2072,8 +2078,8 @@ export class NXGenerator {
     const efficiency = this.expressions.get('plywood_efficiency') || 0
 
     bom.push({
-      item: 'Plywood Sheet (48"x96")',
-      size: '48" x 96"',
+      item: `Plywood Sheet (${PLYWOOD_STANDARDS.SHEET_WIDTH}"x${PLYWOOD_STANDARDS.SHEET_LENGTH}")`,
+      size: `${PLYWOOD_STANDARDS.SHEET_WIDTH}" x ${PLYWOOD_STANDARDS.SHEET_LENGTH}"`,
       thickness: panelThickness,
       quantity: totalSheets,
       material: 'Plywood',
@@ -2234,7 +2240,7 @@ export function generateNXExpressions(
     },
     materials: {
       skidSize: weight > 2000 ? '4x4' : '3x3',
-      plywoodThickness: 0.25,     // 1/4" plywood
+      plywoodThickness: PLYWOOD_STANDARDS.DEFAULT_THICKNESS,     // 1/4" plywood
       panelThickness: 1.0,         // Total panel thickness with cleats
       cleatSize: '1x4'             // Standard 1x4 lumber cleats
     }
