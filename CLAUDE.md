@@ -494,12 +494,12 @@ In STEP files, components are named using snake_case with nominal dimensions:
 
 ### Version Management Guidelines
 
-**Current version**: 13.1.0
+**Current version**: See package.json (single source of truth)
 
 Version format: `OVERALL.CURRENT.CHANGE`
 
-- Bug fix → `npm run version:patch` (13.1.0 → 13.1.1)
-- New feature → `npm run version:minor` (13.1.0 → 13.2.0)
-- Breaking change → `npm run version:major` (13.1.0 → 14.0.0)
+- Bug fix → `npm run version:patch` or `./scripts/deploy.sh patch`
+- New feature → `npm run version:minor` or `./scripts/deploy.sh minor`
+- Breaking change → `npm run version:major` or `./scripts/deploy.sh major`
 
 Always run `npm run version:sync` after version changes to update all version references.

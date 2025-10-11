@@ -24,7 +24,10 @@
     "version:patch": "npm version patch --no-git-tag-version",
     "version:minor": "npm version minor --no-git-tag-version",
     "version:major": "npm version major --no-git-tag-version",
-    "version:sync": "node scripts/sync-version.js"
+    "version:sync": "node scripts/sync-version.js",
+    "deploy": "./scripts/deploy.sh patch",
+    "deploy:minor": "./scripts/deploy.sh minor",
+    "deploy:major": "./scripts/deploy.sh major"
   },
   "dependencies": {
     "@react-three/drei": "^9.92.0",

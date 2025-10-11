@@ -1,7 +1,7 @@
 # Project Status & Memory
 
-**Last Updated**: 2025-10-08
-**Current Version**: 13.1.0
+**Last Updated**: 2025-10-11
+**Current Version**: See package.json (single source of truth)
 **Project Phase**: Production - Active Development
 
 ## Current Work Streams

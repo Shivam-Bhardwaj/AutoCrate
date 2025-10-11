@@ -141,6 +141,11 @@ export const PART_NUMBER_STANDARDS = {
 
 /**
  * Company and project identifiers
+ *
+ * IMPORTANT: Version number is ONLY stored in package.json
+ * Never hardcode version anywhere else - always read from:
+ * - Frontend: /api/last-update endpoint
+ * - Backend: require('./package.json').version
  */
 export const PROJECT_IDENTIFIERS = {
   /** Company name */
