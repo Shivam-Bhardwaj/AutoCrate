@@ -70,3 +70,4 @@ Thumbs.db
 .idea/
 *.swp
 *.swotest-report.json
+RPI5_TOKENS.txt

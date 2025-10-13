@@ -10,7 +10,17 @@ A web-based tool for generating NX CAD expressions for shipping crate design. Cr
 - **Smart Sizing** - Automatic component sizing based on product weight
 - **Export Options** - Download expressions as .exp files and BOM as CSV
 
-## Quick Start
+## Quick Setup
+
+### Universal Linux Setup (One Prompt!)
+
+See **[UNIVERSAL_SETUP_PROMPT.md](UNIVERSAL_SETUP_PROMPT.md)** - One prompt works on Ubuntu, Debian, Arch, WSL, Raspberry Pi, etc.
+
+### Raspberry Pi 5 Specific
+
+See **[RPI5_SETUP.md](RPI5_SETUP.md)** and **[RPI5_CLAUDE_PROMPTS.md](RPI5_CLAUDE_PROMPTS.md)** for Armbian/ARM64 setup.
+
+### Manual Setup
 
 ```bash
 # Install dependencies
@@ -25,6 +35,27 @@ npm start
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to use the application.
+
+### Claude Code Development Agents
+
+AutoCrate includes 12 custom slash commands for accelerated development:
+
+```
+/test       - Run complete test suite
+/build      - Production build verification
+/deploy     - Version bump and deploy
+/verify     - Full health check
+/feature    - Add new feature workflow
+/quick-fix  - Rapid bug fix workflow
+/step       - Work with STEP files
+/nx         - Work with NX expressions
+/3d         - Work with 3D visualization
+/lumber     - Modify lumber sizes
+/hardware   - Add/modify hardware
+/scenario   - Add/modify scenarios
+```
+
+See **[CLAUDE_AGENTS_GUIDE.md](CLAUDE_AGENTS_GUIDE.md)** for complete usage guide.
 
 ## Usage
 
