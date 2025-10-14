@@ -29,7 +29,7 @@ const baseConfig: CrateConfig = {
     sidePanelGroundClearance: 0.25
   },
   markings: {
-    appliedMaterialsLogo: true,
+    appliedMaterialsLogo: false,
     fragileStencil: true,
     handlingSymbols: true,
     autocrateText: true
@@ -209,7 +209,8 @@ describe('NXGenerator', () => {
         product: { ...baseConfig.product, height: 20 }
       })
     )
-    expect(shortGenerator.getMarkingDimensions('logo')?.width).toBeCloseTo(5.56)
+    // Logo marking is deprecated and should return null
+    expect(shortGenerator.getMarkingDimensions('logo')).toBeNull()
     expect(shortGenerator.getMarkingDimensions('fragile')?.width).toBeCloseTo(8.0)
     expect(shortGenerator.getMarkingDimensions('handling')?.partNumber).toBe('0205-00606')
 
@@ -218,7 +219,6 @@ describe('NXGenerator', () => {
         product: { ...baseConfig.product, height: 60 }
       })
     )
-    expect(mediumGenerator.getMarkingDimensions('logo')?.partNumber).toContain('Scale 1.5X')
     expect(mediumGenerator.getMarkingDimensions('handling')?.partNumber).toBe('0205-00605')
 
     const tallGenerator = new NXGenerator(
@@ -226,7 +226,6 @@ describe('NXGenerator', () => {
         product: { ...baseConfig.product, height: 90 }
       })
     )
-    expect(tallGenerator.getMarkingDimensions('logo')?.partNumber).toContain('Scale 2.0X')
     expect(tallGenerator.getMarkingDimensions('fragile')?.partNumber).toContain('Scale 1.5X')
   })
 

@@ -254,7 +254,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive inline documentation
 - NX integration instructions
 - Coordinate system reference
-- Applied Materials standards compliance ready
 
 ## Design Decisions
 
@@ -325,7 +324,3 @@ npm start
 - Small crate: 20x15x25 inches, 200 lbs
 - Medium crate: 40x30x50 inches, 800 lbs
 - Large crate: 60x48x72 inches, 2000 lbs
-
----
-
-Built with precision for Applied Materials engineering standards.

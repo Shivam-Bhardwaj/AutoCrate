@@ -23,7 +23,7 @@ export interface ProductDimensions {
 }
 
 export interface MarkingConfig {
-  appliedMaterialsLogo: boolean  // Applied Materials logo (4 per crate)
+  appliedMaterialsLogo: boolean  // Deprecated - no longer used
   fragileStencil: boolean        // Fragile markings (4 per crate)
   handlingSymbols: boolean       // Glass, umbrella, up arrows (up to 4 per crate)
   autocrateText: boolean         // AUTOCRATE text centered on panels (4 per crate)
@@ -2130,15 +2130,9 @@ export class NXGenerator {
 
     const overallHeight = this.expressions.get('overall_height') || 0
 
-    if (markingType === 'logo' && this.config.markings.appliedMaterialsLogo) {
-      // Applied Materials Logo specifications
-      if (overallHeight <= 37) {
-        return { width: 5.56, height: 4.00, partNumber: '0205-02548' }
-      } else if (overallHeight <= 73) {
-        return { width: 8.34, height: 6.00, partNumber: '0205-02548 (Scale 1.5X)' }
-      } else {
-        return { width: 11.13, height: 8.00, partNumber: '0205-02548 (Scale 2.0X)' }
-      }
+    // Logo marking is deprecated and no longer supported
+    if (markingType === 'logo') {
+      return null
     }
 
     if (markingType === 'fragile' && this.config.markings.fragileStencil) {
@@ -2181,15 +2175,6 @@ export class NXGenerator {
     }
 
     let instructions = '# MARKING AND DECAL SPECIFICATIONS:\n'
-
-    const logoDims = this.getMarkingDimensions('logo')
-    if (logoDims) {
-      instructions += `# Applied Materials Logo (${logoDims.partNumber}):\n`
-      instructions += `#   - Size: ${logoDims.width}" x ${logoDims.height}"\n`
-      instructions += '#   - Position: Upper left corner of each side and end panel\n'
-      instructions += '#   - Quantity: 4 per crate\n'
-      instructions += '#   - Note: If space between cleats is insufficient, use smaller size\n'
-    }
 
     const fragileDims = this.getMarkingDimensions('fragile')
     if (fragileDims) {

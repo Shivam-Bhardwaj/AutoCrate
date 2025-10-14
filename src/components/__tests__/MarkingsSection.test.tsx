@@ -24,7 +24,7 @@ describe('MarkingsSection', () => {
       allow3x4Lumber: false
     },
     markings: {
-      appliedMaterialsLogo: true,
+      appliedMaterialsLogo: false,
       fragileStencil: true,
       handlingSymbols: true,
       autocrateText: true
@@ -39,30 +39,32 @@ describe('MarkingsSection', () => {
 
     expect(screen.getByText('Markings & Decals')).toBeInTheDocument()
     expect(screen.getByText(/Crate Height:/)).toBeInTheDocument()
-    expect(screen.getByText(/Logo \(4\)/)).toBeInTheDocument()
+    expect(screen.getByText(/Fragile \(4\)/)).toBeInTheDocument()
+    expect(screen.getByText(/Handling \(4\)/)).toBeInTheDocument()
+    expect(screen.getByText(/AUTOCRATE \(4\)/)).toBeInTheDocument()
 
     // Initial effect fires once with default markings
     expect(onMarkingsChange).toHaveBeenCalledWith({
-      appliedMaterialsLogo: true,
+      appliedMaterialsLogo: false,
       fragileStencil: true,
       handlingSymbols: true,
       autocrateText: true
     })
 
-    // Toggle the logo marking off
-    const logoCheckbox = screen.getAllByRole('checkbox')[0]
-    await user.click(logoCheckbox)
+    // Toggle the fragile marking off
+    const fragileCheckbox = screen.getAllByRole('checkbox')[0]
+    await user.click(fragileCheckbox)
 
     await waitFor(() => {
       expect(onMarkingsChange).toHaveBeenLastCalledWith({
         appliedMaterialsLogo: false,
-        fragileStencil: true,
+        fragileStencil: false,
         handlingSymbols: true,
         autocrateText: true
       })
     })
 
-    expect(screen.queryByText(/Logo \(4\)/)).not.toBeInTheDocument()
-    expect(screen.getByText(/Fragile \(4\)/)).toBeInTheDocument()
+    expect(screen.queryByText(/Fragile \(4\)/)).not.toBeInTheDocument()
+    expect(screen.getByText(/Handling \(4\)/)).toBeInTheDocument()
   })
 })

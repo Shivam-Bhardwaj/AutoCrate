@@ -1,14 +1,14 @@
-# AutoCrate NX Generator
+# AutoCrate
 
-A web-based tool for generating NX CAD expressions for shipping crate design. Creates parametric crate models using the Two Diagonal Points method with real-time 3D visualization.
+A parametric shipping crate design tool with real-time 3D visualization and CAD export.
 
 ## Features
 
-- **NX Expression Generation** - Generate parametric expressions compatible with NX CAD
 - **3D Visualization** - Real-time preview of crate design
-- **BOM Calculator** - Automatic Bill of Materials generation
-- **Smart Sizing** - Automatic component sizing based on product weight
-- **Export Options** - Download expressions as .exp files and BOM as CSV
+- **NX CAD Export** - Generate parametric expressions for NX
+- **STEP Export** - ISO 10303-21 AP242 compliant 3D models
+- **BOM Generation** - Automatic Bill of Materials
+- **Smart Sizing** - Automatic component selection based on weight
 
 ## Quick Setup
 
@@ -57,11 +57,11 @@ AutoCrate includes 12 custom slash commands for accelerated development:
 
 See **[CLAUDE_AGENTS_GUIDE.md](CLAUDE_AGENTS_GUIDE.md)** for complete usage guide.
 
-## Security & Local Assets
+## Security
 
-- Sensitive crate drawings and STEP exports now live outside the repo at `/home/curious/secure/autocrate/For Shivam`. Keep that directory on encrypted storage and do not re-add it to git.
-- Copy `.env.example` to `.env.local` and provide real values for `NEXT_PUBLIC_TERMINAL_PASSWORD`, `NEXT_PUBLIC_CONSOLE_PASSWORD`, and `VERCEL_TOKEN` so protected routes remain usable.
-- Run `npm run security:scan` before pushing to ensure no secrets or large binaries re-enter version control.
+- Sensitive files should be stored outside the repository
+- Copy `.env.example` to `.env.local` for environment variables
+- Run `npm run security:scan` before pushing to prevent secrets in commits
 
 ## Usage
 
@@ -145,10 +145,42 @@ src/
 - `CrateVisualizer.tsx` - 3D visualization component
 - `page.tsx` - Main application interface
 
+## Project Maintainer
+
+**Shivam Bhardwaj** - shivam@designviz.com
+
+## Contributing
+
+### For Collaborators
+
+To add team members to this project:
+
+1. **Via GitHub CLI:**
+
+   ```bash
+   gh repo invite <username> --permission triage
+   ```
+
+2. **Via GitHub Web:**
+   - Go to: https://github.com/Shivam-Bhardwaj/AutoCrate/settings/access
+   - Click "Add people"
+   - Enter GitHub username or email
+   - Set role to **"Triage"** (can create/manage issues, cannot push code)
+
+### Creating Issues
+
+Team members can create structured issues using templates:
+
+1. Go to: https://github.com/Shivam-Bhardwaj/AutoCrate/issues/new/choose
+2. Select template:
+   - **Bug Report** - Report bugs or errors
+   - **Feature Request** - Suggest new features
+   - **Enhancement** - Suggest improvements to existing features
+3. Fill in the template fields
+4. Submit the issue
+
+Issues are automatically labeled and tracked for development work.
+
 ## License
 
-Proprietary - Applied Materials
-
-## Support
-
-For issues or questions, contact the engineering team.
+Private - All Rights Reserved

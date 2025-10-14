@@ -148,8 +148,6 @@ export const PART_NUMBER_STANDARDS = {
  * - Backend: require('./package.json').version
  */
 export const PROJECT_IDENTIFIERS = {
-  /** Company name */
-  COMPANY: 'Applied Materials',
   /** Default maintainer email domain */
   DEFAULT_EMAIL_DOMAIN: 'designviz.com',
   /** TI number prefix */
@@ -186,13 +184,6 @@ export const GEOMETRY_STANDARDS = {
  * Stencil and marking dimensions
  */
 export const MARKING_STANDARDS = {
-  /** Applied Materials logo dimensions */
-  APPLIED_LOGO: {
-    width: 12,
-    height: 4,
-    partNumber: 'APPLIED_Impact-A_black',
-    quantity: 4, // Per crate
-  },
   /** Fragile stencil dimensions */
   FRAGILE_STENCIL: {
     width: 8,
@@ -242,8 +233,6 @@ export const MARKING_STANDARDS = {
   },
   /** Marking color standards (hex codes) */
   COLORS: {
-    /** Applied Materials logo color */
-    LOGO: '#000000',
     /** FRAGILE stencil color */
     FRAGILE: '#FF0000',
     /** Handling symbols color */

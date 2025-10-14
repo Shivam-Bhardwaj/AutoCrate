@@ -16,13 +16,12 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
 
   const markings = useMemo(() => {
     // Get marking dimensions
-    const logoDims = generator.getMarkingDimensions('logo')
     const fragileDims = generator.getMarkingDimensions('fragile')
     const handlingDims = generator.getMarkingDimensions('handling')
     const autocrateDims = generator.getMarkingDimensions('autocrate')
 
     // Return early if no markings are enabled
-    if (!logoDims && !fragileDims && !handlingDims && !autocrateDims) {
+    if (!fragileDims && !handlingDims && !autocrateDims) {
       return []
     }
 
@@ -79,20 +78,6 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
       if (panelType === 'FRONT_PANEL') {
         // Front panel faces -Y direction
         // Convert NX coordinates to Three.js: X->X, Y->-Z, Z->Y
-        if (logoDims) {
-          markingList.push({
-            position: new THREE.Vector3(
-              (center.x - size.x/2 + logoDims.width/2 + edgeOffset) * scale,
-              (center.z + size.z/2 - logoDims.height/2 - edgeOffset) * scale,
-              -(center.y - size.y/2) * scale - surfaceOffset
-            ),
-            size: [logoDims.width * scale, logoDims.height * scale],
-            text: 'AMAT\nLOGO',
-            color: MARKING_STANDARDS.COLORS.LOGO,
-            fontSize: logoDims.height * scale * 0.3,
-            partNumber: logoDims.partNumber
-          })
-        }
 
         if (fragileDims) {
           markingList.push({
@@ -119,7 +104,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [handlingDims.width * scale, handlingDims.height * scale],
             text: '↑\nGLASS\nUMBRELLA',
-            color: MARKING_STANDARDS.COLORS.LOGO,
+            color: MARKING_STANDARDS.COLORS.HANDLING,
             fontSize: handlingDims.height * scale * 0.2,
             partNumber: handlingDims.partNumber
           })
@@ -143,21 +128,6 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
         }
       } else if (panelType === 'BACK_PANEL') {
         // Back panel faces +Y direction
-        if (logoDims) {
-          markingList.push({
-            position: new THREE.Vector3(
-              (center.x + size.x/2 - logoDims.width/2 - edgeOffset) * scale,
-              (center.z + size.z/2 - logoDims.height/2 - edgeOffset) * scale,
-              -(center.y + size.y/2) * scale + surfaceOffset
-            ),
-            size: [logoDims.width * scale, logoDims.height * scale],
-            text: 'AMAT\nLOGO',
-            color: MARKING_STANDARDS.COLORS.LOGO,
-            fontSize: logoDims.height * scale * 0.3,
-            rotation: [0, Math.PI, 0],
-            partNumber: logoDims.partNumber
-          })
-        }
 
         if (fragileDims) {
           markingList.push({
@@ -184,7 +154,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [handlingDims.width * scale, handlingDims.height * scale],
             text: '↑\nGLASS\nUMBRELLA',
-            color: MARKING_STANDARDS.COLORS.LOGO,
+            color: MARKING_STANDARDS.COLORS.HANDLING,
             fontSize: handlingDims.height * scale * 0.2,
             rotation: [0, Math.PI, 0],
             partNumber: handlingDims.partNumber
@@ -210,21 +180,6 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
         }
       } else if (panelType === 'LEFT_END_PANEL') {
         // Left panel faces -X direction
-        if (logoDims) {
-          markingList.push({
-            position: new THREE.Vector3(
-              (center.x - size.x/2) * scale - surfaceOffset,
-              (center.z + size.z/2 - logoDims.height/2 - edgeOffset) * scale,
-              -(center.y - size.y/2 + logoDims.width/2 + edgeOffset) * scale
-            ),
-            size: [logoDims.width * scale, logoDims.height * scale],
-            text: 'AMAT\nLOGO',
-            color: MARKING_STANDARDS.COLORS.LOGO,
-            fontSize: logoDims.height * scale * 0.3,
-            rotation: [0, -Math.PI/2, 0],
-            partNumber: logoDims.partNumber
-          })
-        }
 
         if (fragileDims) {
           markingList.push({
@@ -251,7 +206,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [handlingDims.width * scale, handlingDims.height * scale],
             text: '↑\nGLASS\nUMBRELLA',
-            color: MARKING_STANDARDS.COLORS.LOGO,
+            color: MARKING_STANDARDS.COLORS.HANDLING,
             fontSize: handlingDims.height * scale * 0.2,
             rotation: [0, -Math.PI/2, 0],
             partNumber: handlingDims.partNumber
@@ -277,21 +232,6 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
         }
       } else if (panelType === 'RIGHT_END_PANEL') {
         // Right panel faces +X direction
-        if (logoDims) {
-          markingList.push({
-            position: new THREE.Vector3(
-              (center.x + size.x/2) * scale + surfaceOffset,
-              (center.z + size.z/2 - logoDims.height/2 - edgeOffset) * scale,
-              -(center.y + size.y/2 - logoDims.width/2 - edgeOffset) * scale
-            ),
-            size: [logoDims.width * scale, logoDims.height * scale],
-            text: 'AMAT\nLOGO',
-            color: MARKING_STANDARDS.COLORS.LOGO,
-            fontSize: logoDims.height * scale * 0.3,
-            rotation: [0, Math.PI/2, 0],
-            partNumber: logoDims.partNumber
-          })
-        }
 
         if (fragileDims) {
           markingList.push({
@@ -318,7 +258,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [handlingDims.width * scale, handlingDims.height * scale],
             text: '↑\nGLASS\nUMBRELLA',
-            color: MARKING_STANDARDS.COLORS.LOGO,
+            color: MARKING_STANDARDS.COLORS.HANDLING,
             fontSize: handlingDims.height * scale * 0.2,
             rotation: [0, Math.PI/2, 0],
             partNumber: handlingDims.partNumber

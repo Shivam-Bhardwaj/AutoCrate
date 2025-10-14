@@ -10,7 +10,7 @@ interface MarkingsSectionProps {
 
 export function MarkingsSection({ config, onMarkingsChange }: MarkingsSectionProps) {
   const [markings, setMarkings] = useState<MarkingConfig>({
-    appliedMaterialsLogo: true,
+    appliedMaterialsLogo: false,
     fragileStencil: true,
     handlingSymbols: true,
     autocrateText: true
@@ -23,7 +23,6 @@ export function MarkingsSection({ config, onMarkingsChange }: MarkingsSectionPro
   })
 
   // Get marking dimensions for display
-  const logoDims = generator.getMarkingDimensions('logo')
   const fragileDims = generator.getMarkingDimensions('fragile')
   const handlingDims = generator.getMarkingDimensions('handling')
   const autocrateDims = generator.getMarkingDimensions('autocrate')
@@ -38,10 +37,10 @@ export function MarkingsSection({ config, onMarkingsChange }: MarkingsSectionPro
     onMarkingsChange(markings)
   }, [markings, onMarkingsChange])
 
-  const toggleMarking = (type: 'logo' | 'fragile' | 'handling' | 'autocrate') => {
+  const toggleMarking = (type: 'fragile' | 'handling' | 'autocrate') => {
     setMarkings(prev => ({
       ...prev,
-      appliedMaterialsLogo: type === 'logo' ? !prev.appliedMaterialsLogo : prev.appliedMaterialsLogo,
+      appliedMaterialsLogo: false,
       fragileStencil: type === 'fragile' ? !prev.fragileStencil : prev.fragileStencil,
       handlingSymbols: type === 'handling' ? !prev.handlingSymbols : prev.handlingSymbols,
       autocrateText: type === 'autocrate' ? !prev.autocrateText : prev.autocrateText
@@ -61,30 +60,6 @@ export function MarkingsSection({ config, onMarkingsChange }: MarkingsSectionPro
 
       <div className="text-xs text-gray-600 dark:text-gray-400">
         Crate Height: {overallHeight.toFixed(1)}"
-      </div>
-
-      {/* Applied Materials Logo */}
-      <div className="flex items-start space-x-3">
-        <input
-          type="checkbox"
-          checked={markings.appliedMaterialsLogo}
-          onChange={() => toggleMarking('logo')}
-          className="mt-1 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-        />
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Applied Materials Logo
-          </label>
-          <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-            {logoDims && (
-              <>
-                <div>Size: {formatDimensions(logoDims)}</div>
-                <div>P/N: {logoDims.partNumber}</div>
-                <div>Position: Upper left corner of each panel (4 per crate)</div>
-              </>
-            )}
-          </div>
-        </div>
       </div>
 
       {/* Fragile Stencil */}
@@ -166,15 +141,13 @@ export function MarkingsSection({ config, onMarkingsChange }: MarkingsSectionPro
         <div className="text-xs text-gray-600 dark:text-gray-400">
           <div className="font-medium mb-1">Summary:</div>
           <div>Total Markings: {
-            (markings.appliedMaterialsLogo ? 4 : 0) +
             (markings.fragileStencil ? 4 : 0) +
             (markings.handlingSymbols ? 4 : 0) +
             (markings.autocrateText ? 4 : 0)
           }</div>
           <div className="mt-1">
-            {!markings.appliedMaterialsLogo && !markings.fragileStencil && !markings.handlingSymbols && !markings.autocrateText &&
+            {!markings.fragileStencil && !markings.handlingSymbols && !markings.autocrateText &&
               'No markings selected'}
-            {markings.appliedMaterialsLogo && 'Logo (4) '}
             {markings.fragileStencil && 'Fragile (4) '}
             {markings.handlingSymbols && 'Handling (4) '}
             {markings.autocrateText && 'AUTOCRATE (4)'}
