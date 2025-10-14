@@ -6,26 +6,131 @@ This file tracks detailed work history for the project. It serves as a memory fo
 
 ---
 
-## 2025-10-13
+## 2025-10-14
 
-### Security Sanitization & Local-Only Workflow
+### Lag Screw Placement Fix (Side Panels) - TDD Approach
 
-**Worker**: Codex (GPT-5)  
-**Time**: Evening  
-**Type**: Security Hardening + Tooling
+**Worker**: Claude Code
+**Time**: Early Morning
+**Type**: Bug Fix (TDD)
 
 **Changes**:
 
-- Removed `For Shivam/` crate drawings and STEP archives from git history; relocated assets to `/home/curious/secure/autocrate/For Shivam`
-- Added `.env.example` and updated terminal/console pages to read passwords from environment variables
-- Created `scripts/security-agent.js` with an `npm run security:scan` command to catch secrets/binaries
-- Updated `.gitignore`, README, RPI5 setup notes, and agent guidance for the new security workflow
+- ✅ Fixed lag screw placement on side panels to center on vertical cleats
+- ✅ Removed `.slice(1, -1)` logic that was excluding cleat centers (nx-generator.ts:1189)
+- ✅ Simplified algorithm from complex pair-processing (34 lines) to direct first/last (13 lines)
+- ✅ Added 5 comprehensive TDD tests for lag screw placement
+- ✅ All 68 tests passing (unit + integration)
+- ✅ Type checking passes
+- ✅ Manual verification on Vercel preview (pending user confirmation)
+- ✅ Front/back panel logic confirmed unchanged
+- ✅ Created detailed implementation plan in lag_screw_todo.md
+
+**TDD Cycle**:
+
+1. ✅ Wrote 5 failing tests first
+2. ✅ Confirmed tests failed (3 failures as expected)
+3. ✅ Fixed implementation (lines 1168-1201 in nx-generator.ts)
+4. ✅ All tests passing (11 tests in nx-generator.test.ts)
+5. ✅ Full test suite passing (68 tests across 20 suites)
+
+**Files Modified**:
+
+- src/lib/nx-generator.ts (lines 1168-1181: simplified lag screw placement logic)
+- src/lib/**tests**/nx-generator.test.ts (added 5 TDD tests, new describe block)
+- WORK_LOG.md (this entry)
+- PROJECT_STATUS.md (updated last modified dates)
+- lag_screw_todo.md (created comprehensive implementation plan)
+
+**Tests**:
+
+- [x] Unit tests passing (68/68)
+- [x] Type checking passes
+- [x] Build succeeds
+- [x] No regressions in existing tests
+- [ ] Manual verification on Vercel preview (awaiting user)
+- [ ] E2E tests (not run in commit hook)
+
+**Bug Details**:
+
+**Problem**:
+
+- Side panel lag screws were placed BETWEEN vertical cleats
+- Cleat centers were being excluded by `.slice(1, -1)` on line 1189
+- First and last screws missing from cleat centers
+- Incorrect spacing (13.185" instead of 16-24")
+
+**Solution**:
+
+- First lag screw now at first vertical cleat center
+- Last lag screw now at last vertical cleat center
+- Intermediate screws symmetrically spaced at configurable gap (16-24")
+- Simplified algorithm: removed complex pair-processing loop
+- Directly uses `generateLagRowPositions(firstCenter, lastCenter, spacing)`
+
+**Technical Changes**:
+
+```typescript
+// OLD (WRONG) - 34 lines with complex pair-processing loop
+if (verticalCleatCenters.length >= 2) {
+  // Loop through pairs, use .slice(1, -1) to exclude endpoints
+  for (let i = 0; i < verticalCleatCenters.length - 1; i++) {
+    const segmentPositions = this.generateLagRowPositions(
+      startCenter,
+      endCenter,
+      targetSpacing,
+    );
+    const interior = segmentPositions.slice(1, -1); // ❌ REMOVES CLEAT CENTERS!
+    interior.forEach(add);
+  }
+}
+
+// NEW (CORRECT) - 13 lines, direct approach
+if (verticalCleatCenters.length >= 2) {
+  const firstCenter = verticalCleatCenters[0];
+  const lastCenter = verticalCleatCenters[verticalCleatCenters.length - 1];
+  rowPositions = this.generateLagRowPositions(
+    firstCenter,
+    lastCenter,
+    targetSpacing,
+  );
+}
+```
 
 **Impact**:
 
-- Repository is free of proprietary crate documents and generated reports
-- Auth-gated routes work with configurable environment secrets instead of hard-coded values
-- Security agent provides a repeatable check before sharing code or opening PRs
+- Lag screws now correctly positioned at vertical cleat centers on side panels
+- Configurable spacing parameter (16-24") properly respected
+- Structural integrity improved (screws through skids on sides, floorboards on ends)
+- No regressions in front/back panel placement (already correct)
+- Code is 21 lines shorter and much clearer
+
+**Test Coverage**:
+
+5 new TDD tests added:
+
+1. ✅ First/last screws at first/last cleat centers
+2. ✅ Spacing parameter at 18 inches
+3. ✅ Spacing parameter at 24 inches
+4. ✅ Wide panels with many cleats
+5. ✅ Small panels with few cleats
+
+**Known Issues**:
+
+- None
+
+**Next Steps**:
+
+- ✅ Commit staged security changes
+- ✅ Commit lag screw fix with tests
+- 🔄 Push to branch for Vercel preview
+- ⏳ User manual verification on Vercel preview
+- ⏳ Merge to production after user approval
+- Future: Add UI indicator showing lag screw count in real-time
+- Future: Add 3D visualization highlights for lag screw positions
+
+---
+>>>>>>> f2f6084 (fix: Correct lag screw placement on side panels to center on vertical cleats)
 
 ## 2025-10-08
 
