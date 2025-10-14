@@ -22,8 +22,9 @@ function parseIssueFromBranch(branch: string): string | null {
 }
 
 function parseChangeInfo(metadata: ProjectMetadata): ChangeInfo | null {
-  const issueNumber = parseIssueFromBranch(metadata.branch) ||
-                      metadata.tiNumber.replace(/^TI-/, '')
+  const issueNumber = metadata.issueNumber ||
+                      parseIssueFromBranch(metadata.branch) ||
+                      '0'
 
   // Extract simple title from commit message (first line, remove prefixes)
   const title = metadata.lastChange
@@ -160,7 +161,7 @@ export function ChangeTracker() {
             className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800"
             onClick={(e) => e.stopPropagation()}
           >
-            <span className="font-mono">#{changeInfo.issueNumber}</span>
+            <span className="font-mono">Issue #{changeInfo.issueNumber}</span>
           </a>
 
           {/* Change title */}

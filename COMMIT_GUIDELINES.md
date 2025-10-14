@@ -1,5 +1,7 @@
 # Commit Message Guidelines
 
+> **Important**: Always work from a GitHub Issue! The issue number is automatically extracted and displayed in the UI.
+
 ## Quick Format
 
 ```
@@ -75,14 +77,14 @@ fix/issue-71-panel-alignment
 chore/issue-72-update-deps
 ```
 
-## TI Number System
+## Issue Number System
 
-TI (Technical Issue) numbers are now automatically derived from GitHub issue numbers:
+Issue numbers are automatically extracted from branch names:
 
-- Issue #69 → TI-69
-- Issue #123 → TI-123
+- Branch `feature/issue-69-change-tracking` → Issue #69
+- Branch `fix/issue-123-bug-fix` → Issue #123
 
-No more arbitrary TI numbers like TI-124-QUICK-TEST!
+Always work from a GitHub issue to maintain traceability!
 
 ## Workflow
 
@@ -92,9 +94,9 @@ No more arbitrary TI numbers like TI-124-QUICK-TEST!
 4. **Reference the issue** with "Closes #NUMBER" in commit
 5. **Create PR** that will automatically close the issue
 
-## Visual Testing
+## How It Works
 
-The new ChangeTracker UI will automatically suggest what to test based on your commit message:
+The ChangeTracker UI shows the current issue number prominently and automatically suggests what to test based on your commit message:
 
 - Commits with "UI" → Test UI rendering
 - Commits with "3D" → Test visualization

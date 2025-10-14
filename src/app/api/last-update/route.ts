@@ -4,8 +4,8 @@ import { join } from 'path'
 
 export interface ProjectMetadata {
   version: string
-  tiNumber: string  // Deprecated - use issueNumber instead
-  issueNumber?: string
+  tiNumber: string  // Deprecated - kept for backwards compatibility
+  issueNumber: string  // Current issue being worked on
   branch: string
   lastCommit: string
   lastChange: string
@@ -55,7 +55,7 @@ export async function GET() {
 
   // Extract issue number from branch name (e.g., feature/issue-69-description -> 69)
   const issueMatch = branch.match(/issue-(\d+)/i)
-  const issueNumber = issueMatch ? issueMatch[1] : undefined
+  const issueNumber = issueMatch ? issueMatch[1] : '0'
 
   // Generate smart test instructions based on commit message
   const testInstructions: string[] = []
@@ -79,8 +79,8 @@ export async function GET() {
 
   const metadata: ProjectMetadata = {
     version: packageJson.version || '1.0.0',
-    tiNumber: issueNumber ? `TI-${issueNumber}` : (packageJson.tiNumber || 'TI-000'),
-    issueNumber,
+    tiNumber: `TI-${issueNumber}`,  // Kept for backwards compatibility
+    issueNumber,  // The actual issue number
     branch,
     lastCommit,
     lastChange,
