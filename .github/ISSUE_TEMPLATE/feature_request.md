@@ -1,31 +1,19 @@
 ---
 name: Feature Request
-about: Suggest a new feature for AutoCrate
+about: Suggest a new feature
 title: "[FEATURE] "
 labels: feature
 assignees: ""
 ---
 
-## Description
+## Feature description
 
-<!-- Clear description of the feature you'd like to see -->
+<!-- What would you like to see? -->
 
-## Use Case
+## Why is this needed?
 
-<!-- Why is this feature needed? What problem does it solve? -->
+<!-- What problem does it solve? -->
 
-## Acceptance Criteria
+## Example use case
 
-<!-- List specific requirements that define when this feature is complete -->
-
-- [ ]
-- [ ]
-- [ ]
-
-## Technical Notes (Optional)
-
-<!-- Any technical considerations, constraints, or suggestions -->
-
-## Related Issues
-
-<!-- Reference any related issues with #issue-number -->
+<!-- How would someone use this? -->

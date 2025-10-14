@@ -1,46 +1,26 @@
 ---
 name: Bug Report
-about: Report a bug in AutoCrate
+about: Something isn't working right
 title: "[BUG] "
 labels: bug
 assignees: ""
 ---
 
-## Description
+## What's broken?
 
-<!-- Clear description of the bug -->
+<!-- Quick description of the problem -->
 
-## Steps to Reproduce
+## Steps to reproduce
+
+<!-- How can we see it? -->
 
 1.
 2.
-3.
 
-## Expected Behavior
+## What should happen?
 
-<!-- What should happen -->
+<!-- Expected behavior -->
 
-## Actual Behavior
+## Browser/OS (if relevant)
 
-<!-- What actually happens -->
-
-## Environment
-
-- **Version**: <!-- e.g., 13.3.0 -->
-- **Browser**: <!-- e.g., Chrome 120, Firefox 121 -->
-- **OS**: <!-- e.g., Windows 11, macOS 14, Ubuntu 22.04 -->
-
-## Screenshots/Console Errors (Optional)
-
-<!-- Add screenshots or paste console errors -->
-
-## Acceptance Criteria
-
-<!-- How will we know this is fixed? -->
-
-- [ ]
-- [ ]
-
-## Related Issues
-
-<!-- Reference any related issues with #issue-number -->
+<!-- e.g., Chrome on Windows -->
