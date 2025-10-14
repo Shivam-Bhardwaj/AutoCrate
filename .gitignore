@@ -69,5 +69,7 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
-*.swotest-report.json
+*.swo
+test-report.json
+For Shivam/
 RPI5_TOKENS.txt
