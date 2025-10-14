@@ -6,6 +6,27 @@ This file tracks detailed work history for the project. It serves as a memory fo
 
 ---
 
+## 2025-10-13
+
+### Security Sanitization & Local-Only Workflow
+
+**Worker**: Codex (GPT-5)  
+**Time**: Evening  
+**Type**: Security Hardening + Tooling
+
+**Changes**:
+
+- Removed `For Shivam/` crate drawings and STEP archives from git history; relocated assets to `/home/curious/secure/autocrate/For Shivam`
+- Added `.env.example` and updated terminal/console pages to read passwords from environment variables
+- Created `scripts/security-agent.js` with an `npm run security:scan` command to catch secrets/binaries
+- Updated `.gitignore`, README, RPI5 setup notes, and agent guidance for the new security workflow
+
+**Impact**:
+
+- Repository is free of proprietary crate documents and generated reports
+- Auth-gated routes work with configurable environment secrets instead of hard-coded values
+- Security agent provides a repeatable check before sharing code or opening PRs
+
 ## 2025-10-08
 
 ### Parallel Development Workflow System
