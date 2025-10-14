@@ -18,9 +18,10 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
     const logoDims = generator.getMarkingDimensions('logo')
     const fragileDims = generator.getMarkingDimensions('fragile')
     const handlingDims = generator.getMarkingDimensions('handling')
+    const autocrateDims = generator.getMarkingDimensions('autocrate')
 
     // Return early if no markings are enabled
-    if (!logoDims && !fragileDims && !handlingDims) {
+    if (!logoDims && !fragileDims && !handlingDims && !autocrateDims) {
       return []
     }
 
@@ -122,6 +123,23 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             partNumber: handlingDims.partNumber
           })
         }
+
+        if (autocrateDims) {
+          // Position AUTOCRATE text below center to avoid overlap with FRAGILE
+          const verticalOffset = fragileDims ? fragileDims.height / 2 + 2 : 0
+          markingList.push({
+            position: new THREE.Vector3(
+              center.x * scale,
+              (center.z - verticalOffset) * scale,
+              -(center.y - size.y/2) * scale - surfaceOffset
+            ),
+            size: [autocrateDims.width * scale, autocrateDims.height * scale],
+            text: 'AUTOCRATE',
+            color: '#0066CC',
+            fontSize: autocrateDims.height * scale * 0.5,
+            partNumber: autocrateDims.partNumber
+          })
+        }
       } else if (panelType === 'BACK_PANEL') {
         // Back panel faces +Y direction
         if (logoDims) {
@@ -169,6 +187,24 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             fontSize: handlingDims.height * scale * 0.2,
             rotation: [0, Math.PI, 0],
             partNumber: handlingDims.partNumber
+          })
+        }
+
+        if (autocrateDims) {
+          // Position AUTOCRATE text below center to avoid overlap with FRAGILE
+          const verticalOffset = fragileDims ? fragileDims.height / 2 + 2 : 0
+          markingList.push({
+            position: new THREE.Vector3(
+              center.x * scale,
+              (center.z - verticalOffset) * scale,
+              -(center.y + size.y/2) * scale + surfaceOffset
+            ),
+            size: [autocrateDims.width * scale, autocrateDims.height * scale],
+            text: 'AUTOCRATE',
+            color: '#0066CC',
+            fontSize: autocrateDims.height * scale * 0.5,
+            rotation: [0, Math.PI, 0],
+            partNumber: autocrateDims.partNumber
           })
         }
       } else if (panelType === 'LEFT_END_PANEL') {
@@ -220,6 +256,24 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             partNumber: handlingDims.partNumber
           })
         }
+
+        if (autocrateDims) {
+          // Position AUTOCRATE text below center to avoid overlap with FRAGILE
+          const verticalOffset = fragileDims ? fragileDims.height / 2 + 2 : 0
+          markingList.push({
+            position: new THREE.Vector3(
+              (center.x - size.x/2) * scale - surfaceOffset,
+              (center.z - verticalOffset) * scale,
+              -center.y * scale
+            ),
+            size: [autocrateDims.width * scale, autocrateDims.height * scale],
+            text: 'AUTOCRATE',
+            color: '#0066CC',
+            fontSize: autocrateDims.height * scale * 0.5,
+            rotation: [0, -Math.PI/2, 0],
+            partNumber: autocrateDims.partNumber
+          })
+        }
       } else if (panelType === 'RIGHT_END_PANEL') {
         // Right panel faces +X direction
         if (logoDims) {
@@ -267,6 +321,24 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             fontSize: handlingDims.height * scale * 0.2,
             rotation: [0, Math.PI/2, 0],
             partNumber: handlingDims.partNumber
+          })
+        }
+
+        if (autocrateDims) {
+          // Position AUTOCRATE text below center to avoid overlap with FRAGILE
+          const verticalOffset = fragileDims ? fragileDims.height / 2 + 2 : 0
+          markingList.push({
+            position: new THREE.Vector3(
+              (center.x + size.x/2) * scale + surfaceOffset,
+              (center.z - verticalOffset) * scale,
+              -center.y * scale
+            ),
+            size: [autocrateDims.width * scale, autocrateDims.height * scale],
+            text: 'AUTOCRATE',
+            color: '#0066CC',
+            fontSize: autocrateDims.height * scale * 0.5,
+            rotation: [0, Math.PI/2, 0],
+            partNumber: autocrateDims.partNumber
           })
         }
       }
