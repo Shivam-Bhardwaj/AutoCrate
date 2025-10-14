@@ -119,7 +119,7 @@ function OverviewDoc() {
         </div>
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <h3 className="font-semibold text-lg mb-2">🧪 Testing</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Jest, Playwright, and Keploy testing strategies</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Jest and Playwright testing strategies with 76%+ coverage</p>
           <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">npm run test:all</code>
         </div>
       </div>
@@ -795,9 +795,19 @@ function TestingDoc() {
       <ul>
         <li><strong>Unit Testing:</strong> Jest + React Testing Library</li>
         <li><strong>E2E Testing:</strong> Playwright</li>
-        <li><strong>API Testing:</strong> Keploy (Docker-based)</li>
         <li><strong>Pre-commit:</strong> Husky + lint-staged</li>
       </ul>
+
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 my-4">
+        <p className="font-semibold">Modern Testing Infrastructure</p>
+        <p className="text-sm">This project uses industry-standard tools for professional-grade test coverage:</p>
+        <ul className="text-sm mt-2">
+          <li>✅ 95+ unit tests with Jest</li>
+          <li>✅ E2E tests with Playwright</li>
+          <li>✅ 76%+ overall code coverage</li>
+          <li>✅ Pre-commit validation with Husky</li>
+        </ul>
+      </div>
 
       <h2>Quick Start</h2>
       <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded">

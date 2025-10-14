@@ -150,13 +150,6 @@ npm run version:major    # Breaking: 13.1.0 → 14.0.0
 npm run version:sync     # Sync version across all files
 ```
 
-### API Testing (Keploy)
-
-```bash
-npm run keploy:record    # Record API test cases with Keploy
-npm run keploy:test      # Replay recorded API test cases
-```
-
 ## Architecture Overview
 
 ### Core Design Pattern: Two-Point Diagonal Construction
@@ -305,12 +298,7 @@ src/
    - 3D visualization interaction
    - STEP file generation validation
 
-3. **API Tests (Keploy)**
-   - Record/replay API test cases
-   - Docker-based testing environment
-   - Automatic test case generation
-
-4. **Pre-commit Validation (Husky + lint-staged)**
+3. **Pre-commit Validation (Husky + lint-staged)**
    - TypeScript type checking on changed files
    - Jest tests for related files
    - Prettier formatting for JSON/MD/YAML
@@ -363,9 +351,9 @@ See `TESTING.md` for comprehensive testing documentation.
 
 1. Add route in `src/app/api/[endpoint-name]/route.ts`
 2. Implement GET/POST handlers with TypeScript types
-3. Add unit tests in `route.test.ts` alongside the route
-4. Update API documentation in this file
-5. Consider Keploy test recording for integration testing
+3. Add comprehensive unit tests in `route.test.ts` alongside the route
+4. Add E2E tests in Playwright if user-facing
+5. Update API documentation in this file
 
 ### Modifying Plywood Splicing
 
@@ -495,10 +483,6 @@ npm run start
 - **Prettier 3** - Code formatting
 - **ESLint 8** - JavaScript/TypeScript linting
 - **TypeScript ESLint 7** - TypeScript-specific linting rules
-
-### API Testing
-
-- **Keploy** - Docker-based API test recording/replay
 
 ## Documentation Resources
 

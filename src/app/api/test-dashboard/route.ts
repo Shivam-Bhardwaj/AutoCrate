@@ -337,8 +337,7 @@ function getDashboardData() {
     healthStatus: {
       api: 'healthy',
       database: 'not configured',
-      cache: 'not configured',
-      keploy: 'active'
+      cache: 'not configured'
     },
     nextActions: [
       { priority: 'high', action: 'Fix failing NX export tests' },
