@@ -1168,35 +1168,15 @@ export class NXGenerator {
     let rowPositions: number[]
 
     if (verticalCleatCenters.length >= 2) {
-      const tolerance = 1e-4
-      const positions: number[] = []
+      // Place screws at first cleat center, last cleat center, and intermediates at targetSpacing
+      const firstCenter = verticalCleatCenters[0]
+      const lastCenter = verticalCleatCenters[verticalCleatCenters.length - 1]
 
-      const add = (value: number) => {
-        const clamped = Math.min(Math.max(value, minY), maxY)
-        if (positions.length === 0 || Math.abs(positions[positions.length - 1] - clamped) > tolerance) {
-          positions.push(Number(clamped.toFixed(4)))
-        }
-      }
-
-      for (let i = 0; i < verticalCleatCenters.length - 1; i++) {
-        const startCenter = verticalCleatCenters[i]
-        const endCenter = verticalCleatCenters[i + 1]
-        if (endCenter <= startCenter + tolerance) {
-          continue
-        }
-
-        const segmentPositions = this.generateLagRowPositions(startCenter, endCenter, targetSpacing)
-        const interior = segmentPositions.slice(1, -1)
-
-        if (interior.length === 0) {
-          add((startCenter + endCenter) / 2)
-        } else {
-          interior.forEach(add)
-        }
-      }
-
-      rowPositions = positions.length > 0 ? positions : this.generateLagRowPositions(minY, maxY, targetSpacing)
+      // Generate all positions from first to last cleat center
+      // generateLagRowPositions already includes endpoints, so use directly
+      rowPositions = this.generateLagRowPositions(firstCenter, lastCenter, targetSpacing)
     } else {
+      // Fallback for panels with 0-1 vertical cleats: distribute across panel width
       rowPositions = this.generateLagRowPositions(minY, maxY, targetSpacing)
     }
 

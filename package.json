@@ -18,6 +18,7 @@
     "test:all:e2e": "node scripts/test-runner.js --e2e",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
+    "security:scan": "node scripts/security-agent.js",
     "prepare": "husky install",
     "keploy:record": "docker-compose -f docker-compose.keploy.yml up",
     "keploy:test": "docker-compose -f docker-compose.keploy.yml run -e KEPLOY_MODE=test keploy",
