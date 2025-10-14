@@ -2,6 +2,7 @@
 
 import { Text, Plane, Box } from '@react-three/drei'
 import { NXBox, NXGenerator, MarkingDimensions } from '@/lib/nx-generator'
+import { MARKING_STANDARDS } from '@/lib/crate-constants'
 import * as THREE from 'three'
 import { useMemo } from 'react'
 
@@ -72,8 +73,8 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
       // Small offset from panel surface (in scaled units) to prevent z-fighting
       const surfaceOffset = 0.01  // Increased to prevent aliasing
 
-      // Position offset from edges (2 inches in real dimensions)
-      const edgeOffset = 2
+      // Position offset from edges (inches in real dimensions)
+      const edgeOffset = MARKING_STANDARDS.POSITIONING.EDGE_OFFSET
 
       if (panelType === 'FRONT_PANEL') {
         // Front panel faces -Y direction
@@ -87,7 +88,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [logoDims.width * scale, logoDims.height * scale],
             text: 'AMAT\nLOGO',
-            color: '#000000',
+            color: MARKING_STANDARDS.COLORS.LOGO,
             fontSize: logoDims.height * scale * 0.3,
             partNumber: logoDims.partNumber
           })
@@ -102,9 +103,9 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [fragileDims.width * scale, fragileDims.height * scale],
             text: 'FRAGILE',
-            color: '#FF0000',
+            color: MARKING_STANDARDS.COLORS.FRAGILE,
             fontSize: fragileDims.height * scale * 0.4,
-            rotation: [0, 0, Math.PI / 18], // 10 degrees
+            rotation: [0, 0, MARKING_STANDARDS.POSITIONING.FRAGILE_ROTATION],
             partNumber: fragileDims.partNumber
           })
         }
@@ -118,7 +119,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [handlingDims.width * scale, handlingDims.height * scale],
             text: '↑\nGLASS\nUMBRELLA',
-            color: '#000000',
+            color: MARKING_STANDARDS.COLORS.LOGO,
             fontSize: handlingDims.height * scale * 0.2,
             partNumber: handlingDims.partNumber
           })
@@ -126,7 +127,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
 
         if (autocrateDims) {
           // Position AUTOCRATE text below center to avoid overlap with FRAGILE
-          const verticalOffset = fragileDims ? fragileDims.height / 2 + 2 : 0
+          const verticalOffset = fragileDims ? fragileDims.height / 2 + MARKING_STANDARDS.POSITIONING.VERTICAL_SEPARATION : 0
           markingList.push({
             position: new THREE.Vector3(
               center.x * scale,
@@ -135,7 +136,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [autocrateDims.width * scale, autocrateDims.height * scale],
             text: 'AUTOCRATE',
-            color: '#0066CC',
+            color: MARKING_STANDARDS.COLORS.AUTOCRATE,
             fontSize: autocrateDims.height * scale * 0.5,
             partNumber: autocrateDims.partNumber
           })
@@ -151,7 +152,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [logoDims.width * scale, logoDims.height * scale],
             text: 'AMAT\nLOGO',
-            color: '#000000',
+            color: MARKING_STANDARDS.COLORS.LOGO,
             fontSize: logoDims.height * scale * 0.3,
             rotation: [0, Math.PI, 0],
             partNumber: logoDims.partNumber
@@ -167,9 +168,9 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [fragileDims.width * scale, fragileDims.height * scale],
             text: 'FRAGILE',
-            color: '#FF0000',
+            color: MARKING_STANDARDS.COLORS.FRAGILE,
             fontSize: fragileDims.height * scale * 0.4,
-            rotation: [0, Math.PI, Math.PI / 18],
+            rotation: [0, Math.PI, MARKING_STANDARDS.POSITIONING.FRAGILE_ROTATION],
             partNumber: fragileDims.partNumber
           })
         }
@@ -183,7 +184,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [handlingDims.width * scale, handlingDims.height * scale],
             text: '↑\nGLASS\nUMBRELLA',
-            color: '#000000',
+            color: MARKING_STANDARDS.COLORS.LOGO,
             fontSize: handlingDims.height * scale * 0.2,
             rotation: [0, Math.PI, 0],
             partNumber: handlingDims.partNumber
@@ -192,7 +193,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
 
         if (autocrateDims) {
           // Position AUTOCRATE text below center to avoid overlap with FRAGILE
-          const verticalOffset = fragileDims ? fragileDims.height / 2 + 2 : 0
+          const verticalOffset = fragileDims ? fragileDims.height / 2 + MARKING_STANDARDS.POSITIONING.VERTICAL_SEPARATION : 0
           markingList.push({
             position: new THREE.Vector3(
               center.x * scale,
@@ -201,7 +202,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [autocrateDims.width * scale, autocrateDims.height * scale],
             text: 'AUTOCRATE',
-            color: '#0066CC',
+            color: MARKING_STANDARDS.COLORS.AUTOCRATE,
             fontSize: autocrateDims.height * scale * 0.5,
             rotation: [0, Math.PI, 0],
             partNumber: autocrateDims.partNumber
@@ -218,7 +219,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [logoDims.width * scale, logoDims.height * scale],
             text: 'AMAT\nLOGO',
-            color: '#000000',
+            color: MARKING_STANDARDS.COLORS.LOGO,
             fontSize: logoDims.height * scale * 0.3,
             rotation: [0, -Math.PI/2, 0],
             partNumber: logoDims.partNumber
@@ -234,9 +235,9 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [fragileDims.width * scale, fragileDims.height * scale],
             text: 'FRAGILE',
-            color: '#FF0000',
+            color: MARKING_STANDARDS.COLORS.FRAGILE,
             fontSize: fragileDims.height * scale * 0.4,
-            rotation: [0, -Math.PI/2, Math.PI / 18],
+            rotation: [0, -Math.PI/2, MARKING_STANDARDS.POSITIONING.FRAGILE_ROTATION],
             partNumber: fragileDims.partNumber
           })
         }
@@ -250,7 +251,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [handlingDims.width * scale, handlingDims.height * scale],
             text: '↑\nGLASS\nUMBRELLA',
-            color: '#000000',
+            color: MARKING_STANDARDS.COLORS.LOGO,
             fontSize: handlingDims.height * scale * 0.2,
             rotation: [0, -Math.PI/2, 0],
             partNumber: handlingDims.partNumber
@@ -259,7 +260,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
 
         if (autocrateDims) {
           // Position AUTOCRATE text below center to avoid overlap with FRAGILE
-          const verticalOffset = fragileDims ? fragileDims.height / 2 + 2 : 0
+          const verticalOffset = fragileDims ? fragileDims.height / 2 + MARKING_STANDARDS.POSITIONING.VERTICAL_SEPARATION : 0
           markingList.push({
             position: new THREE.Vector3(
               (center.x - size.x/2) * scale - surfaceOffset,
@@ -268,7 +269,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [autocrateDims.width * scale, autocrateDims.height * scale],
             text: 'AUTOCRATE',
-            color: '#0066CC',
+            color: MARKING_STANDARDS.COLORS.AUTOCRATE,
             fontSize: autocrateDims.height * scale * 0.5,
             rotation: [0, -Math.PI/2, 0],
             partNumber: autocrateDims.partNumber
@@ -285,7 +286,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [logoDims.width * scale, logoDims.height * scale],
             text: 'AMAT\nLOGO',
-            color: '#000000',
+            color: MARKING_STANDARDS.COLORS.LOGO,
             fontSize: logoDims.height * scale * 0.3,
             rotation: [0, Math.PI/2, 0],
             partNumber: logoDims.partNumber
@@ -301,9 +302,9 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [fragileDims.width * scale, fragileDims.height * scale],
             text: 'FRAGILE',
-            color: '#FF0000',
+            color: MARKING_STANDARDS.COLORS.FRAGILE,
             fontSize: fragileDims.height * scale * 0.4,
-            rotation: [0, Math.PI/2, Math.PI / 18],
+            rotation: [0, Math.PI/2, MARKING_STANDARDS.POSITIONING.FRAGILE_ROTATION],
             partNumber: fragileDims.partNumber
           })
         }
@@ -317,7 +318,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [handlingDims.width * scale, handlingDims.height * scale],
             text: '↑\nGLASS\nUMBRELLA',
-            color: '#000000',
+            color: MARKING_STANDARDS.COLORS.LOGO,
             fontSize: handlingDims.height * scale * 0.2,
             rotation: [0, Math.PI/2, 0],
             partNumber: handlingDims.partNumber
@@ -326,7 +327,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
 
         if (autocrateDims) {
           // Position AUTOCRATE text below center to avoid overlap with FRAGILE
-          const verticalOffset = fragileDims ? fragileDims.height / 2 + 2 : 0
+          const verticalOffset = fragileDims ? fragileDims.height / 2 + MARKING_STANDARDS.POSITIONING.VERTICAL_SEPARATION : 0
           markingList.push({
             position: new THREE.Vector3(
               (center.x + size.x/2) * scale + surfaceOffset,
@@ -335,7 +336,7 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             ),
             size: [autocrateDims.width * scale, autocrateDims.height * scale],
             text: 'AUTOCRATE',
-            color: '#0066CC',
+            color: MARKING_STANDARDS.COLORS.AUTOCRATE,
             fontSize: autocrateDims.height * scale * 0.5,
             rotation: [0, Math.PI/2, 0],
             partNumber: autocrateDims.partNumber

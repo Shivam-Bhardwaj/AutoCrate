@@ -11,7 +11,8 @@ import {
   PLYWOOD_STANDARDS,
   LUMBER_DIMENSIONS,
   SKID_STANDARDS,
-  GEOMETRY_STANDARDS
+  GEOMETRY_STANDARDS,
+  MARKING_STANDARDS
 } from './crate-constants'
 
 export interface ProductDimensions {
@@ -2160,12 +2161,13 @@ export class NXGenerator {
 
     if (markingType === 'autocrate' && this.config.markings.autocrateText) {
       // AUTOCRATE text specifications - scales with crate height
-      if (overallHeight <= 37) {
-        return { width: 12.00, height: 3.00, partNumber: 'AUTOCRATE-SM' }
-      } else if (overallHeight <= 73) {
-        return { width: 18.00, height: 4.50, partNumber: 'AUTOCRATE-MD' }
+      const { SMALL, MEDIUM, LARGE } = MARKING_STANDARDS.AUTOCRATE_TEXT
+      if (overallHeight <= SMALL.heightThreshold) {
+        return { width: SMALL.width, height: SMALL.height, partNumber: SMALL.partNumber }
+      } else if (overallHeight <= MEDIUM.heightThreshold) {
+        return { width: MEDIUM.width, height: MEDIUM.height, partNumber: MEDIUM.partNumber }
       } else {
-        return { width: 24.00, height: 6.00, partNumber: 'AUTOCRATE-LG' }
+        return { width: LARGE.width, height: LARGE.height, partNumber: LARGE.partNumber }
       }
     }
 
