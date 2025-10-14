@@ -43,15 +43,15 @@ _Add planned features/fixes here to avoid duplicate work_
 
 ### Core Modules
 
-| Module                      | Status    | Last Modified | Safe for Parallel Work? | Notes                                    |
-| --------------------------- | --------- | ------------- | ----------------------- | ---------------------------------------- |
-| `nx-generator.ts`           | ✅ Stable | 2025-10-08    | ⚠️ Caution              | Core crate generation logic              |
-| `step-generator.ts`         | ✅ Stable | 2025-10-08    | ⚠️ Caution              | STEP export - complex assembly structure |
-| `plywood-splicing.ts`       | ✅ Stable | 2025-10-08    | ✅ Yes                  | Self-contained optimization algorithm    |
-| `klimp-calculator.ts`       | ✅ Stable | 2025-10-08    | ✅ Yes                  | Klimp placement logic                    |
-| `klimp-step-integration.ts` | ✅ Stable | 2025-10-08    | ✅ Yes                  | Klimp STEP export                        |
-| `lag-step-integration.ts`   | ✅ Stable | 2025-10-08    | ✅ Yes                  | Lag screw integration                    |
-| `cleat-calculator.ts`       | ✅ Stable | 2025-10-08    | ✅ Yes                  | Cleat positioning                        |
+| Module                      | Status    | Last Modified | Safe for Parallel Work? | Notes                                       |
+| --------------------------- | --------- | ------------- | ----------------------- | ------------------------------------------- |
+| `nx-generator.ts`           | ✅ Stable | 2025-10-14    | ⚠️ Caution              | Core crate generation logic - Lag screw fix |
+| `step-generator.ts`         | ✅ Stable | 2025-10-08    | ⚠️ Caution              | STEP export - complex assembly structure    |
+| `plywood-splicing.ts`       | ✅ Stable | 2025-10-08    | ✅ Yes                  | Self-contained optimization algorithm       |
+| `klimp-calculator.ts`       | ✅ Stable | 2025-10-08    | ✅ Yes                  | Klimp placement logic                       |
+| `klimp-step-integration.ts` | ✅ Stable | 2025-10-08    | ✅ Yes                  | Klimp STEP export                           |
+| `lag-step-integration.ts`   | ✅ Stable | 2025-10-08    | ✅ Yes                  | Lag screw integration                       |
+| `cleat-calculator.ts`       | ✅ Stable | 2025-10-08    | ✅ Yes                  | Cleat positioning                           |
 
 ### UI Components
 
