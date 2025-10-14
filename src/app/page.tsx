@@ -10,7 +10,7 @@ import { MarkingsSection } from '@/components/MarkingsSection'
 import ScenarioSelector, { ScenarioPreset } from '@/components/ScenarioSelector'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { LumberCutList } from '@/components/LumberCutList'
-import type { ProjectMetadata } from '@/app/api/last-update/route'
+import { ChangeTracker } from '@/components/ChangeTracker'
 import { PART_NUMBER_STANDARDS, FASTENER_STANDARDS } from '@/lib/crate-constants'
 
 const SCENARIO_PRESETS: ScenarioPreset[] = [
@@ -91,7 +91,6 @@ export default function Home() {
 
   const [lagSpacing, setLagSpacing] = useState(21)
   const [sideGroundClearance, setSideGroundClearance] = useState(0.25)
-  const [metadata, setMetadata] = useState<ProjectMetadata | null>(null)
 
   const [pmiVisibility, setPmiVisibility] = useState({
     totalDimensions: true,
@@ -449,58 +448,11 @@ export default function Home() {
     URL.revokeObjectURL(url)
   }
 
-  useEffect(() => {
-    let cancelled = false
-
-    fetch('/api/last-update')
-      .then(res => res.json())
-      .then((data: ProjectMetadata) => {
-        if (!cancelled) {
-          setMetadata(data)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setMetadata(null)
-        }
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
 
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 overflow-x-hidden flex flex-col transition-colors duration-300">
-      {metadata ? (
-        <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700 px-3 py-2 text-xs transition-colors duration-300">
-          <div className="max-w-full mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3">
-              {/* Left side: Version, TI, Branch, Commit */}
-              <div className="flex flex-wrap items-center gap-2 text-gray-700 dark:text-gray-300">
-                <span className="font-semibold text-gray-900 dark:text-gray-100">v{metadata.version}</span>
-                <span className="text-gray-400 dark:text-gray-600">•</span>
-                <span className="font-mono bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">{metadata.tiNumber}</span>
-                <span className="text-gray-400 dark:text-gray-600">•</span>
-                <span className="font-mono text-blue-600 dark:text-blue-400">{metadata.branch}</span>
-                <span className="text-gray-400 dark:text-gray-600">•</span>
-                <span className="font-mono text-gray-600 dark:text-gray-400">{metadata.lastCommit}</span>
-              </div>
-              {/* Right side: Updated by and timestamp */}
-              <div className="text-gray-600 dark:text-gray-400 flex-shrink-0">
-                Updated by <span className="font-medium text-gray-800 dark:text-gray-200">{metadata.updatedBy}</span>
-                <span className="mx-1.5">•</span>
-                <span className="text-gray-500 dark:text-gray-500">{new Date(metadata.timestamp).toLocaleString()}</span>
-              </div>
-            </div>
-            {/* Second row: Full commit message */}
-            <div className="mt-1 text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700 pt-1.5">
-              <span className="text-gray-500 dark:text-gray-500 mr-2">Last change:</span>
-              <span className="font-medium">{metadata.lastChange}</span>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {/* Compact change tracker */}
+      <ChangeTracker />
       {/* Compact Header */}
       <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none px-4 py-1.5 flex-shrink-0 transition-colors duration-300">
         <div className="flex items-center justify-between">
