@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-const AUTH_TOKEN = (process.env.NEXT_PUBLIC_CONSOLE_PASSWORD ?? '').trim()
-
 // Mock data for pending changes - in production this would come from an API
 const PENDING_CHANGES = [
   {
@@ -39,26 +37,20 @@ export default function ConsolePage() {
   const [changes, setChanges] = useState(PENDING_CHANGES)
   const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'deployed'>('pending')
   const router = useRouter()
-  const passwordConfigured = AUTH_TOKEN.length > 0
 
   // Check if already authenticated
   useEffect(() => {
     const auth = sessionStorage.getItem('console_auth')
-    if (auth === 'granted') {
+    if (auth === 'pazz_keelyn') {
       setIsAuthenticated(true)
     }
   }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!passwordConfigured) {
-      alert('Console password is not configured. Please set NEXT_PUBLIC_CONSOLE_PASSWORD.')
-      return
-    }
-
-    if (password === AUTH_TOKEN) {
+    if (password === 'pazz_keelyn') {
       setIsAuthenticated(true)
-      sessionStorage.setItem('console_auth', 'granted')
+      sessionStorage.setItem('console_auth', 'pazz_keelyn')
     } else {
       alert('Incorrect password. Please contact Shivam for access.')
     }
@@ -97,35 +89,27 @@ export default function ConsolePage() {
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             Manage changes and deployments visually
           </p>
-          {!passwordConfigured && (
-            <p className="text-yellow-500 dark:text-yellow-400 mb-6 text-sm">
-              Console password not configured. Set NEXT_PUBLIC_CONSOLE_PASSWORD in your environment before enabling access.
-            </p>
-          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={!passwordConfigured}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter password"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                disabled={!passwordConfigured}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 disabled:opacity-50"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400"
               >
                 {showPassword ? 'Hide' : 'Show'}
               </button>
             </div>
             <button
               type="submit"
-              disabled={!passwordConfigured}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
             >
               Access Console
             </button>

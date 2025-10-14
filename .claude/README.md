@@ -46,62 +46,6 @@ Rapid bug fix workflow for small, focused fixes.
 
 **Use when**: Need to fix a bug quickly
 
-### GitHub Workflow Commands
-
-#### `/issue`
-
-Create a professional GitHub issue with proper formatting, labels, and acceptance criteria.
-
-**Use when**: You want to track a bug, feature, or task
-
-**Example**:
-
-```
-/issue
-> Add PDF export for crate specifications
-> [Claude drafts a complete issue with sections, checkboxes, labels]
-```
-
-#### `/pr`
-
-Create a pull request with comprehensive description, test results, and proper formatting.
-
-**Use when**: Ready to merge your branch to main
-
-**Example**:
-
-```
-/pr
-> [Claude analyzes your changes and creates a detailed PR description]
-```
-
-#### `/start-work`
-
-Begin working on a GitHub issue with proper branch naming, implementation plan, and task tracking.
-
-**Use when**: Starting work on an issue or feature
-
-**Example**:
-
-```
-/start-work
-> Issue #42: Fix lag screw placement
-> [Claude creates branch, makes plan, tracks progress]
-```
-
-#### `/review`
-
-Perform an AI code review on your changes before committing or creating a PR.
-
-**Use when**: Want feedback on your code before pushing
-
-**Example**:
-
-```
-/review
-> [Claude analyzes staged changes for bugs, style, tests, docs]
-```
-
 ### Domain-Specific Commands
 
 #### `/step`

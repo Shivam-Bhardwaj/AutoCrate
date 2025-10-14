@@ -57,12 +57,6 @@ AutoCrate includes 12 custom slash commands for accelerated development:
 
 See **[CLAUDE_AGENTS_GUIDE.md](CLAUDE_AGENTS_GUIDE.md)** for complete usage guide.
 
-## Security & Local Assets
-
-- Sensitive crate drawings and STEP exports now live outside the repo at `/home/curious/secure/autocrate/For Shivam`. Keep that directory on encrypted storage and do not re-add it to git.
-- Copy `.env.example` to `.env.local` and provide real values for `NEXT_PUBLIC_TERMINAL_PASSWORD`, `NEXT_PUBLIC_CONSOLE_PASSWORD`, and `VERCEL_TOKEN` so protected routes remain usable.
-- Run `npm run security:scan` before pushing to ensure no secrets or large binaries re-enter version control.
-
 ## Usage
 
 1. **Enter Product Dimensions**

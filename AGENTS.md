@@ -14,7 +14,6 @@
 - `npm run lint`, `npm run type-check`, and `npm run test` form the daily quality gate.
 - Use `npm run test:coverage` to confirm ≥80% coverage and `npm run test:e2e` (or `test:e2e:ui`/`test:e2e:debug`) for Playwright suites.
 - `npm run test:all` aggregates the primary checks when you need a single command.
-- `npm run security:scan` runs the repository secret/binary policy audit before sharing code.
 
 ## Coding Style & Naming Conventions
 
