@@ -2,18 +2,18 @@
 
 <!-- Brief description of changes -->
 
-## 🎨 Visual Changes
+## [DESIGN] Visual Changes
 
 <!-- Screenshots or description of UI changes -->
 
-## ✅ Checklist
+## [DONE] Checklist
 
 - [ ] Tested on mobile device
 - [ ] Tested on desktop
 - [ ] Visual design looks good
 - [ ] No console errors
 
-## 📱 Mobile Review
+## [MOBILE] Mobile Review
 
 <!-- For reviewing on GitHub mobile app -->
 

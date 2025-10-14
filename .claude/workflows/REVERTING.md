@@ -23,17 +23,17 @@ This reverts the last commit and triggers automatic redeployment with the previo
 
 Rollback immediately if:
 
-- ❌ Site doesn't load
-- ❌ Critical feature broken
-- ❌ Console shows errors
-- ❌ Data loss possible
-- ❌ Security issue introduced
+- [x] Site doesn't load
+- [x] Critical feature broken
+- [x] Console shows errors
+- [x] Data loss possible
+- [x] Security issue introduced
 
 Don't rollback for:
 
-- ✅ Minor UI glitch (fix forward)
-- ✅ Documentation error (fix forward)
-- ✅ Small styling issue (fix forward)
+- [DONE] Minor UI glitch (fix forward)
+- [DONE] Documentation error (fix forward)
+- [DONE] Small styling issue (fix forward)
 
 ---
 

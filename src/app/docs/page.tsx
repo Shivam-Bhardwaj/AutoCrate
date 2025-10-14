@@ -7,14 +7,14 @@ export default function DocsPage() {
   const [activeDoc, setActiveDoc] = useState<string>('overview')
 
   const docs = [
-    { id: 'overview', title: '📚 Documentation Overview', category: 'Getting Started' },
-    { id: 'quickstart', title: '🚀 Quick Start Guide', category: 'Getting Started' },
-    { id: 'parallel-workflow', title: '⚡ Parallel Development Workflow', category: 'Development' },
-    { id: 'modules', title: '🧩 Module Architecture', category: 'Development' },
-    { id: 'project-status', title: '📊 Project Status & Memory', category: 'Development' },
-    { id: 'work-log', title: '📝 Work Log', category: 'Development' },
-    { id: 'testing', title: '🧪 Testing Guide', category: 'Quality' },
-    { id: 'claude-guide', title: '🤖 Claude Code Guide', category: 'AI Development' },
+    { id: 'overview', title: 'Documentation Overview', category: 'Getting Started' },
+    { id: 'quickstart', title: 'Quick Start Guide', category: 'Getting Started' },
+    { id: 'parallel-workflow', title: 'Parallel Development Workflow', category: 'Development' },
+    { id: 'modules', title: 'Module Architecture', category: 'Development' },
+    { id: 'project-status', title: 'Project Status & Memory', category: 'Development' },
+    { id: 'work-log', title: 'Work Log', category: 'Development' },
+    { id: 'testing', title: 'Testing Guide', category: 'Quality' },
+    { id: 'claude-guide', title: 'Claude Code Guide', category: 'AI Development' },
   ]
 
   const categories = Array.from(new Set(docs.map(d => d.category)))
@@ -84,7 +84,7 @@ export default function DocsPage() {
 function OverviewDoc() {
   return (
     <div className="prose prose-gray dark:prose-invert max-w-none">
-      <h1>📚 Documentation Overview</h1>
+      <h1>Documentation Overview</h1>
 
       <p className="lead">
         AutoCrate is a Next.js application for designing shipping crates with 3D visualization,
@@ -103,22 +103,22 @@ function OverviewDoc() {
       <h2>Quick Links</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose">
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <h3 className="font-semibold text-lg mb-2">🚀 Quick Start</h3>
+          <h3 className="font-semibold text-lg mb-2">Quick Start</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Get started with parallel development in 5 minutes</p>
           <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">./scripts/tmux-autocrate.sh</code>
         </div>
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <h3 className="font-semibold text-lg mb-2">⚡ Parallel Workflow</h3>
+          <h3 className="font-semibold text-lg mb-2">Parallel Workflow</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">5 ways to work on multiple features at once</p>
           <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">make parallel-dev</code>
         </div>
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <h3 className="font-semibold text-lg mb-2">🧩 Module Architecture</h3>
+          <h3 className="font-semibold text-lg mb-2">Module Architecture</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Understand module boundaries and dependencies</p>
           <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">Safe parallel work</code>
         </div>
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <h3 className="font-semibold text-lg mb-2">🧪 Testing</h3>
+          <h3 className="font-semibold text-lg mb-2">Testing</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Jest and Playwright testing strategies with 76%+ coverage</p>
           <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">npm run test:all</code>
         </div>
@@ -126,12 +126,12 @@ function OverviewDoc() {
 
       <h2>Key Features</h2>
       <ul>
-        <li>🎨 <strong>3D Visualization:</strong> React Three Fiber real-time preview</li>
-        <li>📐 <strong>NX CAD Export:</strong> Parametric expression generation</li>
-        <li>📦 <strong>STEP File Export:</strong> ISO 10303-21 AP242 compliant</li>
-        <li>🔧 <strong>Hardware Integration:</strong> Klimp fasteners & lag screws</li>
-        <li>📊 <strong>Plywood Optimization:</strong> Intelligent sheet layout algorithm</li>
-        <li>⚡ <strong>Parallel Development:</strong> Work on multiple features simultaneously</li>
+        <li>ART: <strong>3D Visualization:</strong> React Three Fiber real-time preview</li>
+        <li>CAD: <strong>NX CAD Export:</strong> Parametric expression generation</li>
+        <li>EXPORT: <strong>STEP File Export:</strong> ISO 10303-21 AP242 compliant</li>
+        <li>HARDWARE: <strong>Hardware Integration:</strong> Klimp fasteners & lag screws</li>
+        <li>OPTIMIZE: <strong>Plywood Optimization:</strong> Intelligent sheet layout algorithm</li>
+        <li>PARALLEL: <strong>Parallel Development:</strong> Work on multiple features simultaneously</li>
       </ul>
 
       <h2>Technology Stack</h2>
@@ -176,7 +176,7 @@ make work-status         # Check current work`}
 function QuickStartDoc() {
   return (
     <div className="prose prose-gray dark:prose-invert max-w-none">
-      <h1>🚀 Quick Start: Parallel Development</h1>
+      <h1>Quick Start: Parallel Development</h1>
 
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
         <p className="font-semibold mb-2">Goal: Work on multiple features simultaneously without conflicts</p>
@@ -257,16 +257,16 @@ claude code`}
       <h3>Step 1: Check what&apos;s safe to work on</h3>
       <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded">
 {`cat MODULES.md | grep -A 3 "plywood-splicing"
-# Output: ✅ SAFE for parallel work
+# Output: [DONE] SAFE for parallel work
 
 cat MODULES.md | grep -A 3 "klimp-calculator"
-# Output: ✅ SAFE for parallel work`}
+# Output: [DONE] SAFE for parallel work`}
       </pre>
 
       <h3>Step 2: Claim your work</h3>
       <p>Edit <code>PROJECT_STATUS.md</code>:</p>
       <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded">
-{`### 🔄 Active Work (In Progress)
+{`### Active Work (In Progress)
 
 - **plywood-splicing.ts** - Add custom sheet size support
   - Worker: Claude-Session-A
@@ -314,9 +314,9 @@ cat PROJECT_STATUS.md | head -30
 # Check MODULES.md for your module
 grep "your-module-name" MODULES.md
 
-# If marked ✅ SAFE and not in Active Work → Go ahead!
-# If marked ⚠️ CAUTION → Coordinate via PROJECT_STATUS.md
-# If marked 🔴 AVOID → Don't work on it in parallel`}
+# If marked [DONE] SAFE and not in Active Work → Go ahead!
+# If marked [WARNING] CAUTION → Coordinate via PROJECT_STATUS.md
+# If marked [AVOID] AVOID → Don't work on it in parallel`}
         </pre>
       </details>
 
@@ -336,15 +336,15 @@ npm run test:all`}
 
       <h2>Pro Tips</h2>
       <ul>
-        <li>✅ Use tmux for persistence - survives SSH disconnects</li>
-        <li>✅ Commit often - every 15-30 minutes</li>
-        <li>✅ Test continuously - <code>npm test:watch</code></li>
-        <li>✅ Update PROJECT_STATUS.md - communication is key</li>
-        <li>✅ Keep branches focused - one feature per branch</li>
+        <li>[DONE] Use tmux for persistence - survives SSH disconnects</li>
+        <li>[DONE] Commit often - every 15-30 minutes</li>
+        <li>[DONE] Test continuously - <code>npm test:watch</code></li>
+        <li>[DONE] Update PROJECT_STATUS.md - communication is key</li>
+        <li>[DONE] Keep branches focused - one feature per branch</li>
       </ul>
 
       <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mt-6">
-        <p className="font-semibold mb-2">🎉 Ready to start?</p>
+        <p className="font-semibold mb-2">Ready to start?</p>
         <pre className="bg-white dark:bg-gray-800 p-2 rounded text-sm">
 ./scripts/tmux-autocrate.sh && tmux attach -t autocrate
         </pre>
@@ -357,7 +357,7 @@ npm run test:all`}
 function ParallelWorkflowDoc() {
   return (
     <div className="prose prose-gray dark:prose-invert max-w-none">
-      <h1>⚡ Parallel Development Workflow</h1>
+      <h1>Parallel Development Workflow</h1>
 
       <p className="lead">
         5 different strategies for working on multiple features simultaneously
@@ -437,7 +437,7 @@ tmux attach -t autocrate`}
       <h3>Pros & Cons</h3>
       <div className="grid grid-cols-2 gap-4 not-prose mb-4">
         <div className="border border-green-200 dark:border-green-700 rounded p-4">
-          <h4 className="text-green-700 dark:text-green-400 font-semibold mb-2">✅ Pros</h4>
+          <h4 className="text-green-700 dark:text-green-400 font-semibold mb-2">[DONE] Pros</h4>
           <ul className="text-sm space-y-1">
             <li>Persistent (survives disconnects)</li>
             <li>Very lightweight</li>
@@ -446,7 +446,7 @@ tmux attach -t autocrate`}
           </ul>
         </div>
         <div className="border border-red-200 dark:border-red-700 rounded p-4">
-          <h4 className="text-red-700 dark:text-red-400 font-semibold mb-2">❌ Cons</h4>
+          <h4 className="text-red-700 dark:text-red-400 font-semibold mb-2">[X] Cons</h4>
           <ul className="text-sm space-y-1">
             <li>Learning curve</li>
             <li>No GUI features</li>
@@ -506,13 +506,13 @@ git worktree add ../autocrate-feature-B feature/B
 
       <h2>Best Practices</h2>
       <ul>
-        <li>✅ Each feature = one branch</li>
-        <li>✅ Check PROJECT_STATUS.md before starting</li>
-        <li>✅ Commit every 15-30 minutes</li>
-        <li>✅ Run tests continuously</li>
-        <li>✅ Sync with main regularly</li>
-        <li>❌ Don&apos;t work on same file simultaneously</li>
-        <li>❌ Don&apos;t mix multiple features in one branch</li>
+        <li>[DONE] Each feature = one branch</li>
+        <li>[DONE] Check PROJECT_STATUS.md before starting</li>
+        <li>[DONE] Commit every 15-30 minutes</li>
+        <li>[DONE] Run tests continuously</li>
+        <li>[DONE] Sync with main regularly</li>
+        <li>[X] Don&apos;t work on same file simultaneously</li>
+        <li>[X] Don&apos;t mix multiple features in one branch</li>
       </ul>
     </div>
   )
@@ -522,7 +522,7 @@ git worktree add ../autocrate-feature-B feature/B
 function ModulesDoc() {
   return (
     <div className="prose prose-gray dark:prose-invert max-w-none">
-      <h1>🧩 Module Architecture & Boundaries</h1>
+      <h1>Module Architecture & Boundaries</h1>
 
       <p className="lead">
         Understanding module boundaries enables safe parallel development
@@ -531,21 +531,21 @@ function ModulesDoc() {
       <h2>Module Safety Ratings</h2>
       <div className="space-y-2 not-prose mb-6">
         <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded p-3">
-          <span className="text-2xl">✅</span>
+          <span className="text-2xl">[OK]</span>
           <div>
             <div className="font-semibold">SAFE</div>
             <div className="text-sm">Can be modified in parallel without coordination</div>
           </div>
         </div>
         <div className="flex items-center gap-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded p-3">
-          <span className="text-2xl">⚠️</span>
+          <span className="text-2xl">[!]</span>
           <div>
             <div className="font-semibold">CAUTION</div>
             <div className="text-sm">Coordinate via PROJECT_STATUS.md before modifying</div>
           </div>
         </div>
         <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded p-3">
-          <span className="text-2xl">🔴</span>
+          <span className="text-2xl">[X]</span>
           <div>
             <div className="font-semibold">AVOID</div>
             <div className="text-sm">Never modify simultaneously - high collision risk</div>
@@ -568,37 +568,37 @@ function ModulesDoc() {
             <tr>
               <td><code>nx-generator.ts</code></td>
               <td>Stable</td>
-              <td><span className="text-yellow-600">⚠️</span></td>
+              <td><span className="text-yellow-600">[!]</span></td>
               <td>Core crate generation logic</td>
             </tr>
             <tr>
               <td><code>step-generator.ts</code></td>
               <td>Stable</td>
-              <td><span className="text-yellow-600">⚠️</span></td>
+              <td><span className="text-yellow-600">[!]</span></td>
               <td>STEP export - complex assembly</td>
             </tr>
             <tr>
               <td><code>plywood-splicing.ts</code></td>
               <td>Stable</td>
-              <td><span className="text-green-600">✅</span></td>
+              <td><span className="text-green-600">[OK]</span></td>
               <td>Self-contained algorithm</td>
             </tr>
             <tr>
               <td><code>klimp-calculator.ts</code></td>
               <td>Stable</td>
-              <td><span className="text-green-600">✅</span></td>
+              <td><span className="text-green-600">[OK]</span></td>
               <td>Klimp placement logic</td>
             </tr>
             <tr>
               <td><code>cleat-calculator.ts</code></td>
               <td>Stable</td>
-              <td><span className="text-green-600">✅</span></td>
+              <td><span className="text-green-600">[OK]</span></td>
               <td>Cleat positioning</td>
             </tr>
             <tr>
               <td><code>page.tsx</code></td>
               <td>Stable</td>
-              <td><span className="text-red-600">🔴</span></td>
+              <td><span className="text-red-600">[X]</span></td>
               <td>Main application state</td>
             </tr>
           </tbody>
@@ -646,31 +646,31 @@ function ModulesDoc() {
           <tbody>
             <tr>
               <td>Different API routes</td>
-              <td><span className="text-green-600">✅ Yes</span></td>
+              <td><span className="text-green-600">[DONE] Yes</span></td>
             </tr>
             <tr>
               <td>Different calculators (klimp, cleat, lag)</td>
-              <td><span className="text-green-600">✅ Yes</span></td>
+              <td><span className="text-green-600">[DONE] Yes</span></td>
             </tr>
             <tr>
               <td>Different UI components</td>
-              <td><span className="text-green-600">✅ Yes (if no shared state)</span></td>
+              <td><span className="text-green-600">[DONE] Yes (if no shared state)</span></td>
             </tr>
             <tr>
               <td>Calculator + UI component</td>
-              <td><span className="text-green-600">✅ Yes</span></td>
+              <td><span className="text-green-600">[DONE] Yes</span></td>
             </tr>
             <tr>
               <td>nx-generator + step-generator</td>
-              <td><span className="text-yellow-600">⚠️ Coordinate</span></td>
+              <td><span className="text-yellow-600">[WARNING] Coordinate</span></td>
             </tr>
             <tr>
               <td>page.tsx + any component</td>
-              <td><span className="text-yellow-600">⚠️ Coordinate</span></td>
+              <td><span className="text-yellow-600">[WARNING] Coordinate</span></td>
             </tr>
             <tr>
               <td>Any module + tests</td>
-              <td><span className="text-green-600">✅ Yes</span></td>
+              <td><span className="text-green-600">[DONE] Yes</span></td>
             </tr>
           </tbody>
         </table>
@@ -678,27 +678,27 @@ function ModulesDoc() {
 
       <h2>Safe Parallel Patterns</h2>
       <ul>
-        <li>✅ New feature modules (create new files)</li>
-        <li>✅ Independent components</li>
-        <li>✅ API routes (no shared state)</li>
-        <li>✅ Test files</li>
-        <li>✅ Documentation files</li>
-        <li>✅ Bug fixes in isolated functions</li>
+        <li>[DONE] New feature modules (create new files)</li>
+        <li>[DONE] Independent components</li>
+        <li>[DONE] API routes (no shared state)</li>
+        <li>[DONE] Test files</li>
+        <li>[DONE] Documentation files</li>
+        <li>[DONE] Bug fixes in isolated functions</li>
       </ul>
 
       <h2>Coordination Required</h2>
       <ul>
-        <li>⚠️ State changes in page.tsx</li>
-        <li>⚠️ Changes to shared configuration interfaces</li>
-        <li>⚠️ Updates to CrateConfig type</li>
-        <li>⚠️ Core logic modifications</li>
+        <li>[WARNING] State changes in page.tsx</li>
+        <li>[WARNING] Changes to shared configuration interfaces</li>
+        <li>[WARNING] Updates to CrateConfig type</li>
+        <li>[WARNING] Core logic modifications</li>
       </ul>
 
       <h2>Avoid Conflicts</h2>
       <ul>
-        <li>🔴 Never work on same file simultaneously</li>
-        <li>🔴 Don&apos;t modify parent and child components together</li>
-        <li>🔴 Avoid tightly coupled modules</li>
+        <li>[AVOID] Never work on same file simultaneously</li>
+        <li>[AVOID] Don&apos;t modify parent and child components together</li>
+        <li>[AVOID] Avoid tightly coupled modules</li>
       </ul>
     </div>
   )
@@ -710,12 +710,12 @@ function ModulesDoc() {
 function ProjectStatusDoc() {
   return (
     <div className="prose prose-gray dark:prose-invert max-w-none">
-      <h1>📊 Project Status & Memory</h1>
+      <h1>Project Status & Memory</h1>
       <p>Current version: <strong>13.1.0</strong></p>
       <p>Phase: <strong>Production - Active Development</strong></p>
 
       <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-        <h3>🔄 Active Work (In Progress)</h3>
+        <h3>Active Work (In Progress)</h3>
         <p><em>No active work streams currently</em></p>
         <p className="text-sm">Update PROJECT_STATUS.md to claim work before starting</p>
       </div>
@@ -746,7 +746,7 @@ function ProjectStatusDoc() {
 function WorkLogDoc() {
   return (
     <div className="prose prose-gray dark:prose-invert max-w-none">
-      <h1>📝 Work Log</h1>
+      <h1>Work Log</h1>
       <p>Detailed work history for the project</p>
 
       <h2>2025-10-08 - Documentation & Parallel Workflow System</h2>
@@ -754,12 +754,12 @@ function WorkLogDoc() {
 
       <h3>Changes:</h3>
       <ul>
-        <li>✅ Created comprehensive documentation system</li>
-        <li>✅ Built tmux development environment</li>
-        <li>✅ Added VS Code devcontainer configuration</li>
-        <li>✅ Set up GitHub Actions CI/CD</li>
-        <li>✅ Created Makefile with 20+ commands</li>
-        <li>✅ Wrote parallel workflow guides</li>
+        <li>[DONE] Created comprehensive documentation system</li>
+        <li>[DONE] Built tmux development environment</li>
+        <li>[DONE] Added VS Code devcontainer configuration</li>
+        <li>[DONE] Set up GitHub Actions CI/CD</li>
+        <li>[DONE] Created Makefile with 20+ commands</li>
+        <li>[DONE] Wrote parallel workflow guides</li>
       </ul>
 
       <h3>Files Created:</h3>
@@ -789,7 +789,7 @@ function WorkLogDoc() {
 function TestingDoc() {
   return (
     <div className="prose prose-gray dark:prose-invert max-w-none">
-      <h1>🧪 Testing Guide</h1>
+      <h1>Testing Guide</h1>
 
       <h2>Testing Stack</h2>
       <ul>
@@ -802,10 +802,10 @@ function TestingDoc() {
         <p className="font-semibold">Modern Testing Infrastructure</p>
         <p className="text-sm">This project uses industry-standard tools for professional-grade test coverage:</p>
         <ul className="text-sm mt-2">
-          <li>✅ 95+ unit tests with Jest</li>
-          <li>✅ E2E tests with Playwright</li>
-          <li>✅ 76%+ overall code coverage</li>
-          <li>✅ Pre-commit validation with Husky</li>
+          <li>[DONE] 95+ unit tests with Jest</li>
+          <li>[DONE] E2E tests with Playwright</li>
+          <li>[DONE] 76%+ overall code coverage</li>
+          <li>[DONE] Pre-commit validation with Husky</li>
         </ul>
       </div>
 
@@ -860,7 +860,7 @@ npm test -- -u`}
 function ClaudeGuideDoc() {
   return (
     <div className="prose prose-gray dark:prose-invert max-w-none">
-      <h1>🤖 Claude Code Development Guide</h1>
+      <h1>Claude Code Development Guide</h1>
 
       <h2>Project Overview</h2>
       <p>
@@ -915,9 +915,9 @@ function ClaudeGuideDoc() {
 
       <h2>Module Safety Quick Reference</h2>
       <ul>
-        <li>✅ SAFE: plywood-splicing, klimp-calculator, cleat-calculator, API routes, tests</li>
-        <li>⚠️ CAUTION: nx-generator, step-generator, CrateVisualizer</li>
-        <li>🔴 AVOID: page.tsx (main state hub)</li>
+        <li>[DONE] SAFE: plywood-splicing, klimp-calculator, cleat-calculator, API routes, tests</li>
+        <li>[WARNING] CAUTION: nx-generator, step-generator, CrateVisualizer</li>
+        <li>[AVOID] AVOID: page.tsx (main state hub)</li>
       </ul>
     </div>
   )

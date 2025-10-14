@@ -198,7 +198,7 @@ function scan() {
     try {
       stats = fs.statSync(filePath)
     } catch (error) {
-      console.warn(`⚠️  Skipping ${file}: ${error.message}`)
+      console.warn(`WARNING: Skipping ${file}: ${error.message}`)
       return
     }
 
@@ -210,7 +210,7 @@ function scan() {
     try {
       content = fs.readFileSync(filePath, 'utf8')
     } catch (error) {
-      console.warn(`⚠️  Unable to read ${file}: ${error.message}`)
+      console.warn(`WARNING: Unable to read ${file}: ${error.message}`)
       return
     }
 
@@ -224,11 +224,11 @@ function scan() {
 
 function report(findings) {
   if (!findings.length) {
-    console.log('✅ Security agent: no sensitive artifacts detected.')
+    console.log('Security agent: no sensitive artifacts detected.')
     return 0
   }
 
-  console.log('⚠️  Security agent detected potential issues:\n')
+  console.log('WARNING: Security agent detected potential issues:\n')
   findings.forEach((finding) => {
     const location = finding.line ? `${finding.file}:${finding.line}` : finding.file
     console.log(
@@ -252,6 +252,6 @@ try {
   const exitCode = report(findings)
   process.exit(exitCode)
 } catch (error) {
-  console.error('❌ Security agent failed:', error)
+  console.error('ERROR: Security agent failed:', error)
   process.exit(2)
 }

@@ -18,16 +18,16 @@ const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 const version = packageJson.version;
 
 if (!version) {
-  console.error('❌ Error: No version found in package.json');
+  console.error('ERROR: No version found in package.json');
   process.exit(1);
 }
 
-console.log(`📦 Syncing version: ${version}`);
+console.log(`Syncing version: ${version}`);
 
 // Parse version
 const versionParts = version.split('.');
 if (versionParts.length !== 3) {
-  console.error(`❌ Error: Invalid version format: ${version}`);
+  console.error(`ERROR: Invalid version format: ${version}`);
   console.error('   Expected format: OVERALL.CURRENT.CHANGE (e.g., 13.1.0)');
   process.exit(1);
 }
@@ -52,9 +52,9 @@ try {
     'utf8'
   );
 
-  console.log(`✅ Updated .claude/version-config.json`);
+  console.log(`Updated .claude/version-config.json`);
 } catch (error) {
-  console.error(`❌ Error updating version-config.json: ${error.message}`);
+  console.error(`ERROR updating version-config.json: ${error.message}`);
   process.exit(1);
 }
 
@@ -70,22 +70,22 @@ try {
     'utf8'
   );
 
-  console.log(`✅ Updated .claude/project-status.json`);
+  console.log(`Updated .claude/project-status.json`);
 } catch (error) {
-  console.error(`❌ Error updating project-status.json: ${error.message}`);
+  console.error(`ERROR updating project-status.json: ${error.message}`);
   process.exit(1);
 }
 
 // Display summary
 console.log('');
-console.log('✨ Version sync complete!');
+console.log('Version sync complete!');
 console.log('');
 console.log(`   Version: ${version}`);
 console.log(`   Overall: ${overall}`);
 console.log(`   Current: ${current}`);
 console.log(`   Change:  ${change}`);
 console.log('');
-console.log('📝 Next steps:');
+console.log('Next steps:');
 console.log('   1. Update CHANGELOG.md');
 console.log('   2. git add .');
 console.log(`   3. git commit -m "chore: bump version to ${version}"`);

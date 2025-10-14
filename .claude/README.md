@@ -207,11 +207,11 @@ Contains workflow documentation for deployment, version bumping, and making chan
 
 Instead of explaining what you want to do, use the appropriate slash command:
 
-❌ **Don't**: "I want to deploy a new version with bug fixes"
-✅ **Do**: `/deploy` (then select "patch")
+[X] **Don't**: "I want to deploy a new version with bug fixes"
+[DONE] **Do**: `/deploy` (then select "patch")
 
-❌ **Don't**: "Run all the tests"
-✅ **Do**: `/test`
+[X] **Don't**: "Run all the tests"
+[DONE] **Do**: `/test`
 
 ### Use Verify Before Deploying
 

@@ -1,4 +1,4 @@
-# 📱 Mobile Workflow Guide for AutoCrate
+# [MOBILE] Mobile Workflow Guide for AutoCrate
 
 ## Quick Start: How to Review Changes on Mobile
 
@@ -16,7 +16,7 @@
 5. **Test the changes** → Try different features
 6. **Come back to GitHub app** → Approve or request changes
 
-## 🤖 How Our Workflow Works
+## [AI] How Our Workflow Works
 
 ### You Say → Claude Does → You Review → It's Live!
 
@@ -40,32 +40,32 @@
    - Automatic deployment
    - Live in minutes!
 
-## ✅ Pros of Mobile-First Workflow
+## [DONE] Pros of Mobile-First Workflow
 
 ### For You:
 
-- ✅ **No coding required** - Just describe what you want
-- ✅ **Review anywhere** - On the couch, in bed, on the go
-- ✅ **Visual feedback** - See changes instantly in preview
-- ✅ **One-tap approval** - Simple yes/no decisions
-- ✅ **Safe production** - Nothing breaks, easy rollback
+- [DONE] **No coding required** - Just describe what you want
+- [DONE] **Review anywhere** - On the couch, in bed, on the go
+- [DONE] **Visual feedback** - See changes instantly in preview
+- [DONE] **One-tap approval** - Simple yes/no decisions
+- [DONE] **Safe production** - Nothing breaks, easy rollback
 
 ### Technical Benefits:
 
-- ✅ Automatic testing before deploy
-- ✅ Preview environments for every change
-- ✅ Clean git history
-- ✅ Professional development workflow
-- ✅ CI/CD automation
+- [DONE] Automatic testing before deploy
+- [DONE] Preview environments for every change
+- [DONE] Clean git history
+- [DONE] Professional development workflow
+- [DONE] CI/CD automation
 
-## ⚠️ Cons to Consider
+## [WARNING] Cons to Consider
 
-- ❌ **Requires internet** - Can't review offline
-- ❌ **Small screen** - Some details harder to see
-- ❌ **Limited debugging** - Can't inspect code deeply
-- ❌ **Typing limitations** - Long descriptions harder on mobile
+- [x] **Requires internet** - Can't review offline
+- [x] **Small screen** - Some details harder to see
+- [x] **Limited debugging** - Can't inspect code deeply
+- [x] **Typing limitations** - Long descriptions harder on mobile
 
-## 🎯 Best Practices for Mobile Workflow
+## [TARGET] Best Practices for Mobile Workflow
 
 ### For You (The Visionary):
 
@@ -92,7 +92,7 @@
 - Runs all tests before pushing
 - Provides mobile-friendly summaries
 
-## 🚀 Advanced Features (Coming Soon)
+## [LAUNCH] Advanced Features (Coming Soon)
 
 ### Voice Commands (Future)
 
@@ -138,7 +138,7 @@ Claude: Merges fix → Live in minutes
 
 - [PMI Standards PR](https://github.com/Shivam-Bhardwaj/AutoCrate/pull/new/feature/pmi-asme-standards)
 
-## 💡 Tips for Success
+## [IDEA] Tips for Success
 
 1. **Always review on your actual device** - What you see is what users get
 2. **Use preview links** - Never approve without testing
@@ -171,16 +171,16 @@ Claude: Merges fix → Live in minutes
 
 ### You Focus On:
 
-- 🎨 Design decisions
+- [DESIGN] Design decisions
 - 👁️ Visual quality
-- 📱 User experience
-- ✅ Final approval
+- [MOBILE] User experience
+- [DONE] Final approval
 
 ### Claude Handles:
 
 - 💻 All coding
-- 🧪 Testing
-- 🚀 Deployment
-- 🔧 Technical details
+- [TEST] Testing
+- [LAUNCH] Deployment
+- [TOOL] Technical details
 
 This way, you stay focused on what matters - making the product look and feel great!

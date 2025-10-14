@@ -288,14 +288,14 @@ Just say: "Get the AutoCrate universal setup prompt from the repo and run it"
 
 After running the prompt, you should have:
 
-✅ Node.js v20+ installed
-✅ Git configured with your credentials
-✅ AutoCrate cloned to ~/AutoCrate
-✅ All dependencies installed
-✅ Tests passing
-✅ Dev server running on port 3000
-✅ Vercel CLI configured
-✅ Know the URL to access the app
+[DONE] Node.js v20+ installed
+[DONE] Git configured with your credentials
+[DONE] AutoCrate cloned to ~/AutoCrate
+[DONE] All dependencies installed
+[DONE] Tests passing
+[DONE] Dev server running on port 3000
+[DONE] Vercel CLI configured
+[DONE] Know the URL to access the app
 
 ---
 

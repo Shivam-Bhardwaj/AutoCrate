@@ -272,14 +272,14 @@ class TestRunner {
     this.log(`  Pass Rate: ${passRate}%`, passRate >= 70 ? 'green' : 'red')
 
     if (this.errors.length > 0) {
-      this.log('\n❌ Errors:', 'red')
+      this.log('\nErrors:', 'red')
       this.errors.forEach(err => {
         this.log(`  - ${err.description}: ${err.error}`, 'red')
       })
     }
 
     if (this.warnings.length > 0) {
-      this.log('\n⚠ Warnings:', 'yellow')
+      this.log('\nWarnings:', 'yellow')
       this.warnings.forEach(warn => {
         this.log(`  - ${warn.description}`, 'yellow')
       })
@@ -305,7 +305,7 @@ class TestRunner {
   }
 
   async run() {
-    this.log('🚀 Starting Comprehensive Test Suite', 'green')
+    this.log('Starting Comprehensive Test Suite', 'green')
     this.log(`   Time: ${new Date().toLocaleString()}`, 'blue')
 
     const startTime = Date.now()
@@ -321,21 +321,21 @@ class TestRunner {
     if (process.argv.includes('--e2e')) {
       await this.runE2ETests()
     } else {
-      this.log('\n  ℹ Skipping E2E tests (use --e2e flag to run)', 'yellow')
+      this.log('\n  INFO: Skipping E2E tests (use --e2e flag to run)', 'yellow')
       this.testResults.skipped++
     }
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2)
-    this.log(`\n⏱ Total execution time: ${duration}s`, 'blue')
+    this.log(`\nTotal execution time: ${duration}s`, 'blue')
 
     // Generate final report
     const success = await this.generateReport()
 
     if (success) {
-      this.log('\n✅ All tests passed successfully!', 'green')
+      this.log('\nAll tests passed successfully!', 'green')
       process.exit(0)
     } else {
-      this.log('\n❌ Some tests failed. Please fix the issues before proceeding.', 'red')
+      this.log('\nSome tests failed. Please fix the issues before proceeding.', 'red')
       process.exit(1)
     }
   }

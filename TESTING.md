@@ -109,19 +109,19 @@ Professional software standards require comprehensive test coverage. Our targets
   - `src/lib/plywood-splicing.ts`
   - `src/lib/cleat-calculator.ts`
   - `src/lib/klimp-calculator.ts`
-- **Status**: ✅ Achieved (90%+ coverage)
+- **Status**: [DONE] Achieved (90%+ coverage)
 
 ### API Routes (High Priority)
 
 - **Target**: 85%+ coverage
 - **Modules**: All files in `src/app/api/*/route.ts`
-- **Status**: ✅ Achieved (85%+ coverage)
+- **Status**: [DONE] Achieved (85%+ coverage)
 
 ### Components (Medium Priority)
 
 - **Target**: 80%+ coverage
 - **Modules**: All files in `src/components/`
-- **Status**: ⚠️ In Progress (currently ~75%)
+- **Status**: [WARNING] In Progress (currently ~75%)
 
 ### Overall Project
 
@@ -265,7 +265,7 @@ npm test -- step-generator.test.ts
 
 ### What Gets Tested
 
-#### ✅ Always Test
+#### [DONE] Always Test
 
 - Business logic calculations (BOM, pricing, measurements)
 - Data transformations (STEP file generation, NX expressions)
@@ -273,13 +273,13 @@ npm test -- step-generator.test.ts
 - Critical user paths (file exports, configuration changes)
 - API endpoints and data validation
 
-#### ⚠️ Carefully Test
+#### [WARNING] Carefully Test
 
 - UI components (test behavior, not styling)
 - State management (test state transitions)
 - Integration points (mocked external calls)
 
-#### ❌ Don't Test
+#### [X] Don't Test
 
 - Third-party libraries (trust they're tested)
 - Configuration files (JSON, YAML)
@@ -288,7 +288,7 @@ npm test -- step-generator.test.ts
 
 ## Future Improvements
 
-1. ✅ Achieve 85%+ overall test coverage
+1. [DONE] Achieve 85%+ overall test coverage
 2. Add visual regression testing with Percy or Chromatic
 3. Implement load testing for large crate configurations
 4. Add mutation testing to verify test quality

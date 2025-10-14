@@ -48,17 +48,17 @@ gh repo create workspace-config --private --source=. --push
 
 **What to track in workspace repo:**
 
-- ✅ `projects/*/container/` - Docker configurations
-- ✅ `.config/antimony_tokens/` - Encrypted tokens
-- ✅ `scripts/` - Automation scripts
-- ✅ `.tmux.conf` - Terminal configs
-- ✅ `.bashrc`, `.zshrc` - Shell configs
+- [DONE] `projects/*/container/` - Docker configurations
+- [DONE] `.config/antimony_tokens/` - Encrypted tokens
+- [DONE] `scripts/` - Automation scripts
+- [DONE] `.tmux.conf` - Terminal configs
+- [DONE] `.bashrc`, `.zshrc` - Shell configs
 
 **What NOT to track:**
 
-- ❌ `projects/*/repo/` - Each project is its own git repo
-- ❌ Docker volumes and images
-- ❌ `node_modules/`, `build/`, etc.
+- [x] `projects/*/repo/` - Each project is its own git repo
+- [x] Docker volumes and images
+- [x] `node_modules/`, `build/`, etc.
 
 ### .gitignore for Workspace
 
@@ -153,21 +153,21 @@ docker compose up --build
 
 **RPi5 is perfectly fine for:**
 
-- ✅ Active coding and debugging
-- ✅ Running dev server (`npm run dev`)
-- ✅ Making small changes and testing
-- ✅ Code reviews and documentation
-- ✅ Learning and experimentation
-- ✅ Claude Code sessions (most time is thinking, not building)
+- [DONE] Active coding and debugging
+- [DONE] Running dev server (`npm run dev`)
+- [DONE] Making small changes and testing
+- [DONE] Code reviews and documentation
+- [DONE] Learning and experimentation
+- [DONE] Claude Code sessions (most time is thinking, not building)
 
 **Server is better for:**
 
-- 🚀 Heavy builds and rebuilds
-- 🚀 Running complete test suite frequently
-- 🚀 E2E testing (Playwright)
-- 🚀 Multi-project parallel development
-- 🚀 Docker image builds
-- 🚀 Large refactoring with extensive test runs
+- [LAUNCH] Heavy builds and rebuilds
+- [LAUNCH] Running complete test suite frequently
+- [LAUNCH] E2E testing (Playwright)
+- [LAUNCH] Multi-project parallel development
+- [LAUNCH] Docker image builds
+- [LAUNCH] Large refactoring with extensive test runs
 
 ### Cost-Benefit Analysis
 
@@ -227,7 +227,7 @@ CURRENT_MACHINE=$(uname -m)
 
 # Detect if we're on RPi5 (ARM64) or Server (x86_64)
 if [[ "$CURRENT_MACHINE" == "aarch64" ]] || [[ "$CURRENT_MACHINE" == "arm64" ]]; then
-    echo "🤔 Running on RPi5 (ARM64)"
+    echo "[THINK] Running on RPi5 (ARM64)"
     echo "Do you want to:"
     echo "1) Continue on RPi5 (slower builds)"
     echo "2) SSH to server (faster builds)"
@@ -243,12 +243,12 @@ if [[ "$CURRENT_MACHINE" == "aarch64" ]] || [[ "$CURRENT_MACHINE" == "arm64" ]];
         # SSH to server and pull
         ssh "$REMOTE_SERVER" "cd ~/workspace && git pull && cd projects/AutoCrate/container && docker compose up --build"
     else
-        echo "🍓 Developing on RPi5..."
+        echo "[RPI] Developing on RPi5..."
         cd ~/workspace/projects/AutoCrate/container
         docker compose up --build
     fi
 else
-    echo "🚀 Running on server (x86_64) - full power!"
+    echo "[LAUNCH] Running on server (x86_64) - full power!"
     cd ~/workspace/projects/AutoCrate/container
     docker compose up --build
 fi
