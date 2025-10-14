@@ -361,14 +361,18 @@ describe('Rate Limiter Security', () => {
       skipSuccessfulRequests: true
     })
 
+    // Mock handler that returns successful responses
+    const successHandler = jest.fn(() =>
+      Promise.resolve(NextResponse.json({ success: true }, { status: 200 }))
+    )
+
     // Successful requests shouldn't count
-    (mockHandler as any).mockResolvedValue(NextResponse.json({ success: true }, { status: 200 }))
-    await limiter(mockRequest, mockHandler)
-    await limiter(mockRequest, mockHandler)
-    await limiter(mockRequest, mockHandler)
+    await limiter(mockRequest, successHandler)
+    await limiter(mockRequest, successHandler)
+    await limiter(mockRequest, successHandler)
 
     // All should succeed
-    expect(mockHandler as any).toHaveBeenCalledTimes(3)
+    expect(successHandler).toHaveBeenCalledTimes(3)
   })
 })
 

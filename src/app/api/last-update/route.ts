@@ -4,12 +4,14 @@ import { join } from 'path'
 
 export interface ProjectMetadata {
   version: string
-  tiNumber: string
+  tiNumber: string  // Deprecated - use issueNumber instead
+  issueNumber?: string
   branch: string
   lastCommit: string
   lastChange: string
   timestamp: string
   updatedBy: string
+  testInstructions?: string[]
 }
 
 async function readPackageJson() {
@@ -51,14 +53,40 @@ export async function GET() {
     vercelTimestamp || safeExec('git log -1 --format=%cI') || new Date().toISOString()
   const updatedBy = packageJson.maintainer || vercelAuthor || 'unknown@designviz.com'
 
+  // Extract issue number from branch name (e.g., feature/issue-69-description -> 69)
+  const issueMatch = branch.match(/issue-(\d+)/i)
+  const issueNumber = issueMatch ? issueMatch[1] : undefined
+
+  // Generate smart test instructions based on commit message
+  const testInstructions: string[] = []
+  const lowerChange = lastChange.toLowerCase()
+
+  if (lowerChange.includes('ui') || lowerChange.includes('display') || lowerChange.includes('component')) {
+    testInstructions.push('Check UI components render correctly')
+  }
+  if (lowerChange.includes('3d') || lowerChange.includes('visualization')) {
+    testInstructions.push('Verify 3D visualization works properly')
+  }
+  if (lowerChange.includes('export') || lowerChange.includes('download')) {
+    testInstructions.push('Test file export functionality')
+  }
+  if (lowerChange.includes('fix')) {
+    testInstructions.push('Verify the bug fix resolves the issue')
+  }
+  if (lowerChange.includes('add') || lowerChange.includes('feat')) {
+    testInstructions.push('Test the new feature thoroughly')
+  }
+
   const metadata: ProjectMetadata = {
     version: packageJson.version || '1.0.0',
-    tiNumber: packageJson.tiNumber || 'TI-000',
+    tiNumber: issueNumber ? `TI-${issueNumber}` : (packageJson.tiNumber || 'TI-000'),
+    issueNumber,
     branch,
     lastCommit,
     lastChange,
     timestamp,
-    updatedBy
+    updatedBy,
+    testInstructions: testInstructions.length > 0 ? testInstructions : ['Verify changes work as expected']
   }
 
   return NextResponse.json(metadata)

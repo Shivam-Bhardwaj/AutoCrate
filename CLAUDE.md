@@ -51,14 +51,25 @@ gh issue list
 
 Claude Code will automatically:
 
-1. [DONE] Fetch issue details from GitHub (`gh issue view X`)
-2. [DONE] Create feature branch (`feature/issue-X-description`)
-3. [DONE] Implement the changes with tests
-4. [DONE] Run full test suite to verify
-5. [DONE] Commit with proper messages
-6. [DONE] Push to remote branch
-7. [DONE] Create PR that references and closes the issue
-8. [DONE] All ready for your review
+1. Fetch issue details from GitHub (`gh issue view X`)
+2. Create feature branch (`feature/issue-X-description`)
+3. Implement the changes with tests
+4. Run full test suite to verify
+5. Commit with **concise messages** (see COMMIT_GUIDELINES.md)
+6. Push to remote branch
+7. Create PR that references and closes the issue
+8. All ready for your review
+
+### Commit Message Format
+
+Keep it simple and concise:
+```
+type: Brief description (max 50 chars)
+
+Closes #issue-number
+```
+
+See COMMIT_GUIDELINES.md for examples and best practices.
 
 ### You Review and Merge
 
@@ -265,6 +276,7 @@ src/
 │   └── __tests__/                # Unit tests for lib
 └── components/                   # React components
     ├── CrateVisualizer.tsx       # 3D rendering (React Three Fiber)
+    ├── ChangeTracker.tsx         # Compact change tracking UI with test checklist
     ├── KlimpModel.tsx            # 3D klimp hardware visualization
     ├── ScenarioSelector.tsx      # Predefined crate configurations
     ├── MarkingsSection.tsx       # Marking configuration
@@ -487,6 +499,7 @@ npm run start
 ## Documentation Resources
 
 - **CLAUDE.md** (this file) - Development guidance for AI assistants
+- **COMMIT_GUIDELINES.md** - Commit message format and best practices
 - **PROJECT_STATUS.md** - Real-time project status, active work tracking, module health
 - **MODULES.md** - Module architecture, boundaries, and parallel work safety
 - **WORK_LOG.md** - Detailed work history and session tracking
