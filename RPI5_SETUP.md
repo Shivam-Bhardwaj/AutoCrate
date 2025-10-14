@@ -174,12 +174,18 @@ npm run build
 npm install -g vercel
 
 # Authenticate (use token from main machine)
-export VERCEL_TOKEN=XLFfhVZS3nlkcOGMuDoD1HvT
+export VERCEL_TOKEN=YOUR_VERCEL_TOKEN
 vercel whoami
 
 # Link project (already configured in .vercel/)
 vercel link --yes
 ```
+
+## Secure Asset Storage
+
+- Sensitive crate PDFs/STEP bundles are no longer tracked in git. Keep them in `/home/curious/secure/autocrate/For Shivam` on an encrypted volume.
+- Ensure the directory is owner-only (`chmod 700`) and excluded from backups that leave the device.
+- If you need the assets within the app, read them from that path at runtime rather than copying them back into the repository.
 
 ## Quick Migration Checklist
 
