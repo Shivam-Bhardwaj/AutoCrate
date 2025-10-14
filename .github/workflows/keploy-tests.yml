@@ -27,10 +27,10 @@ jobs:
       test-matrix: ${{ steps.set-matrix.outputs.matrix }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -54,10 +54,10 @@ jobs:
       matrix: ${{fromJson(needs.test-preparation.outputs.test-matrix)}}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -87,7 +87,7 @@ jobs:
             --app-name "autocrate-nx-generator"
 
       - name: Upload test artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: keploy-tests-${{ matrix.test-suite }}
           path: |
@@ -102,10 +102,10 @@ jobs:
       matrix: ${{fromJson(needs.test-preparation.outputs.test-matrix)}}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -114,7 +114,7 @@ jobs:
         run: npm ci
 
       - name: Download test artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: keploy-tests-${{ matrix.test-suite }}
           path: .
@@ -140,7 +140,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.test-suite }}
           path: test-results/
@@ -152,10 +152,10 @@ jobs:
     if: always()
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Download all test results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: all-results/
 
@@ -172,7 +172,7 @@ jobs:
             --format "json,html,junit"
 
       - name: Upload final report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: keploy-test-report
           path: test-reports/
@@ -223,10 +223,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -263,7 +263,7 @@ jobs:
           node scripts/analyze-performance.js performance-results/
 
       - name: Upload performance report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: performance-report
           path: performance-results/
