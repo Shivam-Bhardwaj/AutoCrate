@@ -235,15 +235,15 @@ function ScenePMIOverlays({
   } | null;
   pmiState: PmiVisibilityState;
 }) {
-  // Calculate dynamic scale based on the largest dimension of the crate
+  // Calculate dimensions for dynamic offsets
   const crateWidth = bounds.maxX - bounds.minX
   const crateLength = bounds.maxY - bounds.minY
   const crateHeight = bounds.maxZ - bounds.minZ
   const maxDimension = Math.max(crateWidth, crateLength, crateHeight)
 
-  // Scale factor that adjusts based on crate size
-  // Smaller crates get larger scale, larger crates get smaller scale
-  const scale = Math.min(0.2, Math.max(0.05, 10 / maxDimension))
+  // Scale factor must match the box rendering scale (0.1)
+  // This converts from NX inches to Three.js scene units
+  const scale = 0.1
 
   const formatInches = (value: number) => `${value.toFixed(2)}"`
 
@@ -252,9 +252,9 @@ function ScenePMIOverlays({
 
   const annotations: ReactNode[] = []
 
-  // Calculate dynamic distance factor for Html elements
-  // Inverse relationship with scale to maintain consistent text size
-  const distanceFactor = Math.min(20, Math.max(5, 1 / scale))
+  // Calculate dynamic distance factor for Html elements based on crate size
+  // Larger crates need larger distanceFactor to keep text readable
+  const distanceFactor = Math.min(20, Math.max(5, maxDimension / 10))
 
   if (totalDimensions && pmiState.totalDimensions) {
     // Make offsets proportional to crate dimensions
