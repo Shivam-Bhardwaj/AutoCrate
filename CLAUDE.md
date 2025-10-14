@@ -25,6 +25,90 @@ npm install
 npm run dev
 ```
 
+## Issue-Driven Development Workflow
+
+This project follows an **issue-first workflow** optimized for returning to development after any amount of time with minimal setup.
+
+### Quick Start (Returning to Project)
+
+```bash
+# 1. Navigate to project
+cd /home/curious/AutoCrate  # or your AutoCrate location
+
+# 2. Get latest changes
+git pull origin main
+
+# 3. See open issues
+gh issue list
+
+# 4. Pick an issue and tell Claude Code
+# Example: "work on issue 49"
+```
+
+**That's it!** No npm install, no docker setup needed for code changes.
+
+### What Happens When You Say "Work on Issue X"
+
+Claude Code will automatically:
+
+1. ✅ Fetch issue details from GitHub (`gh issue view X`)
+2. ✅ Create feature branch (`feature/issue-X-description`)
+3. ✅ Implement the changes with tests
+4. ✅ Run full test suite to verify
+5. ✅ Commit with proper messages
+6. ✅ Push to remote branch
+7. ✅ Create PR that references and closes the issue
+8. ✅ All ready for your review
+
+### You Review and Merge
+
+**Via GitHub Web UI:**
+
+- Review the auto-generated PR
+- Check test results in PR checks
+- Merge when satisfied
+- Issue closes automatically
+
+**Via CLI:**
+
+```bash
+gh pr view X              # Review changes
+gh pr review X --approve  # Approve
+gh pr merge X             # Merge and close issue
+```
+
+### Best Practices for Issues
+
+**When creating issues:**
+
+- ✅ Clear title describing the feature/bug
+- ✅ Acceptance criteria in description
+- ✅ Label appropriately (bug, feature, enhancement)
+- ✅ Reference related issues if applicable
+
+**Example good issue:**
+
+```
+Title: Add centered AUTOCRATE text to all panels
+
+Description:
+Need "AUTOCRATE" text displayed in the center of all crate panels.
+
+Acceptance Criteria:
+- Text should be centered on front, back, left, right panels
+- Size should scale based on crate dimensions
+- Should be included in 3D visualization
+- Must appear in STEP export
+```
+
+### Workflow Benefits
+
+- **Zero context switching** - Issues describe what to do
+- **Minimal setup** - Just git pull and pick an issue
+- **Automatic documentation** - PRs link to issues
+- **Clean history** - Each issue = one branch = one PR
+- **Reproducible** - Works the same way every time
+
 ## Essential Commands
 
 ### Development
