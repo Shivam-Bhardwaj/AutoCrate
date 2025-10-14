@@ -78,23 +78,27 @@ Automatically runs before every commit:
 2. Related unit tests
 3. Code formatting
 
-## CI/CD Integration
+## Local Testing Workflow
 
-### GitHub Actions Workflow
+All testing is performed locally before pushing to GitHub. GitHub is used only for code storage, issue tracking, and PR management.
 
-```yaml
-name: Tests
-on: [push, pull_request]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-      - run: npm ci
-      - run: npm run test:all
-      - run: npm run test:e2e
+### Pre-Push Testing Checklist
+
+```bash
+# Run complete test suite locally
+npm run test:all
+
+# Run E2E tests if changes affect user workflows
+npm run test:e2e
+
+# Verify production build
+npm run build
+
+# Run type checking
+npm run type-check
 ```
+
+[NOTE] Pre-commit hooks automatically run type checking and related tests before each commit.
 
 ## Test Coverage
 
@@ -208,11 +212,12 @@ npm test -- step-generator.test.ts
 - **UI components**: 80%+ coverage
 - **Utility functions**: 100% coverage (these are easy to test)
 
-### 8. Continuous Integration
+### 8. Local Testing Discipline
 
-- All tests must pass before merge
+- All tests must pass locally before pushing
 - Pre-commit hooks catch issues early
-- Coverage reports tracked over time
+- Coverage reports generated locally with `npm run test:coverage`
+- Manual verification required before merging PRs
 
 ## Known Issues & Solutions
 
@@ -293,6 +298,6 @@ npm test -- step-generator.test.ts
 3. Implement load testing for large crate configurations
 4. Add mutation testing to verify test quality
 5. Set up continuous monitoring and alerting
-6. Implement performance budgets in CI/CD
+6. Implement performance budgets in local test suite
 7. Add accessibility testing automation (axe-core)
 8. Create test data factories for complex scenarios
