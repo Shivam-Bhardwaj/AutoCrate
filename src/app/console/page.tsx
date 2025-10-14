@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-const AUTH_TOKEN = (process.env.NEXT_PUBLIC_CONSOLE_PASSWORD ?? '').trim()
-
 // Mock data for pending changes - in production this would come from an API
 const PENDING_CHANGES = [
   {
@@ -36,31 +34,81 @@ export default function ConsolePage() {
   const [password, setPassword] = useState('')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [changes, setChanges] = useState(PENDING_CHANGES)
   const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'deployed'>('pending')
   const router = useRouter()
-  const passwordConfigured = AUTH_TOKEN.length > 0
 
-  // Check if already authenticated
+  // Check if already authenticated with server
   useEffect(() => {
-    const auth = sessionStorage.getItem('console_auth')
-    if (auth === 'granted') {
-      setIsAuthenticated(true)
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/verify?type=console', {
+          credentials: 'include'
+        })
+        const data = await response.json()
+
+        if (data.authenticated) {
+          setIsAuthenticated(true)
+        }
+      } catch (error) {
+        console.error('Auth check error:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
+
+    checkAuth()
   }, [])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!passwordConfigured) {
-      alert('Console password is not configured. Please set NEXT_PUBLIC_CONSOLE_PASSWORD.')
-      return
-    }
+    setIsLoading(true)
 
-    if (password === AUTH_TOKEN) {
-      setIsAuthenticated(true)
-      sessionStorage.setItem('console_auth', 'granted')
-    } else {
-      alert('Incorrect password. Please contact Shivam for access.')
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password,
+          type: 'console'
+        }),
+        credentials: 'include'
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setIsAuthenticated(true)
+        setPassword('') // Clear password from memory
+      } else {
+        alert(data.message || 'Incorrect password. Please contact Shivam for access.')
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      alert('Login failed. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type: 'console' }),
+        credentials: 'include'
+      })
+
+      setIsAuthenticated(false)
+      router.push('/')
+    } catch (error) {
+      console.error('Logout error:', error)
     }
   }
 
@@ -87,6 +135,14 @@ export default function ConsolePage() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+        <div className="text-gray-600 dark:text-gray-400">Loading...</div>
+      </div>
+    )
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
@@ -97,18 +153,13 @@ export default function ConsolePage() {
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             Manage changes and deployments visually
           </p>
-          {!passwordConfigured && (
-            <p className="text-yellow-500 dark:text-yellow-400 mb-6 text-sm">
-              Console password not configured. Set NEXT_PUBLIC_CONSOLE_PASSWORD in your environment before enabling access.
-            </p>
-          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={!passwordConfigured}
+                disabled={isLoading}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Enter password"
                 required
@@ -116,7 +167,7 @@ export default function ConsolePage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                disabled={!passwordConfigured}
+                disabled={isLoading}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 disabled:opacity-50"
               >
                 {showPassword ? 'Hide' : 'Show'}
@@ -124,10 +175,10 @@ export default function ConsolePage() {
             </div>
             <button
               type="submit"
-              disabled={!passwordConfigured}
+              disabled={isLoading}
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Access Console
+              {isLoading ? 'Authenticating...' : 'Access Console'}
             </button>
           </form>
           <button
@@ -172,6 +223,12 @@ export default function ConsolePage() {
                 className="text-blue-600 dark:text-blue-400 hover:underline"
               >
                 Back to App →
+              </button>
+              <button
+                onClick={handleLogout}
+                className="text-red-600 dark:text-red-400 hover:underline"
+              >
+                Logout
               </button>
             </div>
           </div>

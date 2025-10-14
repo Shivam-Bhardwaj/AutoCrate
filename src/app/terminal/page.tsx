@@ -3,12 +3,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
-const AUTH_TOKEN = (process.env.NEXT_PUBLIC_TERMINAL_PASSWORD ?? '').trim()
-
 export default function TerminalPage() {
   const [password, setPassword] = useState('')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [commandHistory, setCommandHistory] = useState<string[]>([])
   const [currentCommand, setCurrentCommand] = useState('')
   const [output, setOutput] = useState<Array<{type: 'command' | 'output' | 'error', text: string}>>([
@@ -20,14 +19,27 @@ export default function TerminalPage() {
   const outputRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [historyIndex, setHistoryIndex] = useState(-1)
-  const passwordConfigured = AUTH_TOKEN.length > 0
 
-  // Check if already authenticated
+  // Check if already authenticated with server
   useEffect(() => {
-    const auth = sessionStorage.getItem('terminal_auth')
-    if (auth === 'granted') {
-      setIsAuthenticated(true)
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/verify?type=terminal', {
+          credentials: 'include'
+        })
+        const data = await response.json()
+
+        if (data.authenticated) {
+          setIsAuthenticated(true)
+        }
+      } catch (error) {
+        console.error('Auth check error:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
+
+    checkAuth()
   }, [])
 
   // Auto-scroll to bottom when output changes
@@ -44,18 +56,54 @@ export default function TerminalPage() {
     }
   }, [isAuthenticated])
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!passwordConfigured) {
-      alert('Terminal password is not configured. Please set NEXT_PUBLIC_TERMINAL_PASSWORD.')
-      return
-    }
+    setIsLoading(true)
 
-    if (password === AUTH_TOKEN) {
-      setIsAuthenticated(true)
-      sessionStorage.setItem('terminal_auth', 'granted')
-    } else {
-      alert('Incorrect password')
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password,
+          type: 'terminal'
+        }),
+        credentials: 'include'
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setIsAuthenticated(true)
+        setPassword('') // Clear password from memory
+      } else {
+        alert(data.message || 'Incorrect password')
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      alert('Login failed. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type: 'terminal' }),
+        credentials: 'include'
+      })
+
+      setIsAuthenticated(false)
+      router.push('/')
+    } catch (error) {
+      console.error('Logout error:', error)
     }
   }
 
@@ -81,6 +129,7 @@ export default function TerminalPage() {
           { type: 'output', text: '  console  - Go to visual console' },
           { type: 'output', text: '  docs     - Go to documentation' },
           { type: 'output', text: '  clear    - Clear terminal' },
+          { type: 'output', text: '  logout   - Logout and return to login' },
           { type: 'output', text: '  exit     - Return to main app' }
         ])
         break
@@ -127,6 +176,13 @@ export default function TerminalPage() {
         router.push('/docs')
         break
 
+      case 'logout':
+        setOutput(prev => [...prev,
+          { type: 'output', text: 'Logging out...' }
+        ])
+        handleLogout()
+        break
+
       case 'exit':
         router.push('/')
         break
@@ -170,6 +226,14 @@ export default function TerminalPage() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <div className="text-green-400 font-mono">Loading...</div>
+      </div>
+    )
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
@@ -180,18 +244,13 @@ export default function TerminalPage() {
           <p className="text-gray-400 mb-6 font-mono text-sm">
             Access restricted. Authentication required.
           </p>
-          {!passwordConfigured && (
-            <p className="text-yellow-400 mb-6 font-mono text-xs">
-              Terminal password not configured. Set NEXT_PUBLIC_TERMINAL_PASSWORD in your environment before enabling access.
-            </p>
-          )}
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={!passwordConfigured}
+                disabled={isLoading}
                 className="w-full px-4 py-2 bg-gray-900 border border-gray-600 rounded text-green-400 font-mono focus:outline-none focus:border-green-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Enter password"
                 required
@@ -199,7 +258,7 @@ export default function TerminalPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                disabled={!passwordConfigured}
+                disabled={isLoading}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm disabled:opacity-50"
               >
                 {showPassword ? 'Hide' : 'Show'}
@@ -207,10 +266,10 @@ export default function TerminalPage() {
             </div>
             <button
               type="submit"
-              disabled={!passwordConfigured}
+              disabled={isLoading}
               className="w-full bg-green-600 text-black font-bold py-2 px-4 rounded hover:bg-green-500 transition-colors font-mono disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              ACCESS TERMINAL
+              {isLoading ? 'AUTHENTICATING...' : 'ACCESS TERMINAL'}
             </button>
           </form>
           <button

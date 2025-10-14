@@ -70,6 +70,15 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Test reports and generated files
 test-report.json
+test-report-*.json
+**/test-report*.json
+*.test-report.json
+
+# Customer data (should never be committed)
 For Shivam/
+
+# Security tokens
 RPI5_TOKENS.txt

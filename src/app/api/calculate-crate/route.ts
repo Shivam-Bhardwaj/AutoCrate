@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateNXExpressions } from '@/lib/nx-generator';
+import { apiRateLimit } from '@/lib/rate-limiter';
+import {
+  validateDimensions,
+  validateWeight,
+  validateNumber,
+  validateEnum,
+  ValidationError,
+  validationErrorResponse
+} from '@/lib/input-validation';
 
 interface CrateCalculationRequest {
   productDimensions: {
@@ -13,42 +22,60 @@ interface CrateCalculationRequest {
   crateType?: 'standard' | 'heavy-duty' | 'export';
 }
 
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest) {
   try {
-    const body: CrateCalculationRequest = await request.json();
+    const body = await request.json();
 
-    // Validate input
-    if (!body.productDimensions || !body.productWeight) {
-      return NextResponse.json(
-        { error: 'Missing required fields: productDimensions and productWeight' },
-        { status: 400 }
-      );
+    // Comprehensive input validation
+    let validatedData: CrateCalculationRequest;
+    try {
+      const productDimensions = validateDimensions(body.productDimensions);
+      const productWeight = validateWeight(body.productWeight);
+      const quantity = body.quantity ? validateNumber(body.quantity, 'quantity', { min: 1, max: 1000, integer: true }) : 1;
+      const materialType = body.materialType ? validateEnum(body.materialType, 'materialType', ['plywood', 'osb', 'lumber'] as const) : 'plywood';
+      const crateType = body.crateType ? validateEnum(body.crateType, 'crateType', ['standard', 'heavy-duty', 'export'] as const) : 'standard';
+
+      validatedData = {
+        productDimensions,
+        productWeight,
+        quantity,
+        materialType,
+        crateType
+      };
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        return validationErrorResponse([error]);
+      }
+      if (Array.isArray(error)) {
+        return validationErrorResponse(error);
+      }
+      throw error;
     }
 
     // Calculate crate dimensions based on product
-    const padding = body.crateType === 'heavy-duty' ? 150 : 100; // mm
+    const padding = validatedData.crateType === 'heavy-duty' ? 150 : 100; // mm
     const crateDimensions = {
-      length: body.productDimensions.length + padding,
-      width: body.productDimensions.width + padding,
-      height: body.productDimensions.height + padding
+      length: validatedData.productDimensions.length + padding,
+      width: validatedData.productDimensions.width + padding,
+      height: validatedData.productDimensions.height + padding
     };
 
     // Generate NX expressions
     const nxExpressions = generateNXExpressions(
       crateDimensions,
-      body.productWeight,
-      body.materialType || 'plywood'
+      validatedData.productWeight,
+      validatedData.materialType
     );
 
     const response = {
       requestId: `REQ-${Date.now()}`,
       timestamp: new Date().toISOString(),
-      input: body,
+      input: validatedData,
       calculations: {
         crateDimensions,
         internalVolume: (crateDimensions.length * crateDimensions.width * crateDimensions.height) / 1000000000, // m³
-        estimatedCrateWeight: calculateCrateWeight(crateDimensions, body.materialType || 'plywood'),
-        totalWeight: body.productWeight + calculateCrateWeight(crateDimensions, body.materialType || 'plywood')
+        estimatedCrateWeight: calculateCrateWeight(crateDimensions, validatedData.materialType || 'plywood'),
+        totalWeight: validatedData.productWeight + calculateCrateWeight(crateDimensions, validatedData.materialType || 'plywood')
       },
       nxExpressions: nxExpressions.substring(0, 500) + '...', // Preview
       fullNxExpressionsLength: nxExpressions.length,
@@ -68,7 +95,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
+  return apiRateLimit(request, postHandler);
+}
+
+async function getHandler(request: NextRequest) {
   // Health check endpoint
   return NextResponse.json({
     service: 'AutoCrate Calculator API',
@@ -76,6 +107,10 @@ export async function GET(request: NextRequest) {
     status: 'operational',
     timestamp: new Date().toISOString()
   });
+}
+
+export async function GET(request: NextRequest) {
+  return apiRateLimit(request, getHandler);
 }
 
 function calculateCrateWeight(dimensions: any, materialType: string): number {
