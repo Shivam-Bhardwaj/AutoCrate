@@ -26,7 +26,8 @@ describe('StepGenerator integration', () => {
       markings: {
         appliedMaterialsLogo: true,
         fragileStencil: true,
-        handlingSymbols: true
+        handlingSymbols: true,
+        autocrateText: true
       }
     }
 

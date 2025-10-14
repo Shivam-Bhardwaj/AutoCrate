@@ -14,7 +14,8 @@ const generator = new NXGenerator({
   markings: {
     appliedMaterialsLogo: true,
     fragileStencil: true,
-    handlingSymbols: true
+    handlingSymbols: true,
+    autocrateText: true
   }
 })
 

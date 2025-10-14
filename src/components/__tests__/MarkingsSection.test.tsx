@@ -26,7 +26,8 @@ describe('MarkingsSection', () => {
     markings: {
       appliedMaterialsLogo: true,
       fragileStencil: true,
-      handlingSymbols: true
+      handlingSymbols: true,
+      autocrateText: true
     }
   }
 
@@ -44,7 +45,8 @@ describe('MarkingsSection', () => {
     expect(onMarkingsChange).toHaveBeenCalledWith({
       appliedMaterialsLogo: true,
       fragileStencil: true,
-      handlingSymbols: true
+      handlingSymbols: true,
+      autocrateText: true
     })
 
     // Toggle the logo marking off
@@ -55,7 +57,8 @@ describe('MarkingsSection', () => {
       expect(onMarkingsChange).toHaveBeenLastCalledWith({
         appliedMaterialsLogo: false,
         fragileStencil: true,
-        handlingSymbols: true
+        handlingSymbols: true,
+        autocrateText: true
       })
     })
 

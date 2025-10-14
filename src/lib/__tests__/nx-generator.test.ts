@@ -31,7 +31,8 @@ const baseConfig: CrateConfig = {
   markings: {
     appliedMaterialsLogo: true,
     fragileStencil: true,
-    handlingSymbols: true
+    handlingSymbols: true,
+    autocrateText: true
   }
 }
 

@@ -75,7 +75,8 @@ export default function Home() {
   const [markings, setMarkings] = useState<MarkingConfig>({
     appliedMaterialsLogo: true,
     fragileStencil: true,
-    handlingSymbols: true
+    handlingSymbols: true,
+    autocrateText: true
   })
 
   const [partNumbers, setPartNumbers] = useState<{

@@ -11,7 +11,8 @@ import {
   PLYWOOD_STANDARDS,
   LUMBER_DIMENSIONS,
   SKID_STANDARDS,
-  GEOMETRY_STANDARDS
+  GEOMETRY_STANDARDS,
+  MARKING_STANDARDS
 } from './crate-constants'
 
 export interface ProductDimensions {
@@ -25,6 +26,7 @@ export interface MarkingConfig {
   appliedMaterialsLogo: boolean  // Applied Materials logo (4 per crate)
   fragileStencil: boolean        // Fragile markings (4 per crate)
   handlingSymbols: boolean       // Glass, umbrella, up arrows (up to 4 per crate)
+  autocrateText: boolean         // AUTOCRATE text centered on panels (4 per crate)
 }
 
 export interface MarkingDimensions {
@@ -2121,7 +2123,7 @@ export class NXGenerator {
   }
 
   // Calculate marking dimensions based on crate height
-  getMarkingDimensions(markingType: 'logo' | 'fragile' | 'handling'): MarkingDimensions | null {
+  getMarkingDimensions(markingType: 'logo' | 'fragile' | 'handling' | 'autocrate'): MarkingDimensions | null {
     if (!this.config.markings) {
       return null
     }
@@ -2154,6 +2156,18 @@ export class NXGenerator {
         return { width: 3.00, height: 8.25, partNumber: '0205-00606' }
       } else {
         return { width: 4.00, height: 11.00, partNumber: '0205-00605' }
+      }
+    }
+
+    if (markingType === 'autocrate' && this.config.markings.autocrateText) {
+      // AUTOCRATE text specifications - scales with crate height
+      const { SMALL, MEDIUM, LARGE } = MARKING_STANDARDS.AUTOCRATE_TEXT
+      if (overallHeight <= SMALL.heightThreshold) {
+        return { width: SMALL.width, height: SMALL.height, partNumber: SMALL.partNumber }
+      } else if (overallHeight <= MEDIUM.heightThreshold) {
+        return { width: MEDIUM.width, height: MEDIUM.height, partNumber: MEDIUM.partNumber }
+      } else {
+        return { width: LARGE.width, height: LARGE.height, partNumber: LARGE.partNumber }
       }
     }
 
@@ -2193,6 +2207,15 @@ export class NXGenerator {
       instructions += '#   - Position: Upper right corner of each side and end panel\n'
       instructions += '#   - Note: Horizontal orientation takes priority over vertical\n'
       instructions += '#   - Quantity: Up to 4 per crate\n'
+    }
+
+    const autocrateDims = this.getMarkingDimensions('autocrate')
+    if (autocrateDims) {
+      instructions += `# AUTOCRATE Text (${autocrateDims.partNumber}):\n`
+      instructions += `#   - Size: ${autocrateDims.width}" x ${autocrateDims.height}"\n`
+      instructions += '#   - Position: Center on each side and end panel\n'
+      instructions += '#   - Text: "AUTOCRATE" in bold letters\n'
+      instructions += '#   - Quantity: 4 per crate\n'
     }
 
     instructions += '# \n'

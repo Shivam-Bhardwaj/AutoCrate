@@ -207,6 +207,54 @@ export const MARKING_STANDARDS = {
     types: ['glass', 'umbrella', 'up_arrow'] as const,
     maxQuantity: 4, // Per crate
   },
+  /** AUTOCRATE text marking dimensions by crate size */
+  AUTOCRATE_TEXT: {
+    /** Small crates (overall height ≤ 37 inches) */
+    SMALL: {
+      width: 12.00,
+      height: 3.00,
+      partNumber: 'AUTOCRATE-SM',
+      heightThreshold: 37,
+    },
+    /** Medium crates (overall height ≤ 73 inches) */
+    MEDIUM: {
+      width: 18.00,
+      height: 4.50,
+      partNumber: 'AUTOCRATE-MD',
+      heightThreshold: 73,
+    },
+    /** Large crates (overall height > 73 inches) */
+    LARGE: {
+      width: 24.00,
+      height: 6.00,
+      partNumber: 'AUTOCRATE-LG',
+    },
+    quantity: 4, // Per crate
+  },
+  /** Marking positioning standards */
+  POSITIONING: {
+    /** Offset from panel edges for corner markings (inches) */
+    EDGE_OFFSET: 2,
+    /** Additional vertical offset to avoid overlap between markings (inches) */
+    VERTICAL_SEPARATION: 2,
+    /** Rotation angle for FRAGILE stencil (radians) */
+    FRAGILE_ROTATION: Math.PI / 18, // 10 degrees
+  },
+  /** Marking color standards (hex codes) */
+  COLORS: {
+    /** Applied Materials logo color */
+    LOGO: '#000000',
+    /** FRAGILE stencil color */
+    FRAGILE: '#FF0000',
+    /** Handling symbols color */
+    HANDLING: '#000000',
+    /** AUTOCRATE text color */
+    AUTOCRATE: '#0066CC',
+    /** White background for marking planes */
+    BACKGROUND: '#FFFFFF',
+    /** Border/edge color for markings */
+    BORDER: '#666666',
+  },
 } as const
 
 // ============================================================================
