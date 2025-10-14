@@ -13,7 +13,7 @@ Perform comprehensive health check:
 
 Report:
 
-- Overall health status (✅ or ❌)
+- Overall health status ([DONE] or [X])
 - Any issues found
 - Suggestions for fixes
 - Whether the codebase is ready for deployment

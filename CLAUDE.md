@@ -51,14 +51,14 @@ gh issue list
 
 Claude Code will automatically:
 
-1. ✅ Fetch issue details from GitHub (`gh issue view X`)
-2. ✅ Create feature branch (`feature/issue-X-description`)
-3. ✅ Implement the changes with tests
-4. ✅ Run full test suite to verify
-5. ✅ Commit with proper messages
-6. ✅ Push to remote branch
-7. ✅ Create PR that references and closes the issue
-8. ✅ All ready for your review
+1. [DONE] Fetch issue details from GitHub (`gh issue view X`)
+2. [DONE] Create feature branch (`feature/issue-X-description`)
+3. [DONE] Implement the changes with tests
+4. [DONE] Run full test suite to verify
+5. [DONE] Commit with proper messages
+6. [DONE] Push to remote branch
+7. [DONE] Create PR that references and closes the issue
+8. [DONE] All ready for your review
 
 ### You Review and Merge
 
@@ -81,10 +81,10 @@ gh pr merge X             # Merge and close issue
 
 **When creating issues:**
 
-- ✅ Clear title describing the feature/bug
-- ✅ Acceptance criteria in description
-- ✅ Label appropriately (bug, feature, enhancement)
-- ✅ Reference related issues if applicable
+- [DONE] Clear title describing the feature/bug
+- [DONE] Acceptance criteria in description
+- [DONE] Label appropriately (bug, feature, enhancement)
+- [DONE] Reference related issues if applicable
 
 **Example good issue:**
 

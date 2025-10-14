@@ -65,7 +65,7 @@ This document defines clear boundaries between modules to enable safe parallel d
 - `BillOfMaterialsRow` interface
 - `LumberCutItem` interface
 
-**Parallel Work Safety**: ⚠️ CAUTION
+**Parallel Work Safety**: [WARNING] CAUTION
 
 - High-impact file, many dependents
 - Coordinate major changes
@@ -89,7 +89,7 @@ This document defines clear boundaries between modules to enable safe parallel d
 
 - `StepGenerator` class
 
-**Parallel Work Safety**: ⚠️ CAUTION
+**Parallel Work Safety**: [WARNING] CAUTION
 
 - Complex assembly hierarchy
 - Order-dependent entity generation
@@ -121,7 +121,7 @@ This document defines clear boundaries between modules to enable safe parallel d
 - `PanelSpliceLayout` interface
 - `PlywoodPiece` interface
 
-**Parallel Work Safety**: ✅ SAFE
+**Parallel Work Safety**: [DONE] SAFE
 
 - Self-contained algorithm
 - No shared state
@@ -153,7 +153,7 @@ This document defines clear boundaries between modules to enable safe parallel d
 - `KlimpLayout` interface
 - `CleatInfo` interface
 
-**Parallel Work Safety**: ✅ SAFE
+**Parallel Work Safety**: [DONE] SAFE
 
 - Self-contained logic
 - No external dependencies
@@ -180,7 +180,7 @@ This document defines clear boundaries between modules to enable safe parallel d
 - `KlimpSTEPIntegration` class
 - `KlimpInstance` interface
 
-**Parallel Work Safety**: ✅ SAFE
+**Parallel Work Safety**: [DONE] SAFE
 
 - Isolated hardware integration
 - Can be modified independently
@@ -197,7 +197,7 @@ This document defines clear boundaries between modules to enable safe parallel d
 
 - `LagSTEPIntegration` class
 
-**Parallel Work Safety**: ✅ SAFE
+**Parallel Work Safety**: [DONE] SAFE
 
 - Reference data only
 - No computation logic
@@ -216,7 +216,7 @@ This document defines clear boundaries between modules to enable safe parallel d
 - `PanelCleatLayout` interface
 - `Cleat` interface
 
-**Parallel Work Safety**: ✅ SAFE
+**Parallel Work Safety**: [DONE] SAFE
 
 - Independent calculation module
 - Well-isolated
@@ -231,7 +231,7 @@ This document defines clear boundaries between modules to enable safe parallel d
 
 **Exports**: Default React component
 
-**Parallel Work Safety**: 🔴 AVOID
+**Parallel Work Safety**: [AVOID] AVOID
 
 - Central coordination point
 - State management hub
@@ -262,7 +262,7 @@ This document defines clear boundaries between modules to enable safe parallel d
 
 **Exports**: React component
 
-**Parallel Work Safety**: ⚠️ CAUTION
+**Parallel Work Safety**: [WARNING] CAUTION
 
 - Complex 3D rendering logic
 - Performance-sensitive
@@ -287,7 +287,7 @@ This document defines clear boundaries between modules to enable safe parallel d
 - `ScenarioSelector` component
 - `ScenarioPreset` interface
 
-**Parallel Work Safety**: ✅ SAFE
+**Parallel Work Safety**: [DONE] SAFE
 
 - Simple configuration data
 - No complex logic
@@ -305,7 +305,7 @@ This document defines clear boundaries between modules to enable safe parallel d
 
 **Dependencies**: Varies by route
 
-**Parallel Work Safety**: ✅ SAFE (between routes)
+**Parallel Work Safety**: [DONE] SAFE (between routes)
 
 - Each route is independent
 - Can work on different routes simultaneously
@@ -324,16 +324,16 @@ This document defines clear boundaries between modules to enable safe parallel d
 
 ## Parallel Work Matrix
 
-| Module A → Module B                       | Can Work Simultaneously?    |
-| ----------------------------------------- | --------------------------- |
-| Different API routes                      | ✅ Yes                      |
-| Different calculators (klimp, cleat, lag) | ✅ Yes                      |
-| Different UI components                   | ✅ Yes (if no shared state) |
-| Calculator + UI component                 | ✅ Yes                      |
-| nx-generator + step-generator             | ⚠️ Coordinate               |
-| page.tsx + any component                  | ⚠️ Coordinate               |
-| Any module + tests                        | ✅ Yes                      |
-| Any module + docs                         | ✅ Yes                      |
+| Module A → Module B                       | Can Work Simultaneously?        |
+| ----------------------------------------- | ------------------------------- |
+| Different API routes                      | [DONE] Yes                      |
+| Different calculators (klimp, cleat, lag) | [DONE] Yes                      |
+| Different UI components                   | [DONE] Yes (if no shared state) |
+| Calculator + UI component                 | [DONE] Yes                      |
+| nx-generator + step-generator             | [WARNING] Coordinate            |
+| page.tsx + any component                  | [WARNING] Coordinate            |
+| Any module + tests                        | [DONE] Yes                      |
+| Any module + docs                         | [DONE] Yes                      |
 
 ## Adding New Modules
 
@@ -399,7 +399,7 @@ export function CrateVisualizer({ boxes, generator }: Props) {
 }
 ```
 
-### ❌ Avoid: Shared Mutable State
+### [X] Avoid: Shared Mutable State
 
 ```typescript
 // Bad: Global state, hard to test

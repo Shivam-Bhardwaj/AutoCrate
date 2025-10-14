@@ -173,11 +173,11 @@ Already configured in `.github/workflows/parallel-ci.yml`
 
 **On every push:**
 
-- ✅ TypeScript type checking
-- ✅ ESLint
-- ✅ Unit tests
-- ✅ E2E tests
-- ✅ Production build
+- [DONE] TypeScript type checking
+- [DONE] ESLint
+- [DONE] Unit tests
+- [DONE] E2E tests
+- [DONE] Production build
 
 **To enable:**
 
@@ -343,6 +343,6 @@ docker compose -f docker-compose.prod.yml up  # Docker production
 - [ ] (Optional) Install tmux
 - [ ] (Optional) Setup VS Code with devcontainer
 
-**You're ready to develop! 🚀**
+**You're ready to develop! [LAUNCH]**
 
 Access documentation at: `http://localhost:3000/docs`

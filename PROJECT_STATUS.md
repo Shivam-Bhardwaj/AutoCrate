@@ -6,7 +6,7 @@
 
 ## Current Work Streams
 
-### 🔄 Active Work (In Progress)
+### [SYNC] Active Work (In Progress)
 
 _No active work streams currently - update this section when starting new work_
 
@@ -27,7 +27,7 @@ _No active work streams currently - update this section when starting new work_
   - Expected completion: [Timestamp]
 ```
 
-### ✅ Recently Completed (Last 7 days)
+### [DONE] Recently Completed (Last 7 days)
 
 - **CLAUDE.md Update** - Improved documentation for AI assistants
   - Completed: 2025-10-08
@@ -43,38 +43,38 @@ _Add planned features/fixes here to avoid duplicate work_
 
 ### Core Modules
 
-| Module                      | Status    | Last Modified | Safe for Parallel Work? | Notes                                       |
-| --------------------------- | --------- | ------------- | ----------------------- | ------------------------------------------- |
-| `nx-generator.ts`           | ✅ Stable | 2025-10-14    | ⚠️ Caution              | Core crate generation logic - Lag screw fix |
-| `step-generator.ts`         | ✅ Stable | 2025-10-08    | ⚠️ Caution              | STEP export - complex assembly structure    |
-| `plywood-splicing.ts`       | ✅ Stable | 2025-10-08    | ✅ Yes                  | Self-contained optimization algorithm       |
-| `klimp-calculator.ts`       | ✅ Stable | 2025-10-08    | ✅ Yes                  | Klimp placement logic                       |
-| `klimp-step-integration.ts` | ✅ Stable | 2025-10-08    | ✅ Yes                  | Klimp STEP export                           |
-| `lag-step-integration.ts`   | ✅ Stable | 2025-10-08    | ✅ Yes                  | Lag screw integration                       |
-| `cleat-calculator.ts`       | ✅ Stable | 2025-10-08    | ✅ Yes                  | Cleat positioning                           |
+| Module                      | Status        | Last Modified | Safe for Parallel Work? | Notes                                       |
+| --------------------------- | ------------- | ------------- | ----------------------- | ------------------------------------------- |
+| `nx-generator.ts`           | [DONE] Stable | 2025-10-14    | [WARNING] Caution       | Core crate generation logic - Lag screw fix |
+| `step-generator.ts`         | [DONE] Stable | 2025-10-08    | [WARNING] Caution       | STEP export - complex assembly structure    |
+| `plywood-splicing.ts`       | [DONE] Stable | 2025-10-08    | [DONE] Yes              | Self-contained optimization algorithm       |
+| `klimp-calculator.ts`       | [DONE] Stable | 2025-10-08    | [DONE] Yes              | Klimp placement logic                       |
+| `klimp-step-integration.ts` | [DONE] Stable | 2025-10-08    | [DONE] Yes              | Klimp STEP export                           |
+| `lag-step-integration.ts`   | [DONE] Stable | 2025-10-08    | [DONE] Yes              | Lag screw integration                       |
+| `cleat-calculator.ts`       | [DONE] Stable | 2025-10-08    | [DONE] Yes              | Cleat positioning                           |
 
 ### UI Components
 
-| Component                  | Status    | Last Modified | Safe for Parallel Work? | Notes                       |
-| -------------------------- | --------- | ------------- | ----------------------- | --------------------------- |
-| `page.tsx`                 | ✅ Stable | 2025-10-08    | ⚠️ Caution              | Main application state      |
-| `CrateVisualizer.tsx`      | ✅ Stable | 2025-10-08    | ⚠️ Caution              | 3D rendering core           |
-| `ScenarioSelector.tsx`     | ✅ Stable | 2025-10-08    | ✅ Yes                  | Preset configurations       |
-| `PlywoodPieceSelector.tsx` | ✅ Stable | 2025-10-08    | ✅ Yes                  | Plywood visibility controls |
-| `LumberCutList.tsx`        | ✅ Stable | 2025-10-08    | ✅ Yes                  | Cut list display            |
-| `MarkingsSection.tsx`      | ✅ Stable | 2025-10-08    | ✅ Yes                  | Marking configuration       |
-| `KlimpModel.tsx`           | ✅ Stable | 2025-10-08    | ✅ Yes                  | 3D klimp visualization      |
+| Component                  | Status        | Last Modified | Safe for Parallel Work? | Notes                       |
+| -------------------------- | ------------- | ------------- | ----------------------- | --------------------------- |
+| `page.tsx`                 | [DONE] Stable | 2025-10-08    | [WARNING] Caution       | Main application state      |
+| `CrateVisualizer.tsx`      | [DONE] Stable | 2025-10-08    | [WARNING] Caution       | 3D rendering core           |
+| `ScenarioSelector.tsx`     | [DONE] Stable | 2025-10-08    | [DONE] Yes              | Preset configurations       |
+| `PlywoodPieceSelector.tsx` | [DONE] Stable | 2025-10-08    | [DONE] Yes              | Plywood visibility controls |
+| `LumberCutList.tsx`        | [DONE] Stable | 2025-10-08    | [DONE] Yes              | Cut list display            |
+| `MarkingsSection.tsx`      | [DONE] Stable | 2025-10-08    | [DONE] Yes              | Marking configuration       |
+| `KlimpModel.tsx`           | [DONE] Stable | 2025-10-08    | [DONE] Yes              | 3D klimp visualization      |
 
 ### API Routes
 
-| Route                       | Status    | Last Modified | Safe for Parallel Work? | Notes                |
-| --------------------------- | --------- | ------------- | ----------------------- | -------------------- |
-| `/api/calculate-crate`      | ✅ Stable | 2025-10-08    | ✅ Yes                  | Crate calculations   |
-| `/api/cleat-placement`      | ✅ Stable | 2025-10-08    | ✅ Yes                  | Cleat positioning    |
-| `/api/nx-export`            | ✅ Stable | 2025-10-08    | ✅ Yes                  | NX expression export |
-| `/api/plywood-optimization` | ✅ Stable | 2025-10-08    | ✅ Yes                  | Plywood optimization |
-| `/api/test-dashboard`       | ✅ Stable | 2025-10-08    | ✅ Yes                  | Testing metrics      |
-| `/api/last-update`          | ✅ Stable | 2025-10-08    | ✅ Yes                  | Project metadata     |
+| Route                       | Status        | Last Modified | Safe for Parallel Work? | Notes                |
+| --------------------------- | ------------- | ------------- | ----------------------- | -------------------- |
+| `/api/calculate-crate`      | [DONE] Stable | 2025-10-08    | [DONE] Yes              | Crate calculations   |
+| `/api/cleat-placement`      | [DONE] Stable | 2025-10-08    | [DONE] Yes              | Cleat positioning    |
+| `/api/nx-export`            | [DONE] Stable | 2025-10-08    | [DONE] Yes              | NX expression export |
+| `/api/plywood-optimization` | [DONE] Stable | 2025-10-08    | [DONE] Yes              | Plywood optimization |
+| `/api/test-dashboard`       | [DONE] Stable | 2025-10-08    | [DONE] Yes              | Testing metrics      |
+| `/api/last-update`          | [DONE] Stable | 2025-10-08    | [DONE] Yes              | Project metadata     |
 
 ## Known Issues & Tech Debt
 
@@ -97,13 +97,13 @@ These are areas where multiple workers are likely to conflict:
 
 ### 1. Main State Management (`src/app/page.tsx`)
 
-- **Risk Level**: 🔴 HIGH
+- **Risk Level**: [AVOID] HIGH
 - **Why**: Central state hub for entire application
 - **Coordination**: Discuss changes in advance, work in branches
 
 ### 2. NX Generator Core (`src/lib/nx-generator.ts`)
 
-- **Risk Level**: 🔴 HIGH
+- **Risk Level**: [AVOID] HIGH
 - **Why**: Core business logic, many dependencies
 - **Coordination**: Break changes into small, atomic commits
 
@@ -121,7 +121,7 @@ These are areas where multiple workers are likely to conflict:
 
 ## Parallel Work Guidelines
 
-### ✅ Safe Parallel Patterns
+### [DONE] Safe Parallel Patterns
 
 1. **New Feature Modules**
    - Create new files in `src/lib/` for new calculators
@@ -140,7 +140,7 @@ These are areas where multiple workers are likely to conflict:
    - Test additions
    - Documentation improvements
 
-### ⚠️ Coordination Required
+### [WARNING] Coordination Required
 
 1. **State Changes**
    - Modifications to `page.tsx` state
@@ -157,7 +157,7 @@ These are areas where multiple workers are likely to conflict:
    - API contract changes
    - Major refactoring
 
-### 🔴 Avoid Conflicts
+### [AVOID] Avoid Conflicts
 
 1. **Never work simultaneously on**:
    - The same file

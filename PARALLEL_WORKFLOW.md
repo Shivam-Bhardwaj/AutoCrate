@@ -607,7 +607,7 @@ feature/klimp-spacing           → klimp-calculator.ts only
 feature/ui-theme                → ThemeProvider.tsx, ThemeToggle.tsx only
 
 # Avoid:
-feature/multiple-changes        → nx-generator.ts, page.tsx, CrateVisualizer.tsx ❌
+feature/multiple-changes        → nx-generator.ts, page.tsx, CrateVisualizer.tsx [X]
 ```
 
 ### 2. **Communication Protocol**
@@ -698,11 +698,11 @@ tmux new-session -s autocrate
 
 This gives you:
 
-- ✅ Multiple Claude Code sessions (parallel AI work)
-- ✅ Persistent sessions (survive SSH disconnects)
-- ✅ Live Docker logs
-- ✅ Auto-running tests
-- ✅ Status monitoring
-- ✅ Pure terminal (works in your environment)
+- [DONE] Multiple Claude Code sessions (parallel AI work)
+- [DONE] Persistent sessions (survive SSH disconnects)
+- [DONE] Live Docker logs
+- [DONE] Auto-running tests
+- [DONE] Status monitoring
+- [DONE] Pure terminal (works in your environment)
 
 Would you like me to create the tmux session script and helper tools for this workflow?

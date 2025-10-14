@@ -2,7 +2,7 @@
 
 **Goal**: Work on multiple features simultaneously without conflicts.
 
-## 🚀 Fastest Way to Start (Recommended)
+## [LAUNCH] Fastest Way to Start (Recommended)
 
 ### Option A: Tmux (Terminal-based)
 
@@ -99,10 +99,10 @@ code /home/curious/workspace/projects/AutoCrate/repo
 ```bash
 cd /home/curious/workspace/projects/AutoCrate/repo
 cat MODULES.md | grep -A 3 "plywood-splicing"
-# Output: ✅ SAFE for parallel work
+# Output: [DONE] SAFE for parallel work
 
 cat MODULES.md | grep -A 3 "klimp-calculator"
-# Output: ✅ SAFE for parallel work
+# Output: [DONE] SAFE for parallel work
 ```
 
 ### Step 2: Claim your work
@@ -110,7 +110,7 @@ cat MODULES.md | grep -A 3 "klimp-calculator"
 Edit `PROJECT_STATUS.md`:
 
 ```markdown
-### 🔄 Active Work (In Progress)
+### [SYNC] Active Work (In Progress)
 
 - **plywood-splicing.ts** - Add custom sheet size support
   - Worker: Claude-Session-A
@@ -181,7 +181,7 @@ When Feature B is done (same process).
 
 ---
 
-## 🎯 Common Scenarios
+## [TARGET] Common Scenarios
 
 ### Scenario 1: "I want to work on 3 features at once"
 
@@ -208,9 +208,9 @@ cat PROJECT_STATUS.md | head -30
 # Check MODULES.md for your module
 grep "your-module-name" MODULES.md
 
-# If marked ✅ SAFE and not in Active Work → Go ahead!
-# If marked ⚠️ CAUTION → Coordinate via PROJECT_STATUS.md
-# If marked 🔴 AVOID → Don't work on it in parallel
+# If marked [DONE] SAFE and not in Active Work → Go ahead!
+# If marked [WARNING] CAUTION → Coordinate via PROJECT_STATUS.md
+# If marked [AVOID] AVOID → Don't work on it in parallel
 ```
 
 ### Scenario 3: "I need to switch between features quickly"
@@ -321,7 +321,7 @@ Alt+Arrow   # Navigate panes
 
 ---
 
-## ⚡ Pro Tips
+## [FAST] Pro Tips
 
 1. **Use tmux for persistence**: Your work survives SSH disconnects
 2. **Commit often**: Every 15-30 minutes, easy to revert

@@ -17,11 +17,11 @@ Perform an AI code review on staged or committed changes:
 6. Look for potential breaking changes
 
 7. Provide a structured review with:
-   - ✅ What looks good
-   - ⚠️ Suggestions for improvement
+   - [DONE] What looks good
+   - [WARNING] Suggestions for improvement
    - 🐛 Potential bugs or issues
-   - 📝 Documentation needs
-   - 🧪 Testing recommendations
+   - [NOTE] Documentation needs
+   - [TEST] Testing recommendations
 
 8. Offer to:
    - Fix identified issues

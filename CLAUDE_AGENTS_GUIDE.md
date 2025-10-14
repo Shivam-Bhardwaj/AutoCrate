@@ -167,7 +167,7 @@ Manages version bumping and deployment:
 
 [Runs tests, bumps version, commits, pushes]
 
-✅ Deployed version 13.2.1
+[DONE] Deployed version 13.2.1
    URL: https://autocrate.vercel.app
 ```
 
@@ -197,13 +197,13 @@ Complete codebase verification:
 ```
 /verify
 
-✅ Git: Clean working directory
-✅ TypeScript: No errors
-✅ Tests: All passing
-✅ Build: Successful (1.2MB)
-✅ Security: No vulnerabilities
-⚠️ Dependencies: 3 outdated packages
-✅ Ready for deployment
+[DONE] Git: Clean working directory
+[DONE] TypeScript: No errors
+[DONE] Tests: All passing
+[DONE] Build: Successful (1.2MB)
+[DONE] Security: No vulnerabilities
+[WARNING] Dependencies: 3 outdated packages
+[DONE] Ready for deployment
 ```
 
 **When to use:**
@@ -244,7 +244,7 @@ Proceed? yes
 
 [Implements each step with tests]
 
-✅ Feature complete: PDF export
+[DONE] Feature complete: PDF export
    Files changed: 4
    Tests added: 8
    Ready to commit? yes
@@ -285,7 +285,7 @@ Fast workflow for small bug fixes:
 [Implements]
 [Runs tests]
 
-✅ Bug fixed
+[DONE] Bug fixed
    File: src/lib/klimp-calculator.ts
    Tests: All passing
    Push to GitHub? yes
@@ -556,11 +556,11 @@ vim .claude/commands/test.md
 
 ### 1. Use Specific Commands
 
-❌ **Don't:** "Test everything"
-✅ **Do:** `/verify`
+[X] **Don't:** "Test everything"
+[DONE] **Do:** `/verify`
 
-❌ **Don't:** "I want to add a feature for exporting to DXF"
-✅ **Do:** `/feature` then describe it
+[X] **Don't:** "I want to add a feature for exporting to DXF"
+[DONE] **Do:** `/feature` then describe it
 
 ### 2. Verify Before Deploying
 

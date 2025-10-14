@@ -35,7 +35,7 @@ Determine what you're changing:
 - 🐛 **Bug fix** → Bump CHANGE number (13.1.0 → 13.1.1)
 - ✨ **New feature** → Bump CURRENT number (13.1.0 → 13.2.0)
 - 💥 **Breaking change** → Bump OVERALL number (13.1.0 → 14.0.0)
-- 📝 **Documentation only** → Bump CHANGE number (13.1.0 → 13.1.1)
+- [NOTE] **Documentation only** → Bump CHANGE number (13.1.0 → 13.1.1)
 
 ### Step 2: Make Code Changes
 
@@ -113,7 +113,7 @@ Detailed explanation of changes.
 Version: 13.2.0
 TI-123
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+[AI] Generated with [Claude Code](https://claude.com/claude-code)
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
 
@@ -148,18 +148,18 @@ See `.claude/workflows/REVERTING.md` for rollback instructions.
 
 ## Files to ALWAYS Update
 
-1. ✅ Version in `package.json` (via npm script)
-2. ✅ `.claude/version-config.json` (via sync script)
-3. ✅ `CHANGELOG.md` (manual entry)
-4. ✅ Git commit with proper message
+1. [DONE] Version in `package.json` (via npm script)
+2. [DONE] `.claude/version-config.json` (via sync script)
+3. [DONE] `CHANGELOG.md` (manual entry)
+4. [DONE] Git commit with proper message
 
 ## Common Mistakes to Avoid
 
-- ❌ Committing without bumping version
-- ❌ Forgetting to update CHANGELOG.md
-- ❌ Not syncing version across files
-- ❌ Pushing directly without testing
-- ❌ Hardcoding values instead of using config
+- [x] Committing without bumping version
+- [x] Forgetting to update CHANGELOG.md
+- [x] Not syncing version across files
+- [x] Pushing directly without testing
+- [x] Hardcoding values instead of using config
 
 ## Need Help?
 

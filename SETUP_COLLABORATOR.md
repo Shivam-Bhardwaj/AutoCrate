@@ -14,13 +14,13 @@
 
 **Give Keelyn "Write" access** which allows her to:
 
-- ✅ Create issues
-- ✅ Comment on pull requests
-- ✅ Review changes
-- ✅ Approve PRs
-- ✅ Create branches (if needed)
-- ❌ Can't delete the repository
-- ❌ Can't change critical settings
+- [DONE] Create issues
+- [DONE] Comment on pull requests
+- [DONE] Review changes
+- [DONE] Approve PRs
+- [DONE] Create branches (if needed)
+- [x] Can't delete the repository
+- [x] Can't change critical settings
 
 ### 3. Set Up Branch Protection (Optional but Recommended)
 
@@ -30,10 +30,10 @@ To prevent accidental merges to main:
 2. Click "Add branch protection rule"
 3. Pattern: `main`
 4. Check:
-   - ✅ Require pull request before merging
-   - ✅ Require approvals (1)
-   - ✅ Dismiss stale pull request approvals
-   - ✅ Require review from CODEOWNERS
+   - [DONE] Require pull request before merging
+   - [DONE] Require approvals (1)
+   - [DONE] Dismiss stale pull request approvals
+   - [DONE] Require review from CODEOWNERS
 
 This ensures:
 
@@ -77,9 +77,9 @@ This ensures:
    - Click "Files changed" tab
    - Click "Review changes" button
    - Choose:
-     - ✅ **Approve** - Everything looks good
-     - 💬 **Comment** - Just leaving feedback
-     - ❌ **Request changes** - Something needs fixing
+     - [DONE] **Approve** - Everything looks good
+     - [COMMENT] **Comment** - Just leaving feedback
+     - [x] **Request changes** - Something needs fixing
 
 ## Team Workflow
 
@@ -217,7 +217,7 @@ Claude: Implements based on specs
 
 This setup gives Keelyn the perfect balance:
 
-- ✅ Can contribute her expertise
-- ✅ Can review all changes
-- ✅ Can't accidentally break anything
-- ✅ Doesn't need technical knowledge
+- [DONE] Can contribute her expertise
+- [DONE] Can review all changes
+- [DONE] Can't accidentally break anything
+- [DONE] Doesn't need technical knowledge

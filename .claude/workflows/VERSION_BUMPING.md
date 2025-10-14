@@ -15,11 +15,11 @@ Example: **13.1.0**
 Increment the third digit for:
 
 - 🐛 Bug fixes
-- 📝 Documentation updates
-- 🎨 Minor UI tweaks
-- ✅ Test additions
+- [NOTE] Documentation updates
+- [DESIGN] Minor UI tweaks
+- [DONE] Test additions
 - ⚙️ Configuration changes
-- 🔧 Small refactors
+- [TOOL] Small refactors
 
 **Examples:**
 
@@ -41,11 +41,11 @@ npm run version:sync
 Increment the second digit for:
 
 - ✨ New features
-- 🚀 New API endpoints
-- 🧩 New components
-- 🎨 Significant UI changes
-- ⚡ Performance improvements
-- 📊 New visualizations
+- [LAUNCH] New API endpoints
+- [MODULE] New components
+- [DESIGN] Significant UI changes
+- [FAST] Performance improvements
+- [STATS] New visualizations
 
 **Examples:**
 
@@ -70,9 +70,9 @@ Increment the first digit for:
 
 - 💥 Breaking API changes
 - 🏗️ Architecture overhauls
-- 🎯 Major milestones
-- 🔄 Complete redesigns
-- 📦 Framework upgrades (Next.js 14 → 15)
+- [TARGET] Major milestones
+- [SYNC] Complete redesigns
+- [PACKAGE] Framework upgrades (Next.js 14 → 15)
 - 🚨 Incompatible changes
 
 **Examples:**
@@ -215,9 +215,9 @@ git show v13.2.0
 
 A pre-commit hook enforces version bumping:
 
-- ✅ Checks if version changed
-- ✅ Prevents commits without version bump
-- ✅ Ensures version sync ran
+- [DONE] Checks if version changed
+- [DONE] Prevents commits without version bump
+- [DONE] Ensures version sync ran
 
 To bypass (NOT RECOMMENDED):
 

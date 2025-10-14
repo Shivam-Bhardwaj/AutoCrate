@@ -1,8 +1,8 @@
-# 🎯 Keelyn's Super Simple Guide to AutoCrate
+# [TARGET] Keelyn's Super Simple Guide to AutoCrate
 
 Welcome Keelyn! This guide will help you contribute your crate expertise without any coding. You'll just need a GitHub account and your phone or computer.
 
-## 📱 Step 1: Create Your GitHub Account
+## [MOBILE] Step 1: Create Your GitHub Account
 
 1. Go to: https://github.com/signup
 2. Enter your email
@@ -11,13 +11,13 @@ Welcome Keelyn! This guide will help you contribute your crate expertise without
 5. Verify your email
 6. **Send your username to Shivam** so he can add you as a collaborator
 
-## 🚀 Step 2: Accept the Invitation
+## [LAUNCH] Step 2: Accept the Invitation
 
 1. Check your email for "Invitation to collaborate on AutoCrate"
 2. Click "Accept invitation"
-3. You're in! 🎉
+3. You're in! [SUCCESS]
 
-## 💬 Your Main Job: Review & Comment
+## [COMMENT] Your Main Job: Review & Comment
 
 ### Option A: Review Pull Requests (Easiest!)
 
@@ -46,7 +46,7 @@ Welcome Keelyn! This guide will help you contribute your crate expertise without
    - Different spacing calculation
    ```
 
-## 🎨 How to Give Visual Feedback
+## [DESIGN] How to Give Visual Feedback
 
 ### Using Screenshots:
 
@@ -77,13 +77,13 @@ Instead of technical terms, just say:
 
 ### Red Flags to Watch For:
 
-- ❌ Wrong lumber size for weight
-- ❌ Incorrect skid spacing
-- ❌ Missing reinforcements
-- ❌ Improper cleat placement
-- ❌ Wrong fastener specifications
+- [x] Wrong lumber size for weight
+- [x] Incorrect skid spacing
+- [x] Missing reinforcements
+- [x] Improper cleat placement
+- [x] Wrong fastener specifications
 
-## 💡 Example Comments You Can Make
+## [IDEA] Example Comments You Can Make
 
 ### Good Feedback Examples:
 
@@ -103,7 +103,7 @@ Instead of technical terms, just say:
 "The cleats should be 12 inches from each corner, not 18 inches."
 ```
 
-## 🔄 Your Workflow with Shivam & Claude
+## [SYNC] Your Workflow with Shivam & Claude
 
 1. **Shivam asks Claude** to make changes
 2. **Claude creates** a preview version
@@ -114,7 +114,7 @@ Instead of technical terms, just say:
 7. **You approve** when it's correct
 8. **Changes go live**
 
-## 📱 Mobile App (Optional but Easier!)
+## [MOBILE] Mobile App (Optional but Easier!)
 
 Download the GitHub app for easier reviewing:
 
@@ -157,7 +157,7 @@ Just comment with your concern:
 - "Usually we do X instead of Y"
 - "Can we double-check this calculation?"
 
-## 🎯 Quick Reference
+## [TARGET] Quick Reference
 
 ### Your GitHub Links:
 
@@ -167,20 +167,20 @@ Just comment with your concern:
 
 ### What to Focus On:
 
-✅ Crate dimensions
-✅ Lumber specifications
-✅ Weight calculations
-✅ Industry standards
-✅ Safety requirements
+[DONE] Crate dimensions
+[DONE] Lumber specifications
+[DONE] Weight calculations
+[DONE] Industry standards
+[DONE] Safety requirements
 
 ### What to Ignore:
 
-❌ Code syntax
-❌ Technical implementation
-❌ Git commands
-❌ Build processes
+[X] Code syntax
+[X] Technical implementation
+[X] Git commands
+[X] Build processes
 
-## 💬 Communication Tips
+## [COMMENT] Communication Tips
 
 ### When Something's Wrong:
 
@@ -194,7 +194,7 @@ Just comment with your concern:
 - "Approved - matches our standards"
 - "Good to go!"
 
-## 🚀 Remember
+## [LAUNCH] Remember
 
 - **You're the crate expert** - Your knowledge is invaluable
 - **No coding needed** - Just review and comment
@@ -210,4 +210,4 @@ Just comment with your concern:
 - **Ask in comments** - "I don't understand this part"
 - **Email works too** - Just reply to GitHub notification emails
 
-Welcome to the team! Your crate expertise is exactly what we need! 🎉
+Welcome to the team! Your crate expertise is exactly what we need! [SUCCESS]

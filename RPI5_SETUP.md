@@ -110,7 +110,7 @@ npm run deploy:major     # Major version bump + deploy
 
 ## Known ARM64 Considerations
 
-### ✅ Works Great
+### [DONE] Works Great
 
 - Node.js 20+ (native ARM64 support)
 - Next.js 14 (fully compatible)
@@ -118,13 +118,13 @@ npm run deploy:major     # Major version bump + deploy
 - Three.js (JavaScript-only, works perfectly)
 - Jest testing (compatible)
 
-### ⚠️ May Need Attention
+### [WARNING] May Need Attention
 
 - **Playwright**: ARM64 support improved but E2E tests may be slower
   - Skip with: `npm run test:all` (skips E2E by default)
   - Run separately: `npm run test:e2e` (may need chromium-browser installed)
 
-### 🔧 Performance Tips
+### [TOOL] Performance Tips
 
 - First `npm install` takes longer (10-15 min) due to native module compilation
 - Subsequent installs are fast (~2 min)
