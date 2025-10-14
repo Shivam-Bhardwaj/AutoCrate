@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateNXExpressions } from '@/lib/nx-generator';
+import { heavyRateLimit } from '@/lib/rate-limiter';
 
 interface NXExportRequest {
   crateId?: string;
@@ -14,7 +15,7 @@ interface NXExportRequest {
   units?: 'mm' | 'inch';
 }
 
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest) {
   try {
     const body: NXExportRequest = await request.json();
 
@@ -65,7 +66,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
+  return heavyRateLimit(request, postHandler);
+}
+
+async function getHandler(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const exportId = searchParams.get('exportId');
 
@@ -92,6 +97,10 @@ export async function GET(request: NextRequest) {
       'Content-Disposition': `attachment; filename="crate_${exportId}.exp"`
     }
   });
+}
+
+export async function GET(request: NextRequest) {
+  return heavyRateLimit(request, getHandler);
 }
 
 function convertDimensions(dimensions: any, targetUnit: string): any {
