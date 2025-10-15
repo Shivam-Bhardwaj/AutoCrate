@@ -2,6 +2,22 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⚡ START HERE EVERY SESSION
+
+**IMPORTANT**: Before reading anything else, read **`PROJECT_DNA.md`** first!
+
+`PROJECT_DNA.md` contains:
+
+- Critical code locations (exact line numbers)
+- Common issues and solutions (saves 30+ minutes)
+- Token-saving strategies (saves 50-100K tokens/session)
+- Quick decision trees for common tasks
+- All the gotchas and patterns you need
+
+Reading PROJECT_DNA.md (8K tokens) vs exploring the codebase (50-100K tokens) = massive time and token savings.
+
+---
+
 ## Project Overview
 
 AutoCrate Codex is a Next.js 14 application for designing shipping crates with 3D visualization and NX CAD expression generation. It uses a "Two Diagonal Points" construction method for parametric crate modeling with real-time 3D preview and STEP file export.
@@ -63,6 +79,7 @@ Claude Code will automatically:
 ### Commit Message Format
 
 Keep it simple and concise:
+
 ```
 type: Brief description (max 50 chars)
 
