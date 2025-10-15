@@ -132,28 +132,34 @@ function PMIFrame({ cells, isDatumLabel = false }: { cells: string[], isDatumLab
 }
 
 // Component for visualizing datum planes according to ASME Y14.5
-function DatumPlanes({ bounds, scale, distanceFactor }: { bounds: SceneBounds; scale: number; distanceFactor: number }) {
-  const spanX = bounds.maxX - bounds.minX
-  const spanY = bounds.maxY - bounds.minY
-  const spanZ = bounds.maxZ - bounds.minZ
+function DatumPlanes({ bounds, scale, distanceFactor, totalDimensions }: {
+  bounds: SceneBounds;
+  scale: number;
+  distanceFactor: number;
+  totalDimensions?: { overallWidth: number; overallLength: number; overallHeight: number } | null;
+}) {
+  // Use generator dimensions if available, fallback to bounds
+  const spanX = totalDimensions?.overallWidth ?? (bounds.maxX - bounds.minX)
+  const spanY = totalDimensions?.overallLength ?? (bounds.maxY - bounds.minY)
+  const spanZ = totalDimensions?.overallHeight ?? (bounds.maxZ - bounds.minZ)
   const planeSize = Math.max(spanX, spanY, spanZ) * 1.2
 
-  const centerX = (bounds.minX + bounds.maxX) / 2
-  const centerY = (bounds.minY + bounds.maxY) / 2
-  const centerZ = (bounds.minZ + bounds.maxZ) / 2
+  const centerX = 0  // Crate is centered at origin in X
+  const centerY = spanY / 2  // Center of length dimension
+  const centerZ = spanZ / 2  // Center of height dimension
   const labelOffset = Math.max(spanX, spanY, spanZ) * 0.2
 
   return (
     <>
       {/* Datum A - Bottom plane (XY plane at Z=0) */}
-      <mesh position={[centerX * scale, bounds.minZ * scale, -centerY * scale]} rotation={[0, 0, 0]}>
+      <mesh position={[centerX * scale, 0, -centerY * scale]} rotation={[0, 0, 0]}>
         <planeGeometry args={[planeSize * scale, planeSize * scale]} />
         <meshBasicMaterial color="#ff0000" opacity={0.1} transparent side={THREE.DoubleSide} />
       </mesh>
       <Html
         position={[
           (centerX + labelOffset) * scale,
-          (bounds.minZ + labelOffset * 0.1) * scale,
+          (labelOffset * 0.1) * scale,
           -(centerY + labelOffset) * scale
         ]}
         center
@@ -164,7 +170,7 @@ function DatumPlanes({ bounds, scale, distanceFactor }: { bounds: SceneBounds; s
       </Html>
 
       {/* Datum B - Front plane (XZ plane at Y=0) */}
-      <mesh position={[centerX * scale, centerZ * scale, -centerY * scale]} rotation={[Math.PI / 2, 0, 0]}>
+      <mesh position={[centerX * scale, centerZ * scale, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[planeSize * scale, planeSize * scale]} />
         <meshBasicMaterial color="#00ff00" opacity={0.1} transparent side={THREE.DoubleSide} />
       </mesh>
@@ -172,7 +178,7 @@ function DatumPlanes({ bounds, scale, distanceFactor }: { bounds: SceneBounds; s
         position={[
           (centerX + labelOffset) * scale,
           centerZ * scale,
-          -(centerY - labelOffset) * scale
+          labelOffset * scale
         ]}
         center
         distanceFactor={distanceFactor}
@@ -188,7 +194,7 @@ function DatumPlanes({ bounds, scale, distanceFactor }: { bounds: SceneBounds; s
       </mesh>
       <Html
         position={[
-          (centerX - labelOffset) * scale,
+          -labelOffset * scale,
           centerZ * scale,
           -(centerY + labelOffset) * scale
         ]}
@@ -235,10 +241,11 @@ function ScenePMIOverlays({
   } | null;
   pmiState: PmiVisibilityState;
 }) {
-  // Calculate dimensions for dynamic offsets
-  const crateWidth = bounds.maxX - bounds.minX
-  const crateLength = bounds.maxY - bounds.minY
-  const crateHeight = bounds.maxZ - bounds.minZ
+  // Use actual dimensions from generator for PMI positioning
+  // This ensures PMI lines update correctly when dimensions change
+  const crateWidth = totalDimensions?.overallWidth ?? (bounds.maxX - bounds.minX)
+  const crateLength = totalDimensions?.overallLength ?? (bounds.maxY - bounds.minY)
+  const crateHeight = totalDimensions?.overallHeight ?? (bounds.maxZ - bounds.minZ)
   const maxDimension = Math.max(crateWidth, crateLength, crateHeight)
 
   // Scale factor must match the box rendering scale (0.1)
@@ -247,8 +254,9 @@ function ScenePMIOverlays({
 
   const formatInches = (value: number) => `${value.toFixed(2)}"`
 
-  const centerX = (bounds.minX + bounds.maxX) / 2
-  const centerY = (bounds.minY + bounds.maxY) / 2
+  // Calculate centers based on overall dimensions
+  const centerX = 0  // Crate is centered at origin in X
+  const centerY = crateLength / 2  // Center of length dimension
 
   const annotations: ReactNode[] = []
 
@@ -262,16 +270,24 @@ function ScenePMIOverlays({
     const lengthOffset = Math.max(10, crateHeight * 0.12)
     const heightOffset = Math.max(6, crateWidth * 0.08)
 
+    // Calculate actual bounds from generator dimensions
+    const minX = -crateWidth / 2
+    const maxX = crateWidth / 2
+    const minY = 0
+    const maxY = crateLength
+    const minZ = 0
+    const maxZ = crateHeight
+
     // Width dimension (X axis)
-    const widthLineStart = new THREE.Vector3(bounds.minX * scale, (bounds.maxZ + widthOffset) * scale, -centerY * scale)
-    const widthLineEnd = new THREE.Vector3(bounds.maxX * scale, (bounds.maxZ + widthOffset) * scale, -centerY * scale)
+    const widthLineStart = new THREE.Vector3(minX * scale, (maxZ + widthOffset) * scale, -centerY * scale)
+    const widthLineEnd = new THREE.Vector3(maxX * scale, (maxZ + widthOffset) * scale, -centerY * scale)
     const widthLabel = widthLineStart.clone().add(widthLineEnd).multiplyScalar(0.5)
     widthLabel.y += 0.3
 
-    const widthExtLeftStart = new THREE.Vector3(bounds.minX * scale, bounds.maxZ * scale, -centerY * scale)
-    const widthExtLeftEnd = new THREE.Vector3(bounds.minX * scale, (bounds.maxZ + widthOffset) * scale, -centerY * scale)
-    const widthExtRightStart = new THREE.Vector3(bounds.maxX * scale, bounds.maxZ * scale, -centerY * scale)
-    const widthExtRightEnd = new THREE.Vector3(bounds.maxX * scale, (bounds.maxZ + widthOffset) * scale, -centerY * scale)
+    const widthExtLeftStart = new THREE.Vector3(minX * scale, maxZ * scale, -centerY * scale)
+    const widthExtLeftEnd = new THREE.Vector3(minX * scale, (maxZ + widthOffset) * scale, -centerY * scale)
+    const widthExtRightStart = new THREE.Vector3(maxX * scale, maxZ * scale, -centerY * scale)
+    const widthExtRightEnd = new THREE.Vector3(maxX * scale, (maxZ + widthOffset) * scale, -centerY * scale)
 
     annotations.push(
       <Fragment key="dim-width">
@@ -289,15 +305,15 @@ function ScenePMIOverlays({
     )
 
     // Length dimension (Y axis in NX -> -Z in Three)
-    const lengthLineStart = new THREE.Vector3(centerX * scale, (bounds.maxZ + lengthOffset) * scale, -bounds.minY * scale)
-    const lengthLineEnd = new THREE.Vector3(centerX * scale, (bounds.maxZ + lengthOffset) * scale, -bounds.maxY * scale)
+    const lengthLineStart = new THREE.Vector3(centerX * scale, (maxZ + lengthOffset) * scale, -minY * scale)
+    const lengthLineEnd = new THREE.Vector3(centerX * scale, (maxZ + lengthOffset) * scale, -maxY * scale)
     const lengthLabel = lengthLineStart.clone().add(lengthLineEnd).multiplyScalar(0.5)
     lengthLabel.y += 0.3
 
-    const lengthExtFrontStart = new THREE.Vector3(centerX * scale, bounds.maxZ * scale, -bounds.minY * scale)
-    const lengthExtFrontEnd = new THREE.Vector3(centerX * scale, (bounds.maxZ + lengthOffset) * scale, -bounds.minY * scale)
-    const lengthExtBackStart = new THREE.Vector3(centerX * scale, bounds.maxZ * scale, -bounds.maxY * scale)
-    const lengthExtBackEnd = new THREE.Vector3(centerX * scale, (bounds.maxZ + lengthOffset) * scale, -bounds.maxY * scale)
+    const lengthExtFrontStart = new THREE.Vector3(centerX * scale, maxZ * scale, -minY * scale)
+    const lengthExtFrontEnd = new THREE.Vector3(centerX * scale, (maxZ + lengthOffset) * scale, -minY * scale)
+    const lengthExtBackStart = new THREE.Vector3(centerX * scale, maxZ * scale, -maxY * scale)
+    const lengthExtBackEnd = new THREE.Vector3(centerX * scale, (maxZ + lengthOffset) * scale, -maxY * scale)
 
     annotations.push(
       <Fragment key="dim-length">
@@ -315,16 +331,16 @@ function ScenePMIOverlays({
     )
 
     // Height dimension (Z axis)
-    const heightX = bounds.maxX + heightOffset
-    const heightLineStart = new THREE.Vector3(heightX * scale, bounds.minZ * scale, -bounds.maxY * scale)
-    const heightLineEnd = new THREE.Vector3(heightX * scale, bounds.maxZ * scale, -bounds.maxY * scale)
+    const heightX = maxX + heightOffset
+    const heightLineStart = new THREE.Vector3(heightX * scale, minZ * scale, -maxY * scale)
+    const heightLineEnd = new THREE.Vector3(heightX * scale, maxZ * scale, -maxY * scale)
     const heightLabel = heightLineStart.clone().add(heightLineEnd).multiplyScalar(0.5)
     heightLabel.x += 0.3
 
-    const heightExtBottomStart = new THREE.Vector3(bounds.maxX * scale, bounds.minZ * scale, -bounds.maxY * scale)
-    const heightExtBottomEnd = new THREE.Vector3(heightX * scale, bounds.minZ * scale, -bounds.maxY * scale)
-    const heightExtTopStart = new THREE.Vector3(bounds.maxX * scale, bounds.maxZ * scale, -bounds.maxY * scale)
-    const heightExtTopEnd = new THREE.Vector3(heightX * scale, bounds.maxZ * scale, -bounds.maxY * scale)
+    const heightExtBottomStart = new THREE.Vector3(maxX * scale, minZ * scale, -maxY * scale)
+    const heightExtBottomEnd = new THREE.Vector3(heightX * scale, minZ * scale, -maxY * scale)
+    const heightExtTopStart = new THREE.Vector3(maxX * scale, maxZ * scale, -maxY * scale)
+    const heightExtTopEnd = new THREE.Vector3(heightX * scale, maxZ * scale, -maxY * scale)
 
     annotations.push(
       <Fragment key="dim-height">
@@ -342,9 +358,11 @@ function ScenePMIOverlays({
     )
   }
 
-  if (pmiState.skids && skidInfo) {
-    const anchor = new THREE.Vector3(centerX * scale, bounds.minZ * scale + 0.2, -(bounds.maxY - 4) * scale)
-    const labelPosition = new THREE.Vector3(centerX * scale, (bounds.minZ + 2.5) * scale, -(bounds.maxY + 8) * scale)
+  if (pmiState.skids && skidInfo && totalDimensions) {
+    const minZ = 0
+    const maxY = crateLength
+    const anchor = new THREE.Vector3(centerX * scale, minZ * scale + 0.2, -(maxY - 4) * scale)
+    const labelPosition = new THREE.Vector3(centerX * scale, (minZ + 2.5) * scale, -(maxY + 8) * scale)
     annotations.push(
       <Fragment key="callout-skids">
         <MeasurementLine start={anchor} end={labelPosition} />
@@ -359,9 +377,11 @@ function ScenePMIOverlays({
     )
   }
 
-  if (pmiState.cleats && cleatSummary) {
-    const anchor = new THREE.Vector3((bounds.minX + 4) * scale, (bounds.maxZ - 10) * scale, -centerY * scale)
-    const labelPosition = new THREE.Vector3((bounds.minX - 8) * scale, (bounds.maxZ - 6) * scale, -centerY * scale)
+  if (pmiState.cleats && cleatSummary && totalDimensions) {
+    const minX = -crateWidth / 2
+    const maxZ = crateHeight
+    const anchor = new THREE.Vector3((minX + 4) * scale, (maxZ - 10) * scale, -centerY * scale)
+    const labelPosition = new THREE.Vector3((minX - 8) * scale, (maxZ - 6) * scale, -centerY * scale)
     annotations.push(
       <Fragment key="callout-cleats">
         <MeasurementLine start={anchor} end={labelPosition} />
@@ -376,9 +396,11 @@ function ScenePMIOverlays({
     )
   }
 
-  if (pmiState.floor && floorInfo) {
-    const anchor = new THREE.Vector3(centerX * scale, bounds.minZ * scale + 0.1, -centerY * scale)
-    const labelPosition = new THREE.Vector3((bounds.maxX + 6) * scale, (bounds.minZ + 1.5) * scale, -centerY * scale)
+  if (pmiState.floor && floorInfo && totalDimensions) {
+    const minZ = 0
+    const maxX = crateWidth / 2
+    const anchor = new THREE.Vector3(centerX * scale, minZ * scale + 0.1, -centerY * scale)
+    const labelPosition = new THREE.Vector3((maxX + 6) * scale, (minZ + 1.5) * scale, -centerY * scale)
     annotations.push(
       <Fragment key="callout-floor">
         <MeasurementLine start={anchor} end={labelPosition} />
@@ -396,7 +418,7 @@ function ScenePMIOverlays({
   return (
     <>
       {pmiState.datumPlanes && (
-        <DatumPlanes bounds={bounds} scale={scale} distanceFactor={distanceFactor} />
+        <DatumPlanes bounds={bounds} scale={scale} distanceFactor={distanceFactor} totalDimensions={totalDimensions} />
       )}
       {annotations}
     </>
