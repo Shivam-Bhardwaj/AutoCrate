@@ -63,8 +63,8 @@ export class CleatCalculator {
     const isTop = panelName.includes('TOP')
 
     // Add perimeter cleats based on panel type
-    if (isFrontBack || isTop) {
-      // Front/Back/Top: Horizontal cleats run full length
+    if (isFrontBack) {
+      // Front/Back: Horizontal cleats run full length
       cleats.push(
         this.createPerimeterCleat(panelName, 'horizontal', 'bottom', 0, 0, panelWidth),
         this.createPerimeterCleat(panelName, 'horizontal', 'top', 0, panelHeight - this.CLEAT_WIDTH, panelWidth)
@@ -75,8 +75,8 @@ export class CleatCalculator {
         this.createPerimeterCleat(panelName, 'vertical', 'left', 0, this.CLEAT_WIDTH, panelHeight - (2 * this.CLEAT_WIDTH)),
         this.createPerimeterCleat(panelName, 'vertical', 'right', panelWidth - this.CLEAT_WIDTH, this.CLEAT_WIDTH, panelHeight - (2 * this.CLEAT_WIDTH))
       )
-    } else if (isSide) {
-      // Side panels: Vertical cleats run full length
+    } else if (isSide || isTop) {
+      // Side/Top panels: Vertical cleats run full length for strong 3-way corners
       cleats.push(
         this.createPerimeterCleat(panelName, 'vertical', 'left', 0, 0, panelHeight),
         this.createPerimeterCleat(panelName, 'vertical', 'right', panelWidth - this.CLEAT_WIDTH, 0, panelHeight)
