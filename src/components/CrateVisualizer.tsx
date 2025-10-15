@@ -1153,8 +1153,9 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
             />
           ))}
 
-          {sceneBounds && (
+          {sceneBounds && totalDimensions && (
             <ScenePMIOverlays
+              key={`pmi-${totalDimensions.overallWidth}-${totalDimensions.overallLength}-${totalDimensions.overallHeight}`}
               bounds={sceneBounds}
               totalDimensions={totalDimensions}
               skidInfo={skidInfo}
