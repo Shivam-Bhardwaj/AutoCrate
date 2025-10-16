@@ -83,10 +83,12 @@ export class PanelStopCalculator {
     const { edgeInset } = PANEL_STOP_STANDARDS.POSITIONING
 
     // Front panel dimensions
-    const panelWidth = product.width + 2 * clearances.side
     const panelHeight = product.height + clearances.top
     const panelThickness = materials.panelThickness
     const plywoodThickness = materials.plywoodThickness
+
+    // Internal space dimensions (where side panels meet front panel)
+    const internalWidth = product.width + 2 * clearances.side
 
     // Front panel outer surface position from nx-generator.ts line 804
     // panelOriginY = panelThickness - plywoodThickness
@@ -101,43 +103,43 @@ export class PanelStopCalculator {
 
     const stops: NXBox[] = []
 
-    // LEFT EDGE STOP (positioned on left edge of front panel)
+    // LEFT EDGE STOP - positioned at left internal boundary (where left side panel meets front)
     // Centered vertically along the panel height
     const leftStopCenterZ = groundClearance + panelHeight / 2
-    const leftStopX = -panelWidth / 2 + width / 2  // At left edge, width extends inward
+    const leftStopCenterX = -internalWidth / 2  // Left boundary of internal space
 
     stops.push({
       name: PANEL_STOP_STANDARDS.PART_NUMBERS.frontLeft,
       type: 'plywood',
       panelName: 'FRONT_PANEL',
       point1: {
-        x: leftStopX - width / 2,
+        x: leftStopCenterX - width / 2,  // 2" wide stop centered at boundary
         y: stopYPosition,
         z: leftStopCenterZ - stopLength / 2,
       },
       point2: {
-        x: leftStopX + width / 2,
+        x: leftStopCenterX + width / 2,
         y: stopYPosition + thickness,
         z: leftStopCenterZ + stopLength / 2,
       },
       color: '#DEB887', // Light plywood color
     })
 
-    // RIGHT EDGE STOP (positioned on right edge of front panel)
+    // RIGHT EDGE STOP - positioned at right internal boundary (where right side panel meets front)
     const rightStopCenterZ = groundClearance + panelHeight / 2
-    const rightStopX = panelWidth / 2 - width / 2  // At right edge, width extends inward
+    const rightStopCenterX = internalWidth / 2  // Right boundary of internal space
 
     stops.push({
       name: PANEL_STOP_STANDARDS.PART_NUMBERS.frontRight,
       type: 'plywood',
       panelName: 'FRONT_PANEL',
       point1: {
-        x: rightStopX - width / 2,
+        x: rightStopCenterX - width / 2,  // 2" wide stop centered at boundary
         y: stopYPosition,
         z: rightStopCenterZ - stopLength / 2,
       },
       point2: {
-        x: rightStopX + width / 2,
+        x: rightStopCenterX + width / 2,
         y: stopYPosition + thickness,
         z: rightStopCenterZ + stopLength / 2,
       },

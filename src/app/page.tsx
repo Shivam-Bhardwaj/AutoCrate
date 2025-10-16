@@ -389,7 +389,17 @@ export default function Home() {
       // Check component visibility
       if (box.type === 'skid' && !displayOptions.visibility.skids) return false
       if (box.type === 'floor' && !displayOptions.visibility.floorboards) return false
-      if (box.type === 'cleat' && !displayOptions.visibility.cleats) return false
+
+      // Cleats: respect both global cleat toggle AND their parent panel visibility
+      if (box.type === 'cleat') {
+        if (!displayOptions.visibility.cleats) return false
+        // Also hide cleats when their parent panel is hidden
+        if (box.panelName === 'FRONT_PANEL' && !displayOptions.visibility.frontPanel) return false
+        if (box.panelName === 'BACK_PANEL' && !displayOptions.visibility.backPanel) return false
+        if (box.panelName === 'LEFT_END_PANEL' && !displayOptions.visibility.leftPanel) return false
+        if (box.panelName === 'RIGHT_END_PANEL' && !displayOptions.visibility.rightPanel) return false
+        if (box.panelName === 'TOP_PANEL' && !displayOptions.visibility.topPanel) return false
+      }
 
       // Handle plywood pieces based on individual selection
       if (box.type === 'plywood') {

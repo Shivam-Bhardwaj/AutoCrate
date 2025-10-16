@@ -139,26 +139,26 @@ describe('PanelStopCalculator', () => {
       })
     })
 
-    it('should position left and right stops symmetrically', () => {
+    it('should position left and right stops at internal space boundaries', () => {
       const config = createTestConfig()
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      const panelWidth = config.product.width + 2 * config.clearances.side
+      const internalWidth = config.product.width + 2 * config.clearances.side
       const leftStop = layout.frontPanelStops[0]
       const rightStop = layout.frontPanelStops[1]
 
-      // Left stop should be at negative X
+      // Left stop centered at left internal boundary
       const leftCenterX = (leftStop.point1.x + leftStop.point2.x) / 2
       expect(leftCenterX).toBeLessThan(0)
-      expect(leftCenterX).toBeCloseTo(-panelWidth / 2 + PANEL_STOP_STANDARDS.MATERIAL.width / 2, 6)
+      expect(leftCenterX).toBeCloseTo(-internalWidth / 2, 6)
 
-      // Right stop should be at positive X
+      // Right stop centered at right internal boundary
       const rightCenterX = (rightStop.point1.x + rightStop.point2.x) / 2
       expect(rightCenterX).toBeGreaterThan(0)
-      expect(rightCenterX).toBeCloseTo(panelWidth / 2 - PANEL_STOP_STANDARDS.MATERIAL.width / 2, 6)
+      expect(rightCenterX).toBeCloseTo(internalWidth / 2, 6)
 
-      // Should be symmetric
+      // Should be symmetric about center
       expect(Math.abs(leftCenterX)).toBeCloseTo(Math.abs(rightCenterX), 6)
     })
   })
