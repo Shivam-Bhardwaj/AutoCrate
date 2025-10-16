@@ -34,26 +34,26 @@ const formatCleatTypes = (types: string[]) =>
 
 export function LumberCutList({ cutList }: LumberCutListProps) {
   return (
-    <div className="space-y-6 text-sm">
+    <div className="space-y-4 md:space-y-6 text-sm">
       <section>
-        <h2 className="text-base font-semibold text-gray-900 mb-3">Skids</h2>
-        <div className="overflow-hidden rounded-lg border border-gray-200">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50">
+        <h2 className="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 md:mb-3">Skids</h2>
+        <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+          <table className="w-full text-sm min-w-[500px]">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Material</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Cut Length</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Qty</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Notes</th>
+                <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Material</th>
+                <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Cut Length</th>
+                <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Qty</th>
+                <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Notes</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
               {cutList.skids.map((item, index) => (
-                <tr key={`skid-${index}`}>
-                  <td className="px-3 py-2">{item.material}</td>
-                  <td className="px-3 py-2">{formatInches(item.length)}</td>
-                  <td className="px-3 py-2">{item.count}</td>
-                  <td className="px-3 py-2 text-gray-500">{item.notes ?? '—'}</td>
+                <tr key={`skid-${index}`} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.material}</td>
+                  <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{formatInches(item.length)}</td>
+                  <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.count}</td>
+                  <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs text-gray-500 dark:text-gray-400">{item.notes ?? '—'}</td>
                 </tr>
               ))}
             </tbody>
@@ -62,24 +62,24 @@ export function LumberCutList({ cutList }: LumberCutListProps) {
       </section>
 
       <section>
-        <h2 className="text-base font-semibold text-gray-900 mb-3">Floorboards</h2>
-        <div className="overflow-hidden rounded-lg border border-gray-200">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50">
+        <h2 className="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 md:mb-3">Floorboards</h2>
+        <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+          <table className="w-full text-sm min-w-[500px]">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Material</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Cut Length</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Qty</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Notes</th>
+                <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Material</th>
+                <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Cut Length</th>
+                <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Qty</th>
+                <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Notes</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
               {cutList.floorboards.map((item, index) => (
-                <tr key={`floor-${index}`}>
-                  <td className="px-3 py-2">{item.material}</td>
-                  <td className="px-3 py-2">{formatInches(item.length)}</td>
-                  <td className="px-3 py-2">{item.count}</td>
-                  <td className="px-3 py-2 text-gray-500">{item.notes ?? '—'}</td>
+                <tr key={`floor-${index}`} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.material}</td>
+                  <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{formatInches(item.length)}</td>
+                  <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.count}</td>
+                  <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs text-gray-500 dark:text-gray-400">{item.notes ?? '—'}</td>
                 </tr>
               ))}
             </tbody>
@@ -88,35 +88,35 @@ export function LumberCutList({ cutList }: LumberCutListProps) {
       </section>
 
       <section>
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="text-base font-semibold text-gray-900">Cleats</h2>
-          <span className="text-xs text-gray-500">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-2">
+          <h2 className="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100">Cleats</h2>
+          <span className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">
             Total: {formatFeet(cutList.summary.cleatLinearFeet)} • Est. 1x4 boards: {cutList.summary.cleatBoardCount}
           </span>
         </div>
-        <p className="text-xs text-gray-500 mb-3">All cleats use 1x4 lumber (0.75" × 3.5"). Cut pieces per panel as listed below.</p>
-        <div className="space-y-4">
+        <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 mb-3">All cleats use 1x4 lumber (0.75" × 3.5"). Cut pieces per panel as listed below.</p>
+        <div className="space-y-3 md:space-y-4">
           {cutList.cleats.map(panel => (
-            <div key={panel.panel} className="overflow-hidden rounded-lg border border-gray-200">
-              <div className="bg-gray-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-600">
+            <div key={panel.panel} className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="bg-gray-50 dark:bg-gray-800 px-2 md:px-3 py-2 text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
                 {formatPanelName(panel.panel)}
               </div>
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
+              <table className="w-full text-sm min-w-[500px]">
+                <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Orientation</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Cut Length</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Qty</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Cleat Type</th>
+                    <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Orientation</th>
+                    <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Cut Length</th>
+                    <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Qty</th>
+                    <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Cleat Type</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
                   {panel.items.map((item, index) => (
-                    <tr key={`${panel.panel}-${index}`}>
-                      <td className="px-3 py-2">{item.orientation === 'horizontal' ? 'Horizontal' : 'Vertical'}</td>
-                      <td className="px-3 py-2">{formatInches(item.length)}</td>
-                      <td className="px-3 py-2">{item.count}</td>
-                      <td className="px-3 py-2 text-gray-500">{formatCleatTypes(item.types)}</td>
+                    <tr key={`${panel.panel}-${index}`} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.orientation === 'horizontal' ? 'Horizontal' : 'Vertical'}</td>
+                      <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{formatInches(item.length)}</td>
+                      <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.count}</td>
+                      <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs text-gray-500 dark:text-gray-400">{formatCleatTypes(item.types)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -127,35 +127,35 @@ export function LumberCutList({ cutList }: LumberCutListProps) {
       </section>
 
       <section>
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="text-base font-semibold text-gray-900">Plywood Panels</h2>
-          <span className="text-xs text-gray-500">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-2">
+          <h2 className="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100">Plywood Panels</h2>
+          <span className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">
             Total sheets: {cutList.summary.totalPlywoodSheets} • Thickness: {formatInches(cutList.summary.plywoodThickness)}
           </span>
         </div>
-        <p className="text-xs text-gray-500 mb-3">Cut plywood sections for each panel. Dimensions are shown as width × height.</p>
-        <div className="space-y-4">
+        <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 mb-3">Cut plywood sections for each panel. Dimensions are shown as width × height.</p>
+        <div className="space-y-3 md:space-y-4">
           {cutList.plywood.map(panel => (
-            <div key={panel.panel} className="overflow-hidden rounded-lg border border-gray-200">
-              <div className="bg-gray-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-600">
+            <div key={panel.panel} className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="bg-gray-50 dark:bg-gray-800 px-2 md:px-3 py-2 text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
                 {formatPanelName(panel.panel)}
               </div>
-              <div className="px-3 py-2 text-xs text-gray-500 border-b border-gray-200">
+              <div className="px-2 md:px-3 py-2 text-[10px] md:text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                 Sheets required: {panel.sheetCount}{' '}
                 {panel.isRotated ? '• Rotated 90° orientation' : '• Standard orientation'}
               </div>
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
+              <table className="w-full text-sm min-w-[300px]">
+                <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Piece Size</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Qty</th>
+                    <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Piece Size</th>
+                    <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Qty</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
                   {panel.pieces.map((piece, index) => (
-                    <tr key={`${panel.panel}-piece-${index}`}>
-                      <td className="px-3 py-2">{formatInches(piece.width)} × {formatInches(piece.height)}</td>
-                      <td className="px-3 py-2">{piece.count}</td>
+                    <tr key={`${panel.panel}-piece-${index}`} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{formatInches(piece.width)} × {formatInches(piece.height)}</td>
+                      <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{piece.count}</td>
                     </tr>
                   ))}
                 </tbody>
