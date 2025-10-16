@@ -11,7 +11,13 @@ describe('API /api/nx-export', () => {
   }
 
   const createRequest = (body: Record<string, unknown>) => ({
-    json: () => Promise.resolve(body)
+    json: () => Promise.resolve(body),
+    headers: new Headers({
+      'x-forwarded-for': '127.0.0.1'
+    }),
+    nextUrl: {
+      pathname: '/api/nx-export'
+    }
   })
 
   it('generates NX export metadata and content', async () => {
@@ -33,14 +39,22 @@ describe('API /api/nx-export', () => {
   })
 
   it('returns capabilities overview on GET without exportId', async () => {
-    const response = (await GET({ url: 'http://localhost/api/nx-export' } as any)) as NextResponse
+    const response = (await GET({
+      url: 'http://localhost/api/nx-export',
+      headers: new Headers({ 'x-forwarded-for': '127.0.0.1' }),
+      nextUrl: { pathname: '/api/nx-export' }
+    } as any)) as NextResponse
     expect(response.status).toBe(200)
     const json = await response.json()
     expect(json.supportedFormats).toContain('step')
   })
 
   it('returns raw export content when exportId provided', async () => {
-    const response = (await GET({ url: 'http://localhost/api/nx-export?exportId=123' } as any)) as NextResponse
+    const response = (await GET({
+      url: 'http://localhost/api/nx-export?exportId=123',
+      headers: new Headers({ 'x-forwarded-for': '127.0.0.1' }),
+      nextUrl: { pathname: '/api/nx-export' }
+    } as any)) as NextResponse
     expect(response.status).toBe(200)
     const text = await response.json()
     expect(String(text)).toContain('Export ID: 123')

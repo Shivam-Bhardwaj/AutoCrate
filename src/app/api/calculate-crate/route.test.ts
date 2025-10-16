@@ -10,7 +10,13 @@ describe('API /api/calculate-crate', () => {
   }
 
   const createRequest = (body: Record<string, unknown>) => ({
-    json: () => Promise.resolve(body)
+    json: () => Promise.resolve(body),
+    headers: new Headers({
+      'x-forwarded-for': '127.0.0.1'
+    }),
+    nextUrl: {
+      pathname: '/api/calculate-crate'
+    }
   })
 
   it('returns crate calculations and truncated NX payload', async () => {
@@ -28,11 +34,14 @@ describe('API /api/calculate-crate', () => {
     const response = (await POST(createRequest({ productWeight: 100 }) as any)) as NextResponse
     expect(response.status).toBe(400)
     const json = await response.json()
-    expect(json.error).toContain('Missing required fields')
+    expect(json.error).toContain('Validation failed')
   })
 
   it('exposes service health on GET', async () => {
-    const response = (await GET({} as any)) as NextResponse
+    const response = (await GET({
+      headers: new Headers({ 'x-forwarded-for': '127.0.0.1' }),
+      nextUrl: { pathname: '/api/calculate-crate' }
+    } as any)) as NextResponse
     expect(response.status).toBe(200)
     const json = await response.json()
     expect(json.status).toBe('operational')
