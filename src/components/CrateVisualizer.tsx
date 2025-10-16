@@ -7,6 +7,7 @@ import { Suspense, useState, useRef, useEffect, useMemo, useCallback, Fragment, 
 import * as THREE from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { MarkingVisualizer } from './MarkingVisualizer'
+import { UI_CONSTANTS } from '@/lib/crate-constants'
 
 type ComponentVisibility = {
   skids: boolean
@@ -154,12 +155,12 @@ function DatumPlanes({ bounds, scale, distanceFactor, totalDimensions }: {
       {/* Datum A - Bottom plane (XY plane at Z=0) */}
       <mesh position={[centerX * scale, 0, -centerY * scale]} rotation={[0, 0, 0]}>
         <planeGeometry args={[planeSize * scale, planeSize * scale]} />
-        <meshBasicMaterial color="#ff0000" opacity={0.1} transparent side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#ff0000" opacity={UI_CONSTANTS.VISUALIZATION.DATUM_PLANE_OPACITY} transparent side={THREE.DoubleSide} />
       </mesh>
       <Html
         position={[
           (centerX + labelOffset) * scale,
-          (labelOffset * 0.1) * scale,
+          (labelOffset * UI_CONSTANTS.VISUALIZATION.LABEL_OFFSET_FACTOR) * scale,
           -(centerY + labelOffset) * scale
         ]}
         center
@@ -172,7 +173,7 @@ function DatumPlanes({ bounds, scale, distanceFactor, totalDimensions }: {
       {/* Datum B - Front plane (XZ plane at Y=0) */}
       <mesh position={[centerX * scale, centerZ * scale, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[planeSize * scale, planeSize * scale]} />
-        <meshBasicMaterial color="#00ff00" opacity={0.1} transparent side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#00ff00" opacity={UI_CONSTANTS.VISUALIZATION.DATUM_PLANE_OPACITY} transparent side={THREE.DoubleSide} />
       </mesh>
       <Html
         position={[
@@ -190,7 +191,7 @@ function DatumPlanes({ bounds, scale, distanceFactor, totalDimensions }: {
       {/* Datum C - Left plane (YZ plane at X=0) */}
       <mesh position={[centerX * scale, centerZ * scale, -centerY * scale]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[planeSize * scale, planeSize * scale]} />
-        <meshBasicMaterial color="#0000ff" opacity={0.1} transparent side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#0000ff" opacity={UI_CONSTANTS.VISUALIZATION.DATUM_PLANE_OPACITY} transparent side={THREE.DoubleSide} />
       </mesh>
       <Html
         position={[
@@ -543,7 +544,7 @@ function HighlightedFace({ plane, color }: { plane: SelectedPlane; color: string
     >
       <meshBasicMaterial
         color={color}
-        opacity={0.5}
+        opacity={UI_CONSTANTS.VISUALIZATION.HIGHLIGHT_PLANE_OPACITY}
         transparent
         side={THREE.DoubleSide}
       />
@@ -1051,13 +1052,13 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
   }, [])
 
   return (
-    <div className="w-full h-full bg-gray-100 rounded-lg relative">
+    <div className="w-full h-full bg-gray-50 dark:bg-gray-100 rounded-lg relative">
       <Canvas
         camera={{
           position: [15, 10, 15],
-          fov: 45,
-          near: 0.1,
-          far: 1000
+          fov: UI_CONSTANTS.CAMERA.FOV,
+          near: UI_CONSTANTS.CAMERA.NEAR_PLANE,
+          far: UI_CONSTANTS.CAMERA.FAR_PLANE
         }}
       >
         <Suspense fallback={null}>
@@ -1068,9 +1069,9 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
             onTargetChange={setControlTarget}
           />
           {/* Lighting */}
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
-          <pointLight position={[-10, -10, -10]} intensity={0.5} />
+          <ambientLight intensity={UI_CONSTANTS.LIGHTING.AMBIENT_INTENSITY} />
+          <directionalLight position={[10, 10, 5]} intensity={UI_CONSTANTS.LIGHTING.DIRECTIONAL_INTENSITY} castShadow />
+          <pointLight position={[-10, -10, -10]} intensity={UI_CONSTANTS.LIGHTING.POINT_LIGHT_INTENSITY} />
 
           {/* Removed grid - was distracting from the crate visualization */}
 

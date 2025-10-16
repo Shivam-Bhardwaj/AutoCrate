@@ -17,7 +17,7 @@ import {
   ValidationError,
   sanitizeObject
 } from '../input-validation'
-import { rateLimit } from '../rate-limiter'
+import { rateLimit, clearRateLimitStore } from '../rate-limiter'
 import { NextRequest, NextResponse } from 'next/server'
 
 describe('Input Validation Security', () => {
@@ -248,8 +248,9 @@ describe('Input Validation Security', () => {
       }
 
       const result = sanitizeObject(input)
-      expect(result.__proto__).toBeUndefined()
-      expect(result.constructor).toBeUndefined()
+      // Check that dangerous keys were not copied as own properties
+      expect(Object.hasOwn(result, '__proto__')).toBe(false)
+      expect(Object.hasOwn(result, 'constructor')).toBe(false)
       expect(result.normal).toBe('value')
     })
 
@@ -280,6 +281,9 @@ describe('Rate Limiter Security', () => {
   let mockHandler: (req: NextRequest) => Promise<NextResponse>
 
   beforeEach(() => {
+    // Clear rate limit store before each test
+    clearRateLimitStore()
+
     // Create mock request
     mockRequest = {
       nextUrl: { pathname: '/api/test' },
@@ -293,7 +297,7 @@ describe('Rate Limiter Security', () => {
       Promise.resolve(NextResponse.json({ success: true }))
     ) as any
 
-    // Clear rate limit store
+    // Clear mock calls
     jest.clearAllMocks()
   })
 
@@ -452,7 +456,8 @@ describe('Authentication Security', () => {
     const hash = await bcrypt.hash(password, 10)
 
     expect(hash).not.toBe(password)
-    expect(hash.startsWith('$2a$')).toBe(true)
+    // bcryptjs can generate $2a$ or $2b$ format hashes
+    expect(hash.startsWith('$2a$') || hash.startsWith('$2b$')).toBe(true)
     expect(await bcrypt.compare(password, hash)).toBe(true)
     expect(await bcrypt.compare('WrongPassword', hash)).toBe(false)
   })

@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'AutoCrate - NX Expression Generator',
   description: 'Generate NX expressions for shipping crate design',
+  other: {
+    'color-scheme': 'light dark',
+  },
 }
 
 export const viewport = {
@@ -16,6 +19,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
+  colorScheme: 'light dark',
 }
 
 export default function RootLayout({
