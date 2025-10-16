@@ -503,10 +503,10 @@ export default function Home() {
               Download STEP
             </button>
             <a
-              href="/console"
+              href="/issues"
               className="bg-orange-600 text-white px-3 py-1 text-sm rounded hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600 transition-colors inline-block"
             >
-              Console
+              Issues
             </a>
             <a
               href="/docs"
@@ -552,11 +552,11 @@ export default function Home() {
                     Download STEP
                   </button>
                   <a
-                    href="/console"
+                    href="/issues"
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Console
+                    Issues
                   </a>
                   <a
                     href="/docs"
@@ -845,8 +845,8 @@ export default function Home() {
             WebkitOverflowScrolling: 'touch',
           }}
         >
-          {/* Tabs */}
-          <div className="border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+          {/* Tabs - Hidden on mobile for cleaner view */}
+          <div className="hidden lg:block border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
             <nav
               className="flex overflow-x-auto scrollbar-thin"
               style={{
@@ -907,85 +907,107 @@ export default function Home() {
             </nav>
           </div>
 
-          {/* Tab Content */}
+          {/* Tab Content - On mobile, always show 3D view for clean interface */}
           <div
             className="flex-1 p-2 md:p-3 lg:p-4 min-h-0 flex flex-col overflow-hidden"
             style={{
               WebkitOverflowScrolling: 'touch',
             }}
           >
-            {activeTab === 'visualization' && (
-              <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                <div className="flex-1 min-h-0 overflow-hidden">
-                  <VisualizationErrorBoundary>
-                    <CrateVisualizer
-                      boxes={getFilteredBoxes()}
-                      generator={generator}
-                      showMarkings={displayOptions.showMarkings}
-                      visibility={displayOptions.visibility}
-                      onToggleVisibility={toggleComponentVisibility}
-                      onToggleMarkings={() => setDisplayOptions(prev => ({ ...prev, showMarkings: !prev.showMarkings }))}
-                      pmiVisibility={pmiVisibility}
-                      onTogglePmi={togglePmiLayer}
-                      partNumbers={partNumbers}
-                    />
-                  </VisualizationErrorBoundary>
+            {/* Mobile: Always show 3D view regardless of activeTab */}
+            <div className="lg:hidden flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div className="flex-1 min-h-0 overflow-hidden" data-testid="crate-visualizer">
+                <VisualizationErrorBoundary>
+                  <CrateVisualizer
+                    boxes={getFilteredBoxes()}
+                    generator={generator}
+                    showMarkings={displayOptions.showMarkings}
+                    visibility={displayOptions.visibility}
+                    onToggleVisibility={toggleComponentVisibility}
+                    onToggleMarkings={() => setDisplayOptions(prev => ({ ...prev, showMarkings: !prev.showMarkings }))}
+                    pmiVisibility={pmiVisibility}
+                    onTogglePmi={togglePmiLayer}
+                    partNumbers={partNumbers}
+                  />
+                </VisualizationErrorBoundary>
+              </div>
+            </div>
+
+            {/* Desktop: Show selected tab content */}
+            <div className="hidden lg:block flex-1">
+              {activeTab === 'visualization' && (
+                <div className="flex-1 flex flex-col min-h-0 overflow-hidden h-full">
+                  <div className="flex-1 min-h-0 overflow-hidden" data-testid="crate-visualizer">
+                    <VisualizationErrorBoundary>
+                      <CrateVisualizer
+                        boxes={getFilteredBoxes()}
+                        generator={generator}
+                        showMarkings={displayOptions.showMarkings}
+                        visibility={displayOptions.visibility}
+                        onToggleVisibility={toggleComponentVisibility}
+                        onToggleMarkings={() => setDisplayOptions(prev => ({ ...prev, showMarkings: !prev.showMarkings }))}
+                        pmiVisibility={pmiVisibility}
+                        onTogglePmi={togglePmiLayer}
+                        partNumbers={partNumbers}
+                      />
+                    </VisualizationErrorBoundary>
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                    Rotate: Left drag | Pan: Right drag | Zoom: Scroll
+                  </p>
                 </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-                  Rotate: Left drag | Pan: Right drag | Zoom: Scroll
-                </p>
-              </div>
-            )}
+              )}
 
-            {activeTab === 'expressions' && (
-              <div className="flex-1 min-h-0 overflow-auto rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                <pre className="text-[10px] sm:text-xs text-gray-800 dark:text-gray-100 p-2 md:p-3 font-mono whitespace-pre-wrap break-words overflow-x-auto">
-                  {generator.exportNXExpressions()}
-                </pre>
-              </div>
-            )}
+              {activeTab === 'expressions' && (
+                <div className="flex-1 min-h-0 overflow-auto rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                  <pre className="text-[10px] sm:text-xs text-gray-800 dark:text-gray-100 p-2 md:p-3 font-mono whitespace-pre-wrap break-words overflow-x-auto">
+                    {generator.exportNXExpressions()}
+                  </pre>
+                </div>
+              )}
 
-            {activeTab === 'bom' && (
-              <div className="flex-1 min-h-0 overflow-auto border border-gray-200 dark:border-gray-700 rounded">
-                <div className="overflow-x-auto">
-                  <table data-testid="bom-table" className="w-full text-sm min-w-[600px]">
-                    <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10">
-                      <tr>
-                        <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Item</th>
-                        <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Size</th>
-                        <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty</th>
-                        <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Material</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
-                      {generator.generateBOM().map((item, index) => (
-                        <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                          <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.item}</td>
-                          <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.size}</td>
-                          <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.quantity}</td>
-                          <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.material}</td>
+              {activeTab === 'bom' && (
+                <div className="flex-1 min-h-0 overflow-auto border border-gray-200 dark:border-gray-700 rounded">
+                  <div className="overflow-x-auto">
+                    <table data-testid="bom-table" className="w-full text-sm min-w-[600px]">
+                      <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10">
+                        <tr>
+                          <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Item</th>
+                          <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Size</th>
+                          <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty</th>
+                          <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Material</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
+                        {generator.generateBOM().map((item, index) => (
+                          <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.item}</td>
+                            <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.size}</td>
+                            <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.quantity}</td>
+                            <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.material}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {activeTab === 'lumber' && (
-              <div className="flex-1 min-h-0 overflow-auto">
-                <LumberCutList cutList={lumberCutList} />
-              </div>
-            )}
+              {activeTab === 'lumber' && (
+                <div className="flex-1 min-h-0 overflow-auto">
+                  <LumberCutList cutList={lumberCutList} />
+                </div>
+              )}
 
-            {activeTab === 'plywood' && (
-              <div className="flex-1 min-h-0 overflow-auto">
-                <PlywoodPieceSelector
-                  boxes={generator.getBoxes()}
-                  onPieceToggle={handlePlywoodPieceToggle}
-                />
-              </div>
-            )}
+              {activeTab === 'plywood' && (
+                <div className="flex-1 min-h-0 overflow-auto">
+                  <PlywoodPieceSelector
+                    boxes={generator.getBoxes()}
+                    onPieceToggle={handlePlywoodPieceToggle}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
