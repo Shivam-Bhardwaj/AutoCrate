@@ -98,15 +98,15 @@ export class PanelStopCalculator {
     const groundClearance = this.config.geometry?.sidePanelGroundClearance ??
                            GEOMETRY_STANDARDS.SIDE_PANEL_GROUND_CLEARANCE
 
-    // Stops are positioned inset from the panel edge, on the interior side
-    const stopYPosition = frontPanelOuterY + edgeInset  // Inset distance from panel outer surface
+    // Stops are positioned flush against the front panel inner surface
+    const stopYPosition = frontPanelOuterY  // Flush against panel, no gap
 
     const stops: NXBox[] = []
 
-    // LEFT EDGE STOP - positioned at left internal boundary (where left side panel meets front)
+    // LEFT EDGE STOP - positioned just inside left internal boundary (to avoid side panel interference)
     // Centered vertically along the panel height
     const leftStopCenterZ = groundClearance + panelHeight / 2
-    const leftStopCenterX = -internalWidth / 2  // Left boundary of internal space
+    const leftStopCenterX = -internalWidth / 2 + width / 2  // Moved inward by half stop width
 
     stops.push({
       name: PANEL_STOP_STANDARDS.PART_NUMBERS.frontLeft,
@@ -125,9 +125,9 @@ export class PanelStopCalculator {
       color: '#DEB887', // Light plywood color
     })
 
-    // RIGHT EDGE STOP - positioned at right internal boundary (where right side panel meets front)
+    // RIGHT EDGE STOP - positioned just inside right internal boundary (to avoid side panel interference)
     const rightStopCenterZ = groundClearance + panelHeight / 2
-    const rightStopCenterX = internalWidth / 2  // Right boundary of internal space
+    const rightStopCenterX = internalWidth / 2 - width / 2  // Moved inward by half stop width
 
     stops.push({
       name: PANEL_STOP_STANDARDS.PART_NUMBERS.frontRight,
@@ -170,8 +170,9 @@ export class PanelStopCalculator {
     // Top panel is at Z = groundClearance + product.height + clearances.top
     const topPanelZ = groundClearance + product.height + clearances.top
 
-    // Stop is positioned inset from front edge, on the interior (downward facing) side
-    const stopZPosition = topPanelZ - edgeInset
+    // Stop is positioned flush against the bottom surface of the top panel
+    const topPanelBottom = topPanelZ - plywoodThickness
+    const stopZPosition = topPanelBottom  // Flush against top panel bottom, no gap
 
     // Centered horizontally along the panel width
     const stopCenterX = 0  // Centered on X-axis

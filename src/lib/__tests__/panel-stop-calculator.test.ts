@@ -96,13 +96,12 @@ describe('PanelStopCalculator', () => {
       })
     })
 
-    it('should position stops at correct inset from panel edge', () => {
+    it('should position stops flush against front panel', () => {
       const config = createTestConfig()
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
       const { thickness, width } = PANEL_STOP_STANDARDS.MATERIAL
-      const { edgeInset } = PANEL_STOP_STANDARDS.POSITIONING
 
       // Verify stops are positioned with correct thickness
       layout.frontPanelStops.forEach(stop => {
@@ -111,7 +110,7 @@ describe('PanelStopCalculator', () => {
 
         // Front panel outer surface from nx-generator.ts: panelOriginY = panelThickness - plywoodThickness
         const frontPanelOuterY = config.materials.panelThickness - config.materials.plywoodThickness
-        const stopYPosition = frontPanelOuterY + edgeInset  // Inset distance from panel outer surface
+        const stopYPosition = frontPanelOuterY  // Flush against panel, no gap
         const expectedStopY1 = stopYPosition
         const expectedStopY2 = stopYPosition + thickness
 
@@ -139,24 +138,25 @@ describe('PanelStopCalculator', () => {
       })
     })
 
-    it('should position left and right stops at internal space boundaries', () => {
+    it('should position left and right stops inward from boundaries to avoid side panel interference', () => {
       const config = createTestConfig()
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
       const internalWidth = config.product.width + 2 * config.clearances.side
+      const stopWidth = PANEL_STOP_STANDARDS.MATERIAL.width
       const leftStop = layout.frontPanelStops[0]
       const rightStop = layout.frontPanelStops[1]
 
-      // Left stop centered at left internal boundary
+      // Left stop moved inward by half stop width to avoid side panel interference
       const leftCenterX = (leftStop.point1.x + leftStop.point2.x) / 2
       expect(leftCenterX).toBeLessThan(0)
-      expect(leftCenterX).toBeCloseTo(-internalWidth / 2, 6)
+      expect(leftCenterX).toBeCloseTo(-internalWidth / 2 + stopWidth / 2, 6)
 
-      // Right stop centered at right internal boundary
+      // Right stop moved inward by half stop width to avoid side panel interference
       const rightCenterX = (rightStop.point1.x + rightStop.point2.x) / 2
       expect(rightCenterX).toBeGreaterThan(0)
-      expect(rightCenterX).toBeCloseTo(internalWidth / 2, 6)
+      expect(rightCenterX).toBeCloseTo(internalWidth / 2 - stopWidth / 2, 6)
 
       // Should be symmetric about center
       expect(Math.abs(leftCenterX)).toBeCloseTo(Math.abs(rightCenterX), 6)
@@ -183,7 +183,7 @@ describe('PanelStopCalculator', () => {
       expect(layout.topPanelStop.color).toBe('#DEB887')
     })
 
-    it('should position stop at correct inset from top panel edge', () => {
+    it('should position stop flush against bottom of top panel', () => {
       const config = createTestConfig()
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
@@ -196,11 +196,13 @@ describe('PanelStopCalculator', () => {
       const stopThickness = Math.abs(stop.point2.z - stop.point1.z)
       expect(stopThickness).toBeCloseTo(thickness, 6)
 
-      // Z position should be near the top of the crate
+      // Stop should be flush against bottom surface of top panel
       const groundClearance = 0.25 // default
-      const approximateTopZ = groundClearance + config.product.height + config.clearances.top
-      expect(stop.point2.z).toBeGreaterThan(approximateTopZ - 5) // within 5 inches of top
-      expect(stop.point2.z).toBeLessThanOrEqual(approximateTopZ)
+      const topPanelZ = groundClearance + config.product.height + config.clearances.top
+      const topPanelBottom = topPanelZ - config.materials.plywoodThickness
+
+      expect(stop.point2.z).toBeCloseTo(topPanelBottom, 6)
+      expect(stop.point1.z).toBeCloseTo(topPanelBottom - thickness, 6)
     })
 
     it('should center stop horizontally along panel width', () => {
