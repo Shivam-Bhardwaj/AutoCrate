@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Registry Schema",
+  "description": "Schema for AutoCrate LLM Agent Registry",
+  "type": "object",
+  "required": ["version", "agents"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the agent registry"
+    },
+    "agents": {
+      "type": "object",
+      "description": "Collection of specialized agents",
+      "patternProperties": {
+        "^[a-z0-9-]+$": {
+          "type": "object",
+          "required": ["name", "description", "triggers", "contextFiles", "tokenBudget", "specialization"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Human-readable agent name"
+            },
+            "description": {
+              "type": "string",
+              "description": "What this agent does"
+            },
+            "triggers": {
+              "type": "array",
+              "description": "Keywords or labels that activate this agent",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "contextFiles": {
+              "type": "array",
+              "description": "Files to load for this agent's context",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "tokenBudget": {
+              "type": "integer",
+              "description": "Maximum tokens for this agent",
+              "minimum": 1000,
+              "maximum": 150000
+            },
+            "specialization": {
+              "type": "string",
+              "description": "Primary area of expertise"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
