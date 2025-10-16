@@ -51,7 +51,8 @@ describe('Home Page', () => {
   it('applies scenario presets and updates fields', async () => {
     const user = userEvent.setup()
     renderHome()
-    await user.click(await screen.findByTestId('scenario-lightweight-electronics'))
+    const scenarioButtons = await screen.findAllByTestId('scenario-lightweight-electronics')
+    await user.click(scenarioButtons[0]) // Click the first one (desktop sidebar)
     expect(screen.getByTestId('scenario-status')).toHaveTextContent('Lightweight Electronics')
     expect(screen.getByTestId('input-weight')).toHaveValue('350')
   })
