@@ -45,18 +45,18 @@ export const PlywoodPieceSelector: React.FC<PlywoodPieceSelectorProps> = ({ boxe
   const selectedPanelPieces = panelGroups.get(selectedPanel) || []
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 md:space-y-4">
       {/* Panel Selector */}
       <div>
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+        <label className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
           Select Panel
         </label>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           {Array.from(panelGroups.keys()).map(panelName => (
             <button
               key={panelName}
               onClick={() => setSelectedPanel(panelName)}
-              className={`px-3 py-2 text-xs rounded transition-colors ${
+              className={`px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs rounded transition-colors ${
                 selectedPanel === panelName
                   ? 'bg-blue-500 text-white'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -70,7 +70,7 @@ export const PlywoodPieceSelector: React.FC<PlywoodPieceSelectorProps> = ({ boxe
 
       {/* Plywood Pieces for Selected Panel */}
       <div>
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+        <label className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
           Plywood Pieces - {getPanelDisplayName(selectedPanel)}
         </label>
         <div className="space-y-2">
@@ -81,14 +81,14 @@ export const PlywoodPieceSelector: React.FC<PlywoodPieceSelectorProps> = ({ boxe
             return (
               <div
                 key={piece.name}
-                className={`p-3 rounded border transition-all ${
+                className={`p-2 md:p-3 rounded border transition-all ${
                   isActive
                     ? 'border-green-400 bg-green-50 dark:bg-green-900/20'
-                    : 'border-gray-300 bg-gray-50 dark:bg-gray-800'
+                    : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800'
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="flex items-center space-x-2 md:space-x-3">
                     <input
                       type="checkbox"
                       checked={isVisible && isActive}
@@ -97,10 +97,10 @@ export const PlywoodPieceSelector: React.FC<PlywoodPieceSelectorProps> = ({ boxe
                       className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
                     />
                     <div>
-                      <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <div className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">
                         Piece {(piece.plywoodPieceIndex || 0) + 1}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                      <div className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">
                         {piece.metadata}
                       </div>
                     </div>
@@ -108,7 +108,7 @@ export const PlywoodPieceSelector: React.FC<PlywoodPieceSelectorProps> = ({ boxe
 
                   {/* 7 Parameters Display */}
                   {isActive && (
-                    <div className="text-xs text-gray-600 dark:text-gray-400 grid grid-cols-7 gap-1">
+                    <div className="text-[9px] md:text-xs text-gray-600 dark:text-gray-400 grid grid-cols-7 gap-0.5 md:gap-1 overflow-x-auto">
                       <div className="text-center">
                         <div className="font-semibold">X</div>
                         <div>{piece.point1.x.toFixed(1)}</div>
@@ -144,10 +144,10 @@ export const PlywoodPieceSelector: React.FC<PlywoodPieceSelectorProps> = ({ boxe
                 {/* Color indicator */}
                 <div className="mt-2 flex items-center space-x-2">
                   <div
-                    className="w-4 h-4 rounded"
+                    className="w-3 h-3 md:w-4 md:h-4 rounded"
                     style={{ backgroundColor: piece.color }}
                   />
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                  <span className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">
                     {isActive ? 'Active' : 'Suppressed'}
                   </span>
                 </div>
@@ -158,7 +158,7 @@ export const PlywoodPieceSelector: React.FC<PlywoodPieceSelectorProps> = ({ boxe
       </div>
 
       {/* Summary Statistics */}
-      <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded text-xs">
+      <div className="mt-3 md:mt-4 p-2 md:p-3 bg-blue-50 dark:bg-blue-900/20 rounded text-[10px] md:text-xs">
         <div className="font-semibold mb-1">Panel Summary:</div>
         <div className="space-y-1 text-gray-600 dark:text-gray-400">
           <div>Total pieces: {selectedPanelPieces.length}</div>

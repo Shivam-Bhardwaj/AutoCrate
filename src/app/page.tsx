@@ -509,9 +509,9 @@ export default function Home() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="flex-1 flex gap-2 p-2 min-h-0">
+      <div className="flex-1 flex flex-col lg:flex-row gap-2 p-2 min-h-0">
         {/* Left Panel - Inputs */}
-        <aside className={`${showMobileInputs ? 'block' : 'hidden'} lg:flex lg:flex-col w-72 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none p-3 flex-shrink-0 transition-colors overflow-y-auto lg:h-[calc(100vh-160px)] lg:max-h-[calc(100vh-160px)]`}>
+        <aside className={`${showMobileInputs ? 'flex' : 'hidden'} lg:flex flex-col w-full lg:w-72 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none p-2 md:p-3 flex-shrink-0 transition-colors overflow-y-auto max-h-[70vh] lg:max-h-[calc(100vh-7rem)]`}>
           <div className="flex-1 flex flex-col gap-3">
             <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-2">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Part Numbers</h3>
@@ -768,10 +768,10 @@ export default function Home() {
         </aside>
 
         {/* Right Panel - Visualization/Output */}
-        <div className={`${showMobileInputs ? 'hidden' : 'block'} lg:block flex-1 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none flex flex-col min-h-0 transition-colors`}>
+        <div className={`${showMobileInputs ? 'hidden' : 'flex'} lg:flex flex-1 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none flex-col min-h-0 transition-colors`}>
           {/* Tabs */}
-          <div className="border-b border-gray-200">
-            <nav className="flex">
+          <div className="border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <nav className="flex overflow-x-auto scrollbar-thin">
               <button
                 onClick={() => setActiveTab('visualization')}
                 className={`px-4 py-2 text-sm font-medium ${
@@ -826,10 +826,10 @@ export default function Home() {
           </div>
 
           {/* Tab Content */}
-          <div className="flex-1 p-4 min-h-0 flex flex-col">
+          <div className="flex-1 p-2 md:p-3 lg:p-4 min-h-0 flex flex-col overflow-hidden">
             {activeTab === 'visualization' && (
-              <div className="flex-1 flex flex-col min-h-0">
-                <div className="flex-1 min-h-0">
+              <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                <div className="flex-1 min-h-0 overflow-hidden">
                   <VisualizationErrorBoundary>
                     <CrateVisualizer
                       boxes={getFilteredBoxes()}
@@ -852,45 +852,47 @@ export default function Home() {
 
             {activeTab === 'expressions' && (
               <div className="flex-1 min-h-0 overflow-auto rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                <pre className="text-xs text-gray-800 dark:text-gray-100 p-3 font-mono whitespace-pre">
+                <pre className="text-[10px] sm:text-xs text-gray-800 dark:text-gray-100 p-2 md:p-3 font-mono whitespace-pre-wrap break-words overflow-x-auto">
                   {generator.exportNXExpressions()}
                 </pre>
               </div>
             )}
 
             {activeTab === 'bom' && (
-              <div className="flex-1 overflow-auto">
-                <table data-testid="bom-table" className="w-full text-sm">
-                  <thead className="bg-gray-50 sticky top-0">
-                    <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Material</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {generator.generateBOM().map((item, index) => (
-                      <tr key={index}>
-                        <td className="px-3 py-2 text-xs">{item.item}</td>
-                        <td className="px-3 py-2 text-xs">{item.size}</td>
-                        <td className="px-3 py-2 text-xs">{item.quantity}</td>
-                        <td className="px-3 py-2 text-xs">{item.material}</td>
+              <div className="flex-1 min-h-0 overflow-auto border border-gray-200 dark:border-gray-700 rounded">
+                <div className="overflow-x-auto">
+                  <table data-testid="bom-table" className="w-full text-sm min-w-[600px]">
+                    <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10">
+                      <tr>
+                        <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Item</th>
+                        <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Size</th>
+                        <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty</th>
+                        <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Material</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
+                      {generator.generateBOM().map((item, index) => (
+                        <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.item}</td>
+                          <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.size}</td>
+                          <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.quantity}</td>
+                          <td className="px-2 md:px-3 py-2 text-[10px] md:text-xs">{item.material}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
             {activeTab === 'lumber' && (
-              <div className="flex-1 overflow-auto">
+              <div className="flex-1 min-h-0 overflow-auto">
                 <LumberCutList cutList={lumberCutList} />
               </div>
             )}
 
             {activeTab === 'plywood' && (
-              <div className="flex-1 overflow-auto">
+              <div className="flex-1 min-h-0 overflow-auto">
                 <PlywoodPieceSelector
                   boxes={generator.getBoxes()}
                   onPieceToggle={handlePlywoodPieceToggle}
