@@ -226,19 +226,23 @@ describe('PanelStopCalculator', () => {
       expect(stop.point2.x).toBeCloseTo(stopLength / 2, 6)
     })
 
-    it('should position stop at front edge of top panel', () => {
+    it('should position stop behind front panel to avoid interference', () => {
       const config = createTestConfig()
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      // Front edge of top panel from nx-generator.ts line 825: panelOriginY = 0
-      const frontEdgeY = 0
+      // Stop should be positioned behind the front panel inner surface
+      // Front panel inner surface is at Y = panelThickness
+      const frontPanelInnerY = config.materials.panelThickness
       const stopWidth = PANEL_STOP_STANDARDS.MATERIAL.width
-      const expectedCenterY = frontEdgeY + stopWidth / 2
+      const expectedCenterY = frontPanelInnerY + stopWidth / 2
 
       const stop = layout.topPanelStop
       const centerY = (stop.point1.y + stop.point2.y) / 2
       expect(centerY).toBeCloseTo(expectedCenterY, 6)
+
+      // Verify stop starts after front panel to avoid interference
+      expect(stop.point1.y).toBeGreaterThanOrEqual(frontPanelInnerY)
     })
   })
 

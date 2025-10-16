@@ -200,6 +200,8 @@ export const PROJECT_IDENTIFIERS = {
 export const GEOMETRY_STANDARDS = {
   /** Default ground clearance for side panels (inches) */
   SIDE_PANEL_GROUND_CLEARANCE: 0.25,
+  /** Side panel edge clearance from floorboard edges (inches) */
+  SIDE_PANEL_EDGE_CLEARANCE: 0.0625, // 1/16 inch
   /** Total panel thickness including cleats (inches) */
   DEFAULT_PANEL_THICKNESS: 1.0,
   /** Default clearances if not specified */
