@@ -122,6 +122,12 @@ Work with React Three Fiber 3D visualization.
 
 **Use when**: Debugging or enhancing 3D rendering
 
+#### `/geometry`
+
+Work with crate geometry, dimensional calculations, and component positioning.
+
+**Use when**: Issues with dimensions, clearances, or component placement
+
 #### `/lumber`
 
 Add or modify lumber sizes in the crate design.
