@@ -1,0 +1,230 @@
+{
+  "$schema": "./schema.json",
+  "version": "1.0.0",
+  "agents": {
+    "geometry": {
+      "name": "Geometry Agent",
+      "description": "Handles geometric calculations, coordinate systems, and dimensional logic",
+      "triggers": ["geometry", "coordinates", "dimensions", "measurements"],
+      "contextFiles": [
+        "src/lib/nx-generator.ts",
+        "src/lib/crate-constants.ts",
+        "docs/START_HERE.md#architecture-patterns"
+      ],
+      "tokenBudget": 30000,
+      "specialization": "Geometric calculations and coordinate transformations"
+    },
+    "3d-viz": {
+      "name": "3D Visualization Agent",
+      "description": "Manages 3D rendering, React Three Fiber components, and visual representation",
+      "triggers": ["3d", "visualization", "three.js", "r3f", "render"],
+      "contextFiles": [
+        "src/components/CrateVisualizer.tsx",
+        "src/components/KlimpModel.tsx",
+        "src/components/MarkingVisualizer.tsx"
+      ],
+      "tokenBudget": 40000,
+      "specialization": "3D rendering and visual components"
+    },
+    "cad-export": {
+      "name": "CAD Export Agent",
+      "description": "Handles STEP file generation, NX expressions, and CAD integration",
+      "triggers": ["step", "export", "cad", "nx", "iso 10303"],
+      "contextFiles": [
+        "src/lib/step-generator.ts",
+        "src/lib/nx-generator.ts",
+        "src/lib/klimp-step-integration.ts",
+        "src/lib/lag-step-integration.ts"
+      ],
+      "tokenBudget": 50000,
+      "specialization": "CAD file generation and export"
+    },
+    "ui": {
+      "name": "UI/UX Agent",
+      "description": "Frontend components, state management, user interactions",
+      "triggers": ["ui", "frontend", "react", "component", "state"],
+      "contextFiles": [
+        "src/app/page.tsx",
+        "src/components/",
+        "tailwind.config.js"
+      ],
+      "tokenBudget": 40000,
+      "specialization": "User interface and interactions"
+    },
+    "testing": {
+      "name": "Testing Agent",
+      "description": "Unit tests, E2E tests, test coverage, and quality assurance",
+      "triggers": ["test", "jest", "playwright", "e2e", "coverage"],
+      "contextFiles": [
+        "src/lib/__tests__/",
+        "src/components/__tests__/",
+        "tests/e2e/",
+        "jest.config.js",
+        "playwright.config.ts",
+        "docs/START_HERE.md#testing-requirements"
+      ],
+      "tokenBudget": 35000,
+      "specialization": "Testing and quality assurance"
+    },
+    "nx": {
+      "name": "NX Expression Agent",
+      "description": "NX CAD expression generation and parametric modeling",
+      "triggers": ["nx expression", "parametric", "nx cad"],
+      "contextFiles": [
+        "src/lib/nx-generator.ts",
+        "src/lib/crate-constants.ts"
+      ],
+      "tokenBudget": 25000,
+      "specialization": "NX expression generation"
+    },
+    "step": {
+      "name": "STEP File Agent",
+      "description": "STEP file format, ISO 10303-21, assembly hierarchy",
+      "triggers": ["step file", "iso 10303", "assembly"],
+      "contextFiles": [
+        "src/lib/step-generator.ts",
+        "src/lib/__tests__/step-generator.test.ts"
+      ],
+      "tokenBudget": 40000,
+      "specialization": "STEP file generation"
+    },
+    "lumber": {
+      "name": "Lumber & Materials Agent",
+      "description": "Lumber sizes, materials, BOM, cut lists",
+      "triggers": ["lumber", "material", "bom", "cut list", "wood"],
+      "contextFiles": [
+        "src/lib/crate-constants.ts",
+        "src/lib/nx-generator.ts",
+        "src/components/LumberCutList.tsx"
+      ],
+      "tokenBudget": 25000,
+      "specialization": "Materials and lumber calculations"
+    },
+    "hardware": {
+      "name": "Hardware Agent",
+      "description": "Klimp fasteners, lag screws, cleats, hardware placement",
+      "triggers": ["hardware", "klimp", "fastener", "cleat", "screw"],
+      "contextFiles": [
+        "src/lib/klimp-calculator.ts",
+        "src/lib/cleat-calculator.ts",
+        "src/lib/klimp-step-integration.ts",
+        "src/lib/lag-step-integration.ts"
+      ],
+      "tokenBudget": 30000,
+      "specialization": "Hardware placement and calculations"
+    },
+    "scenario": {
+      "name": "Scenario Agent",
+      "description": "Predefined configurations, scenario management",
+      "triggers": ["scenario", "preset", "configuration"],
+      "contextFiles": [
+        "src/components/ScenarioSelector.tsx",
+        "src/lib/nx-generator.ts"
+      ],
+      "tokenBudget": 20000,
+      "specialization": "Scenario and configuration management"
+    },
+    "constants": {
+      "name": "Constants Agent",
+      "description": "Crate constants, hardcoded values, specifications",
+      "triggers": ["constants", "specifications", "hardcoded"],
+      "contextFiles": [
+        "src/lib/crate-constants.ts"
+      ],
+      "tokenBudget": 15000,
+      "specialization": "Constants and specifications"
+    },
+    "deployment": {
+      "name": "Deployment Agent",
+      "description": "Build, deployment, CI/CD, production configuration",
+      "triggers": ["deploy", "build", "ci", "production", "vercel"],
+      "contextFiles": [
+        "package.json",
+        "next.config.js",
+        "vercel.json",
+        ".github/workflows/",
+        "scripts/deploy.sh"
+      ],
+      "tokenBudget": 25000,
+      "specialization": "Deployment and build processes"
+    },
+    "review": {
+      "name": "Code Review Agent",
+      "description": "Code quality, best practices, architectural review",
+      "triggers": ["review", "quality", "refactor", "architecture"],
+      "contextFiles": [
+        "docs/START_HERE.md",
+        "MODULES.md",
+        "PROJECT_STATUS.md"
+      ],
+      "tokenBudget": 40000,
+      "specialization": "Code review and quality assurance"
+    },
+    "issue": {
+      "name": "Issue Triage Agent",
+      "description": "GitHub issue analysis, requirement extraction, task breakdown",
+      "triggers": ["issue", "bug report", "feature request"],
+      "contextFiles": [
+        "docs/START_HERE.md#development-workflow",
+        "COMMIT_GUIDELINES.md"
+      ],
+      "tokenBudget": 20000,
+      "specialization": "Issue analysis and triage"
+    },
+    "pr": {
+      "name": "Pull Request Agent",
+      "description": "PR creation, description generation, change summary",
+      "triggers": ["pull request", "pr", "merge"],
+      "contextFiles": [
+        "COMMIT_GUIDELINES.md",
+        "docs/START_HERE.md#development-workflow"
+      ],
+      "tokenBudget": 25000,
+      "specialization": "Pull request management"
+    },
+    "quick-fix": {
+      "name": "Quick Fix Agent",
+      "description": "Rapid bug fixes, small improvements, hotfixes",
+      "triggers": ["quick fix", "hotfix", "small bug"],
+      "contextFiles": [
+        "docs/START_HERE.md#common-tasks"
+      ],
+      "tokenBudget": 20000,
+      "specialization": "Quick fixes and small improvements"
+    },
+    "feature": {
+      "name": "Feature Development Agent",
+      "description": "New feature implementation, comprehensive changes",
+      "triggers": ["feature", "enhancement", "new functionality"],
+      "contextFiles": [
+        "docs/START_HERE.md",
+        "MODULES.md",
+        "PROJECT_STATUS.md"
+      ],
+      "tokenBudget": 80000,
+      "specialization": "Feature development"
+    },
+    "verify": {
+      "name": "Verification Agent",
+      "description": "Test execution, build verification, quality checks",
+      "triggers": ["verify", "validate", "check"],
+      "contextFiles": [
+        "docs/START_HERE.md#testing-requirements"
+      ],
+      "tokenBudget": 20000,
+      "specialization": "Verification and validation"
+    },
+    "build": {
+      "name": "Build Agent",
+      "description": "Build process, bundling, optimization",
+      "triggers": ["build", "compile", "bundle"],
+      "contextFiles": [
+        "next.config.js",
+        "package.json",
+        "tsconfig.json"
+      ],
+      "tokenBudget": 25000,
+      "specialization": "Build and compilation"
+    }
+  }
+}
