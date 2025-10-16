@@ -101,16 +101,23 @@ describe('PanelStopCalculator', () => {
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      const { thickness } = PANEL_STOP_STANDARDS.MATERIAL
+      const { thickness, width } = PANEL_STOP_STANDARDS.MATERIAL
+      const { edgeInset } = PANEL_STOP_STANDARDS.POSITIONING
 
       // Verify stops are positioned with correct thickness
       layout.frontPanelStops.forEach(stop => {
         const stopThickness = Math.abs(stop.point2.y - stop.point1.y)
         expect(stopThickness).toBeCloseTo(thickness, 6)
 
-        // Y position should be positive (away from front panel, inward)
-        expect(stop.point1.y).toBeGreaterThan(-30) // reasonable range for this config
-        expect(stop.point2.y).toBeGreaterThan(stop.point1.y)
+        // Front panel is at Y = -(internalLength + 1), stop is positioned inward with edgeInset
+        const internalLength = config.product.length + 2 * config.clearances.end
+        const frontPanelY = -(internalLength + 1)
+        const stopYPosition = frontPanelY + 1 + edgeInset  // +1 offset, then inset distance
+        const expectedStopY1 = stopYPosition
+        const expectedStopY2 = stopYPosition + thickness
+
+        expect(stop.point1.y).toBeCloseTo(expectedStopY1, 6)
+        expect(stop.point2.y).toBeCloseTo(expectedStopY2, 6)
       })
     })
 

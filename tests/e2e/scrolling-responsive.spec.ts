@@ -184,7 +184,7 @@ test.describe('Scrolling - Mobile Phone (iPhone Safari simulation)', () => {
 
     // Check if webkit overflow scrolling is applied
     const hasWebkitScrolling = await page.evaluate(() => {
-      const style = window.getComputedStyle(document.body)
+      const style = window.getComputedStyle(document.body) as any
       return style.webkitOverflowScrolling === 'touch' ||
              document.querySelector('[style*="WebkitOverflowScrolling"]') !== null
     })

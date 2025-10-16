@@ -86,16 +86,18 @@ export class PanelStopCalculator {
     const panelWidth = product.width + 2 * clearances.side
     const panelHeight = product.height + clearances.top
     const panelThickness = materials.panelThickness
+    const internalLength = product.length + 2 * clearances.end
 
-    // Front panel is at Y = -(product.length/2 + clearances.end + panelThickness)
-    const frontPanelY = -(product.length / 2 + clearances.end + panelThickness)
+    // Front panel is at symmetric position to back panel
+    // Back panel is at Y = internalLength + 1, so front panel is at Y = -(internalLength + 1)
+    const frontPanelY = -(internalLength + 1)
 
     // Ground clearance for panels
     const groundClearance = this.config.geometry?.sidePanelGroundClearance ??
                            GEOMETRY_STANDARDS.SIDE_PANEL_GROUND_CLEARANCE
 
     // Stops are positioned inset from the panel edge, on the interior side
-    const stopYPosition = frontPanelY + panelThickness + edgeInset
+    const stopYPosition = frontPanelY + 1 + edgeInset  // +1 accounts for panel positioning offset
 
     const stops: NXBox[] = []
 
