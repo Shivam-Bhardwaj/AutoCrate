@@ -221,10 +221,11 @@ export class PanelStopCalculator {
     // Centered horizontally along the panel width
     const stopCenterX = 0  // Centered on X-axis
 
-    // Front edge of top panel from nx-generator.ts line 825: panelOriginY = 0
-    // The front edge of the top panel is at Y = 0 (center of coordinate system)
-    const frontEdgeY = 0
-    const stopYPosition = frontEdgeY + width / 2  // Width extends inward from front edge
+    // Position stop behind front panel to avoid interference
+    // Front panel inner surface is at Y = panelThickness
+    // Stop should be flush against this surface, extending inward
+    const frontPanelInnerY = panelThickness
+    const stopYPosition = frontPanelInnerY + width / 2  // Center positioned inward from front panel
 
     return {
       name: PANEL_STOP_STANDARDS.PART_NUMBERS.topFront,
