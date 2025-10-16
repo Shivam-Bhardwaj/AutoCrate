@@ -493,10 +493,10 @@ export default function Home() {
               Download STEP
             </button>
             <a
-              href="/console"
+              href="/issues"
               className="bg-orange-600 text-white px-2 lg:px-3 py-1 text-xs lg:text-sm rounded hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600 transition-colors inline-block"
             >
-              Console
+              Issues
             </a>
             <a
               href="/docs"
