@@ -154,7 +154,7 @@ function DatumPlanes({ bounds, scale, distanceFactor, totalDimensions }: {
       {/* Datum A - Bottom plane (XY plane at Z=0) */}
       <mesh position={[centerX * scale, 0, -centerY * scale]} rotation={[0, 0, 0]}>
         <planeGeometry args={[planeSize * scale, planeSize * scale]} />
-        <meshBasicMaterial color="#ff0000" opacity={0.1} transparent side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#ff0000" opacity={0.15} transparent side={THREE.DoubleSide} />
       </mesh>
       <Html
         position={[
@@ -172,7 +172,7 @@ function DatumPlanes({ bounds, scale, distanceFactor, totalDimensions }: {
       {/* Datum B - Front plane (XZ plane at Y=0) */}
       <mesh position={[centerX * scale, centerZ * scale, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[planeSize * scale, planeSize * scale]} />
-        <meshBasicMaterial color="#00ff00" opacity={0.1} transparent side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#00ff00" opacity={0.15} transparent side={THREE.DoubleSide} />
       </mesh>
       <Html
         position={[
@@ -190,7 +190,7 @@ function DatumPlanes({ bounds, scale, distanceFactor, totalDimensions }: {
       {/* Datum C - Left plane (YZ plane at X=0) */}
       <mesh position={[centerX * scale, centerZ * scale, -centerY * scale]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[planeSize * scale, planeSize * scale]} />
-        <meshBasicMaterial color="#0000ff" opacity={0.1} transparent side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#0000ff" opacity={0.15} transparent side={THREE.DoubleSide} />
       </mesh>
       <Html
         position={[
@@ -1051,7 +1051,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
   }, [])
 
   return (
-    <div className="w-full h-full bg-gray-100 rounded-lg relative">
+    <div className="w-full h-full bg-gray-50 dark:bg-gray-100 rounded-lg relative">
       <Canvas
         camera={{
           position: [15, 10, 15],
