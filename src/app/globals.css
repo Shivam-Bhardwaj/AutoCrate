@@ -6,6 +6,13 @@
 html {
   height: 100%;
   overflow: hidden;
+  /* Prevent Chrome force dark mode from overriding our styles */
+  color-scheme: light;
+}
+
+/* Tell browser we handle dark mode ourselves */
+html.dark {
+  color-scheme: dark;
 }
 
 body {
