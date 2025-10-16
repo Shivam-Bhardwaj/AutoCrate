@@ -41,11 +41,25 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
 
-    /* Run a chromium-backed mobile viewport to validate navigation */
+    /* Mobile devices for scrolling tests */
     {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
-    }
+    },
+    {
+      name: 'Mobile Safari',
+      use: { ...devices['iPhone 12'] },
+    },
+    {
+      name: 'Mobile Safari Small',
+      use: { ...devices['iPhone SE'] },
+    },
+
+    /* Tablet devices */
+    {
+      name: 'iPad',
+      use: { ...devices['iPad Pro'] },
+    },
   ],
 
   /* Run your local dev server before starting the tests */
