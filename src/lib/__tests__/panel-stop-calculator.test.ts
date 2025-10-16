@@ -109,10 +109,9 @@ describe('PanelStopCalculator', () => {
         const stopThickness = Math.abs(stop.point2.y - stop.point1.y)
         expect(stopThickness).toBeCloseTo(thickness, 6)
 
-        // Front panel is at Y = -(internalLength + 1), stop is positioned inward with edgeInset
-        const internalLength = config.product.length + 2 * config.clearances.end
-        const frontPanelY = -(internalLength + 1)
-        const stopYPosition = frontPanelY + 1 + edgeInset  // +1 offset, then inset distance
+        // Front panel outer surface from nx-generator.ts: panelOriginY = panelThickness - plywoodThickness
+        const frontPanelOuterY = config.materials.panelThickness - config.materials.plywoodThickness
+        const stopYPosition = frontPanelOuterY + edgeInset  // Inset distance from panel outer surface
         const expectedStopY1 = stopYPosition
         const expectedStopY2 = stopYPosition + thickness
 
@@ -227,8 +226,8 @@ describe('PanelStopCalculator', () => {
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      const panelLength = config.product.length + 2 * config.clearances.end
-      const frontEdgeY = -(panelLength / 2)
+      // Front edge of top panel from nx-generator.ts line 825: panelOriginY = 0
+      const frontEdgeY = 0
       const stopWidth = PANEL_STOP_STANDARDS.MATERIAL.width
       const expectedCenterY = frontEdgeY + stopWidth / 2
 

@@ -86,18 +86,18 @@ export class PanelStopCalculator {
     const panelWidth = product.width + 2 * clearances.side
     const panelHeight = product.height + clearances.top
     const panelThickness = materials.panelThickness
-    const internalLength = product.length + 2 * clearances.end
+    const plywoodThickness = materials.plywoodThickness
 
-    // Front panel is at symmetric position to back panel
-    // Back panel is at Y = internalLength + 1, so front panel is at Y = -(internalLength + 1)
-    const frontPanelY = -(internalLength + 1)
+    // Front panel outer surface position from nx-generator.ts line 804
+    // panelOriginY = panelThickness - plywoodThickness
+    const frontPanelOuterY = panelThickness - plywoodThickness
 
     // Ground clearance for panels
     const groundClearance = this.config.geometry?.sidePanelGroundClearance ??
                            GEOMETRY_STANDARDS.SIDE_PANEL_GROUND_CLEARANCE
 
     // Stops are positioned inset from the panel edge, on the interior side
-    const stopYPosition = frontPanelY + 1 + edgeInset  // +1 accounts for panel positioning offset
+    const stopYPosition = frontPanelOuterY + edgeInset  // Inset distance from panel outer surface
 
     const stops: NXBox[] = []
 
@@ -158,7 +158,8 @@ export class PanelStopCalculator {
 
     // Top panel dimensions
     const panelWidth = product.width + 2 * clearances.side
-    const panelLength = product.length + 2 * clearances.end
+    const panelThickness = materials.panelThickness
+    const plywoodThickness = materials.plywoodThickness
 
     // Ground clearance for panels
     const groundClearance = this.config.geometry?.sidePanelGroundClearance ??
@@ -173,8 +174,9 @@ export class PanelStopCalculator {
     // Centered horizontally along the panel width
     const stopCenterX = 0  // Centered on X-axis
 
-    // Front edge of top panel (Y position)
-    const frontEdgeY = -(panelLength / 2)
+    // Front edge of top panel from nx-generator.ts line 825: panelOriginY = 0
+    // The front edge of the top panel is at Y = 0 (center of coordinate system)
+    const frontEdgeY = 0
     const stopYPosition = frontEdgeY + width / 2  // Width extends inward from front edge
 
     return {
