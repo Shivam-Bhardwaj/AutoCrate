@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { ThemeToggle } from '@/components/ThemeToggle'
 
 interface GitHubIssue {
@@ -113,7 +114,7 @@ export default function IssuesPage() {
     if (isAuthenticated && (githubToken || sessionStorage.getItem('github_token'))) {
       loadIssues()
     }
-  }, [isAuthenticated, loadIssues])
+  }, [isAuthenticated, githubToken, loadIssues])
 
   const createIssue = async () => {
     const token = githubToken || sessionStorage.getItem('github_token')
@@ -278,7 +279,7 @@ export default function IssuesPage() {
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <a href="/" className="text-blue-600 dark:text-blue-400 hover:underline">← Back</a>
+              <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">← Back</Link>
               <h1 className="text-xl font-bold">GitHub Issues Manager</h1>
             </div>
             <div className="flex items-center gap-2">
