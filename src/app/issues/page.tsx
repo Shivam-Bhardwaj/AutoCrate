@@ -20,6 +20,12 @@ interface GitHubIssue {
   }
 }
 
+// Rate limiting interface
+interface RateLimitData {
+  count: number
+  resetTime: number
+}
+
 export default function IssuesPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
@@ -32,6 +38,50 @@ export default function IssuesPage() {
   const [editingIssue, setEditingIssue] = useState({ title: '', body: '' })
   const [githubToken, setGithubToken] = useState('')
   const [showTokenInput, setShowTokenInput] = useState(false)
+  const [isUsingLocalStorage, setIsUsingLocalStorage] = useState(false)
+
+  // Rate limiting check
+  const checkRateLimit = (): boolean => {
+    const rateLimitKey = 'issues_rate_limit'
+    const now = Date.now()
+    const storedData = sessionStorage.getItem(rateLimitKey)
+
+    let rateLimit: RateLimitData = storedData
+      ? JSON.parse(storedData)
+      : { count: 0, resetTime: now + 60000 }
+
+    // Reset counter if a minute has passed
+    if (now > rateLimit.resetTime) {
+      rateLimit = { count: 0, resetTime: now + 60000 }
+    }
+
+    // Check if limit exceeded
+    if (rateLimit.count >= 10) {
+      const secondsLeft = Math.ceil((rateLimit.resetTime - now) / 1000)
+      setError(`Rate limit exceeded. Please wait ${secondsLeft} seconds before creating more issues.`)
+      return false
+    }
+
+    // Increment counter
+    rateLimit.count++
+    sessionStorage.setItem(rateLimitKey, JSON.stringify(rateLimit))
+    return true
+  }
+
+  // Load local issues from sessionStorage
+  const loadLocalIssues = () => {
+    const localIssues = sessionStorage.getItem('local_issues')
+    if (localIssues) {
+      setIssues(JSON.parse(localIssues))
+    }
+    setIsUsingLocalStorage(true)
+  }
+
+  // Save issues to local storage
+  const saveLocalIssues = (updatedIssues: GitHubIssue[]) => {
+    sessionStorage.setItem('local_issues', JSON.stringify(updatedIssues))
+    setIssues(updatedIssues)
+  }
 
   // Check if already authenticated
   useEffect(() => {
@@ -41,6 +91,9 @@ export default function IssuesPage() {
       setIsAuthenticated(true)
       if (savedToken) {
         setGithubToken(savedToken)
+      } else {
+        // Load local issues if no token
+        loadLocalIssues()
       }
     }
   }, [])
@@ -52,6 +105,10 @@ export default function IssuesPage() {
       sessionStorage.setItem('issues_authenticated', 'true')
       setPassword('')
       setError(null)
+      // Load local issues if no token is set
+      if (!githubToken && !sessionStorage.getItem('github_token')) {
+        loadLocalIssues()
+      }
     } else {
       setError('Invalid password')
     }
@@ -61,14 +118,18 @@ export default function IssuesPage() {
     setIsAuthenticated(false)
     sessionStorage.removeItem('issues_authenticated')
     sessionStorage.removeItem('github_token')
+    sessionStorage.removeItem('local_issues')
+    sessionStorage.removeItem('issues_rate_limit')
     setGithubToken('')
     setIssues([])
+    setIsUsingLocalStorage(false)
   }
 
   const saveGithubToken = () => {
     if (githubToken.trim()) {
       sessionStorage.setItem('github_token', githubToken)
       setShowTokenInput(false)
+      setIsUsingLocalStorage(false)
       loadIssues()
     }
   }
@@ -78,6 +139,13 @@ export default function IssuesPage() {
     setError(null)
 
     const token = githubToken || sessionStorage.getItem('github_token')
+
+    // If no token, use local storage
+    if (!token) {
+      setLoading(false)
+      loadLocalIssues()
+      return
+    }
 
     try {
       const headers: HeadersInit = {
@@ -94,36 +162,98 @@ export default function IssuesPage() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          throw new Error('Invalid GitHub token. Please update your token.')
+          // Invalid token - switch to local storage
+          sessionStorage.removeItem('github_token')
+          setGithubToken('')
+          loadLocalIssues()
+          setError('Invalid GitHub token. Switched to local storage mode.')
+          return
         } else if (response.status === 403) {
-          throw new Error('API rate limit exceeded. Please add a GitHub token.')
+          // Rate limit - switch to local storage
+          loadLocalIssues()
+          setError('GitHub API rate limit exceeded. Switched to local storage mode.')
+          return
         }
         throw new Error(`Failed to fetch issues: ${response.statusText}`)
       }
 
       const data = await response.json()
       setIssues(data)
+      setIsUsingLocalStorage(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load issues')
+      // On any error, switch to local storage
+      loadLocalIssues()
+      setError(`Failed to connect to GitHub. Using local storage. (${err instanceof Error ? err.message : 'Unknown error'})`)
     } finally {
       setLoading(false)
     }
   }, [githubToken])
 
   useEffect(() => {
-    if (isAuthenticated && (githubToken || sessionStorage.getItem('github_token'))) {
-      loadIssues()
+    if (isAuthenticated) {
+      if (githubToken || sessionStorage.getItem('github_token')) {
+        loadIssues()
+      } else {
+        // Load local issues if no token
+        loadLocalIssues()
+      }
     }
   }, [isAuthenticated, githubToken, loadIssues])
 
   const createIssue = async () => {
-    const token = githubToken || sessionStorage.getItem('github_token')
-    if (!token) {
-      setError('GitHub token required to create issues')
-      setShowTokenInput(true)
+    // Check rate limit first
+    if (!checkRateLimit()) {
       return
     }
 
+    const token = githubToken || sessionStorage.getItem('github_token')
+
+    // If no token, create issue locally
+    if (!token) {
+      setLoading(true)
+      setError(null)
+
+      try {
+        const currentIssues = issues || []
+        const nextNumber = currentIssues.length > 0
+          ? Math.max(...currentIssues.map(i => i.number)) + 1
+          : 1
+
+        const newLocalIssue: GitHubIssue = {
+          id: Date.now(),
+          number: nextNumber,
+          title: newIssue.title,
+          body: newIssue.body,
+          state: 'open',
+          labels: newIssue.labels
+            ? newIssue.labels.split(',').map(l => ({
+                name: l.trim(),
+                color: '0366d6'
+              }))
+            : [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          html_url: '#',
+          user: {
+            login: 'Keelyn',
+            avatar_url: 'https://github.com/identicons/keelyn.png'
+          }
+        }
+
+        const updatedIssues = [newLocalIssue, ...currentIssues]
+        saveLocalIssues(updatedIssues)
+        setNewIssue({ title: '', body: '', labels: '' })
+        setError(null)
+        alert('Issue created successfully (local storage)!')
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to create local issue')
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
+
+    // Try to create on GitHub
     setLoading(true)
     setError(null)
 
@@ -143,12 +273,20 @@ export default function IssuesPage() {
       })
 
       if (!response.ok) {
+        // If GitHub fails, fall back to local storage
+        if (response.status === 401 || response.status === 403) {
+          sessionStorage.removeItem('github_token')
+          setGithubToken('')
+          // Recursively call to create locally
+          await createIssue()
+          return
+        }
         throw new Error(`Failed to create issue: ${response.statusText}`)
       }
 
       setNewIssue({ title: '', body: '', labels: '' })
       await loadIssues()
-      alert('Issue created successfully!')
+      alert('Issue created successfully on GitHub!')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create issue')
     } finally {
@@ -160,12 +298,36 @@ export default function IssuesPage() {
     if (!selectedIssue) return
 
     const token = githubToken || sessionStorage.getItem('github_token')
+
+    // If no token, update locally
     if (!token) {
-      setError('GitHub token required to update issues')
-      setShowTokenInput(true)
+      setLoading(true)
+      setError(null)
+
+      try {
+        const updatedIssues = issues.map(issue =>
+          issue.id === selectedIssue.id
+            ? {
+                ...issue,
+                title: editingIssue.title,
+                body: editingIssue.body,
+                updated_at: new Date().toISOString()
+              }
+            : issue
+        )
+        saveLocalIssues(updatedIssues)
+        setEditMode(false)
+        setSelectedIssue(null)
+        alert('Issue updated successfully (local storage)!')
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to update local issue')
+      } finally {
+        setLoading(false)
+      }
       return
     }
 
+    // Try to update on GitHub
     setLoading(true)
     setError(null)
 
@@ -184,13 +346,20 @@ export default function IssuesPage() {
       })
 
       if (!response.ok) {
+        // If GitHub fails, fall back to local storage
+        if (response.status === 401 || response.status === 403) {
+          sessionStorage.removeItem('github_token')
+          setGithubToken('')
+          await updateIssue()
+          return
+        }
         throw new Error(`Failed to update issue: ${response.statusText}`)
       }
 
       setEditMode(false)
       setSelectedIssue(null)
       await loadIssues()
-      alert('Issue updated successfully!')
+      alert('Issue updated successfully on GitHub!')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update issue')
     } finally {
@@ -200,12 +369,29 @@ export default function IssuesPage() {
 
   const closeIssue = async (issueNumber: number) => {
     const token = githubToken || sessionStorage.getItem('github_token')
+
+    // If no token, close locally
     if (!token) {
-      setError('GitHub token required to close issues')
-      setShowTokenInput(true)
+      setLoading(true)
+      setError(null)
+
+      try {
+        const updatedIssues = issues.map(issue =>
+          issue.number === issueNumber
+            ? { ...issue, state: 'closed' as const, updated_at: new Date().toISOString() }
+            : issue
+        )
+        saveLocalIssues(updatedIssues)
+        alert('Issue closed successfully (local storage)!')
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to close local issue')
+      } finally {
+        setLoading(false)
+      }
       return
     }
 
+    // Try to close on GitHub
     setLoading(true)
     setError(null)
 
@@ -223,11 +409,18 @@ export default function IssuesPage() {
       })
 
       if (!response.ok) {
+        // If GitHub fails, fall back to local storage
+        if (response.status === 401 || response.status === 403) {
+          sessionStorage.removeItem('github_token')
+          setGithubToken('')
+          await closeIssue(issueNumber)
+          return
+        }
         throw new Error(`Failed to close issue: ${response.statusText}`)
       }
 
       await loadIssues()
-      alert('Issue closed successfully!')
+      alert('Issue closed successfully on GitHub!')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to close issue')
     } finally {
@@ -295,13 +488,13 @@ export default function IssuesPage() {
         </div>
       </div>
 
-      {/* GitHub Token Setup */}
-      {(showTokenInput || !githubToken && !sessionStorage.getItem('github_token')) && (
+      {/* GitHub Token Setup (Optional) */}
+      {showTokenInput && (
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-            <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">GitHub Token Required</h3>
+            <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">GitHub Token (Optional)</h3>
             <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-3">
-              To create or edit issues, you need to provide a GitHub personal access token with repo scope.
+              Add a GitHub token to sync issues with the repository. Without a token, issues are stored locally.
             </p>
             <div className="flex gap-2">
               <input
@@ -322,6 +515,28 @@ export default function IssuesPage() {
                 className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Local Storage Indicator */}
+      {isUsingLocalStorage && !showTokenInput && (
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-semibold text-blue-800 dark:text-blue-200">Local Storage Mode</h3>
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  Issues are stored locally in this browser session. Rate limit: 10 issues per minute.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowTokenInput(true)}
+                className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              >
+                Add GitHub Token
               </button>
             </div>
           </div>
@@ -515,9 +730,10 @@ export default function IssuesPage() {
           <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1 list-disc list-inside">
             <li>Click on any issue in the left panel to view details</li>
             <li>Use the Edit button to modify existing issues</li>
-            <li>Create new issues using the form on the right</li>
-            <li>Your GitHub token is saved in this session only</li>
-            <li>For security, the token will be cleared when you logout</li>
+            <li>Create new issues using the form on the right (max 10 per minute)</li>
+            <li>GitHub token is optional - without it, issues are stored locally</li>
+            <li>Add a GitHub token to sync with the actual repository</li>
+            <li>All data is cleared when you logout for security</li>
           </ul>
         </div>
       </div>
