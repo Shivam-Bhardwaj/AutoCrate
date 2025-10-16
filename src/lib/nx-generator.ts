@@ -7,6 +7,7 @@ import { CleatCalculator, PanelCleatLayout, type Cleat } from './cleat-calculato
 import { KlimpCalculator, KlimpLayout, CleatInfo } from './klimp-calculator'
 import { KlimpSTEPIntegration, KlimpInstance } from './klimp-step-integration'
 import { LagSTEPIntegration } from './lag-step-integration'
+import { PanelStopCalculator, PanelStopLayout } from './panel-stop-calculator'
 import {
   PLYWOOD_STANDARDS,
   LUMBER_DIMENSIONS,
@@ -152,6 +153,7 @@ export class NXGenerator {
   private panelCleatLayouts: PanelCleatLayout[] = []
   private klimpLayouts: KlimpLayout[] = []
   private klimpInstances: KlimpInstance[] = []
+  private panelStopLayout: PanelStopLayout | null = null
   private lagScrewCount = 0
 
   constructor(private config: CrateConfig) {
@@ -1073,6 +1075,9 @@ export class NXGenerator {
     // Generate Klimp 3D boxes for front panel
     this.generateKlimpBoxes()
 
+    // Generate Panel Stop boxes
+    this.generatePanelStopBoxes()
+
     this.expressions.set('lag_screw_count', this.lagScrewCount)
   }
   private generateLagRowPositions(start: number, end: number, spacing: number): number[] {
@@ -1467,6 +1472,20 @@ export class NXGenerator {
     this.expressions.set('klimp_instances_total', KlimpSTEPIntegration.getMaxKlimpCount())
   }
 
+  private generatePanelStopBoxes() {
+    // Generate 3D boxes for panel stops using PanelStopCalculator
+    const calculator = new PanelStopCalculator(this.config)
+    this.panelStopLayout = calculator.calculatePanelStops()
+
+    // Add all panel stop boxes to the boxes array
+    const panelStopBoxes = calculator.getAllPanelStops()
+    this.boxes.push(...panelStopBoxes)
+
+    // Store panel stop information in expressions
+    this.expressions.set('panel_stop_count', panelStopBoxes.length)
+    this.expressions.set('panel_stop_length', this.panelStopLayout.stopLength)
+  }
+
   private calculateKlimps() {
     const internalWidth = this.expressions.get('internal_width')!
     const internalHeight = this.expressions.get('internal_height')!
@@ -1625,6 +1644,10 @@ export class NXGenerator {
 
   getKlimpInstances(): KlimpInstance[] {
     return this.klimpInstances
+  }
+
+  getPanelStopLayout(): PanelStopLayout | null {
+    return this.panelStopLayout
   }
 
   exportNXExpressions(): string {
@@ -2105,6 +2128,20 @@ export class NXGenerator {
         packages: klimpUsage.estimatedPackages,
         material: 'Hardware',
         note: `${klimpUsage.totalKlimps} klimps (${klimpUsage.estimatedPackages} packages of 25). Front panel connections.`
+      })
+    }
+
+    // Panel Stops
+    if (this.panelStopLayout) {
+      const stopCount = this.expressions.get('panel_stop_count') || 0
+      const stopLength = this.expressions.get('panel_stop_length') || 0
+      bom.push({
+        item: 'Panel Stops',
+        size: '3/8" x 2" plywood',
+        length: stopLength,
+        quantity: stopCount,
+        material: 'Plywood',
+        note: `${stopCount} panel stops (2 on front panel edges, 1 on top panel). Prevents panel collapse during packing.`
       })
     }
 

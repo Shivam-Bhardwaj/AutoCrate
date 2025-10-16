@@ -119,6 +119,40 @@ export const FASTENER_STANDARDS = {
   },
 } as const
 
+/**
+ * Panel stop specifications and positioning standards
+ * Panel stops prevent panels from collapsing inward during packing
+ */
+export const PANEL_STOP_STANDARDS = {
+  /** Material specifications */
+  MATERIAL: {
+    /** Plywood thickness (inches) */
+    thickness: 0.375, // 3/8 inch
+    /** Panel stop width (inches) */
+    width: 2.0,
+  },
+  /** Positioning specifications */
+  POSITIONING: {
+    /** Inset from panel edge (inches) - accommodates cleat thickness */
+    edgeInset: 1.0625, // 1-1/16 inch (allows for 3/4" cleat + manufacturing tolerance)
+    /** Length calculation method: half of smallest cleated panel edge dimension */
+    lengthFactor: 0.5,
+  },
+  /** Quantity and placement */
+  PLACEMENT: {
+    /** Number of stops on front panel side edges */
+    frontPanelSides: 2,
+    /** Number of stops on top panel front edge */
+    topPanelFront: 1,
+  },
+  /** Part numbering */
+  PART_NUMBERS: {
+    frontLeft: 'PANEL_STOP_FRONT_LEFT',
+    frontRight: 'PANEL_STOP_FRONT_RIGHT',
+    topFront: 'PANEL_STOP_TOP_FRONT',
+  },
+} as const
+
 // ============================================================================
 // PART NUMBER STANDARDS
 // ============================================================================
