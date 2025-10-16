@@ -815,10 +815,9 @@ export class NXGenerator {
         const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
         panelOriginX = -internalWidth/2 - plywoodThickness + edgeClearance  // 1/16" clearance inward
         panelOriginY = panelThickness
-        // Center side panel vertically on front panel
-        const frontPanelHeight = internalHeight + floorboardThickness
-        const frontPanelCenterZ = skidHeight + frontPanelHeight / 2
-        const sidePanelHeight = layout.sheets[0] ? layout.sheets.reduce((sum, s) => Math.max(sum, s.y + s.height), 0) : frontPanelHeight
+        // Center side panel vertically on front panel - use actual panel height
+        const sidePanelHeight = internalHeight + floorboardThickness
+        const frontPanelCenterZ = skidHeight + sidePanelHeight / 2
         panelOriginZ = frontPanelCenterZ - sidePanelHeight / 2
         isVerticalPanel = true
       } else if (layout.panelName === 'RIGHT_END_PANEL') {
@@ -826,10 +825,9 @@ export class NXGenerator {
         const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
         panelOriginX = internalWidth/2 - edgeClearance  // 1/16" clearance inward
         panelOriginY = panelThickness
-        // Center side panel vertically on front panel
-        const frontPanelHeight = internalHeight + floorboardThickness
-        const frontPanelCenterZ = skidHeight + frontPanelHeight / 2
-        const sidePanelHeight = layout.sheets[0] ? layout.sheets.reduce((sum, s) => Math.max(sum, s.y + s.height), 0) : frontPanelHeight
+        // Center side panel vertically on front panel - use actual panel height
+        const sidePanelHeight = internalHeight + floorboardThickness
+        const frontPanelCenterZ = skidHeight + sidePanelHeight / 2
         panelOriginZ = frontPanelCenterZ - sidePanelHeight / 2
         isVerticalPanel = true
       } else if (layout.panelName === 'TOP_PANEL') {
@@ -956,10 +954,9 @@ export class NXGenerator {
         const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
         panelOriginX = -internalWidth/2 - plywoodThickness + edgeClearance - cleatThickness // Cleats on outside of panel
         panelOriginY = panelThickness
-        // Match panel vertical centering
-        const frontPanelHeight = internalHeight + floorboardThickness
-        const frontPanelCenterZ = skidHeight + frontPanelHeight / 2
-        const sidePanelHeight = cleatLayout.cleats[0] ? Math.max(...cleatLayout.cleats.map(c => c.y + c.length)) : frontPanelHeight
+        // Match panel vertical centering - use same calculation as plywood
+        const sidePanelHeight = internalHeight + floorboardThickness
+        const frontPanelCenterZ = skidHeight + sidePanelHeight / 2
         panelOriginZ = frontPanelCenterZ - sidePanelHeight / 2
       } else if (cleatLayout.panelName === 'RIGHT_END_PANEL') {
         // Right panel cleats are on the outside (right) face
@@ -967,10 +964,9 @@ export class NXGenerator {
         const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
         panelOriginX = internalWidth/2 - edgeClearance + plywoodThickness // Cleats on outside of panel
         panelOriginY = panelThickness
-        // Match panel vertical centering
-        const frontPanelHeight = internalHeight + floorboardThickness
-        const frontPanelCenterZ = skidHeight + frontPanelHeight / 2
-        const sidePanelHeight = cleatLayout.cleats[0] ? Math.max(...cleatLayout.cleats.map(c => c.y + c.length)) : frontPanelHeight
+        // Match panel vertical centering - use same calculation as plywood
+        const sidePanelHeight = internalHeight + floorboardThickness
+        const frontPanelCenterZ = skidHeight + sidePanelHeight / 2
         panelOriginZ = frontPanelCenterZ - sidePanelHeight / 2
       } else if (cleatLayout.panelName === 'TOP_PANEL') {
         // Top panel cleats are on the outside (top) face
