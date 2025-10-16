@@ -1203,8 +1203,8 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
         </Suspense>
       </Canvas>
 
-      {/* Overlay Panels */}
-      <div className="absolute top-2 right-2 flex w-64 flex-col gap-2 pointer-events-auto">
+      {/* Overlay Panels - Hidden on mobile */}
+      <div className="hidden lg:flex absolute top-2 right-2 w-64 flex-col gap-2 pointer-events-auto">
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Visibility</h3>
@@ -1310,8 +1310,8 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
         )}
       </div>
 
-      {/* PMI controls moved to right-side control panel */}
-      <div className="absolute top-2 left-2 w-64 max-w-xs pointer-events-auto">
+      {/* PMI controls moved to right-side control panel - Hidden on mobile */}
+      <div className="hidden lg:block absolute top-2 left-2 w-64 max-w-xs pointer-events-auto">
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 space-y-2">
           <div className="text-[11px] text-gray-600 dark:text-gray-400 space-y-1">
             <div>Base: {derivedPartNumbers.base}</div>
@@ -1322,7 +1322,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
       </div>
 
       {selectedPlanes.length > 0 && (
-        <div className="absolute bottom-20 left-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg p-3">
+        <div className="hidden lg:block absolute bottom-20 left-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg p-3">
           <div className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
             Measurement Mode
           </div>
@@ -1355,8 +1355,8 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
         </div>
       )}
 
-      {/* Instructions */}
-      <div className="absolute bottom-2 left-2 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded px-2 py-1">
+      {/* Instructions - Hidden on mobile */}
+      <div className="hidden lg:block absolute bottom-2 left-2 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded px-2 py-1">
         Click faces to measure • Right-click to hide component • Esc to reset view
       </div>
     </div>
