@@ -450,7 +450,7 @@ export default function Home() {
 
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 overflow-x-hidden flex flex-col transition-colors duration-300">
+    <main className="h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 overflow-hidden flex flex-col transition-colors duration-300">
       {/* Compact change tracker */}
       <ChangeTracker />
       {/* Compact Header */}
@@ -509,9 +509,16 @@ export default function Home() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-2 p-2 min-h-0">
+      <div className="flex-1 flex flex-col lg:flex-row gap-2 p-2 min-h-0 overflow-hidden">
         {/* Left Panel - Inputs */}
-        <aside className={`${showMobileInputs ? 'flex' : 'hidden'} lg:flex flex-col w-full lg:w-72 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none p-2 md:p-3 flex-shrink-0 transition-colors overflow-y-auto max-h-[70vh] lg:max-h-[calc(100vh-7rem)]`}>
+        <aside
+          className={`${showMobileInputs ? 'flex' : 'hidden'} lg:flex flex-col w-full lg:w-72 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none p-2 md:p-3 flex-shrink-0 transition-colors overflow-y-auto`}
+          style={{
+            maxHeight: showMobileInputs ? 'calc(100vh - 4rem)' : 'calc(100vh - 7rem)',
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-y'
+          }}
+        >
           <div className="flex-1 flex flex-col gap-3">
             <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-2">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Part Numbers</h3>
@@ -768,10 +775,21 @@ export default function Home() {
         </aside>
 
         {/* Right Panel - Visualization/Output */}
-        <div className={`${showMobileInputs ? 'hidden' : 'flex'} lg:flex flex-1 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none flex-col min-h-0 transition-colors`}>
+        <div
+          className={`${showMobileInputs ? 'hidden' : 'flex'} lg:flex flex-1 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none flex-col min-h-0 transition-colors`}
+          style={{
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
           {/* Tabs */}
           <div className="border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-            <nav className="flex overflow-x-auto scrollbar-thin">
+            <nav
+              className="flex overflow-x-auto scrollbar-thin"
+              style={{
+                WebkitOverflowScrolling: 'touch',
+                touchAction: 'pan-x'
+              }}
+            >
               <button
                 onClick={() => setActiveTab('visualization')}
                 className={`px-4 py-2 text-sm font-medium ${
@@ -826,7 +844,12 @@ export default function Home() {
           </div>
 
           {/* Tab Content */}
-          <div className="flex-1 p-2 md:p-3 lg:p-4 min-h-0 flex flex-col overflow-hidden">
+          <div
+            className="flex-1 p-2 md:p-3 lg:p-4 min-h-0 flex flex-col overflow-hidden"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+            }}
+          >
             {activeTab === 'visualization' && (
               <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                 <div className="flex-1 min-h-0 overflow-hidden">
