@@ -45,7 +45,8 @@ describe('Home Page', () => {
   it('shows scenario status and visualizer shell', async () => {
     renderHome()
     expect(await screen.findByTestId('scenario-status')).toHaveTextContent('Default Production')
-    expect(screen.getByTestId('crate-visualizer')).toBeInTheDocument()
+    const visualizers = await screen.findAllByTestId('crate-visualizer')
+    expect(visualizers.length).toBeGreaterThan(0)
   })
 
   it('applies scenario presets and updates fields', async () => {

@@ -1185,6 +1185,49 @@ export default function Home() {
                     </button>
                   </div>
 
+                  {/* View Controls */}
+                  <div>
+                    <h4 className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">3D View Controls</h4>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={displayOptions.visibility.skids}
+                          onChange={() => toggleComponentVisibility('skids')}
+                          className="w-4 h-4 rounded border-gray-300 text-blue-600"
+                        />
+                        <span className="text-xs text-gray-700 dark:text-gray-300">Show Skids</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={displayOptions.visibility.floorboards}
+                          onChange={() => toggleComponentVisibility('floorboards')}
+                          className="w-4 h-4 rounded border-gray-300 text-blue-600"
+                        />
+                        <span className="text-xs text-gray-700 dark:text-gray-300">Show Floorboards</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={displayOptions.visibility.topPanel}
+                          onChange={() => toggleComponentVisibility('topPanel')}
+                          className="w-4 h-4 rounded border-gray-300 text-blue-600"
+                        />
+                        <span className="text-xs text-gray-700 dark:text-gray-300">Show Top Panel</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={displayOptions.visibility.cleats}
+                          onChange={() => toggleComponentVisibility('cleats')}
+                          className="w-4 h-4 rounded border-gray-300 text-blue-600"
+                        />
+                        <span className="text-xs text-gray-700 dark:text-gray-300">Show Cleats</span>
+                      </label>
+                    </div>
+                  </div>
+
                   {/* Quick Scenarios */}
                   <div>
                     <h4 className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Quick Scenarios</h4>
