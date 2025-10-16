@@ -307,6 +307,56 @@ export const FILE_FORMAT_STANDARDS = {
 } as const
 
 // ============================================================================
+// UI AND VISUALIZATION CONSTANTS
+// ============================================================================
+
+/**
+ * User interface and 3D visualization constants
+ */
+export const UI_CONSTANTS = {
+  /** 3D Visualization settings */
+  VISUALIZATION: {
+    /** Scale factor for converting inches to Three.js scene units */
+    SCALE_FACTOR: 0.1,
+    /** Datum plane opacity (0-1) */
+    DATUM_PLANE_OPACITY: 0.15,
+    /** Highlighted plane opacity when selected (0-1) */
+    HIGHLIGHT_PLANE_OPACITY: 0.5,
+    /** Debounce delay for input changes (milliseconds) */
+    DEBOUNCE_DELAY_MS: 500,
+    /** Label offset multiplier for datum plane labels */
+    LABEL_OFFSET_FACTOR: 0.1,
+    /** Multiplier for center calculations */
+    CENTER_MULTIPLIER: 0.5,
+  },
+  /** 3D Scene lighting configuration */
+  LIGHTING: {
+    /** Ambient light intensity (0-1) */
+    AMBIENT_INTENSITY: 0.5,
+    /** Directional light intensity (0-1) */
+    DIRECTIONAL_INTENSITY: 1.0,
+    /** Point light intensity (0-1) */
+    POINT_LIGHT_INTENSITY: 0.5,
+  },
+  /** Camera configuration */
+  CAMERA: {
+    /** Near clipping plane distance */
+    NEAR_PLANE: 0.1,
+    /** Far clipping plane distance */
+    FAR_PLANE: 1000,
+    /** Field of view in degrees */
+    FOV: 45,
+  },
+  /** Default product dimensions for new projects (inches) */
+  DEFAULT_PRODUCT: {
+    length: 135,
+    width: 135,
+    height: 135,
+    weight: 10000,
+  },
+} as const
+
+// ============================================================================
 // VALIDATION RULES
 // ============================================================================
 

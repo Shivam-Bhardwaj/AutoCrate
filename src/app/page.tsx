@@ -11,15 +11,15 @@ import ScenarioSelector, { ScenarioPreset } from '@/components/ScenarioSelector'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { LumberCutList } from '@/components/LumberCutList'
 import { ChangeTracker } from '@/components/ChangeTracker'
-import { PART_NUMBER_STANDARDS, FASTENER_STANDARDS } from '@/lib/crate-constants'
+import { PART_NUMBER_STANDARDS, FASTENER_STANDARDS, UI_CONSTANTS, GEOMETRY_STANDARDS, PLYWOOD_STANDARDS } from '@/lib/crate-constants'
 
 const SCENARIO_PRESETS: ScenarioPreset[] = [
   {
     id: 'default',
     name: 'Default Production',
     description: 'Large cubic crate suitable for the general AutoCrate setup.',
-    product: { length: 135, width: 135, height: 135, weight: 10000 },
-    clearances: { side: 2, end: 2, top: 3 },
+    product: UI_CONSTANTS.DEFAULT_PRODUCT,
+    clearances: GEOMETRY_STANDARDS.DEFAULT_CLEARANCES,
     allow3x4: false,
     lumberSizes: { '2x6': true, '2x8': true, '2x10': true, '2x12': true },
     note: 'Matches the initial values used throughout the documentation.'
@@ -59,13 +59,13 @@ const SCENARIO_PRESETS: ScenarioPreset[] = [
 export default function Home() {
   // Store input values as strings for better input handling
   const [inputValues, setInputValues] = useState({
-    length: '135',
-    width: '135',
-    height: '135',
-    weight: '10000',
-    sideClearance: '2',
-    endClearance: '2',
-    topClearance: '3'
+    length: String(UI_CONSTANTS.DEFAULT_PRODUCT.length),
+    width: String(UI_CONSTANTS.DEFAULT_PRODUCT.width),
+    height: String(UI_CONSTANTS.DEFAULT_PRODUCT.height),
+    weight: String(UI_CONSTANTS.DEFAULT_PRODUCT.weight),
+    sideClearance: String(GEOMETRY_STANDARDS.DEFAULT_CLEARANCES.side),
+    endClearance: String(GEOMETRY_STANDARDS.DEFAULT_CLEARANCES.end),
+    topClearance: String(GEOMETRY_STANDARDS.DEFAULT_CLEARANCES.top)
   })
 
   // State for 3x4 lumber permission toggle
@@ -93,8 +93,8 @@ export default function Home() {
     cap: PART_NUMBER_STANDARDS.PLACEHOLDER
   })
 
-  const [lagSpacing, setLagSpacing] = useState(21)
-  const [sideGroundClearance, setSideGroundClearance] = useState(0.25)
+  const [lagSpacing, setLagSpacing] = useState<number>(FASTENER_STANDARDS.LAG_SCREW.DEFAULT_SPACING)
+  const [sideGroundClearance, setSideGroundClearance] = useState<number>(GEOMETRY_STANDARDS.SIDE_PANEL_GROUND_CLEARANCE)
 
   const [pmiVisibility, setPmiVisibility] = useState({
     totalDimensions: true,
@@ -128,29 +128,20 @@ export default function Home() {
   })
 
   const [config, setConfig] = useState<CrateConfig>({
-    product: {
-      length: 135,
-      width: 135,
-      height: 135,
-      weight: 10000
-    },
-    clearances: {
-      side: 2,
-      end: 2,
-      top: 3
-    },
+    product: UI_CONSTANTS.DEFAULT_PRODUCT,
+    clearances: GEOMETRY_STANDARDS.DEFAULT_CLEARANCES,
     materials: {
       skidSize: '4x4',
-      plywoodThickness: 0.25,  // 1/4" plywood
-      panelThickness: 1,       // Total panel thickness with cleats
-      cleatSize: '1x4',        // 1x4 lumber for cleats (0.75" x 3.5")
+      plywoodThickness: PLYWOOD_STANDARDS.DEFAULT_THICKNESS,
+      panelThickness: GEOMETRY_STANDARDS.DEFAULT_PANEL_THICKNESS,
+      cleatSize: '1x4',
       allow3x4Lumber: false
     },
     hardware: {
-      lagScrewSpacing: 21
+      lagScrewSpacing: FASTENER_STANDARDS.LAG_SCREW.DEFAULT_SPACING
     },
     geometry: {
-      sidePanelGroundClearance: 0.25
+      sidePanelGroundClearance: GEOMETRY_STANDARDS.SIDE_PANEL_GROUND_CLEARANCE
     },
     identifiers: {
       basePartNumber: PART_NUMBER_STANDARDS.PLACEHOLDER,
@@ -300,7 +291,7 @@ export default function Home() {
           }))
         }
       }
-    }, 500) // 500ms delay before updating config
+    }, UI_CONSTANTS.VISUALIZATION.DEBOUNCE_DELAY_MS)
   }
 
   const handleInputBlur = (field: keyof typeof inputValues) => {
