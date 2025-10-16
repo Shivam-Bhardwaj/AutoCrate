@@ -197,8 +197,11 @@ describe('PanelStopCalculator', () => {
       expect(stopThickness).toBeCloseTo(thickness, 6)
 
       // Stop should be flush against bottom surface of top panel
-      const groundClearance = 0.25 // default
-      const topPanelZ = groundClearance + config.product.height + config.clearances.top
+      // For 500 lb product: skid = 4x4 (3.5"), floorboard = 2x6 (1.5")
+      const skidHeight = 3.5
+      const floorboardThickness = 1.5
+      const baseZ = skidHeight + floorboardThickness
+      const topPanelZ = baseZ + config.product.height + config.clearances.top
       const topPanelBottom = topPanelZ - config.materials.plywoodThickness
 
       expect(stop.point2.z).toBeCloseTo(topPanelBottom, 6)

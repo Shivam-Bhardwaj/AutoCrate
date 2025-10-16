@@ -13,7 +13,7 @@
  */
 
 import { NXBox, Point3D, CrateConfig } from './nx-generator'
-import { PANEL_STOP_STANDARDS, GEOMETRY_STANDARDS } from './crate-constants'
+import { PANEL_STOP_STANDARDS, GEOMETRY_STANDARDS, LUMBER_DIMENSIONS, SKID_STANDARDS } from './crate-constants'
 
 export interface PanelStopLayout {
   /** Panel stops for front panel (left and right edges) */
@@ -26,6 +26,49 @@ export interface PanelStopLayout {
 
 export class PanelStopCalculator {
   constructor(private config: CrateConfig) {}
+
+  /**
+   * Get skid dimensions based on product weight
+   */
+  private getSkidDimensions() {
+    const weight = this.config.product.weight
+    const allow3x4 = this.config.materials.allow3x4Lumber || false
+
+    if (weight <= 500 && allow3x4) {
+      return { height: LUMBER_DIMENSIONS['3x4'].height, width: LUMBER_DIMENSIONS['3x4'].width }
+    } else if (weight <= SKID_STANDARDS.LIGHTWEIGHT_WEIGHT_THRESHOLD) {
+      return { height: LUMBER_DIMENSIONS['4x4'].height, width: LUMBER_DIMENSIONS['4x4'].width }
+    } else if (weight <= 20000) {
+      return { height: LUMBER_DIMENSIONS['4x6'].height, width: LUMBER_DIMENSIONS['4x6'].width }
+    } else if (weight <= 35000) {
+      return { height: LUMBER_DIMENSIONS['6x6'].height, width: LUMBER_DIMENSIONS['6x6'].width }
+    } else {
+      return { height: LUMBER_DIMENSIONS['8x8'].height, width: LUMBER_DIMENSIONS['8x8'].width }
+    }
+  }
+
+  /**
+   * Get floorboard dimensions based on product weight
+   */
+  private getFloorboardDimensions() {
+    const weight = this.config.product.weight
+    const availableLumber = this.config.materials.availableLumber || ['2x6', '2x8', '2x10', '2x12']
+
+    const lumberOptions = [
+      { nominal: '2x6' as const, width: 5.5, thickness: 1.5, maxWeight: 2000 },
+      { nominal: '2x8' as const, width: 7.25, thickness: 1.5, maxWeight: 4000 },
+      { nominal: '2x10' as const, width: 9.25, thickness: 1.5, maxWeight: 8000 },
+      { nominal: '2x12' as const, width: 11.25, thickness: 1.5, maxWeight: Infinity }
+    ]
+
+    for (const option of lumberOptions) {
+      if (availableLumber.includes(option.nominal) && weight <= option.maxWeight) {
+        return { width: option.width, thickness: option.thickness }
+      }
+    }
+
+    return { width: 11.25, thickness: 1.5 }
+  }
 
   /**
    * Calculate panel stop layout for the entire crate
@@ -163,12 +206,13 @@ export class PanelStopCalculator {
     const panelThickness = materials.panelThickness
     const plywoodThickness = materials.plywoodThickness
 
-    // Ground clearance for panels
-    const groundClearance = this.config.geometry?.sidePanelGroundClearance ??
-                           GEOMETRY_STANDARDS.SIDE_PANEL_GROUND_CLEARANCE
+    // Calculate base height (skid + floorboard)
+    const skidDims = this.getSkidDimensions()
+    const floorboardDims = this.getFloorboardDimensions()
+    const baseZ = skidDims.height + floorboardDims.thickness
 
-    // Top panel is at Z = groundClearance + product.height + clearances.top
-    const topPanelZ = groundClearance + product.height + clearances.top
+    // Top panel is at Z = baseZ + product.height + clearances.top
+    const topPanelZ = baseZ + product.height + clearances.top
 
     // Stop is positioned flush against the bottom surface of the top panel
     const topPanelBottom = topPanelZ - plywoodThickness
