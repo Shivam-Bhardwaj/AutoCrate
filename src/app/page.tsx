@@ -402,25 +402,39 @@ export default function Home() {
   }
 
   // Filter boxes based on visibility settings
+  // Respects the crate assembly hierarchy:
+  // - CRATE_CAP contains 5 panel assemblies (FRONT, BACK, LEFT, RIGHT, TOP)
+  // - Each panel assembly includes: plywood pieces + cleats + panel stops
+  // - SHIPPING_BASE contains: skids + floorboards
   const getFilteredBoxes = () => {
     return generator.getBoxes().filter(box => {
-      // Check component visibility
+      // SHIPPING_BASE components (independent visibility)
       if (box.type === 'skid' && !displayOptions.visibility.skids) return false
       if (box.type === 'floor' && !displayOptions.visibility.floorboards) return false
-      if (box.type === 'cleat' && !displayOptions.visibility.cleats) return false
 
-      // Handle plywood pieces based on individual selection
+      // CRATE_CAP panel assembly visibility
+      // Each panel is a complete sub-assembly: plywood + cleats + panel stops
+
+      // Check if parent panel assembly is visible
+      if (box.panelName === 'FRONT_PANEL' && !displayOptions.visibility.frontPanel) return false
+      if (box.panelName === 'BACK_PANEL' && !displayOptions.visibility.backPanel) return false
+      if (box.panelName === 'LEFT_END_PANEL' && !displayOptions.visibility.leftPanel) return false
+      if (box.panelName === 'RIGHT_END_PANEL' && !displayOptions.visibility.rightPanel) return false
+      if (box.panelName === 'TOP_PANEL' && !displayOptions.visibility.topPanel) return false
+
+      // Within visible panel assemblies, apply component-specific filters
       if (box.type === 'plywood') {
         // Don't show suppressed pieces
         if (box.suppressed) return false
-        // Check panel visibility based on panel name
-        if (box.panelName === 'FRONT_PANEL' && !displayOptions.visibility.frontPanel) return false
-        if (box.panelName === 'BACK_PANEL' && !displayOptions.visibility.backPanel) return false
-        if (box.panelName === 'LEFT_END_PANEL' && !displayOptions.visibility.leftPanel) return false
-        if (box.panelName === 'RIGHT_END_PANEL' && !displayOptions.visibility.rightPanel) return false
-        if (box.panelName === 'TOP_PANEL' && !displayOptions.visibility.topPanel) return false
         // Check individual piece visibility (default to true if not set)
         if (plywoodPieceVisibility[box.name] === false) return false
+        return true
+      }
+
+      // Cleats are part of their parent panel assembly
+      // Global cleats toggle allows showing/hiding all cleats across all visible panels
+      if (box.type === 'cleat') {
+        if (!displayOptions.visibility.cleats) return false
         return true
       }
 
