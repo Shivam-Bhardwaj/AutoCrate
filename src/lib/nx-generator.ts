@@ -1097,8 +1097,10 @@ export class NXGenerator {
     this.expressions.set('lag_screw_count', this.lagScrewCount)
   }
   private generateLagRowPositions(start: number, end: number, spacing: number): number[] {
-    const MIN_SPACING = 18
-    const MAX_SPACING = 24
+    // Adaptive spacing based on edge length for better small crate handling
+    const span = end - start
+    const MIN_SPACING = span < 36 ? 6 : 12  // Small crates: 6" min, Large: 12" min
+    const MAX_SPACING = span < 36 ? 18 : 24  // Small crates: 18" max, Large: 24" max
     const tolerance = 1e-4
 
     const clampedSpacing = Math.round(Math.min(MAX_SPACING, Math.max(MIN_SPACING, spacing)) * 16) / 16
@@ -1107,47 +1109,29 @@ export class NXGenerator {
       return [Number(((start + end) / 2).toFixed(4))]
     }
 
-    const span = end - start
-    const minCount = Math.max(1, Math.floor(span / MAX_SPACING) + 1)
-    const maxCount = Math.max(minCount, Math.floor(span / MIN_SPACING) + 1)
-
-    let bestPositions: number[] | null = null
-    let bestScore = Number.POSITIVE_INFINITY
-    let bestCount = Number.POSITIVE_INFINITY
-
-    for (let count = minCount; count <= maxCount; count++) {
-      if (count === 1) {
-        const mid = Number(((start + end) / 2).toFixed(4))
-        if (!bestPositions || bestScore > 0) {
-          bestPositions = [mid]
-          bestScore = 0
-          bestCount = 1
-        }
-        continue
-      }
-
-      const intervals = count - 1
-      const rawSpacing = span / intervals
-      if (rawSpacing < MIN_SPACING - tolerance || rawSpacing > MAX_SPACING + tolerance) {
-        continue
-      }
-
-      const offset = (span - rawSpacing * intervals) / 2
-      const positions = Array.from({ length: count }, (_, index) => Number((start + offset + index * rawSpacing).toFixed(4)))
-      const score = Math.abs(rawSpacing - clampedSpacing)
-
-      if (!bestPositions || score < bestScore - tolerance || (Math.abs(score - bestScore) <= tolerance && count < bestCount)) {
-        bestPositions = positions
-        bestScore = score
-        bestCount = count
-      }
+    // Always place screws at start and end positions (fixes #91, #92)
+    // Minimum 2 lags per edge for structural integrity
+    if (span < MIN_SPACING) {
+      // Edge too small for proper spacing - place at ends only
+      return [Number(start.toFixed(4)), Number(end.toFixed(4))]
     }
 
-    if (!bestPositions) {
-      return [Number(((start + end) / 2).toFixed(4))]
+    // Calculate minimum number of screws needed to satisfy MAX_SPACING
+    const minCount = Math.max(2, Math.ceil(span / MAX_SPACING) + 1)
+
+    // For very small spans, just place at ends
+    if (span <= MAX_SPACING) {
+      return [Number(start.toFixed(4)), Number(end.toFixed(4))]
     }
 
-    return bestPositions
+    // Place screws at start, end, and evenly spaced intermediates
+    const intervals = minCount - 1
+    const actualSpacing = span / intervals
+    const positions = Array.from({ length: minCount }, (_, index) =>
+      Number((start + index * actualSpacing).toFixed(4))
+    )
+
+    return positions
   }
 
   private addLagHardwareForSidePanel(
