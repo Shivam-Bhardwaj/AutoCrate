@@ -146,10 +146,10 @@ export class PanelStopCalculator {
 
     const stops: NXBox[] = []
 
-    // LEFT EDGE STOP - positioned just inside left internal boundary (to avoid side panel interference)
-    // Centered vertically along the panel height
+    // LEFT EDGE STOP - positioned with clearance from side panel to avoid interference (#95)
+    // Centered vertically along the front panel height
     const leftStopCenterZ = groundClearance + panelHeight / 2
-    const leftStopCenterX = -internalWidth / 2 + width / 2  // Moved inward by half stop width
+    const leftStopCenterX = -internalWidth / 2 + width / 2 + edgeInset  // Moved inward by stop width/2 + clearance
 
     stops.push({
       name: PANEL_STOP_STANDARDS.PART_NUMBERS.frontLeft,
@@ -168,9 +168,9 @@ export class PanelStopCalculator {
       color: '#DEB887', // Light plywood color
     })
 
-    // RIGHT EDGE STOP - positioned just inside right internal boundary (to avoid side panel interference)
+    // RIGHT EDGE STOP - positioned with clearance from side panel to avoid interference (#95)
     const rightStopCenterZ = groundClearance + panelHeight / 2
-    const rightStopCenterX = internalWidth / 2 - width / 2  // Moved inward by half stop width
+    const rightStopCenterX = internalWidth / 2 - width / 2 - edgeInset  // Moved inward by stop width/2 + clearance
 
     stops.push({
       name: PANEL_STOP_STANDARDS.PART_NUMBERS.frontRight,
@@ -214,18 +214,17 @@ export class PanelStopCalculator {
     // Top panel is at Z = baseZ + product.height + clearances.top
     const topPanelZ = baseZ + product.height + clearances.top
 
-    // Stop is positioned flush against the bottom surface of the top panel
-    const topPanelBottom = topPanelZ - plywoodThickness
-    const stopZPosition = topPanelBottom  // Flush against top panel bottom, no gap
+    // Stop is positioned flush against the bottom surface of the top panel (#94: remove gap)
+    const stopZPosition = topPanelZ  // Flush against top panel bottom surface, no gap
 
     // Centered horizontally along the panel width
     const stopCenterX = 0  // Centered on X-axis
 
-    // Position stop behind front panel to avoid interference
+    // Position stop behind front panel with proper offset (#96: add 0.0625" clearance)
     // Front panel inner surface is at Y = panelThickness
-    // Stop should be flush against this surface, extending inward
+    // Stop positioned at edgeInset (1.0625") from front edge
     const frontPanelInnerY = panelThickness
-    const stopYPosition = frontPanelInnerY + width / 2  // Center positioned inward from front panel
+    const stopYPosition = frontPanelInnerY + edgeInset  // 1.0625" from front panel inner surface
 
     return {
       name: PANEL_STOP_STANDARDS.PART_NUMBERS.topFront,
@@ -233,13 +232,13 @@ export class PanelStopCalculator {
       panelName: 'TOP_PANEL',
       point1: {
         x: stopCenterX - stopLength / 2,
-        y: stopYPosition - width / 2,
-        z: stopZPosition - thickness,
+        y: stopYPosition,  // Front edge at edgeInset from panel
+        z: stopZPosition - thickness,  // Extends downward by thickness
       },
       point2: {
         x: stopCenterX + stopLength / 2,
-        y: stopYPosition + width / 2,
-        z: stopZPosition,
+        y: stopYPosition + width,  // Back edge extends inward by width (2")
+        z: stopZPosition,  // Top surface flush with panel bottom
       },
       color: '#DEB887',
     }

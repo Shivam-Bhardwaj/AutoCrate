@@ -148,15 +148,16 @@ describe('PanelStopCalculator', () => {
       const leftStop = layout.frontPanelStops[0]
       const rightStop = layout.frontPanelStops[1]
 
-      // Left stop moved inward by half stop width to avoid side panel interference
+      // Left stop moved inward by half stop width + edgeInset to avoid side panel interference (fixes #95)
+      const edgeInset = PANEL_STOP_STANDARDS.POSITIONING.edgeInset
       const leftCenterX = (leftStop.point1.x + leftStop.point2.x) / 2
       expect(leftCenterX).toBeLessThan(0)
-      expect(leftCenterX).toBeCloseTo(-internalWidth / 2 + stopWidth / 2, 6)
+      expect(leftCenterX).toBeCloseTo(-internalWidth / 2 + stopWidth / 2 + edgeInset, 6)
 
-      // Right stop moved inward by half stop width to avoid side panel interference
+      // Right stop moved inward by half stop width + edgeInset to avoid side panel interference (fixes #95)
       const rightCenterX = (rightStop.point1.x + rightStop.point2.x) / 2
       expect(rightCenterX).toBeGreaterThan(0)
-      expect(rightCenterX).toBeCloseTo(internalWidth / 2 - stopWidth / 2, 6)
+      expect(rightCenterX).toBeCloseTo(internalWidth / 2 - stopWidth / 2 - edgeInset, 6)
 
       // Should be symmetric about center
       expect(Math.abs(leftCenterX)).toBeCloseTo(Math.abs(rightCenterX), 6)
@@ -196,16 +197,15 @@ describe('PanelStopCalculator', () => {
       const stopThickness = Math.abs(stop.point2.z - stop.point1.z)
       expect(stopThickness).toBeCloseTo(thickness, 6)
 
-      // Stop should be flush against bottom surface of top panel
+      // Stop should be flush against bottom surface of top panel (fixes #94: no gap)
       // For 500 lb product: skid = 4x4 (3.5"), floorboard = 2x6 (1.5")
       const skidHeight = 3.5
       const floorboardThickness = 1.5
       const baseZ = skidHeight + floorboardThickness
       const topPanelZ = baseZ + config.product.height + config.clearances.top
-      const topPanelBottom = topPanelZ - config.materials.plywoodThickness
 
-      expect(stop.point2.z).toBeCloseTo(topPanelBottom, 6)
-      expect(stop.point1.z).toBeCloseTo(topPanelBottom - thickness, 6)
+      expect(stop.point2.z).toBeCloseTo(topPanelZ, 6)  // Top surface flush with panel bottom
+      expect(stop.point1.z).toBeCloseTo(topPanelZ - thickness, 6)  // Extends downward by thickness
     })
 
     it('should center stop horizontally along panel width', () => {
@@ -231,18 +231,20 @@ describe('PanelStopCalculator', () => {
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      // Stop should be positioned behind the front panel inner surface
+      // Stop should be positioned at edgeInset (1.0625") from front panel (fixes #96)
       // Front panel inner surface is at Y = panelThickness
       const frontPanelInnerY = config.materials.panelThickness
+      const edgeInset = PANEL_STOP_STANDARDS.POSITIONING.edgeInset
       const stopWidth = PANEL_STOP_STANDARDS.MATERIAL.width
-      const expectedCenterY = frontPanelInnerY + stopWidth / 2
+      const expectedStartY = frontPanelInnerY + edgeInset
+      const expectedCenterY = expectedStartY + stopWidth / 2
 
       const stop = layout.topPanelStop
       const centerY = (stop.point1.y + stop.point2.y) / 2
       expect(centerY).toBeCloseTo(expectedCenterY, 6)
 
-      // Verify stop starts after front panel to avoid interference
-      expect(stop.point1.y).toBeGreaterThanOrEqual(frontPanelInnerY)
+      // Verify stop starts at proper distance from front panel to avoid interference
+      expect(stop.point1.y).toBeCloseTo(expectedStartY, 6)
     })
   })
 
