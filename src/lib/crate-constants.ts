@@ -198,8 +198,8 @@ export const PROJECT_IDENTIFIERS = {
  * Panel and component positioning standards
  */
 export const GEOMETRY_STANDARDS = {
-  /** Default ground clearance for side panels (inches) */
-  SIDE_PANEL_GROUND_CLEARANCE: 0.25,
+  /** Default ground clearance for side panels - forklift access (inches) */
+  SIDE_PANEL_GROUND_CLEARANCE: 4.0,
   /** Side panel edge clearance from floorboard edges (inches) */
   SIDE_PANEL_EDGE_CLEARANCE: 0.0625, // 1/16 inch
   /** Total panel thickness including cleats (inches) */

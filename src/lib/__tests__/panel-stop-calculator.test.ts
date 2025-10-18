@@ -124,7 +124,7 @@ describe('PanelStopCalculator', () => {
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      const groundClearance = 0.25 // default
+      const groundClearance = 4.0 // default - forklift access (updated for #90, #109)
       const panelHeight = config.product.height + config.clearances.top
       const expectedCenterZ = groundClearance + panelHeight / 2
       const stopLength = layout.stopLength
