@@ -815,20 +815,18 @@ export class NXGenerator {
         const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
         panelOriginX = -internalWidth/2 - plywoodThickness + edgeClearance  // 1/16" clearance inward
         panelOriginY = panelThickness
-        // Center side panel vertically on front panel - use actual panel height
-        const sidePanelHeight = internalHeight + floorboardThickness
-        const frontPanelCenterZ = skidHeight + sidePanelHeight / 2
-        panelOriginZ = frontPanelCenterZ - sidePanelHeight / 2
+        // Side panel starts at ground clearance for forklift access (fixes #90, #109)
+        const groundClearance = this.getSidePanelGroundClearance()
+        panelOriginZ = groundClearance
         isVerticalPanel = true
       } else if (layout.panelName === 'RIGHT_END_PANEL') {
         // Right panel inner surface with 1/16" clearance from floorboard edge
         const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
         panelOriginX = internalWidth/2 - edgeClearance  // 1/16" clearance inward
         panelOriginY = panelThickness
-        // Center side panel vertically on front panel - use actual panel height
-        const sidePanelHeight = internalHeight + floorboardThickness
-        const frontPanelCenterZ = skidHeight + sidePanelHeight / 2
-        panelOriginZ = frontPanelCenterZ - sidePanelHeight / 2
+        // Side panel starts at ground clearance for forklift access (fixes #90, #109)
+        const groundClearance = this.getSidePanelGroundClearance()
+        panelOriginZ = groundClearance
         isVerticalPanel = true
       } else if (layout.panelName === 'TOP_PANEL') {
         panelOriginX = -internalWidth/2 - panelThickness
@@ -954,20 +952,18 @@ export class NXGenerator {
         const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
         panelOriginX = -internalWidth/2 - plywoodThickness + edgeClearance - cleatThickness // Cleats on outside of panel
         panelOriginY = panelThickness
-        // Match panel vertical centering - use same calculation as plywood
-        const sidePanelHeight = internalHeight + floorboardThickness
-        const frontPanelCenterZ = skidHeight + sidePanelHeight / 2
-        panelOriginZ = frontPanelCenterZ - sidePanelHeight / 2
+        // Match panel Z origin - starts at ground clearance (fixes #90, #109)
+        const groundClearance = this.getSidePanelGroundClearance()
+        panelOriginZ = groundClearance
       } else if (cleatLayout.panelName === 'RIGHT_END_PANEL') {
         // Right panel cleats are on the outside (right) face
         // Panel has 1/16" clearance, cleats go on outside
         const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
         panelOriginX = internalWidth/2 - edgeClearance + plywoodThickness // Cleats on outside of panel
         panelOriginY = panelThickness
-        // Match panel vertical centering - use same calculation as plywood
-        const sidePanelHeight = internalHeight + floorboardThickness
-        const frontPanelCenterZ = skidHeight + sidePanelHeight / 2
-        panelOriginZ = frontPanelCenterZ - sidePanelHeight / 2
+        // Match panel Z origin - starts at ground clearance (fixes #90, #109)
+        const groundClearance = this.getSidePanelGroundClearance()
+        panelOriginZ = groundClearance
       } else if (cleatLayout.panelName === 'TOP_PANEL') {
         // Top panel cleats are on the outside (top) face
         panelOriginX = -internalWidth/2 - panelThickness  // Match panel origin
@@ -1556,8 +1552,9 @@ export class NXGenerator {
     const frontBackWidth = internalWidth + 2 * panelThickness
     const frontBackHeight = internalHeight + floorboardThickness
     const sideWidth = internalLength
-    // Side panels are now centered on front panel, so they match the front/back height
-    const sideHeight = internalHeight + floorboardThickness
+    // Side panels start at ground clearance and extend to top panel (fixes #90, #109)
+    const sideGroundClearance = this.expressions.get('side_panel_ground_clearance') ?? this.getSidePanelGroundClearance()
+    const sideHeight = skidHeight + internalHeight + floorboardThickness - sideGroundClearance
     const topWidth = internalWidth + 2 * panelThickness
     const topLength = internalLength + 2 * panelThickness
 
