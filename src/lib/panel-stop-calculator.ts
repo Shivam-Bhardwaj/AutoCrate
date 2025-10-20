@@ -138,9 +138,10 @@ export class PanelStopCalculator {
     // - Inner surface (facing product): panelThickness
     const frontPanelInnerY = panelThickness
 
-    // Ground clearance for panels
-    const groundClearance = this.config.geometry?.sidePanelGroundClearance ??
-                           GEOMETRY_STANDARDS.SIDE_PANEL_GROUND_CLEARANCE
+    // Calculate actual panel bottom position (skid + floorboard)
+    const skidDims = this.getSkidDimensions()
+    const floorboardDims = this.getFloorboardDimensions()
+    const panelBottomZ = skidDims.height + floorboardDims.thickness
 
     // Stops are positioned flush against the front panel inner surface (facing product)
     const stopYPosition = frontPanelInnerY  // Flush against panel inner surface, no gap
@@ -149,7 +150,7 @@ export class PanelStopCalculator {
 
     // LEFT EDGE STOP - positioned with clearance from side panel to avoid interference (#95)
     // Centered vertically along the front panel height
-    const leftStopCenterZ = groundClearance + panelHeight / 2
+    const leftStopCenterZ = panelBottomZ + panelHeight / 2
     const leftStopCenterX = -internalWidth / 2 + width / 2 + edgeInset  // Moved inward by stop width/2 + clearance
 
     stops.push({
@@ -170,7 +171,7 @@ export class PanelStopCalculator {
     })
 
     // RIGHT EDGE STOP - positioned with clearance from side panel to avoid interference (#95)
-    const rightStopCenterZ = groundClearance + panelHeight / 2
+    const rightStopCenterZ = panelBottomZ + panelHeight / 2
     const rightStopCenterX = internalWidth / 2 - width / 2 - edgeInset  // Moved inward by stop width/2 + clearance
 
     stops.push({
