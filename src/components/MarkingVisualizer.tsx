@@ -50,23 +50,31 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
     const panelTypes = ['FRONT_PANEL', 'BACK_PANEL', 'LEFT_END_PANEL', 'RIGHT_END_PANEL']
 
     panelTypes.forEach(panelType => {
-      // Find the main panel or its first plywood piece
-      const panel = panels.find(p =>
+      // Find all plywood pieces for this panel type
+      const panelPieces = panels.filter(p =>
         p.name === panelType || p.name?.startsWith(`${panelType}_PLY`)
       )
 
-      if (!panel) return
+      if (panelPieces.length === 0) return
+
+      // Calculate aggregate bounding box for entire panel (all plywood pieces)
+      const minX = Math.min(...panelPieces.map(p => Math.min(p.point1.x, p.point2.x)))
+      const maxX = Math.max(...panelPieces.map(p => Math.max(p.point1.x, p.point2.x)))
+      const minY = Math.min(...panelPieces.map(p => Math.min(p.point1.y, p.point2.y)))
+      const maxY = Math.max(...panelPieces.map(p => Math.max(p.point1.y, p.point2.y)))
+      const minZ = Math.min(...panelPieces.map(p => Math.min(p.point1.z, p.point2.z)))
+      const maxZ = Math.max(...panelPieces.map(p => Math.max(p.point1.z, p.point2.z)))
 
       const center = {
-        x: (panel.point1.x + panel.point2.x) / 2,
-        y: (panel.point1.y + panel.point2.y) / 2,
-        z: (panel.point1.z + panel.point2.z) / 2,
+        x: (minX + maxX) / 2,
+        y: (minY + maxY) / 2,
+        z: (minZ + maxZ) / 2,
       }
 
       const size = {
-        x: Math.abs(panel.point2.x - panel.point1.x),
-        y: Math.abs(panel.point2.y - panel.point1.y),
-        z: Math.abs(panel.point2.z - panel.point1.z),
+        x: maxX - minX,
+        y: maxY - minY,
+        z: maxZ - minZ,
       }
 
       // Small offset from panel surface (in scaled units) to prevent z-fighting
