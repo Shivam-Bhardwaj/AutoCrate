@@ -124,10 +124,13 @@ describe('PanelStopCalculator', () => {
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      // Default ground clearance from GEOMETRY_STANDARDS.SIDE_PANEL_GROUND_CLEARANCE
-      const groundClearance = config.geometry?.sidePanelGroundClearance ?? 0.25
+      // Calculate panel bottom position (skid + floorboard)
+      // For weight 1000 lbs, skid is 4x4 (3.5") and floorboard is 2x6 (1.5")
+      const skidHeight = 3.5
+      const floorboardThickness = 1.5
+      const panelBottomZ = skidHeight + floorboardThickness
       const panelHeight = config.product.height + config.clearances.top
-      const expectedCenterZ = groundClearance + panelHeight / 2
+      const expectedCenterZ = panelBottomZ + panelHeight / 2
       const stopLength = layout.stopLength
 
       layout.frontPanelStops.forEach(stop => {
@@ -380,7 +383,7 @@ describe('PanelStopCalculator', () => {
       expect(layout.stopLength).toBeGreaterThan(0)
     })
 
-    it('should respect custom ground clearance', () => {
+    it('should center stops on panel regardless of ground clearance', () => {
       const config = createTestConfig({
         geometry: {
           sidePanelGroundClearance: 0.5,
@@ -389,10 +392,13 @@ describe('PanelStopCalculator', () => {
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      // Front panel stops should use the custom ground clearance
-      const customClearance = 0.5
+      // Front panel stops should center on actual panel position (skid + floorboard)
+      // not ground clearance
+      const skidHeight = 3.5
+      const floorboardThickness = 1.5
+      const panelBottomZ = skidHeight + floorboardThickness
       const panelHeight = config.product.height + config.clearances.top
-      const expectedCenterZ = customClearance + panelHeight / 2
+      const expectedCenterZ = panelBottomZ + panelHeight / 2
 
       const centerZ = (layout.frontPanelStops[0].point1.z + layout.frontPanelStops[0].point2.z) / 2
       expect(centerZ).toBeCloseTo(expectedCenterZ, 6)
