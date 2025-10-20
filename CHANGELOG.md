@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+#### 3D Visualization
+
+- **Datum Plane Scaling** - Datum planes now scale proportionally (40% of max dimension) to model size, preventing oversized planes on small crates
+- **Datum B Position** - Moved Datum B to ground level (Z=0) for accurate reference positioning
+- **Datum C Position** - Moved Datum C to outer face of skid (-spanX/2) for proper edge reference
+- **Component Visibility** - Fixed visibility toggles to properly filter boxes (skids, floorboards, panels, cleats now correctly show/hide)
+
+#### Panel Stops
+
+- **Panel Stop Positioning** - Fixed Y position to be on inner surface instead of outer, preventing interference with front panel plywood
+
+### Changed
+
+#### Testing
+
+- **Test Fixtures** - Updated test data to include required `description` field in LumberCutList
+- **Environment Variables** - Fixed NODE_ENV assignments in tests using Object.defineProperty
+- **Test Expectations** - Updated panel-stop-calculator tests to reflect corrected inner surface positioning
+
 ## [13.1.0] - 2025-10-08
 
 ### Added

@@ -11,6 +11,7 @@ import ScenarioSelector, { ScenarioPreset } from '@/components/ScenarioSelector'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { LumberCutList } from '@/components/LumberCutList'
 import { ChangeTracker } from '@/components/ChangeTracker'
+import { VisualChecklistButton } from '@/components/VisualChecklist'
 import { PART_NUMBER_STANDARDS, FASTENER_STANDARDS, UI_CONSTANTS, GEOMETRY_STANDARDS, PLYWOOD_STANDARDS } from '@/lib/crate-constants'
 
 const SCENARIO_PRESETS: ScenarioPreset[] = [
@@ -939,7 +940,7 @@ export default function Home() {
             </div>
 
             {/* Desktop: Show selected tab content */}
-            <div className="hidden lg:block flex-1">
+            <div className="hidden lg:flex lg:flex-col flex-1 min-h-0">
               {activeTab === 'visualization' && (
                 <div className="flex-1 flex flex-col min-h-0 overflow-hidden h-full">
                   <div className="flex-1 min-h-0 overflow-hidden" data-testid="crate-visualizer">
@@ -1249,6 +1250,9 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Visual Checklist Button */}
+      <VisualChecklistButton />
     </main>
   )
 }

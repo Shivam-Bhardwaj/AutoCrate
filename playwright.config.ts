@@ -37,28 +37,28 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
-      name: 'chromium',
+      name: 'Desktop Chrome',
       use: { ...devices['Desktop Chrome'] },
     },
 
-    /* Mobile devices for scrolling tests */
+    /* iPhone 12 Pro Max - Using Chromium since WebKit has WSL issues */
     {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
-    },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    },
-    {
-      name: 'Mobile Safari Small',
-      use: { ...devices['iPhone SE'] },
+      name: 'iPhone 12 Pro Max',
+      use: {
+        ...devices['iPhone 12 Pro Max'],
+        // Using Chromium engine since WebKit has dependency issues in WSL
+        browserName: 'chromium',
+      },
     },
 
-    /* Tablet devices */
+    /* iPad 5th gen - Using Chromium (same UI as Desktop) */
     {
       name: 'iPad',
-      use: { ...devices['iPad Pro'] },
+      use: {
+        ...devices['iPad Pro 11'],
+        browserName: 'chromium',
+        // iPad 5th gen: 2048x1536, iPad Pro 11 is closest match
+      },
     },
   ],
 

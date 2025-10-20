@@ -108,9 +108,9 @@ describe('PanelStopCalculator', () => {
         const stopThickness = Math.abs(stop.point2.y - stop.point1.y)
         expect(stopThickness).toBeCloseTo(thickness, 6)
 
-        // Front panel outer surface from nx-generator.ts: panelOriginY = panelThickness - plywoodThickness
-        const frontPanelOuterY = config.materials.panelThickness - config.materials.plywoodThickness
-        const stopYPosition = frontPanelOuterY  // Flush against panel, no gap
+        // Front panel inner surface (facing product): panelThickness
+        const frontPanelInnerY = config.materials.panelThickness
+        const stopYPosition = frontPanelInnerY  // Flush against panel inner surface, no gap
         const expectedStopY1 = stopYPosition
         const expectedStopY2 = stopYPosition + thickness
 
@@ -124,7 +124,8 @@ describe('PanelStopCalculator', () => {
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      const groundClearance = 4.0 // default - forklift access (updated for #90, #109)
+      // Default ground clearance from GEOMETRY_STANDARDS.SIDE_PANEL_GROUND_CLEARANCE
+      const groundClearance = config.geometry?.sidePanelGroundClearance ?? 0.25
       const panelHeight = config.product.height + config.clearances.top
       const expectedCenterZ = groundClearance + panelHeight / 2
       const stopLength = layout.stopLength
