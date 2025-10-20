@@ -194,8 +194,8 @@ export const PANEL_STOP_STANDARDS = {
   },
   /** Positioning specifications */
   POSITIONING: {
-    /** Inset from panel edge (inches) - accommodates cleat thickness */
-    edgeInset: 1.0625, // 1-1/16 inch (allows for 3/4" cleat + manufacturing tolerance)
+    /** Inset from panel edge (inches) - minimal clearance from front panel */
+    edgeInset: 0.0625, // 1/16 inch (near touching front panel)
     /** Length calculation method: half of smallest cleated panel edge dimension */
     lengthFactor: 0.5,
   },
