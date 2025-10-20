@@ -7,6 +7,67 @@
  */
 
 // ============================================================================
+// DISPLAY UTILITIES
+// ============================================================================
+
+/**
+ * Convert decimal inches to fractional display (e.g., 0.25 -> "1/4", 0.0625 -> "1/16")
+ * For values that don't have clean fractions, returns decimal with 3 places
+ */
+export function toFractionalInches(inches: number): string {
+  const tolerance = 0.0001 // Comparison tolerance
+
+  // Common fractions up to 1/16"
+  const fractions: [number, string][] = [
+    [1 / 16, '1/16'],
+    [1 / 8, '1/8'],
+    [3 / 16, '3/16'],
+    [1 / 4, '1/4'],
+    [5 / 16, '5/16'],
+    [3 / 8, '3/8'],
+    [7 / 16, '7/16'],
+    [1 / 2, '1/2'],
+    [9 / 16, '9/16'],
+    [5 / 8, '5/8'],
+    [11 / 16, '11/16'],
+    [3 / 4, '3/4'],
+    [13 / 16, '13/16'],
+    [7 / 8, '7/8'],
+    [15 / 16, '15/16'],
+  ]
+
+  // Check if it's a whole number
+  if (Math.abs(inches - Math.round(inches)) < tolerance) {
+    return Math.round(inches).toString()
+  }
+
+  // Split into whole and fractional parts
+  const whole = Math.floor(inches)
+  const fractional = inches - whole
+
+  // Find matching fraction
+  for (const [value, display] of fractions) {
+    if (Math.abs(fractional - value) < tolerance) {
+      return whole > 0 ? `${whole} ${display}` : display
+    }
+  }
+
+  // No clean fraction, return decimal
+  return inches.toFixed(3)
+}
+
+/**
+ * Format dimension for display with optional fractional conversion
+ * @param inches - dimension in inches
+ * @param useFractions - whether to display as fractions (default: true)
+ * @param suffix - optional suffix (default: '"')
+ */
+export function formatDimension(inches: number, useFractions = true, suffix = '"'): string {
+  const value = useFractions ? toFractionalInches(inches) : inches.toFixed(3)
+  return `${value}${suffix}`
+}
+
+// ============================================================================
 // MATERIAL STANDARDS
 // ============================================================================
 
@@ -198,12 +259,14 @@ export const PROJECT_IDENTIFIERS = {
  * Panel and component positioning standards
  */
 export const GEOMETRY_STANDARDS = {
-  /** Default ground clearance for side panels - forklift access (inches) */
-  SIDE_PANEL_GROUND_CLEARANCE: 4.0,
+  /** Default ground clearance for side panels (inches) - 1/4" standard */
+  SIDE_PANEL_GROUND_CLEARANCE: 0.25,
   /** Side panel edge clearance from floorboard edges (inches) */
   SIDE_PANEL_EDGE_CLEARANCE: 0.0625, // 1/16 inch
   /** Total panel thickness including cleats (inches) */
   DEFAULT_PANEL_THICKNESS: 1.0,
+  /** Standard tolerance for wood fabrication (inches) - 1/16" */
+  STANDARD_TOLERANCE: 0.0625,
   /** Default clearances if not specified */
   DEFAULT_CLEARANCES: {
     side: 2,
