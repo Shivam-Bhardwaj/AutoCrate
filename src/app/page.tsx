@@ -11,6 +11,7 @@ import ScenarioSelector, { ScenarioPreset } from '@/components/ScenarioSelector'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { LumberCutList } from '@/components/LumberCutList'
 import { ChangeTracker } from '@/components/ChangeTracker'
+import { VisualChecklistButton } from '@/components/VisualChecklist'
 import { PART_NUMBER_STANDARDS, FASTENER_STANDARDS, UI_CONSTANTS, GEOMETRY_STANDARDS, PLYWOOD_STANDARDS } from '@/lib/crate-constants'
 
 const SCENARIO_PRESETS: ScenarioPreset[] = [
@@ -1249,6 +1250,9 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Visual Checklist Button */}
+      <VisualChecklistButton />
     </main>
   )
 }
