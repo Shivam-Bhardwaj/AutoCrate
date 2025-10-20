@@ -18,10 +18,9 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
     // Get marking dimensions
     const fragileDims = generator.getMarkingDimensions('fragile')
     const handlingDims = generator.getMarkingDimensions('handling')
-    const autocrateDims = generator.getMarkingDimensions('autocrate')
 
     // Return early if no markings are enabled
-    if (!fragileDims && !handlingDims && !autocrateDims) {
+    if (!fragileDims && !handlingDims) {
       return []
     }
 
@@ -109,23 +108,6 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             partNumber: handlingDims.partNumber
           })
         }
-
-        if (autocrateDims) {
-          // Position AUTOCRATE text below center to avoid overlap with FRAGILE
-          const verticalOffset = fragileDims ? fragileDims.height / 2 + MARKING_STANDARDS.POSITIONING.VERTICAL_SEPARATION : 0
-          markingList.push({
-            position: new THREE.Vector3(
-              center.x * scale,
-              (center.z - verticalOffset) * scale,
-              -(center.y - size.y/2) * scale - surfaceOffset
-            ),
-            size: [autocrateDims.width * scale, autocrateDims.height * scale],
-            text: 'AUTOCRATE',
-            color: MARKING_STANDARDS.COLORS.AUTOCRATE,
-            fontSize: autocrateDims.height * scale * 0.5,
-            partNumber: autocrateDims.partNumber
-          })
-        }
       } else if (panelType === 'BACK_PANEL') {
         // Back panel faces +Y direction
 
@@ -158,24 +140,6 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             fontSize: handlingDims.height * scale * 0.2,
             rotation: [0, Math.PI, 0],
             partNumber: handlingDims.partNumber
-          })
-        }
-
-        if (autocrateDims) {
-          // Position AUTOCRATE text below center to avoid overlap with FRAGILE
-          const verticalOffset = fragileDims ? fragileDims.height / 2 + MARKING_STANDARDS.POSITIONING.VERTICAL_SEPARATION : 0
-          markingList.push({
-            position: new THREE.Vector3(
-              center.x * scale,
-              (center.z - verticalOffset) * scale,
-              -(center.y + size.y/2) * scale + surfaceOffset
-            ),
-            size: [autocrateDims.width * scale, autocrateDims.height * scale],
-            text: 'AUTOCRATE',
-            color: MARKING_STANDARDS.COLORS.AUTOCRATE,
-            fontSize: autocrateDims.height * scale * 0.5,
-            rotation: [0, Math.PI, 0],
-            partNumber: autocrateDims.partNumber
           })
         }
       } else if (panelType === 'LEFT_END_PANEL') {
@@ -212,24 +176,6 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             partNumber: handlingDims.partNumber
           })
         }
-
-        if (autocrateDims) {
-          // Position AUTOCRATE text below center to avoid overlap with FRAGILE
-          const verticalOffset = fragileDims ? fragileDims.height / 2 + MARKING_STANDARDS.POSITIONING.VERTICAL_SEPARATION : 0
-          markingList.push({
-            position: new THREE.Vector3(
-              (center.x - size.x/2) * scale - surfaceOffset,
-              (center.z - verticalOffset) * scale,
-              -center.y * scale
-            ),
-            size: [autocrateDims.width * scale, autocrateDims.height * scale],
-            text: 'AUTOCRATE',
-            color: MARKING_STANDARDS.COLORS.AUTOCRATE,
-            fontSize: autocrateDims.height * scale * 0.5,
-            rotation: [0, -Math.PI/2, 0],
-            partNumber: autocrateDims.partNumber
-          })
-        }
       } else if (panelType === 'RIGHT_END_PANEL') {
         // Right panel faces +X direction
 
@@ -262,24 +208,6 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
             fontSize: handlingDims.height * scale * 0.2,
             rotation: [0, Math.PI/2, 0],
             partNumber: handlingDims.partNumber
-          })
-        }
-
-        if (autocrateDims) {
-          // Position AUTOCRATE text below center to avoid overlap with FRAGILE
-          const verticalOffset = fragileDims ? fragileDims.height / 2 + MARKING_STANDARDS.POSITIONING.VERTICAL_SEPARATION : 0
-          markingList.push({
-            position: new THREE.Vector3(
-              (center.x + size.x/2) * scale + surfaceOffset,
-              (center.z - verticalOffset) * scale,
-              -center.y * scale
-            ),
-            size: [autocrateDims.width * scale, autocrateDims.height * scale],
-            text: 'AUTOCRATE',
-            color: MARKING_STANDARDS.COLORS.AUTOCRATE,
-            fontSize: autocrateDims.height * scale * 0.5,
-            rotation: [0, Math.PI/2, 0],
-            partNumber: autocrateDims.partNumber
           })
         }
       }
