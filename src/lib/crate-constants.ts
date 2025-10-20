@@ -393,6 +393,10 @@ export const UI_CONSTANTS = {
     LABEL_OFFSET_FACTOR: 0.1,
     /** Multiplier for center calculations */
     CENTER_MULTIPLIER: 0.5,
+    /** Datum plane size multiplier relative to max crate dimension */
+    DATUM_PLANE_SIZE_MULTIPLIER: 0.4,
+    /** Datum label offset multiplier relative to max crate dimension */
+    DATUM_LABEL_OFFSET_MULTIPLIER: 0.15,
   },
   /** 3D Scene lighting configuration */
   LIGHTING: {

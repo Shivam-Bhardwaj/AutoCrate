@@ -4,12 +4,12 @@ import { LumberCutList as LumberCutListData } from '@/lib/nx-generator'
 
 const mockCutList: LumberCutListData = {
   skids: [
-    { material: '4x4', length: 48, count: 3, notes: 'Primary skids' },
-    { material: '4x4', length: 36, count: 2, notes: 'Secondary skids' }
+    { description: 'Primary skids', material: '4x4', length: 48, count: 3, notes: 'Primary skids' },
+    { description: 'Secondary skids', material: '4x4', length: 36, count: 2, notes: 'Secondary skids' }
   ],
   floorboards: [
-    { material: '2x6', length: 96, count: 8, notes: 'Full length' },
-    { material: '2x6', length: 48, count: 2, notes: 'Half length' }
+    { description: 'Full length', material: '2x6', length: 96, count: 8, notes: 'Full length' },
+    { description: 'Half length', material: '2x6', length: 48, count: 2, notes: 'Half length' }
   ],
   cleats: [
     {

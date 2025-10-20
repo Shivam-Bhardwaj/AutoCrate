@@ -133,16 +133,17 @@ export class PanelStopCalculator {
     // Internal space dimensions (where side panels meet front panel)
     const internalWidth = product.width + 2 * clearances.side
 
-    // Front panel outer surface position from nx-generator.ts line 804
-    // panelOriginY = panelThickness - plywoodThickness
-    const frontPanelOuterY = panelThickness - plywoodThickness
+    // Front panel surfaces:
+    // - Outer surface (facing outward): panelThickness - plywoodThickness
+    // - Inner surface (facing product): panelThickness
+    const frontPanelInnerY = panelThickness
 
     // Ground clearance for panels
     const groundClearance = this.config.geometry?.sidePanelGroundClearance ??
                            GEOMETRY_STANDARDS.SIDE_PANEL_GROUND_CLEARANCE
 
-    // Stops are positioned flush against the front panel inner surface
-    const stopYPosition = frontPanelOuterY  // Flush against panel, no gap
+    // Stops are positioned flush against the front panel inner surface (facing product)
+    const stopYPosition = frontPanelInnerY  // Flush against panel inner surface, no gap
 
     const stops: NXBox[] = []
 
