@@ -732,7 +732,6 @@ function NXBoxMesh({
         />
         <Edges
           color='#1f2937'
-          scale={1.0006}
         />
       </Box>
 
