@@ -940,7 +940,7 @@ export default function Home() {
             </div>
 
             {/* Desktop: Show selected tab content */}
-            <div className="hidden lg:block flex-1">
+            <div className="hidden lg:flex lg:flex-col flex-1 min-h-0">
               {activeTab === 'visualization' && (
                 <div className="flex-1 flex flex-col min-h-0 overflow-hidden h-full">
                   <div className="flex-1 min-h-0 overflow-hidden" data-testid="crate-visualizer">
