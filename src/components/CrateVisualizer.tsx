@@ -721,6 +721,7 @@ function NXBoxMesh({
         }}
         onContextMenu={(e) => {
           e.stopPropagation()
+          e.preventDefault() // Prevent default context menu and camera reset
           onHide(box.name)
         }}
       >
