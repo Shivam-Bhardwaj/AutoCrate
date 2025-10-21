@@ -194,8 +194,8 @@ export const PANEL_STOP_STANDARDS = {
   },
   /** Positioning specifications */
   POSITIONING: {
-    /** Inset from panel edge (inches) - minimal clearance from front panel */
-    edgeInset: 0.0625, // 1/16 inch (near touching front panel)
+    /** Inset from panel edge (inches) - clearance from front panel */
+    edgeInset: 0.625, // 5/8 inch clearance, near touching front panel
     /** Length calculation method: half of smallest cleated panel edge dimension */
     lengthFactor: 0.5,
   },

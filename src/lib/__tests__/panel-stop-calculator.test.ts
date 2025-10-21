@@ -96,12 +96,13 @@ describe('PanelStopCalculator', () => {
       })
     })
 
-    it('should position stops flush against front panel', () => {
+    it('should position stops with 0.625" clearance from front panel', () => {
       const config = createTestConfig()
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
       const { thickness, width } = PANEL_STOP_STANDARDS.MATERIAL
+      const { edgeInset } = PANEL_STOP_STANDARDS.POSITIONING
 
       // Verify stops are positioned with correct thickness
       layout.frontPanelStops.forEach(stop => {
@@ -125,7 +126,7 @@ describe('PanelStopCalculator', () => {
       const layout = calculator.calculatePanelStops()
 
       // Calculate panel bottom position (skid + floorboard)
-      // For weight 1000 lbs, skid is 4x4 (3.5") and floorboard is 2x6 (1.5")
+      // For weight 500 lbs, skid is 4x4 (3.5") and floorboard is 2x6 (1.5")
       const skidHeight = 3.5
       const floorboardThickness = 1.5
       const panelBottomZ = skidHeight + floorboardThickness

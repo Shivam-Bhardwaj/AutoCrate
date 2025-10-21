@@ -8,7 +8,7 @@
  * Placement:
  * - 2 stops on front cleated panel side edges (left and right)
  * - 1 stop on top panel front edge
- * - All stops positioned 1.0625" from panel edge (accommodates cleat thickness)
+ * - All stops positioned 0.625" from panel edge (near touching front panel)
  * - Length: half the smallest cleated panel edge dimension, centered
  */
 
