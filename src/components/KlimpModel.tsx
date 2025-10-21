@@ -7,6 +7,7 @@ import { NXBox } from '@/lib/nx-generator'
 import { KlimpBoundingBox, useStepDimensions } from './StepBoundingBox'
 import { OrientationDetector } from '@/lib/orientation-detector'
 import { StepFileViewer } from './StepFileViewer'
+import { Klimp3D } from './HardwareModel3D'
 
 interface KlimpModelProps {
   box: NXBox
@@ -14,10 +15,11 @@ interface KlimpModelProps {
   onError?: () => void
   useBoundingBox?: boolean  // Control whether to use bounding box, GLB, or STEP
   useStepFile?: boolean  // New prop to use actual STEP file geometry
+  use3DModel?: boolean  // Use hardcoded 3D model (most reliable)
 }
 
 // Component to load and display actual Klimp 3D model or bounding box
-export function KlimpModel({ box, scale = 0.1, onError, useBoundingBox = true, useStepFile = true }: KlimpModelProps) {
+export function KlimpModel({ box, scale = 0.1, onError, useBoundingBox = false, useStepFile = false, use3DModel = true }: KlimpModelProps) {
   const groupRef = useRef<Group>(null)
   const [useBox, setUseBox] = useState(useBoundingBox && !useStepFile)
 
@@ -47,6 +49,11 @@ export function KlimpModel({ box, scale = 0.1, onError, useBoundingBox = true, u
     })
 
     return [orientation.rotation.x, orientation.rotation.y, orientation.rotation.z]
+  }
+
+  // Use hardcoded 3D model (most reliable option)
+  if (use3DModel) {
+    return <Klimp3D box={box} scale={scale} />
   }
 
   // Use actual STEP file geometry if requested
