@@ -3,15 +3,18 @@
 import { Text, Plane, Box } from '@react-three/drei'
 import { NXBox, NXGenerator, MarkingDimensions } from '@/lib/nx-generator'
 import { MARKING_STANDARDS } from '@/lib/crate-constants'
+import { StencilBoundingBox, useStepDimensions } from './StepBoundingBox'
+import { OrientationDetector } from '@/lib/orientation-detector'
 import * as THREE from 'three'
 import { useMemo } from 'react'
 
 interface MarkingVisualizerProps {
   boxes: NXBox[]
   generator: NXGenerator
+  useBoundingBox?: boolean  // New prop to control whether to use bounding boxes or text
 }
 
-export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) {
+export function MarkingVisualizer({ boxes, generator, useBoundingBox = true }: MarkingVisualizerProps) {
   const scale = 0.1 // Same scale as CrateVisualizer
 
   const markings = useMemo(() => {
@@ -228,6 +231,64 @@ export function MarkingVisualizer({ boxes, generator }: MarkingVisualizerProps) 
     return null
   }
 
+  // If using bounding boxes, render dark boxes from STEP files
+  if (useBoundingBox) {
+    return (
+      <group name="markings-bounding-boxes">
+        {markings.map((marking, index) => {
+          // Determine stencil type from marking text
+          let stencilType: 'fragile' | 'horizontal-handling' | 'vertical-handling' | 'cg' | 'do-not-stack' | 'applied-impact' = 'fragile'
+
+          if (marking.text.includes('FRAGILE')) {
+            stencilType = 'fragile'
+          } else if (marking.text.includes('GLASS') || marking.text.includes('UMBRELLA')) {
+            // For now, use vertical handling for all handling symbols
+            stencilType = 'vertical-handling'
+          }
+
+          // Determine edge/panel from rotation
+          let edge: 'front' | 'back' | 'left' | 'right' | 'top' = 'front'
+          const rot = marking.rotation || [0, 0, 0]
+
+          if (Math.abs(rot[1] - Math.PI) < 0.1) {
+            edge = 'back'
+          } else if (Math.abs(rot[1] - Math.PI / 2) < 0.1) {
+            edge = 'right'
+          } else if (Math.abs(rot[1] + Math.PI / 2) < 0.1) {
+            edge = 'left'
+          }
+
+          // Get orientation for this stencil
+          const orientation = OrientationDetector.getStencilOrientation(
+            stencilType === 'fragile' ? 'STENCIL - FRAGILE.stp' : 'STENCIL - VERTICAL HANDLING.stp',
+            {
+              edge,
+              surfaceNormal: { x: 0, y: edge === 'left' ? -1 : edge === 'right' ? 1 : 0, z: 0 }
+            }
+          )
+
+          // Convert Three.js position back to NX coordinates for StencilBoundingBox
+          const nxPos: [number, number, number] = [
+            marking.position.x / 0.1,  // Scale back from Three.js
+            -marking.position.z / 0.1,
+            marking.position.y / 0.1
+          ]
+
+          return (
+            <StencilBoundingBox
+              key={index}
+              stencilType={stencilType}
+              position={nxPos}
+              rotation={[orientation.rotation.x, orientation.rotation.y, orientation.rotation.z]}
+              scale={0.1}
+            />
+          )
+        })}
+      </group>
+    )
+  }
+
+  // Otherwise render with text (original behavior)
   return (
     <group name="markings">
       {markings.map((marking, index) => (
