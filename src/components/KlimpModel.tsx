@@ -6,18 +6,20 @@ import { Group, Material, Mesh, MeshStandardMaterial } from 'three'
 import { NXBox } from '@/lib/nx-generator'
 import { KlimpBoundingBox, useStepDimensions } from './StepBoundingBox'
 import { OrientationDetector } from '@/lib/orientation-detector'
+import { StepFileViewer } from './StepFileViewer'
 
 interface KlimpModelProps {
   box: NXBox
   scale?: number
   onError?: () => void
-  useBoundingBox?: boolean  // New prop to control whether to use bounding box or GLB
+  useBoundingBox?: boolean  // Control whether to use bounding box, GLB, or STEP
+  useStepFile?: boolean  // New prop to use actual STEP file geometry
 }
 
 // Component to load and display actual Klimp 3D model or bounding box
-export function KlimpModel({ box, scale = 0.1, onError, useBoundingBox = true }: KlimpModelProps) {
+export function KlimpModel({ box, scale = 0.1, onError, useBoundingBox = true, useStepFile = true }: KlimpModelProps) {
   const groupRef = useRef<Group>(null)
-  const [useBox, setUseBox] = useState(useBoundingBox)
+  const [useBox, setUseBox] = useState(useBoundingBox && !useStepFile)
 
   // Calculate center from box data
   const center = {
@@ -45,6 +47,26 @@ export function KlimpModel({ box, scale = 0.1, onError, useBoundingBox = true }:
     })
 
     return [orientation.rotation.x, orientation.rotation.y, orientation.rotation.z]
+  }
+
+  // Use actual STEP file geometry if requested
+  if (useStepFile && !useBoundingBox) {
+    const rotation = getRotation()
+
+    return (
+      <StepFileViewer
+        stepFileUrl="/step-files/klimp-4.stp"
+        position={[center.x, center.y, center.z]}
+        rotation={rotation}
+        scale={scale}
+        color="#8b7355"
+        onError={() => {
+          console.error('Failed to load STEP file, falling back to bounding box')
+          setUseBox(true)
+          onError?.()
+        }}
+      />
+    )
   }
 
   // Use bounding box from STEP file if requested
