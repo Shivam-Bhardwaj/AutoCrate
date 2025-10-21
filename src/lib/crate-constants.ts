@@ -98,7 +98,7 @@ export const LUMBER_DIMENSIONS = {
   '2x10': { height: 1.5, width: 9.25 },
   '2x12': { height: 1.5, width: 11.25 },
   '3x3': { height: 2.5, width: 2.5 },
-  '3x4': { height: 2.5, width: 3.5 },
+  '3x4': { height: 3.5, width: 2.5 }, // Oriented for 3.5" forklift clearance
   '4x4': { height: 3.5, width: 3.5 },
   '4x6': { height: 3.5, width: 5.5 },
   '6x6': { height: 5.5, width: 5.5 },

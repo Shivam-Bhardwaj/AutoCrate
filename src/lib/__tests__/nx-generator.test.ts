@@ -62,7 +62,8 @@ describe('NXGenerator', () => {
     )
 
     const expressions = generator.getExpressions()
-    expect(expressions.get('skid_width')).toBeCloseTo(3.5) // 3x4 lumber has actual width of 3.5"
+    expect(expressions.get('skid_width')).toBeCloseTo(2.5) // 3x4 lumber oriented as 3.5" tall x 2.5" wide
+    expect(expressions.get('skid_height')).toBeCloseTo(3.5) // 3.5" height for forklift clearance
     expect(expressions.get('skid_max_spacing')).toBeGreaterThan(0)
 
     const skidCount = expressions.get('skid_count') || 0
