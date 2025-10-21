@@ -199,6 +199,15 @@ Stencils are flat (depth ≈ 0) and face outward from panels:
 threeJsPos = [nxX * scale, nxZ * scale, -nxY * scale]
 ```
 
+**Important Note on STEP File Centers:**
+The bounding box `center` from parsed STEP files is relative to the STEP file's internal origin and should NOT be added to component positions. Component positions are already in final NX coordinates where the component should be placed. The STEP center is metadata about the model's internal structure, not a position offset.
+
+Example:
+- Component should be at NX position (10, 20, 30)
+- STEP file center is (1.36, 1.47, -0.50)
+- **Correct**: Position mesh at [10*0.1, 30*0.1, -20*0.1] = [1.0, 3.0, -2.0]
+- **Incorrect**: Position mesh at [(10+1.36)*0.1, ...] = [1.136, ...] ❌
+
 ## Color Scheme
 
 Dark bounding boxes for visualization:
