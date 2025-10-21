@@ -96,12 +96,13 @@ describe('PanelStopCalculator', () => {
       })
     })
 
-    it('should position stops flush against front panel', () => {
+    it('should position stops with 0.625" clearance from front panel', () => {
       const config = createTestConfig()
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
       const { thickness, width } = PANEL_STOP_STANDARDS.MATERIAL
+      const { edgeInset } = PANEL_STOP_STANDARDS.POSITIONING
 
       // Verify stops are positioned with correct thickness
       layout.frontPanelStops.forEach(stop => {
@@ -110,7 +111,7 @@ describe('PanelStopCalculator', () => {
 
         // Front panel outer surface from nx-generator.ts: panelOriginY = panelThickness - plywoodThickness
         const frontPanelOuterY = config.materials.panelThickness - config.materials.plywoodThickness
-        const stopYPosition = frontPanelOuterY  // Flush against panel, no gap
+        const stopYPosition = frontPanelOuterY + edgeInset  // 0.625" clearance from panel
         const expectedStopY1 = stopYPosition
         const expectedStopY2 = stopYPosition + thickness
 
@@ -375,7 +376,7 @@ describe('PanelStopCalculator', () => {
       expect(layout.stopLength).toBeGreaterThan(0)
     })
 
-    it('should respect custom ground clearance', () => {
+    it('should position front panel stops on skid height (not ground clearance)', () => {
       const config = createTestConfig({
         geometry: {
           sidePanelGroundClearance: 0.5,
@@ -384,10 +385,12 @@ describe('PanelStopCalculator', () => {
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      // Front panel stops should use the custom ground clearance
-      const customClearance = 0.5
+      // Front panel stops use skid height, NOT custom ground clearance
+      // (only side panels use ground clearance)
+      // For 500 lb crate: skid = 4x4 (3.5")
+      const skidHeight = 3.5
       const panelHeight = config.product.height + config.clearances.top
-      const expectedCenterZ = customClearance + panelHeight / 2
+      const expectedCenterZ = skidHeight + panelHeight / 2
 
       const centerZ = (layout.frontPanelStops[0].point1.z + layout.frontPanelStops[0].point2.z) / 2
       expect(centerZ).toBeCloseTo(expectedCenterZ, 6)
