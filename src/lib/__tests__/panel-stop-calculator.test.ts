@@ -109,9 +109,9 @@ describe('PanelStopCalculator', () => {
         const stopThickness = Math.abs(stop.point2.y - stop.point1.y)
         expect(stopThickness).toBeCloseTo(thickness, 6)
 
-        // Front panel outer surface from nx-generator.ts: panelOriginY = panelThickness - plywoodThickness
-        const frontPanelOuterY = config.materials.panelThickness - config.materials.plywoodThickness
-        const stopYPosition = frontPanelOuterY + edgeInset  // 0.625" clearance from panel
+        // Front panel inner surface (facing product): panelThickness
+        const frontPanelInnerY = config.materials.panelThickness
+        const stopYPosition = frontPanelInnerY  // Flush against panel inner surface, no gap
         const expectedStopY1 = stopYPosition
         const expectedStopY2 = stopYPosition + thickness
 
@@ -125,11 +125,13 @@ describe('PanelStopCalculator', () => {
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      // Front panel sits on top of skids (not at ground clearance)
-      // For 500 lb crate, uses 4x4 skids with height 3.5"
+      // Calculate panel bottom position (skid + floorboard)
+      // For weight 500 lbs, skid is 4x4 (3.5") and floorboard is 2x6 (1.5")
       const skidHeight = 3.5
+      const floorboardThickness = 1.5
+      const panelBottomZ = skidHeight + floorboardThickness
       const panelHeight = config.product.height + config.clearances.top
-      const expectedCenterZ = skidHeight + panelHeight / 2
+      const expectedCenterZ = panelBottomZ + panelHeight / 2
       const stopLength = layout.stopLength
 
       layout.frontPanelStops.forEach(stop => {
@@ -151,15 +153,16 @@ describe('PanelStopCalculator', () => {
       const leftStop = layout.frontPanelStops[0]
       const rightStop = layout.frontPanelStops[1]
 
-      // Left stop moved inward by half stop width to avoid side panel interference
+      // Left stop moved inward by half stop width + edgeInset to avoid side panel interference (fixes #95)
+      const edgeInset = PANEL_STOP_STANDARDS.POSITIONING.edgeInset
       const leftCenterX = (leftStop.point1.x + leftStop.point2.x) / 2
       expect(leftCenterX).toBeLessThan(0)
-      expect(leftCenterX).toBeCloseTo(-internalWidth / 2 + stopWidth / 2, 6)
+      expect(leftCenterX).toBeCloseTo(-internalWidth / 2 + stopWidth / 2 + edgeInset, 6)
 
-      // Right stop moved inward by half stop width to avoid side panel interference
+      // Right stop moved inward by half stop width + edgeInset to avoid side panel interference (fixes #95)
       const rightCenterX = (rightStop.point1.x + rightStop.point2.x) / 2
       expect(rightCenterX).toBeGreaterThan(0)
-      expect(rightCenterX).toBeCloseTo(internalWidth / 2 - stopWidth / 2, 6)
+      expect(rightCenterX).toBeCloseTo(internalWidth / 2 - stopWidth / 2 - edgeInset, 6)
 
       // Should be symmetric about center
       expect(Math.abs(leftCenterX)).toBeCloseTo(Math.abs(rightCenterX), 6)
@@ -199,16 +202,15 @@ describe('PanelStopCalculator', () => {
       const stopThickness = Math.abs(stop.point2.z - stop.point1.z)
       expect(stopThickness).toBeCloseTo(thickness, 6)
 
-      // Stop should be flush against bottom surface of top panel
+      // Stop should be flush against bottom surface of top panel (fixes #94: no gap)
       // For 500 lb product: skid = 4x4 (3.5"), floorboard = 2x6 (1.5")
       const skidHeight = 3.5
       const floorboardThickness = 1.5
       const baseZ = skidHeight + floorboardThickness
       const topPanelZ = baseZ + config.product.height + config.clearances.top
-      const topPanelBottom = topPanelZ - config.materials.plywoodThickness
 
-      expect(stop.point2.z).toBeCloseTo(topPanelBottom, 6)
-      expect(stop.point1.z).toBeCloseTo(topPanelBottom - thickness, 6)
+      expect(stop.point2.z).toBeCloseTo(topPanelZ, 6)  // Top surface flush with panel bottom
+      expect(stop.point1.z).toBeCloseTo(topPanelZ - thickness, 6)  // Extends downward by thickness
     })
 
     it('should center stop horizontally along panel width', () => {
@@ -229,19 +231,25 @@ describe('PanelStopCalculator', () => {
       expect(stop.point2.x).toBeCloseTo(stopLength / 2, 6)
     })
 
-    it('should position stop at front edge of top panel', () => {
+    it('should position stop behind front panel to avoid interference', () => {
       const config = createTestConfig()
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      // Front edge of top panel from nx-generator.ts line 825: panelOriginY = 0
-      const frontEdgeY = 0
+      // Stop should be positioned at edgeInset (1.0625") from front panel (fixes #96)
+      // Front panel inner surface is at Y = panelThickness
+      const frontPanelInnerY = config.materials.panelThickness
+      const edgeInset = PANEL_STOP_STANDARDS.POSITIONING.edgeInset
       const stopWidth = PANEL_STOP_STANDARDS.MATERIAL.width
-      const expectedCenterY = frontEdgeY + stopWidth / 2
+      const expectedStartY = frontPanelInnerY + edgeInset
+      const expectedCenterY = expectedStartY + stopWidth / 2
 
       const stop = layout.topPanelStop
       const centerY = (stop.point1.y + stop.point2.y) / 2
       expect(centerY).toBeCloseTo(expectedCenterY, 6)
+
+      // Verify stop starts at proper distance from front panel to avoid interference
+      expect(stop.point1.y).toBeCloseTo(expectedStartY, 6)
     })
   })
 
@@ -376,7 +384,7 @@ describe('PanelStopCalculator', () => {
       expect(layout.stopLength).toBeGreaterThan(0)
     })
 
-    it('should position front panel stops on skid height (not ground clearance)', () => {
+    it('should center stops on panel regardless of ground clearance', () => {
       const config = createTestConfig({
         geometry: {
           sidePanelGroundClearance: 0.5,
@@ -385,12 +393,13 @@ describe('PanelStopCalculator', () => {
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      // Front panel stops use skid height, NOT custom ground clearance
-      // (only side panels use ground clearance)
-      // For 500 lb crate: skid = 4x4 (3.5")
+      // Front panel stops should center on actual panel position (skid + floorboard)
+      // not ground clearance
       const skidHeight = 3.5
+      const floorboardThickness = 1.5
+      const panelBottomZ = skidHeight + floorboardThickness
       const panelHeight = config.product.height + config.clearances.top
-      const expectedCenterZ = skidHeight + panelHeight / 2
+      const expectedCenterZ = panelBottomZ + panelHeight / 2
 
       const centerZ = (layout.frontPanelStops[0].point1.z + layout.frontPanelStops[0].point2.z) / 2
       expect(centerZ).toBeCloseTo(expectedCenterZ, 6)

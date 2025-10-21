@@ -155,3 +155,10 @@ export const heavyRateLimit = rateLimit({
   windowMs: 5 * 60 * 1000,  // per 5 minutes
   message: 'This operation is resource-intensive. Please wait before trying again.'
 })
+
+/**
+ * Clear rate limit store (for testing purposes only)
+ */
+export function clearRateLimitStore() {
+  rateLimitStore.clear()
+}

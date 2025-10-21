@@ -191,22 +191,38 @@ describe('validateUrl', () => {
 
   it('should reject localhost in production', () => {
     const originalEnv = process.env.NODE_ENV
-    process.env.NODE_ENV = 'production'
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      value: 'production',
+      writable: true,
+      configurable: true
+    })
 
     expect(() => validateUrl('http://localhost:3000')).toThrow(ValidationError)
     expect(() => validateUrl('http://127.0.0.1')).toThrow(ValidationError)
     expect(() => validateUrl('http://192.168.1.1')).toThrow(ValidationError)
 
-    process.env.NODE_ENV = originalEnv
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      value: originalEnv,
+      writable: true,
+      configurable: true
+    })
   })
 
   it('should allow localhost in development', () => {
     const originalEnv = process.env.NODE_ENV
-    process.env.NODE_ENV = 'development'
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      value: 'development',
+      writable: true,
+      configurable: true
+    })
 
     expect(validateUrl('http://localhost:3000')).toContain('localhost')
 
-    process.env.NODE_ENV = originalEnv
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      value: originalEnv,
+      writable: true,
+      configurable: true
+    })
   })
 })
 

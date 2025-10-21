@@ -810,17 +810,23 @@ export class NXGenerator {
         panelOriginY = internalLength + 1  // Move 1 inch further back to align with last floorboard's inner edge
         panelOriginZ = skidHeight  // Sits on top of skids
       } else if (layout.panelName === 'LEFT_END_PANEL') {
-        // Left panel inner surface should be flush with the outer edge of floorboards
+        // Left panel inner surface with 1/16" clearance from floorboard edge
         // Floorboards run from -internalWidth/2 to internalWidth/2
-        panelOriginX = -internalWidth/2 - plywoodThickness  // Panel's inner surface flush with floorboard edge
+        const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
+        panelOriginX = -internalWidth/2 - plywoodThickness + edgeClearance  // 1/16" clearance inward
         panelOriginY = panelThickness
-        panelOriginZ = sideGroundClearance
+        // Side panel starts at ground clearance for forklift access (fixes #90, #109)
+        const groundClearance = this.getSidePanelGroundClearance()
+        panelOriginZ = groundClearance
         isVerticalPanel = true
       } else if (layout.panelName === 'RIGHT_END_PANEL') {
-        // Right panel inner surface should be flush with the outer edge of floorboards
-        panelOriginX = internalWidth/2  // Panel's inner surface flush with floorboard edge
+        // Right panel inner surface with 1/16" clearance from floorboard edge
+        const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
+        panelOriginX = internalWidth/2 - edgeClearance  // 1/16" clearance inward
         panelOriginY = panelThickness
-        panelOriginZ = sideGroundClearance
+        // Side panel starts at ground clearance for forklift access (fixes #90, #109)
+        const groundClearance = this.getSidePanelGroundClearance()
+        panelOriginZ = groundClearance
         isVerticalPanel = true
       } else if (layout.panelName === 'TOP_PANEL') {
         panelOriginX = -internalWidth/2 - panelThickness
@@ -942,16 +948,22 @@ export class NXGenerator {
         panelOriginZ = skidHeight  // Match panel position
       } else if (cleatLayout.panelName === 'LEFT_END_PANEL') {
         // Left panel cleats are on the outside (left) face
-        // Panel is at -internalWidth/2 - plywoodThickness, cleats go even further out
-        panelOriginX = -internalWidth/2 - plywoodThickness - cleatThickness // Cleats on outside of panel
+        // Panel has 1/16" clearance, cleats go on outside
+        const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
+        panelOriginX = -internalWidth/2 - plywoodThickness + edgeClearance - cleatThickness // Cleats on outside of panel
         panelOriginY = panelThickness
-        panelOriginZ = sideGroundClearance
+        // Match panel Z origin - starts at ground clearance (fixes #90, #109)
+        const groundClearance = this.getSidePanelGroundClearance()
+        panelOriginZ = groundClearance
       } else if (cleatLayout.panelName === 'RIGHT_END_PANEL') {
         // Right panel cleats are on the outside (right) face
-        // Panel is at internalWidth/2, cleats go even further out
-        panelOriginX = internalWidth/2 + plywoodThickness // Cleats on outside of panel
+        // Panel has 1/16" clearance, cleats go on outside
+        const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
+        panelOriginX = internalWidth/2 - edgeClearance + plywoodThickness // Cleats on outside of panel
         panelOriginY = panelThickness
-        panelOriginZ = sideGroundClearance
+        // Match panel Z origin - starts at ground clearance (fixes #90, #109)
+        const groundClearance = this.getSidePanelGroundClearance()
+        panelOriginZ = groundClearance
       } else if (cleatLayout.panelName === 'TOP_PANEL') {
         // Top panel cleats are on the outside (top) face
         panelOriginX = -internalWidth/2 - panelThickness  // Match panel origin
@@ -1081,8 +1093,10 @@ export class NXGenerator {
     this.expressions.set('lag_screw_count', this.lagScrewCount)
   }
   private generateLagRowPositions(start: number, end: number, spacing: number): number[] {
-    const MIN_SPACING = 18
-    const MAX_SPACING = 24
+    // Adaptive spacing based on edge length for better small crate handling
+    const span = end - start
+    const MIN_SPACING = span < 36 ? 6 : 12  // Small crates: 6" min, Large: 12" min
+    const MAX_SPACING = span < 36 ? 18 : 24  // Small crates: 18" max, Large: 24" max
     const tolerance = 1e-4
 
     const clampedSpacing = Math.round(Math.min(MAX_SPACING, Math.max(MIN_SPACING, spacing)) * 16) / 16
@@ -1091,47 +1105,29 @@ export class NXGenerator {
       return [Number(((start + end) / 2).toFixed(4))]
     }
 
-    const span = end - start
-    const minCount = Math.max(1, Math.floor(span / MAX_SPACING) + 1)
-    const maxCount = Math.max(minCount, Math.floor(span / MIN_SPACING) + 1)
-
-    let bestPositions: number[] | null = null
-    let bestScore = Number.POSITIVE_INFINITY
-    let bestCount = Number.POSITIVE_INFINITY
-
-    for (let count = minCount; count <= maxCount; count++) {
-      if (count === 1) {
-        const mid = Number(((start + end) / 2).toFixed(4))
-        if (!bestPositions || bestScore > 0) {
-          bestPositions = [mid]
-          bestScore = 0
-          bestCount = 1
-        }
-        continue
-      }
-
-      const intervals = count - 1
-      const rawSpacing = span / intervals
-      if (rawSpacing < MIN_SPACING - tolerance || rawSpacing > MAX_SPACING + tolerance) {
-        continue
-      }
-
-      const offset = (span - rawSpacing * intervals) / 2
-      const positions = Array.from({ length: count }, (_, index) => Number((start + offset + index * rawSpacing).toFixed(4)))
-      const score = Math.abs(rawSpacing - clampedSpacing)
-
-      if (!bestPositions || score < bestScore - tolerance || (Math.abs(score - bestScore) <= tolerance && count < bestCount)) {
-        bestPositions = positions
-        bestScore = score
-        bestCount = count
-      }
+    // Always place screws at start and end positions (fixes #91, #92)
+    // Minimum 2 lags per edge for structural integrity
+    if (span < MIN_SPACING) {
+      // Edge too small for proper spacing - place at ends only
+      return [Number(start.toFixed(4)), Number(end.toFixed(4))]
     }
 
-    if (!bestPositions) {
-      return [Number(((start + end) / 2).toFixed(4))]
+    // Calculate minimum number of screws needed to satisfy MAX_SPACING
+    const minCount = Math.max(2, Math.ceil(span / MAX_SPACING) + 1)
+
+    // For very small spans, just place at ends
+    if (span <= MAX_SPACING) {
+      return [Number(start.toFixed(4)), Number(end.toFixed(4))]
     }
 
-    return bestPositions
+    // Place screws at start, end, and evenly spaced intermediates
+    const intervals = minCount - 1
+    const actualSpacing = span / intervals
+    const positions = Array.from({ length: minCount }, (_, index) =>
+      Number((start + index * actualSpacing).toFixed(4))
+    )
+
+    return positions
   }
 
   private addLagHardwareForSidePanel(
@@ -1556,9 +1552,9 @@ export class NXGenerator {
     const frontBackWidth = internalWidth + 2 * panelThickness
     const frontBackHeight = internalHeight + floorboardThickness
     const sideWidth = internalLength
+    // Side panels start at ground clearance and extend to top panel (fixes #90, #109)
     const sideGroundClearance = this.expressions.get('side_panel_ground_clearance') ?? this.getSidePanelGroundClearance()
-    // Sides hang past the floor by the configured clearance to maintain lift space
-    const sideHeight = internalHeight + floorboardThickness + skidHeight - sideGroundClearance
+    const sideHeight = skidHeight + internalHeight + floorboardThickness - sideGroundClearance
     const topWidth = internalWidth + 2 * panelThickness
     const topLength = internalLength + 2 * panelThickness
 
@@ -1653,8 +1649,20 @@ export class NXGenerator {
   exportNXExpressions(): string {
     let output = '# NX Expressions for AutoCrate\n'
     output += '# Generated: ' + new Date().toISOString() + '\n'
-    output += '# Coordinate System: X=width, Y=length, Z=height\n'
-    output += '# Origin at center of crate floor (Z=0)\n'
+    output += '# \n'
+    output += '# COORDINATE SYSTEM & DATUM PLANES (fixes #86, #97, #110):\n'
+    output += '# - Origin: Center bottom of crate (X=0, Y=0, Z=0)\n'
+    output += '# - X-axis: Width (left negative, right positive)\n'
+    output += '# - Y-axis: Length (front negative, back positive)\n'
+    output += '# - Z-axis: Height (upward positive)\n'
+    output += '# - Units: INCHES (all measurements)\n'
+    output += '# \n'
+    output += '# DATUM REFERENCES:\n'
+    output += '# - Primary Datum (XY-plane): Bottom surface at Z=0\n'
+    output += '# - Secondary Datum (YZ-plane): Center plane at X=0\n'
+    output += '# - Tertiary Datum (XZ-plane): Front face at Y=0\n'
+    output += '# - All vertical measurements from bottom (Z=0)\n'
+    output += '# - All horizontal measurements from center (X=0)\n'
     output += '# \n'
     output += '# PLYWOOD SPLICING INFORMATION:\n'
     output += `# - Maximum sheet size: ${PLYWOOD_STANDARDS.SHEET_WIDTH}" x ${PLYWOOD_STANDARDS.SHEET_LENGTH}"\n`

@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { authRateLimit } from '@/lib/rate-limiter'
 
+export const dynamic = 'force-dynamic'
+
 // Server-side environment variables (not exposed to client)
 const CONSOLE_PASSWORD_HASH = process.env.CONSOLE_PASSWORD_HASH || bcrypt.hashSync('default-console-password', 10)
 const TERMINAL_PASSWORD_HASH = process.env.TERMINAL_PASSWORD_HASH || bcrypt.hashSync('default-terminal-password', 10)

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateNXExpressions } from '@/lib/nx-generator';
 import { heavyRateLimit } from '@/lib/rate-limiter';
 
+export const dynamic = 'force-dynamic'
+
 interface NXExportRequest {
   crateId?: string;
   dimensions: {

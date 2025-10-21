@@ -7,6 +7,7 @@ import { Suspense, useState, useRef, useEffect, useMemo, useCallback, Fragment, 
 import * as THREE from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { MarkingVisualizer } from './MarkingVisualizer'
+import { UI_CONSTANTS } from '@/lib/crate-constants'
 
 type ComponentVisibility = {
   skids: boolean
@@ -142,24 +143,25 @@ function DatumPlanes({ bounds, scale, distanceFactor, totalDimensions }: {
   const spanX = totalDimensions?.overallWidth ?? (bounds.maxX - bounds.minX)
   const spanY = totalDimensions?.overallLength ?? (bounds.maxY - bounds.minY)
   const spanZ = totalDimensions?.overallHeight ?? (bounds.maxZ - bounds.minZ)
-  const planeSize = Math.max(spanX, spanY, spanZ) * 1.2
+  const maxDimension = Math.max(spanX, spanY, spanZ)
+  const planeSize = maxDimension * UI_CONSTANTS.VISUALIZATION.DATUM_PLANE_SIZE_MULTIPLIER
 
   const centerX = 0  // Crate is centered at origin in X
   const centerY = spanY / 2  // Center of length dimension
   const centerZ = spanZ / 2  // Center of height dimension
-  const labelOffset = Math.max(spanX, spanY, spanZ) * 0.2
+  const labelOffset = maxDimension * UI_CONSTANTS.VISUALIZATION.DATUM_LABEL_OFFSET_MULTIPLIER
 
   return (
     <>
       {/* Datum A - Bottom plane (XY plane at Z=0) */}
       <mesh position={[centerX * scale, 0, -centerY * scale]} rotation={[0, 0, 0]}>
         <planeGeometry args={[planeSize * scale, planeSize * scale]} />
-        <meshBasicMaterial color="#ff0000" opacity={0.1} transparent side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#ff0000" opacity={UI_CONSTANTS.VISUALIZATION.DATUM_PLANE_OPACITY} transparent side={THREE.DoubleSide} />
       </mesh>
       <Html
         position={[
           (centerX + labelOffset) * scale,
-          (labelOffset * 0.1) * scale,
+          (labelOffset * UI_CONSTANTS.VISUALIZATION.LABEL_OFFSET_FACTOR) * scale,
           -(centerY + labelOffset) * scale
         ]}
         center
@@ -169,16 +171,16 @@ function DatumPlanes({ bounds, scale, distanceFactor, totalDimensions }: {
         <PMIFrame cells={['A']} isDatumLabel={true} />
       </Html>
 
-      {/* Datum B - Front plane (XZ plane at Y=0) */}
-      <mesh position={[centerX * scale, centerZ * scale, 0]} rotation={[Math.PI / 2, 0, 0]}>
+      {/* Datum B - Front plane (XZ plane at Y=0, ground level) */}
+      <mesh position={[centerX * scale, 0, -centerY * scale]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[planeSize * scale, planeSize * scale]} />
-        <meshBasicMaterial color="#00ff00" opacity={0.1} transparent side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#00ff00" opacity={UI_CONSTANTS.VISUALIZATION.DATUM_PLANE_OPACITY} transparent side={THREE.DoubleSide} />
       </mesh>
       <Html
         position={[
           (centerX + labelOffset) * scale,
-          centerZ * scale,
-          labelOffset * scale
+          labelOffset * scale,
+          -centerY * scale
         ]}
         center
         distanceFactor={distanceFactor}
@@ -187,16 +189,16 @@ function DatumPlanes({ bounds, scale, distanceFactor, totalDimensions }: {
         <PMIFrame cells={['B']} isDatumLabel={true} />
       </Html>
 
-      {/* Datum C - Left plane (YZ plane at X=0) */}
-      <mesh position={[centerX * scale, centerZ * scale, -centerY * scale]} rotation={[0, Math.PI / 2, 0]}>
+      {/* Datum C - Left plane (YZ plane on outer face of skid) */}
+      <mesh position={[(-spanX / 2) * scale, centerZ * scale, -centerY * scale]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[planeSize * scale, planeSize * scale]} />
-        <meshBasicMaterial color="#0000ff" opacity={0.1} transparent side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#0000ff" opacity={UI_CONSTANTS.VISUALIZATION.DATUM_PLANE_OPACITY} transparent side={THREE.DoubleSide} />
       </mesh>
       <Html
         position={[
-          -labelOffset * scale,
+          (-spanX / 2 - labelOffset) * scale,
           centerZ * scale,
-          -(centerY + labelOffset) * scale
+          -centerY * scale
         ]}
         center
         distanceFactor={distanceFactor}
@@ -543,7 +545,7 @@ function HighlightedFace({ plane, color }: { plane: SelectedPlane; color: string
     >
       <meshBasicMaterial
         color={color}
-        opacity={0.5}
+        opacity={UI_CONSTANTS.VISUALIZATION.HIGHLIGHT_PLANE_OPACITY}
         transparent
         side={THREE.DoubleSide}
       />
@@ -553,48 +555,27 @@ function HighlightedFace({ plane, color }: { plane: SelectedPlane; color: string
 
 // Component to render Klimp 3D model
 function KlimpModel({ box, scale = 0.1 }: { box: NXBox; scale?: number }) {
-  const { scene } = useGLTF('/models/klimp.glb')
-
+  // Temporary: Render as dark bounding box placeholder
+  // Will be replaced with actual STEP file upload in future
   const center = {
     x: (box.point1.x + box.point2.x) / 2,
     y: (box.point1.y + box.point2.y) / 2,
     z: (box.point1.z + box.point2.z) / 2,
   }
 
-  // Determine rotation based on edge type from metadata
-  // IMPORTANT: Origin is at bottom of SHORT (3") side, not long side!
-  // Klimp bridges corners between perpendicular panels
-  // Default: stands vertical (4" tall), 3" depth
-  const getRotation = (): [number, number, number] => {
-    if (box.metadata?.includes('left edge')) {
-      // Left edge: 90 degree anticlockwise about Y (opposite of before)
-      return [0, -Math.PI / 2, 0] // Rotate 90° anticlockwise around Y axis
-    } else if (box.metadata?.includes('right edge')) {
-      // Right edge: 90 degree anticlockwise about Y (opposite of before)
-      return [0, -Math.PI / 2, 0] // Rotate 90° anticlockwise around Y axis
-    }
-    // Top edge: 90 degree clockwise about Y (opposite of before)
-    return [0, Math.PI / 2, 0] // Rotate 90° clockwise around Y axis
+  const size = {
+    x: Math.abs(box.point2.x - box.point1.x),
+    y: Math.abs(box.point2.y - box.point1.y),
+    z: Math.abs(box.point2.z - box.point1.z),
   }
 
-  const rotation = getRotation()
-
-  // Position at calculated center point with -Y offset to move away from cleats
-  // Add 0.5" offset in -Y direction (outward from panel)
-  const yOffset = -0.5 * scale // 0.5 inch offset in -Y direction
-
   return (
-    <Clone
-      object={scene}
-      position={[center.x * scale, center.z * scale, -center.y * scale + yOffset]}
-      rotation={rotation}
-      scale={[scale * 0.03, scale * 0.03, scale * 0.03]} // Scale for proper size
-    />
+    <mesh position={[center.x * scale, center.z * scale, -center.y * scale]}>
+      <boxGeometry args={[size.x * scale, size.z * scale, size.y * scale]} />
+      <meshStandardMaterial color="#222222" metalness={0.2} roughness={0.8} />
+    </mesh>
   )
 }
-
-// Preload the klimp model
-useGLTF.preload('/models/klimp.glb')
 
 // Component to render a single box from NX two-point definition
 function NXBoxMesh({
@@ -720,6 +701,7 @@ function NXBoxMesh({
         }}
         onContextMenu={(e) => {
           e.stopPropagation()
+          e.nativeEvent.preventDefault() // Prevent default context menu and camera reset
           onHide(box.name)
         }}
       >
@@ -730,7 +712,6 @@ function NXBoxMesh({
         />
         <Edges
           color='#1f2937'
-          scale={1.0006}
         />
       </Box>
 
@@ -897,9 +878,33 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
 
   // Filter out suppressed components and user-hidden components, then sort by render priority
   // Render order: skids first, then floorboards, then panels (so panels get hover priority)
-  const visibleBoxes = useMemo(() => (
-    boxes
-      .filter(box => !box.suppressed && !hiddenComponents.has(box.name))
+  const visibleBoxes = useMemo(() => {
+    // Helper function to check if a box should be visible based on componentVisibility
+    const isComponentVisible = (box: NXBox): boolean => {
+      // Map box type and name to visibility key
+      if (box.type === 'skid') {
+        return componentVisibility.skids
+      } else if (box.type === 'floor') {
+        return componentVisibility.floorboards
+      } else if (box.type === 'cleat') {
+        return componentVisibility.cleats
+      } else if (box.type === 'panel') {
+        // Map panel names to visibility keys
+        const nameLower = box.name.toLowerCase()
+        if (nameLower.includes('front')) return componentVisibility.frontPanel
+        if (nameLower.includes('back')) return componentVisibility.backPanel
+        if (nameLower.includes('left')) return componentVisibility.leftPanel
+        if (nameLower.includes('right')) return componentVisibility.rightPanel
+        if (nameLower.includes('top')) return componentVisibility.topPanel
+        // Default to visible if we can't determine panel type
+        return true
+      }
+      // For other types (klimp, hardware, etc.), default to visible
+      return true
+    }
+
+    return boxes
+      .filter(box => !box.suppressed && !hiddenComponents.has(box.name) && isComponentVisible(box))
       .sort((a, b) => {
         const priority: { [key: string]: number } = {
           'skid': 1,
@@ -914,7 +919,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
         const bPriority = priority[b.type || ''] || 6
         return aPriority - bPriority
       })
-  ), [boxes, hiddenComponents])
+  }, [boxes, hiddenComponents, componentVisibility])
 
   const sceneBounds = useMemo<SceneBounds | null>(() => {
     if (visibleBoxes.length === 0) {
@@ -1051,13 +1056,13 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
   }, [])
 
   return (
-    <div className="w-full h-full bg-gray-100 rounded-lg relative">
+    <div className="w-full h-full bg-gray-50 dark:bg-gray-100 rounded-lg relative">
       <Canvas
         camera={{
           position: [15, 10, 15],
-          fov: 45,
-          near: 0.1,
-          far: 1000
+          fov: UI_CONSTANTS.CAMERA.FOV,
+          near: UI_CONSTANTS.CAMERA.NEAR_PLANE,
+          far: UI_CONSTANTS.CAMERA.FAR_PLANE
         }}
       >
         <Suspense fallback={null}>
@@ -1068,9 +1073,9 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
             onTargetChange={setControlTarget}
           />
           {/* Lighting */}
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
-          <pointLight position={[-10, -10, -10]} intensity={0.5} />
+          <ambientLight intensity={UI_CONSTANTS.LIGHTING.AMBIENT_INTENSITY} />
+          <directionalLight position={[10, 10, 5]} intensity={UI_CONSTANTS.LIGHTING.DIRECTIONAL_INTENSITY} castShadow />
+          <pointLight position={[-10, -10, -10]} intensity={UI_CONSTANTS.LIGHTING.POINT_LIGHT_INTENSITY} />
 
           {/* Removed grid - was distracting from the crate visualization */}
 

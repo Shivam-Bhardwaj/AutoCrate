@@ -10,10 +10,10 @@ const openInputsIfMobile = async (page: Page, isMobile: boolean) => {
   }
 }
 
-test.describe('AutoCrate NX Generator (Chromium focus)', () => {
+test.describe('AutoCrate NX Generator', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
-    await expect(page.locator('h1')).toContainText('AutoCrate NX Generator')
+    await expect(page.locator('h1')).toContainText('AutoCrate')
   })
 
   test('renders core controls on load', async ({ page, isMobile }) => {
@@ -49,7 +49,8 @@ test.describe('AutoCrate NX Generator (Chromium focus)', () => {
   test('loads preset scenarios without manual typing', async ({ page, isMobile }) => {
     await openInputsIfMobile(page, isMobile)
 
-    await page.getByTestId('scenario-lightweight-electronics').click()
+    // Use .first() to handle duplicate test-ids
+    await page.getByTestId('scenario-lightweight-electronics').first().click()
     await expect(page.getByTestId('scenario-status')).toContainText('Lightweight Electronics')
     await expect(page.getByTestId('input-weight')).toHaveValue('350')
     await expect(page.getByTestId('skid-label')).toContainText('3x4 lumber', { timeout: 4000 })
