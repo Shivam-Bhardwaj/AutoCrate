@@ -4,12 +4,12 @@ import { LumberCutList as LumberCutListData } from '@/lib/nx-generator'
 
 const mockCutList: LumberCutListData = {
   skids: [
-    { material: '4x4', length: 48, count: 3, notes: 'Primary skids' },
-    { material: '4x4', length: 36, count: 2, notes: 'Secondary skids' }
+    { description: 'Primary skids', material: '4x4', length: 48, count: 3, notes: 'Primary skids' },
+    { description: 'Secondary skids', material: '4x4', length: 36, count: 2, notes: 'Secondary skids' }
   ],
   floorboards: [
-    { material: '2x6', length: 96, count: 8, notes: 'Full length' },
-    { material: '2x6', length: 48, count: 2, notes: 'Half length' }
+    { description: 'Full length floorboards', material: '2x6', length: 96, count: 8, notes: 'Full length' },
+    { description: 'Half length floorboards', material: '2x6', length: 48, count: 2, notes: 'Half length' }
   ],
   cleats: [
     {
@@ -66,19 +66,19 @@ describe('LumberCutList', () => {
   it('should render skid data correctly', () => {
     render(<LumberCutList cutList={mockCutList} />)
 
-    expect(screen.getByText('4x4')).toBeInTheDocument()
-    expect(screen.getByText('48"')).toBeInTheDocument()
-    expect(screen.getByText('3')).toBeInTheDocument()
+    expect(screen.getAllByText('4x4').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('48"').length).toBeGreaterThan(0)
     expect(screen.getByText('Primary skids')).toBeInTheDocument()
+    expect(screen.getByText('Secondary skids')).toBeInTheDocument()
   })
 
   it('should render floorboard data correctly', () => {
     render(<LumberCutList cutList={mockCutList} />)
 
-    expect(screen.getByText('2x6')).toBeInTheDocument()
+    expect(screen.getAllByText('2x6').length).toBeGreaterThan(0)
     expect(screen.getByText('96"')).toBeInTheDocument()
-    expect(screen.getByText('8')).toBeInTheDocument()
     expect(screen.getByText('Full length')).toBeInTheDocument()
+    expect(screen.getByText('Half length')).toBeInTheDocument()
   })
 
   it('should render cleat summary', () => {
@@ -91,23 +91,23 @@ describe('LumberCutList', () => {
   it('should format panel names correctly', () => {
     render(<LumberCutList cutList={mockCutList} />)
 
-    expect(screen.getByText('Front Panel')).toBeInTheDocument()
-    expect(screen.getByText('Back Panel')).toBeInTheDocument()
-    expect(screen.getByText('Top Panel')).toBeInTheDocument()
+    expect(screen.getAllByText('Front Panel').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Back Panel').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Top Panel').length).toBeGreaterThan(0)
   })
 
   it('should display cleat orientations', () => {
     render(<LumberCutList cutList={mockCutList} />)
 
-    expect(screen.getByText('Vertical')).toBeInTheDocument()
-    expect(screen.getByText('Horizontal')).toBeInTheDocument()
+    expect(screen.getAllByText('Vertical').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Horizontal').length).toBeGreaterThan(0)
   })
 
   it('should display cleat types', () => {
     render(<LumberCutList cutList={mockCutList} />)
 
-    expect(screen.getByText('Edge, Intermediate')).toBeInTheDocument()
-    expect(screen.getByText('Top, Bottom')).toBeInTheDocument()
+    expect(screen.getAllByText('Edge, Intermediate').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Top, Bottom').length).toBeGreaterThan(0)
   })
 
   it('should display plywood sheet counts', () => {

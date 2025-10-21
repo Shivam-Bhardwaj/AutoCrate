@@ -2,83 +2,250 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## ⚡ START HERE EVERY SESSION
+## Quick Start
 
-**IMPORTANT**: Before reading anything else, read **`PROJECT_DNA.md`** first!
+AutoCrate is a Next.js 14 parametric shipping crate design tool with real-time 3D visualization and CAD export.
 
-`PROJECT_DNA.md` contains:
+**Before working on anything, read PROJECT_DNA.md** - it contains critical code locations, common issues/solutions, and token-saving strategies that will save you 50-100K tokens per session.
 
-- Critical code locations (exact line numbers)
-- Common issues and solutions (saves 30+ minutes)
-- Token-saving strategies (saves 50-100K tokens/session)
-- Quick decision trees for common tasks
-- All the gotchas and patterns you need
+## Essential Commands
 
-Reading PROJECT_DNA.md (8K tokens) vs exploring the codebase (50-100K tokens) = massive time and token savings.
-
----
-
-## Project Overview
-
-AutoCrate Codex is a Next.js 14 application for designing shipping crates with 3D visualization and NX CAD expression generation. It uses a "Two Diagonal Points" construction method for parametric crate modeling with real-time 3D preview and STEP file export.
-
-## Development Environment
-
-This project is part of an Antimony Workspace with Docker-based development:
+### Development
 
 ```bash
-# From workspace root
-cd projects/AutoCrate/container
-docker compose up --build
-
-# Access at http://localhost:3000
+npm run dev              # Start dev server (localhost:3000)
+npm run build            # Production build
+npm run type-check       # TypeScript validation
+npm run lint             # ESLint
 ```
 
-For local development without Docker:
+### Testing
 
 ```bash
-npm install
-npm run dev
+npm test                 # Run Jest unit tests
+npm run test:watch       # Watch mode
+npm run test:coverage    # Coverage report
+npm run test:e2e         # Playwright E2E tests
+npm run test:all         # Complete test suite
+
+# Run specific test
+npm test -- step-generator.test.ts
+npm test -- --testNamePattern="should generate"
 ```
 
-## Issue-Driven Development Workflow
-
-This project follows an **issue-first workflow** optimized for returning to development after any amount of time with minimal setup.
-
-### Quick Start (Returning to Project)
+### Version Management
 
 ```bash
-# 1. Navigate to project
-cd /home/curious/AutoCrate  # or your AutoCrate location
-
-# 2. Get latest changes
-git pull origin main
-
-# 3. See open issues
-gh issue list
-
-# 4. Pick an issue and tell Claude Code
-# Example: "work on issue 49"
+npm run version:patch    # Bug fix: x.x.N
+npm run version:minor    # Feature: x.N.0
+npm run version:major    # Breaking: N.0.0
+npm run version:sync     # Sync version across files
 ```
 
-**That's it!** No npm install, no docker setup needed for code changes.
+### Git Workflow
 
-### What Happens When You Say "Work on Issue X"
+```bash
+gh issue list            # View open issues
+gh issue view <number>   # View issue details
+git checkout -b feature/issue-N-description
+# ... make changes ...
+git add . && git commit -m "..."
+gh pr create             # Create PR (auto-closes issue)
+```
 
-Claude Code will automatically:
+## Slash Commands
 
-1. Fetch issue details from GitHub (`gh issue view X`)
-2. Create feature branch (`feature/issue-X-description`)
-3. Implement the changes with tests
-4. Run full test suite to verify
-5. Commit with **concise messages** (see COMMIT_GUIDELINES.md)
-6. Push to remote branch
-7. Create PR that references and closes the issue
-8. All ready for your review
+This project includes 12+ custom slash commands for common workflows:
 
-### Commit Message Format
+- `/test` - Run complete test suite
+- `/build` - Production build verification
+- `/verify` - Full health check
+- `/feature` - Add new feature workflow
+- `/quick-fix` - Rapid bug fix workflow
+- `/step` - Work with STEP files
+- `/nx` - Work with NX expressions
+- `/3d` - Work with 3D visualization
+- `/lumber` - Modify lumber sizes
+- `/hardware` - Add/modify hardware
+- `/scenario` - Add/modify scenarios
 
-Keep it simple and concise:
+See `.claude/README.md` for full documentation.
+
+## Core Architecture
+
+### Two-Point Diagonal Construction
+
+Everything in AutoCrate is defined by two corner points:
+
+```typescript
+point1: { x: 0, y: 0, z: 0 }      // Origin
+point2: { x: width, y: length, z: height }  // Opposite corner
+```
+
+This pattern simplifies both CAD generation and 3D visualization. **Never store explicit dimensions** - always calculate from point1→point2.
+
+### Coordinate System
+
+```
+Origin: (0,0,0) at center of crate floor
+X-axis: Width (left/right)
+Y-axis: Length (front/back)
+Z-axis: Height (vertical)
+Units: Inches
+```
+
+### NX CAD → Three.js Conversion
+
+```typescript
+const scale = 0.1;  // DON'T CHANGE THIS
+X (width)  → X (left/right)
+Y (length) → -Z (front/back)  // NOTE THE NEGATIVE
+Z (height) → Y (up/down)
+
+position: [x * scale, z * scale, -y * scale]
+```
+
+### Data Flow
+
+```
+User Input (page.tsx)
+  ↓ [500ms debounce]
+NXGenerator (nx-generator.ts)
+  ↓ [calculations]
+Boxes Array (NXBox[])
+  ↓ [filtering]
+CrateVisualizer (3D rendering)
+  ↓
+PMI Overlays (measurements)
+```
+
+## Critical File Locations
+
+### Core Business Logic (src/lib/)
+
+- **nx-generator.ts** - Main orchestrator, all calculations
+- **step-generator.ts** - ISO 10303-21 STEP export
+- **klimp-calculator.ts** - L-shaped fastener placement
+- **cleat-calculator.ts** - Panel reinforcement
+- **plywood-splicing.ts** - Material optimization
+- **lag-step-integration.ts** - Lag screw integration
+
+### UI Components (src/components/)
+
+- **CrateVisualizer.tsx** - Main 3D component (React Three Fiber)
+- **KlimpModel.tsx** - Hardware 3D models
+- **MarkingVisualizer.tsx** - Panel markings
+
+### Main Application
+
+- **src/app/page.tsx** - Root component, state management
+
+## Critical Patterns
+
+### 1. PMI Reactivity (REQUIRED)
+
+PMI overlays must have a key prop to update on dimension changes:
+
+```typescript
+<ScenePMIOverlays
+  key={`pmi-${width}-${length}-${height}`}  // REQUIRED
+  sceneBounds={sceneBounds}
+  totalDimensions={totalDimensions}
+/>
+```
+
+Location: `CrateVisualizer.tsx:1156-1166`
+
+### 2. Debounced Input
+
+All dimension inputs use 500ms debounce to prevent expensive re-renders:
+
+```typescript
+handleInputChange(field, value) {
+  setInputValues(prev => ({ ...prev, [field]: value }))  // Immediate
+
+  setTimeout(() => {
+    setConfig(prev => ({ ...prev, [field]: numValue }))  // After 500ms
+  }, 500)
+}
+```
+
+Location: `page.tsx:256-308`
+
+### 3. Visibility Filtering
+
+Only render visible components for performance:
+
+```typescript
+const visibleBoxes = boxes.filter((box) => displayOptions.visibility[box.type]);
+```
+
+## Testing Requirements
+
+### Pre-Commit Hooks (Automated via Husky)
+
+Every commit automatically runs:
+
+- TypeScript type checking
+- Jest tests for changed files
+- Prettier formatting
+- ESLint validation
+
+### Coverage Targets
+
+- Core logic (src/lib/): 90%+
+- Components: 80%+
+- API routes: 85%+
+
+### Known Test Failures (IGNORE)
+
+- `src/lib/__tests__/security.test.ts` (5 failures - rate limiting)
+- `src/app/api/nx-export/route.test.ts` (4 failures - headers mocking)
+- `src/app/api/calculate-crate/route.test.ts` (3 failures - headers mocking)
+
+### Critical Tests (MUST PASS)
+
+- `step-generator.test.ts`
+- `nx-generator.test.ts`
+- `CrateVisualizer.test.tsx`
+- `plywood-splicing.test.ts`
+
+## Common Development Tasks
+
+### Adding New Lumber Size
+
+1. Update types in `nx-generator.ts`
+2. Modify skid/floorboard selection logic
+3. Update 3D visualization in `CrateVisualizer.tsx`
+4. Update `LumberCutList.tsx` display
+5. Add unit tests
+
+### Modifying STEP Export
+
+1. Read `step-generator.test.ts` first
+2. Edit `step-generator.ts`
+3. Verify ISO 10303-21 AP242 compliance
+4. Test with Playwright E2E
+5. Run `npm test -- step-generator.test.ts`
+
+### Fixing 3D Visualization
+
+1. Edit `CrateVisualizer.tsx`
+2. Check coordinate transformations (scale = 0.1, negative Y)
+3. Verify PMI key prop exists
+4. Test with different scenarios
+
+### Adding New Hardware
+
+1. Create calculator: `src/lib/new-hardware-calculator.ts`
+2. Create STEP integration: `src/lib/new-hardware-step-integration.ts`
+3. Create 3D model: `src/components/NewHardwareModel.tsx`
+4. Add tests: `src/lib/__tests__/new-hardware-calculator.test.ts`
+5. Update STEP generator assembly
+
+## Commit Guidelines
+
+**Format:**
 
 ```
 type: Brief description (max 50 chars)
@@ -86,518 +253,154 @@ type: Brief description (max 50 chars)
 Closes #issue-number
 ```
 
-See COMMIT_GUIDELINES.md for examples and best practices.
+**Types:** feat, fix, chore, docs, test, refactor, style, perf
 
-### You Review and Merge
+**Branch naming:**
 
-**Via GitHub Web UI:**
+- `feature/issue-N-description`
+- `fix/issue-N-description`
 
-- Review the auto-generated PR
-- Check test results in PR checks
-- Merge when satisfied
-- Issue closes automatically
+See COMMIT_GUIDELINES.md for details.
 
-**Via CLI:**
+## Key Data Structures
 
-```bash
-gh pr view X              # Review changes
-gh pr review X --approve  # Approve
-gh pr merge X             # Merge and close issue
+### NXBox (Universal Primitive)
+
+```typescript
+interface NXBox {
+  name: string;
+  point1: { x; y; z };
+  point2: { x; y; z };
+  type: "skid" | "floor" | "panel" | "cleat" | "plywood" | "klimp";
+  color?: string;
+  suppressed?: boolean;
+}
 ```
 
-### Best Practices for Issues
+### CrateConfig (Input)
 
-**When creating issues:**
-
-- [DONE] Clear title describing the feature/bug
-- [DONE] Acceptance criteria in description
-- [DONE] Label appropriately (bug, feature, enhancement)
-- [DONE] Reference related issues if applicable
-
-**Example good issue:**
-
-```
-Title: Add centered AUTOCRATE text to all panels
-
-Description:
-Need "AUTOCRATE" text displayed in the center of all crate panels.
-
-Acceptance Criteria:
-- Text should be centered on front, back, left, right panels
-- Size should scale based on crate dimensions
-- Should be included in 3D visualization
-- Must appear in STEP export
+```typescript
+interface CrateConfig {
+  product: { length; width; height; weight };
+  clearances: { side; end; top };
+  materials: {
+    skidSize: "3x4" | "4x4" | "6x6" | "8x8";
+    plywoodThickness: 0.25;
+    allow3x4Lumber: boolean;
+  };
+}
 ```
 
-### Workflow Benefits
-
-- **Zero context switching** - Issues describe what to do
-- **Minimal setup** - Just git pull and pick an issue
-- **Automatic documentation** - PRs link to issues
-- **Clean history** - Each issue = one branch = one PR
-- **Reproducible** - Works the same way every time
-
-## Essential Commands
-
-### Development
-
-```bash
-npm run dev              # Start development server on http://localhost:3000
-npm run build            # Production build
-npm run start            # Start production server
-npm run lint             # Run ESLint
-npm run type-check       # TypeScript type checking
-```
-
-### Testing
-
-```bash
-npm test                 # Run all Jest unit tests
-npm test:watch           # Run tests in watch mode
-npm test:coverage        # Generate test coverage report
-npm test:e2e             # Run Playwright E2E tests
-npm test:e2e:ui          # Run Playwright tests with UI
-npm test:e2e:debug       # Debug Playwright tests
-npm run test:all         # Run complete test suite (unit + E2E)
-npm run test:all:e2e     # Run complete test suite with E2E focus
-```
-
-### Running Specific Tests
-
-```bash
-npm test -- --testNamePattern="should generate valid STEP header"
-npm test -- step-generator.test.ts   # Run specific test file
-```
-
-### Version Management
-
-```bash
-npm run version:patch    # Bug fix: 13.1.0 → 13.1.1
-npm run version:minor    # Feature: 13.1.0 → 13.2.0
-npm run version:major    # Breaking: 13.1.0 → 14.0.0
-npm run version:sync     # Sync version across all files
-```
-
-## Architecture Overview
-
-### Core Design Pattern: Two-Point Diagonal Construction
-
-The entire application revolves around defining crates using two diagonal corner points:
-
-- **Point 1**: Origin (0,0,0)
-- **Point 2**: (Width, Length, Height)
-
-This minimalist approach simplifies both the CAD generation and 3D visualization logic.
-
-### Key Architectural Components
-
-**State Management**
-
-- React hooks and component-level state
-- Dimensional and material parameters managed in `src/app/page.tsx`
-- Component visibility toggles for skids, floorboards, panels, and individual plywood pieces
-- 500ms debounced input handling for real-time updates without performance issues
-
-**3D Rendering Pipeline**
-
-1. `CrateVisualizer.tsx` - Main 3D component using React Three Fiber
-2. Real-time mesh generation based on configuration changes
-3. Component visibility filtering for performance
-4. Color-coded materials (lumber types, plywood, foam)
-
-**NX CAD Expression Generation** (`nx-generator.ts`)
-
-- Generates NX expressions for parametric modeling
-- Handles all lumber sizes (2x4, 2x6, 2x8, 2x10, 2x12, 3x3, 4x4, 4x6, 6x6, 8x8)
-- Automatic skid sizing based on weight requirements
-- Coordinate system: X=width, Y=length, Z=height
-
-**STEP File Export** (`step-generator.ts`)
-
-- ISO 10303-21 AP242 compliant export
-- Converts inch-based dimensions to millimeters
-- Complete assembly structure with hierarchical organization:
-  - SHIPPING_BASE → SKID_ASSEMBLY, FLOORBOARD_ASSEMBLY
-  - CRATE_CAP → Panel assemblies (FRONT, BACK, LEFT, RIGHT, TOP)
-  - KLIMP_FASTENERS → Hardware components
-  - STENCILS → Marking decals
-- Handles complex B-Rep geometry definitions
-- Includes PMI (Product Manufacturing Information) metadata
-
-**Hardware Systems**
-
-_Klimp Fastener System_ (`klimp-calculator.ts`, `klimp-step-integration.ts`)
-
-- L-shaped fasteners securing front panel to adjacent panels
-- Strategic placement algorithm using 18"-24" spacing rules
-- Corner klimps for reinforcement at top corners
-- Side klimps symmetrically placed on left/right edges
-- Automatic avoidance of cleat interference zones
-- 3D visualization with `KlimpModel.tsx` component
-- Integration with STEP export for CAD assembly
-
-_Lag Screw Integration_ (`lag-step-integration.ts`)
-
-- 3/8" x 3.00" lag hardware for panel-to-frame attachment
-- References external STEP file: `/CAD FILES/LAG SCREW_0.38 X 3.00.stp`
-- Provides standardized geometry metadata (shank diameter, head dimensions)
-- NX import instructions for consistent hardware placement
-- Positioned across side, front, and back panels
-- Coordinated with klimp placement to avoid conflicts
-
-**Plywood Optimization Algorithm** (`plywood-splicing.ts`)
-
-- Optimize panel layouts on 48x96 inch sheets
-- Handle both top/bottom and side panels
-- Minimize waste through intelligent splicing
-- Calculate exact piece dimensions with lumber overlaps
-
-### API Routes
-
-The application includes several Next.js API routes for backend processing:
-
-- `/api/calculate-crate` - Crate calculations and BOM generation
-- `/api/cleat-placement` - Cleat positioning algorithms
-- `/api/last-update` - Project update banner information
-- `/api/nx-export` - NX expression file generation
-- `/api/plywood-optimization` - Plywood splicing calculations
-- `/api/test-dashboard` - Testing dashboard and metrics
-
-Each API route includes comprehensive unit tests (`.test.ts` files).
-
-## File Structure
-
-```
-src/
-├── app/                          # Next.js app router
-│   ├── page.tsx                  # Main application interface
-│   ├── layout.tsx                # Root layout with error boundaries
-│   ├── console/page.tsx          # Developer console
-│   ├── docs/page.tsx             # Documentation page
-│   ├── terminal/page.tsx         # Terminal interface
-│   └── api/                      # API routes
-│       ├── calculate-crate/
-│       ├── cleat-placement/
-│       ├── last-update/
-│       ├── nx-export/
-│       ├── plywood-optimization/
-│       └── test-dashboard/
-├── lib/                          # Core business logic
-│   ├── nx-generator.ts           # NX expression generation (two-point construction)
-│   ├── step-generator.ts         # STEP file generation (ISO 10303-21 AP242)
-│   ├── plywood-splicing.ts       # Plywood optimization algorithm
-│   ├── klimp-calculator.ts       # Klimp fastener placement
-│   ├── klimp-step-integration.ts # Klimp STEP export
-│   ├── lag-step-integration.ts   # Lag screw integration
-│   ├── cleat-calculator.ts       # Cleat positioning
-│   └── __tests__/                # Unit tests for lib
-└── components/                   # React components
-    ├── CrateVisualizer.tsx       # 3D rendering (React Three Fiber)
-    ├── ChangeTracker.tsx         # Compact change tracking UI with test checklist
-    ├── KlimpModel.tsx            # 3D klimp hardware visualization
-    ├── ScenarioSelector.tsx      # Predefined crate configurations
-    ├── MarkingsSection.tsx       # Marking configuration
-    ├── MarkingVisualizer.tsx     # Panel marking visualization
-    ├── LumberCutList.tsx         # Material cutting requirements
-    ├── PlywoodPieceSelector.tsx  # Individual plywood piece toggles
-    ├── PlywoodSpliceVisualization.tsx # 2D plywood layout
-    ├── ThemeProvider.tsx         # Dark/light mode theming
-    ├── ThemeToggle.tsx           # Theme toggle button
-    ├── ErrorBoundary.tsx         # Error boundary components
-    └── __tests__/                # Component unit tests
-```
-
-## Testing Strategy
-
-### Testing Infrastructure
-
-1. **Unit Tests (Jest + React Testing Library)**
-   - STEP file generation accuracy
-   - Plywood optimization algorithms
-   - Cleat positioning calculations
-   - Klimp placement algorithms
-   - Lag screw integration
-   - NX expression generation
-   - API route handlers
-   - Component rendering
-
-2. **E2E Tests (Playwright)**
-   - Full user workflows
-   - File download verification
-   - 3D visualization interaction
-   - STEP file generation validation
-
-3. **Pre-commit Validation (Husky + lint-staged)**
-   - TypeScript type checking on changed files
-   - Jest tests for related files
-   - Prettier formatting for JSON/MD/YAML
-   - ESLint validation
-
-### Test File Organization
-
-- `src/lib/__tests__/` - Core library unit tests
-- `src/components/__tests__/` - Component unit tests
-- `src/app/api/*/route.test.ts` - API route tests
-- `tests/e2e/` - Playwright E2E tests
-- `tests/` - Additional test utilities
-
-See `TESTING.md` for comprehensive testing documentation.
-
-## Common Development Tasks
-
-### Adding New Lumber Sizes
-
-1. Update types in lumber configuration (`nx-generator.ts`)
-2. Modify skid/floorboard selection logic
-3. Update 3D visualization in `CrateVisualizer.tsx`
-4. Update `LumberCutList.tsx` for display
-5. Add corresponding tests
-
-### Modifying 3D Visualization
-
-1. Edit `CrateVisualizer.tsx` for component changes
-2. Adjust material definitions for appearance (color, opacity)
-3. Update visibility controls if adding new components
-4. Test with different scenarios using `ScenarioSelector`
-
-### Enhancing STEP Export
-
-1. Modify `step-generator.ts` for new geometry types
-2. Ensure ISO 10303-21 AP242 compliance
-3. Add comprehensive tests in `src/lib/__tests__/step-generator.test.ts`
-4. Update Playwright E2E tests for file downloads in `tests/e2e/`
-
-### Adding New Hardware Types
-
-1. Create calculator in `src/lib/` (e.g., `new-hardware-calculator.ts`)
-2. Implement placement algorithm with spacing rules
-3. Add STEP integration file for CAD import (e.g., `new-hardware-step-integration.ts`)
-4. Create 3D component in `src/components/` for visualization
-5. Add unit tests in `src/lib/__tests__/`
-6. Update STEP generator to include new hardware in assembly structure
-
-### Creating New API Endpoints
-
-1. Add route in `src/app/api/[endpoint-name]/route.ts`
-2. Implement GET/POST handlers with TypeScript types
-3. Add comprehensive unit tests in `route.test.ts` alongside the route
-4. Add E2E tests in Playwright if user-facing
-5. Update API documentation in this file
-
-### Modifying Plywood Splicing
-
-1. Update algorithm in `plywood-splicing.ts`
-2. Adjust visualization in `PlywoodSpliceVisualization.tsx`
-3. Update tests in `src/lib/__tests__/plywood-splicing.test.ts`
-4. Verify changes in 3D view with `PlywoodPieceSelector`
-
-### Adding New Scenarios
-
-1. Edit `ScenarioSelector.tsx` to add new configuration to `SCENARIO_PRESETS`
-2. Define dimensions, weight, material specifications, and lumber size restrictions
-3. Test scenario loads properly in main application
-4. Update documentation with new scenario use case
-
-## Type System Guidelines
-
-The project uses strict TypeScript with:
-
-- No implicit any
-- Strict null checks
-- Comprehensive interface definitions
-- Type-safe state management
-
-Key type definitions are in `nx-generator.ts`:
-
-- `CrateConfig` - Main configuration interface
-- `ProductDimensions` - Product dimensional specs
-- `NXBox` - Box primitive for 3D geometry
-- `BillOfMaterialsRow` - BOM structure
-- `LumberCutItem` - Cut list items
-
-Always maintain type safety when making changes.
-
-## Development Workflow
-
-### Pre-commit Hooks (Husky)
-
-The project uses Husky with lint-staged for automated pre-commit validation:
-
-- **TypeScript validation**: Runs `tsc` on changed `.ts/.tsx` files
-- **Related tests**: Runs Jest on files related to your changes
-- **Formatting**: Runs Prettier on `.json/.md/.yml/.yaml` files
-- **Linting**: ESLint validation
-
-Configuration in `.husky/` directory and `lint-staged` section of `package.json`.
-
-### Error Handling Strategy
-
-- Global `ErrorBoundary` wraps entire application (`src/app/layout.tsx`)
-- Specialized `VisualizationErrorBoundary` for 3D components
-- Comprehensive try-catch in STEP generation
-- Type-safe error propagation through Result types
-
-### Performance Optimization
-
-**Debouncing Pattern**
-
-- All dimension inputs use 500ms debouncing
-- Immediate blur handling prevents excessive re-renders
-- Maintains responsiveness while reducing computation
-
-**3D Optimization**
-
-- Component visibility filtering reduces mesh count
-- Efficient state updates minimize re-renders
-- OrbitControls with reasonable limits
-- Memoization for expensive calculations
-
-## Deployment Notes
-
-The application is configured for multiple deployment targets:
-
-**Development (Docker)**
-
-```bash
-cd projects/AutoCrate/container
-docker compose up --build
-```
-
-**Production Build**
-
-```bash
-npm run build
-npm run start
-```
-
-**Vercel Deployment**
-
-- Next.js 14 App Router optimization
-- Static page generation where possible
-- Proper environment variable handling
-- Optimized production builds
-- Configuration in `vercel.json`
-
-## Project Dependencies
-
-### Core Framework
-
-- **Next.js 14** - React framework with App Router
-- **React 18** - UI library
-- **TypeScript 5** - Type safety
-
-### 3D Visualization
-
-- **Three.js 0.160** - 3D graphics library
-- **@react-three/fiber 8.15** - React renderer for Three.js
-- **@react-three/drei 9.92** - Useful helpers for R3F
-
-### State & Styling
-
-- **Tailwind CSS 3** - Utility-first CSS
-- **PostCSS & Autoprefixer** - CSS processing
-- **Zustand 4** - State management
-
-### Testing
-
-- **Jest 30** - Unit testing framework
-- **@testing-library/react 16** - React component testing
-- **Playwright 1.55** - E2E testing
-- **ts-jest 29** - TypeScript support for Jest
-
-### Development Tools
-
-- **Husky 9** - Git hooks
-- **lint-staged 16** - Run linters on staged files
-- **Prettier 3** - Code formatting
-- **ESLint 8** - JavaScript/TypeScript linting
-- **TypeScript ESLint 7** - TypeScript-specific linting rules
-
-## Documentation Resources
-
-- **CLAUDE.md** (this file) - Development guidance for AI assistants
-- **COMMIT_GUIDELINES.md** - Commit message format and best practices
-- **PROJECT_STATUS.md** - Real-time project status, active work tracking, module health
-- **MODULES.md** - Module architecture, boundaries, and parallel work safety
-- **WORK_LOG.md** - Detailed work history and session tracking
-- **README.md** - User-facing project documentation
-- **TESTING.md** - Comprehensive testing strategies and commands
-- **AGENTS.md** - Repository guidelines and workflow documentation
-- **CHANGELOG.md** - Detailed version history and feature tracking
-- **docs/** - Additional technical documentation
-  - **STEP_TO_WEB_CONVERSION.md** - Guide for CAD to web conversions
-  - **web-stack-overview.html** - Interactive web technology primer
-
-## Project Memory System
-
-For LLMs working on this project:
-
-1. **Before starting work**:
-   - Read PROJECT_STATUS.md to see active work streams
-   - Check MODULES.md to understand module boundaries
-   - Review WORK_LOG.md for recent changes
-
-2. **While working**:
-   - Update PROJECT_STATUS.md if claiming a module
-   - Follow parallel work guidelines in MODULES.md
-   - Make atomic commits with clear messages
-
-3. **After completing work**:
-   - Add entry to WORK_LOG.md
-   - Update PROJECT_STATUS.md (move to completed)
-   - Update CHANGELOG.md if user-facing
-   - Bump version if appropriate
-
-This system enables multiple AI agents to work on different parts of the codebase simultaneously without conflicts.
-
-## Critical Implementation Notes
-
-### Coordinate System
-
-- **Origin**: (0, 0, 0) at the center of crate floor level
-- **X-axis**: Width (left/right)
-- **Y-axis**: Length (front/back)
-- **Z-axis**: Height (vertical)
-- **Symmetry**: Crate is symmetric about Z-Y plane (X=0)
-
-### STEP File Assembly Hierarchy
+## STEP Assembly Hierarchy
 
 ```
 AUTOCRATE CRATE ASSEMBLY
 ├── SHIPPING_BASE
 │   ├── SKID_ASSEMBLY
-│   │   └── Individual skid instances
 │   └── FLOORBOARD_ASSEMBLY
-│       └── Floorboard instances
 ├── CRATE_CAP
-│   ├── FRONT_PANEL_ASSEMBLY
+│   ├── FRONT_PANEL_ASSEMBLY (plywood + cleats)
 │   ├── BACK_PANEL_ASSEMBLY
 │   ├── LEFT_PANEL_ASSEMBLY
 │   ├── RIGHT_PANEL_ASSEMBLY
 │   └── TOP_PANEL_ASSEMBLY
 ├── KLIMP_FASTENERS
-│   └── Klimp instances
-└── STENCILS
-    └── Marking decals
+└── STENCILS (markings)
 ```
 
-### Component Naming Conventions
+## Critical Reminders
 
-In STEP files, components are named using snake_case with nominal dimensions:
+### Always Do ✅
 
-- Skids: `skid_HxW` (e.g., `skid_4x4`, `skid_6x6`)
-- Floorboards: `floorboard_HxW` (e.g., `floorboard_2x6`)
-- Plywood: `PANELNAME_ply` (e.g., `front_panel_ply`)
-- Cleats: `PANELNAME_cleat` (e.g., `front_panel_cleat`)
+- Read PROJECT_DNA.md before starting work
+- Run `npm test` before committing
+- Work from GitHub issues
+- Use issue numbers in branch names
+- Follow commit message format
 
-### Version Management Guidelines
+### Never Do ❌
 
-**Current version**: See package.json (single source of truth)
+- Change the scale factor (0.1)
+- Remove the negative Y in coordinate conversion
+- Remove PMI key prop
+- Skip pre-commit hooks
+- Create files unnecessarily (edit existing)
 
-Version format: `OVERALL.CURRENT.CHANGE`
+### Performance Tips
 
-- Bug fix → `npm run version:patch` or `./scripts/deploy.sh patch`
-- New feature → `npm run version:minor` or `./scripts/deploy.sh minor`
-- Breaking change → `npm run version:major` or `./scripts/deploy.sh major`
+- Generator creation is expensive (~200ms) - debounce inputs
+- Use visibility filtering to reduce mesh count
+- Use useMemo for expensive calculations
+- Batch state updates
 
-Always run `npm run version:sync` after version changes to update all version references.
+## Project Structure
+
+```
+src/
+├── lib/                 # Core business logic
+│   ├── nx-generator.ts
+│   ├── step-generator.ts
+│   ├── klimp-calculator.ts
+│   ├── cleat-calculator.ts
+│   ├── plywood-splicing.ts
+│   └── __tests__/
+├── components/          # React components
+│   ├── CrateVisualizer.tsx
+│   ├── KlimpModel.tsx
+│   └── __tests__/
+├── app/
+│   ├── page.tsx        # Main UI
+│   └── api/            # API routes
+tests/e2e/              # Playwright tests
+```
+
+## Documentation Resources
+
+- **PROJECT_DNA.md** - Critical patterns, gotchas, token-saving strategies (READ THIS FIRST)
+- **MODULES.md** - Module boundaries, parallel work safety
+- **TESTING.md** - Comprehensive testing guide
+- **COMMIT_GUIDELINES.md** - Commit message standards
+- **.claude/README.md** - Slash commands documentation
+- **README.md** - User-facing documentation
+
+## Token-Saving Tips
+
+### Before Reading Files
+
+1. Check PROJECT_DNA.md first (contains critical line numbers)
+2. Use grep to find exact locations
+3. Read only needed sections with offset/limit
+
+### Use These Commands First
+
+```bash
+grep -n "ComponentName" src/components/
+grep -n "calculation" src/lib/nx-generator.ts
+grep -rn "import.*Component" src/
+```
+
+### Avoid
+
+- Reading entire large files (use offset/limit)
+- Running full test suite repeatedly (use specific tests)
+- Re-reading same files (keep notes)
+
+## Quick Reference
+
+**Tech Stack:** Next.js 14 (App Router), React 18, TypeScript 5, Three.js, React Three Fiber, Jest, Playwright
+
+**Package Manager:** npm
+
+**Current Version:** See package.json
+
+**Main Entry Point:** src/app/page.tsx
+
+**Test Entry Point:** jest.config.js
+
+**Build Output:** .next/
+
+**Deployment:** Vercel (see vercel.json)
+
+---
+
+**Remember:** Reading PROJECT_DNA.md (8K tokens) saves 50-100K tokens of codebase exploration. Always start there!
