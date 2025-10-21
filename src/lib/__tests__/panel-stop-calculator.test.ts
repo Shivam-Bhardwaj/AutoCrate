@@ -125,12 +125,12 @@ describe('PanelStopCalculator', () => {
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      // Calculate panel bottom position (skid + floorboard)
+      // Calculate panel bottom position - panel sits on skids (fixes #126)
       // For weight 500 lbs, skid is 4x4 (3.5") and floorboard is 2x6 (1.5")
       const skidHeight = 3.5
       const floorboardThickness = 1.5
-      const panelBottomZ = skidHeight + floorboardThickness
-      const panelHeight = config.product.height + config.clearances.top
+      const panelBottomZ = skidHeight  // Panel starts on top of skids
+      const panelHeight = config.product.height + config.clearances.top + floorboardThickness  // Include floorboard
       const expectedCenterZ = panelBottomZ + panelHeight / 2
       const stopLength = layout.stopLength
 
@@ -393,12 +393,11 @@ describe('PanelStopCalculator', () => {
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      // Front panel stops should center on actual panel position (skid + floorboard)
-      // not ground clearance
+      // Front panel stops should center on actual panel position (skid top) not ground clearance (fixes #126)
       const skidHeight = 3.5
       const floorboardThickness = 1.5
-      const panelBottomZ = skidHeight + floorboardThickness
-      const panelHeight = config.product.height + config.clearances.top
+      const panelBottomZ = skidHeight  // Panel starts on top of skids
+      const panelHeight = config.product.height + config.clearances.top + floorboardThickness  // Include floorboard
       const expectedCenterZ = panelBottomZ + panelHeight / 2
 
       const centerZ = (layout.frontPanelStops[0].point1.z + layout.frontPanelStops[0].point2.z) / 2

@@ -126,7 +126,10 @@ export class PanelStopCalculator {
     const { edgeInset } = PANEL_STOP_STANDARDS.POSITIONING
 
     // Front panel dimensions
-    const panelHeight = product.height + clearances.top
+    // Panel starts at skid top and includes floorboard thickness in its height (see nx-generator.ts line 805, 1553)
+    const skidDims = this.getSkidDimensions()
+    const floorboardDims = this.getFloorboardDimensions()
+    const panelHeight = product.height + clearances.top + floorboardDims.thickness
     const panelThickness = materials.panelThickness
     const plywoodThickness = materials.plywoodThickness
 
@@ -138,10 +141,8 @@ export class PanelStopCalculator {
     // - Inner surface (facing product): panelThickness
     const frontPanelInnerY = panelThickness
 
-    // Calculate actual panel bottom position (skid + floorboard)
-    const skidDims = this.getSkidDimensions()
-    const floorboardDims = this.getFloorboardDimensions()
-    const panelBottomZ = skidDims.height + floorboardDims.thickness
+    // Calculate actual panel bottom position - panel sits on top of skids (fixes #126)
+    const panelBottomZ = skidDims.height
 
     // Stops are positioned flush against the front panel inner surface (facing product)
     const stopYPosition = frontPanelInnerY  // Flush against panel inner surface, no gap
