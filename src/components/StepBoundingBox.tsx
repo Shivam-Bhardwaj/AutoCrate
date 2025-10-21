@@ -41,15 +41,15 @@ export function StepBoundingBox({
     z: boundingBox.dimensions.depth,
   }
 
-  // Use bounding box center for proper positioning
-  const center = boundingBox.center
-
+  // Convert NX coordinates to Three.js coordinates
+  // NX: X=width, Y=length/depth, Z=height
+  // Three.js: X=width, Y=height, Z=-depth
   return (
     <mesh
       position={[
-        (position[0] + center.x) * scale,
-        (position[1] + center.z) * scale,
-        (position[2] - center.y) * scale
+        position[0] * scale,
+        position[2] * scale,
+        -position[1] * scale
       ]}
       rotation={rotation}
     >
