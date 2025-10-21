@@ -8,7 +8,7 @@
  * Placement:
  * - 2 stops on front cleated panel side edges (left and right)
  * - 1 stop on top panel front edge
- * - All stops positioned 1.0625" from panel edge (accommodates cleat thickness)
+ * - All stops positioned 0.625" from panel edge (near touching front panel)
  * - Length: half the smallest cleated panel edge dimension, centered
  */
 
@@ -137,18 +137,19 @@ export class PanelStopCalculator {
     // panelOriginY = panelThickness - plywoodThickness
     const frontPanelOuterY = panelThickness - plywoodThickness
 
-    // Ground clearance for panels
-    const groundClearance = this.config.geometry?.sidePanelGroundClearance ??
-                           GEOMETRY_STANDARDS.SIDE_PANEL_GROUND_CLEARANCE
+    // Front panel base Z position: sits on top of skids (nx-generator.ts line 805)
+    // NOT at ground clearance - that's only for side panels
+    const skidDims = this.getSkidDimensions()
+    const frontPanelBaseZ = skidDims.height
 
-    // Stops are positioned flush against the front panel inner surface
-    const stopYPosition = frontPanelOuterY  // Flush against panel, no gap
+    // Stops are positioned with clearance from the front panel inner surface
+    const stopYPosition = frontPanelOuterY + edgeInset  // 0.625" clearance from panel
 
     const stops: NXBox[] = []
 
     // LEFT EDGE STOP - positioned just inside left internal boundary (to avoid side panel interference)
     // Centered vertically along the panel height
-    const leftStopCenterZ = groundClearance + panelHeight / 2
+    const leftStopCenterZ = frontPanelBaseZ + panelHeight / 2
     const leftStopCenterX = -internalWidth / 2 + width / 2  // Moved inward by half stop width
 
     stops.push({
@@ -169,7 +170,7 @@ export class PanelStopCalculator {
     })
 
     // RIGHT EDGE STOP - positioned just inside right internal boundary (to avoid side panel interference)
-    const rightStopCenterZ = groundClearance + panelHeight / 2
+    const rightStopCenterZ = frontPanelBaseZ + panelHeight / 2
     const rightStopCenterX = internalWidth / 2 - width / 2  // Moved inward by half stop width
 
     stops.push({

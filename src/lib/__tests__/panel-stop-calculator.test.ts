@@ -124,9 +124,11 @@ describe('PanelStopCalculator', () => {
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      const groundClearance = 0.25 // default
+      // Front panel sits on top of skids (not at ground clearance)
+      // For 500 lb crate, uses 4x4 skids with height 3.5"
+      const skidHeight = 3.5
       const panelHeight = config.product.height + config.clearances.top
-      const expectedCenterZ = groundClearance + panelHeight / 2
+      const expectedCenterZ = skidHeight + panelHeight / 2
       const stopLength = layout.stopLength
 
       layout.frontPanelStops.forEach(stop => {
