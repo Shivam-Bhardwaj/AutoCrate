@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Home from '../page'
 import React from 'react'
@@ -56,6 +56,7 @@ describe('Home Page', () => {
     await user.click(scenarioButtons[0]) // Click the first one (desktop sidebar)
     expect(screen.getByTestId('scenario-status')).toHaveTextContent('Lightweight Electronics')
     expect(screen.getByTestId('input-weight')).toHaveValue('350')
+    expect(screen.getByTestId('slider-weight')).toHaveValue('350')
   })
 
   it('marks status as custom when manual edits occur', async () => {
@@ -81,5 +82,14 @@ describe('Home Page', () => {
     await user.click(screen.getByRole('button', { name: 'Download STEP' }))
     expect(createObjectURL).toHaveBeenCalledTimes(2)
     createObjectURL.mockRestore()
+  })
+
+  it('syncs slider controls with product inputs', async () => {
+    renderHome()
+    const lengthSlider = await screen.findByTestId('slider-length')
+    fireEvent.change(lengthSlider, { target: { value: '150' } })
+
+    expect(screen.getByTestId('input-length')).toHaveValue('150')
+    expect(screen.getByTestId('scenario-status')).toHaveTextContent('Custom values')
   })
 })
