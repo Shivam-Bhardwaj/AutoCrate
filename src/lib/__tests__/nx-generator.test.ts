@@ -407,8 +407,8 @@ describe('NXGenerator', () => {
         const nextCenter = lagScrews[i + 1].point1.y + (lagScrews[i + 1].point2.y - lagScrews[i + 1].point1.y) / 2
         const spacing = nextCenter - currentCenter
 
-        expect(spacing).toBeGreaterThanOrEqual(18) // Algorithm min
-        expect(spacing).toBeLessThanOrEqual(26) // Allow tolerance for optimization
+        expect(spacing).toBeGreaterThanOrEqual(16)
+        expect(spacing).toBeLessThanOrEqual(24.01)
       }
     })
 
@@ -454,9 +454,83 @@ describe('NXGenerator', () => {
 
       const lagScrews = boxes
         .filter(b => b.panelName === 'LEFT_END_PANEL' && b.name.includes('_LAG_') && b.name.includes('_SHAFT'))
+        .sort((a, b) => a.point1.y - b.point1.y)
 
-      // Should still generate lag screws (fallback logic)
-      expect(lagScrews.length).toBeGreaterThan(0)
+      expect(lagScrews.length).toBe(2)
+
+      const span = lagScrews[1].point1.y + (lagScrews[1].point2.y - lagScrews[1].point1.y) / 2 -
+        (lagScrews[0].point1.y + (lagScrews[0].point2.y - lagScrews[0].point1.y) / 2)
+
+      expect(span).toBeGreaterThanOrEqual(16)
+      expect(span).toBeLessThanOrEqual(24)
+    })
+
+    it('should not overpack lag screws on narrow panels when spacing is 18 inches', () => {
+      const config = buildConfig({
+        product: { length: 20, width: 20, height: 20, weight: 500 },
+        materials: {
+          ...baseConfig.materials,
+          skidSize: '3x3'
+        },
+        hardware: { lagScrewSpacing: 18 }
+      })
+
+      const generator = new NXGenerator(config)
+      const boxes = generator.getBoxes()
+
+      const lagScrews = boxes
+        .filter(b => b.panelName === 'LEFT_END_PANEL' && b.name.includes('_LAG_') && b.name.includes('_SHAFT'))
+        .sort((a, b) => a.point1.y - b.point1.y)
+
+      expect(lagScrews.length).toBe(2)
+
+      const span = lagScrews[1].point1.y + (lagScrews[1].point2.y - lagScrews[1].point1.y) / 2 -
+        (lagScrews[0].point1.y + (lagScrews[0].point2.y - lagScrews[0].point1.y) / 2)
+
+      expect(span).toBeGreaterThanOrEqual(16)
+      expect(span).toBeLessThanOrEqual(24)
+    })
+
+    it('should not create middle lag when span is less than configured spacing (issue #133)', () => {
+      const config = buildConfig({
+        product: { length: 20, width: 20, height: 20, weight: 500 },
+        materials: {
+          ...baseConfig.materials,
+          skidSize: '3x3'
+        },
+        hardware: { lagScrewSpacing: 24 }
+      })
+
+      const generator = new NXGenerator(config)
+      const boxes = generator.getBoxes()
+      const cleatLayouts = generator.getPanelCleatLayouts()
+
+      const leftCleatLayout = cleatLayouts.find(l => l.panelName === 'LEFT_END_PANEL')
+      expect(leftCleatLayout).toBeDefined()
+
+      const leftVerticalCleats = leftCleatLayout!.cleats
+        .filter(c => c.orientation === 'vertical')
+        .sort((a, b) => a.x - b.x)
+
+      const lagScrews = boxes
+        .filter(b => b.panelName === 'LEFT_END_PANEL' && b.name.includes('_LAG_') && b.name.includes('_SHAFT'))
+        .sort((a, b) => a.point1.y - b.point1.y)
+
+      // Calculate span between first and last cleat centers
+      const expressions = generator.getExpressions()
+      const panelThickness = expressions.get('panel_thickness') || 0
+      const panelOriginY = panelThickness
+
+      const firstCleatCenterY = panelOriginY + leftVerticalCleats[0].x + leftVerticalCleats[0].width / 2
+      const lastCleatCenterY =
+        panelOriginY +
+        leftVerticalCleats[leftVerticalCleats.length - 1].x +
+        leftVerticalCleats[leftVerticalCleats.length - 1].width / 2
+      const span = lastCleatCenterY - firstCleatCenterY
+
+      if (span < 24) {
+        expect(lagScrews.length).toBe(2)
+      }
     })
   })
 
