@@ -30,12 +30,21 @@ export interface CleatInfo {
   width: number // Width of the cleat
 }
 
+interface BlockInterval {
+  start: number
+  end: number
+}
+
 export class KlimpCalculator {
   private static readonly EDGE_MIN_SPACING = FASTENER_STANDARDS.KLIMP.EDGE_MIN_SPACING // Minimum 18" between hardware
   private static readonly EDGE_MAX_SPACING = FASTENER_STANDARDS.KLIMP.EDGE_MAX_SPACING // Maximum 24" between hardware
   private static readonly CLEAT_OFFSET = 1 // 1" from vertical cleat for corner klimps
   private static readonly BOTTOM_CLEAT_OFFSET = 2 // 2" above bottom horizontal cleat
   private static readonly CLEAT_WIDTH = CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width // Standard 1x4 cleat width
+  private static readonly CLEAT_CLEARANCE = (CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width / 2) + 0.5
+  private static readonly POSITION_EPSILON = 1e-6
+  private static readonly POSITION_PRECISION = 6
+  private static readonly SAMPLE_STEP = 0.5
 
   /**
    * Calculate strategic klimp positions for the front panel
@@ -53,9 +62,9 @@ export class KlimpCalculator {
   static calculateKlimpLayout(
     panelWidth: number,
     panelHeight: number,
-    _topCleats: CleatInfo[] = [],
-    _leftCleats: CleatInfo[] = [],
-    _rightCleats: CleatInfo[] = []
+    topCleats: CleatInfo[] = [],
+    leftCleats: CleatInfo[] = [],
+    rightCleats: CleatInfo[] = []
   ): KlimpLayout {
     const klimps: Klimp[] = []
     let klimpId = 0
@@ -64,12 +73,13 @@ export class KlimpCalculator {
     // === TOP EDGE KLIMPS ===
     const topStart = this.CLEAT_WIDTH + this.CLEAT_OFFSET
     const topEnd = panelWidth - this.CLEAT_WIDTH - this.CLEAT_OFFSET
-    const topPositions = this.generatePositionsWithSpacing(
+    const topBlocked = this.buildBlockedIntervals(topCleats, topStart, topEnd)
+    const topPositions = this.generateEdgePositions(
       topStart,
       topEnd,
+      topBlocked,
       this.EDGE_MIN_SPACING,
-      this.EDGE_MAX_SPACING,
-      2
+      this.EDGE_MAX_SPACING
     )
 
     for (const position of topPositions) {
@@ -89,12 +99,13 @@ export class KlimpCalculator {
     const bottomStart = bottomCleatHeight + this.BOTTOM_CLEAT_OFFSET
     const sideTopLimit = panelHeight - 4 // 4" from top to avoid interference
 
-    const sidePositions = this.generatePositionsWithSpacing(
+    const sideBlocked = this.buildBlockedIntervals([...leftCleats, ...rightCleats], bottomStart, sideTopLimit)
+    const sidePositions = this.generateEdgePositions(
       bottomStart,
       sideTopLimit,
+      sideBlocked,
       this.EDGE_MIN_SPACING,
-      this.EDGE_MAX_SPACING,
-      2
+      this.EDGE_MAX_SPACING
     )
 
     // Add left edge klimps
@@ -128,92 +139,176 @@ export class KlimpCalculator {
     }
   }
 
-  private static generatePositionsWithSpacing(
+  private static generateEdgePositions(
     start: number,
     end: number,
+    blocked: BlockInterval[],
     minSpacing: number,
-    maxSpacing: number,
-    minCount: number
+    maxSpacing: number
   ): number[] {
-    const tolerance = 1e-6
-
-    if (end <= start) {
-      return [start]
+    if (end <= start + this.POSITION_EPSILON) {
+      return [this.roundPosition(start)]
     }
 
-    const span = end - start
-    if (span < minSpacing && minCount <= 1) {
-      return [start + span / 2]
-    }
+    const mergedBlocked = this.mergeIntervals(blocked, start, end)
+    const allowedSegments = this.computeAllowedSegments(start, end, mergedBlocked)
+    const positionsSet = new Set<number>()
 
-    const baseCount = Math.max(minCount, span >= minSpacing ? 2 : 1)
-    const maxCandidate = Math.max(baseCount, Math.floor(span / minSpacing) + 2)
-    const targetSpacing = (minSpacing + maxSpacing) / 2
-
-    let bestPositions: number[] | null = null
-    let bestScore = Number.POSITIVE_INFINITY
-    let bestCount = Number.POSITIVE_INFINITY
-
-    for (let count = baseCount; count <= maxCandidate + 4; count++) {
-      if (count <= 1) {
+    for (const segment of allowedSegments) {
+      if (segment.end <= segment.start + this.POSITION_EPSILON) {
         continue
       }
-
-      const intervals = count - 1
-      const minOffset = Math.max(0, (span - maxSpacing * intervals) / 2)
-      const maxOffset = Math.max(0, (span - minSpacing * intervals) / 2)
-
-      if (minOffset > maxOffset + tolerance) {
-        continue
+      let point = segment.start
+      if (segment.start > start + this.POSITION_EPSILON) {
+        point = Math.min(segment.end, segment.start + this.SAMPLE_STEP)
       }
-
-      let offset = (span - targetSpacing * intervals) / 2
-      offset = Math.max(minOffset, Math.min(maxOffset, offset))
-
-      if (offset > span / 2) {
-        continue
-      }
-
-      const run = span - 2 * offset
-      if (run < -tolerance) {
-        continue
-      }
-
-      const spacing = intervals > 0 ? run / intervals : 0
-
-      if (spacing < minSpacing - tolerance || spacing > maxSpacing + tolerance) {
-        continue
-      }
-
-      const actualStart = start + offset
-      const positions = Array.from({ length: count }, (_, index) => actualStart + index * spacing)
-      const score = Math.abs(spacing - targetSpacing)
-
-      if (
-        !bestPositions ||
-        score < bestScore - tolerance ||
-        (Math.abs(score - bestScore) <= tolerance && count < bestCount)
-      ) {
-        bestPositions = positions
-        bestScore = score
-        bestCount = count
+      while (point <= segment.end + this.POSITION_EPSILON) {
+        positionsSet.add(this.roundPosition(Math.min(point, segment.end)))
+        point += this.SAMPLE_STEP
       }
     }
 
-    if (!bestPositions) {
-      if (span < minSpacing - tolerance) {
-        return [start + span / 2]
-      }
+    positionsSet.add(this.roundPosition(start))
+    positionsSet.add(this.roundPosition(end))
 
-      const count = Math.max(baseCount, 2)
-      const intervals = count - 1
-      const spacing = Math.min(maxSpacing, Math.max(span / intervals, minSpacing))
-      const offset = Math.max(0, (span - spacing * intervals) / 2)
-      const actualStart = start + offset
-      bestPositions = Array.from({ length: count }, (_, index) => actualStart + index * spacing)
+    const nodes = Array.from(positionsSet).sort((a, b) => a - b)
+    const adjacency: number[][] = Array.from({ length: nodes.length }, () => [])
+
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const span = nodes[j] - nodes[i]
+        if (span < minSpacing - this.POSITION_EPSILON) {
+          continue
+        }
+        if (span > maxSpacing + this.POSITION_EPSILON) {
+          break
+        }
+        adjacency[i].push(j)
+      }
     }
 
-    return bestPositions.map(value => Number(value.toFixed(6)))
+    const startIndex = nodes.indexOf(this.roundPosition(start))
+    const endIndex = nodes.indexOf(this.roundPosition(end))
+
+    const queue: number[] = [startIndex]
+    const previous = new Array<number>(nodes.length).fill(-1)
+    previous[startIndex] = startIndex
+
+    while (queue.length > 0) {
+      const index = queue.shift()!
+      if (index === endIndex) {
+        break
+      }
+
+      for (const neighbor of adjacency[index]) {
+        if (previous[neighbor] !== -1) {
+          continue
+        }
+        previous[neighbor] = index
+        queue.push(neighbor)
+      }
+    }
+
+    if (previous[endIndex] === -1) {
+      return [this.roundPosition(start), this.roundPosition(end)]
+    }
+
+    const path: number[] = []
+    let cursor = endIndex
+    while (cursor !== startIndex) {
+      path.push(nodes[cursor])
+      cursor = previous[cursor]
+    }
+    path.push(nodes[startIndex])
+    path.reverse()
+
+    return path
+  }
+
+  private static buildBlockedIntervals(
+    cleats: CleatInfo[],
+    start: number,
+    end: number
+  ): BlockInterval[] {
+    const intervals: BlockInterval[] = []
+
+    for (const cleat of cleats) {
+      const blockStart = Math.max(start, cleat.position - this.CLEAT_CLEARANCE)
+      const blockEnd = Math.min(end, cleat.position + cleat.width + this.CLEAT_CLEARANCE)
+      if (blockEnd - blockStart > this.POSITION_EPSILON) {
+        intervals.push({ start: blockStart, end: blockEnd })
+      }
+    }
+
+    return this.mergeIntervals(intervals, start, end)
+  }
+
+  private static mergeIntervals(
+    intervals: BlockInterval[],
+    start: number,
+    end: number
+  ): BlockInterval[] {
+    if (intervals.length === 0) {
+      return []
+    }
+
+    const sorted = intervals
+      .map(interval => ({
+        start: Math.max(start, interval.start),
+        end: Math.min(end, interval.end)
+      }))
+      .filter(interval => interval.end - interval.start > this.POSITION_EPSILON)
+      .sort((a, b) => a.start - b.start)
+
+    if (sorted.length === 0) {
+      return []
+    }
+
+    const merged: BlockInterval[] = [sorted[0]]
+
+    for (let i = 1; i < sorted.length; i++) {
+      const last = merged[merged.length - 1]
+      const current = sorted[i]
+
+      if (current.start <= last.end + this.POSITION_EPSILON) {
+        last.end = Math.max(last.end, current.end)
+      } else {
+        merged.push(current)
+      }
+    }
+
+    return merged
+  }
+
+  private static computeAllowedSegments(
+    start: number,
+    end: number,
+    blocked: BlockInterval[]
+  ): BlockInterval[] {
+    const segments: BlockInterval[] = []
+    let cursor = start
+
+    for (const interval of blocked) {
+      const adjustedEnd = Math.min(interval.start - this.SAMPLE_STEP, interval.start - this.POSITION_EPSILON)
+      if (adjustedEnd > cursor + this.POSITION_EPSILON) {
+        segments.push({ start: cursor, end: adjustedEnd })
+      }
+      cursor = Math.max(cursor, Math.min(end, interval.end + this.SAMPLE_STEP))
+    }
+
+    if (cursor < end - this.POSITION_EPSILON) {
+      segments.push({ start: cursor, end })
+    }
+
+    if (segments.length === 0) {
+      segments.push({ start, end })
+    }
+
+    return segments
+  }
+
+  private static roundPosition(value: number): number {
+    return Number(value.toFixed(this.POSITION_PRECISION))
   }
 
   /**
