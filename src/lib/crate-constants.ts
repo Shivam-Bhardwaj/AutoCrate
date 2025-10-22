@@ -436,16 +436,16 @@ export const VALIDATION_RULES = {
   /** Product dimension constraints (inches) */
   DIMENSIONS: {
     MIN_LENGTH: 12,
-    MAX_LENGTH: 240,
+    MAX_LENGTH: 150,
     MIN_WIDTH: 12,
-    MAX_WIDTH: 180,
+    MAX_WIDTH: 150,
     MIN_HEIGHT: 12,
-    MAX_HEIGHT: 144,
+    MAX_HEIGHT: 150,
   },
   /** Weight constraints (pounds) */
   WEIGHT: {
     MIN: 50,
-    MAX: 50000,
+    MAX: 60000,
   },
   /** Clearance constraints (inches) */
   CLEARANCES: {
