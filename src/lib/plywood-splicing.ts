@@ -2,7 +2,7 @@
 // Optimizes panel layouts for 48x96 inch plywood sheets
 // Splicing rules: Vertical splices on right, Horizontal splices on bottom
 
-import { PLYWOOD_STANDARDS } from './crate-constants'
+import { CLEAT_STANDARDS, PLYWOOD_STANDARDS } from './crate-constants'
 
 export interface PlywoodSheet {
   width: number  // 48 inches max
@@ -60,6 +60,9 @@ export class PlywoodSplicer {
   private static readonly MAX_SHEET_WIDTH = PLYWOOD_STANDARDS.SHEET_WIDTH
   private static readonly MAX_SHEET_HEIGHT = PLYWOOD_STANDARDS.SHEET_LENGTH
   private static readonly SPLICE_WIDTH = 0.125 // 1/8" for splice overlap
+  private static readonly HORIZONTAL_SPLICE_TOLERANCE = 0.25 // Additional clearance beyond cleat stack
+  private static readonly MIN_HORIZONTAL_SPLICE_CLEARANCE =
+    (CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width * 2) + PlywoodSplicer.HORIZONTAL_SPLICE_TOLERANCE // ≥7" + tolerance
 
   /**
    * Calculate optimal splicing layout for a panel with rotation optimization
@@ -128,7 +131,15 @@ export class PlywoodSplicer {
 
     // Build panels with full sheets at top, partials at bottom
     // This ensures horizontal splices are on the bottom
-    const remainderHeight = panelHeight % sheetHeight
+    let remainderHeight = panelHeight % sheetHeight
+
+    if (
+      verticalSections > 1 &&
+      remainderHeight > 0 &&
+      remainderHeight < this.MIN_HORIZONTAL_SPLICE_CLEARANCE
+    ) {
+      remainderHeight = Math.min(this.MIN_HORIZONTAL_SPLICE_CLEARANCE, panelHeight)
+    }
 
     for (let vSection = 0; vSection < verticalSections; vSection++) {
       for (let hSection = 0; hSection < horizontalSections; hSection++) {
