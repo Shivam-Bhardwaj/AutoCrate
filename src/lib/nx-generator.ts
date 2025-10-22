@@ -810,19 +810,16 @@ export class NXGenerator {
         panelOriginY = internalLength + 1  // Move 1 inch further back to align with last floorboard's inner edge
         panelOriginZ = skidHeight  // Sits on top of skids
       } else if (layout.panelName === 'LEFT_END_PANEL') {
-        // Left panel inner surface with 1/16" clearance from floorboard edge
-        // Floorboards run from -internalWidth/2 to internalWidth/2
-        const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
-        panelOriginX = -internalWidth/2 - plywoodThickness + edgeClearance  // 1/16" clearance inward
+        // Left panel inner surface remains aligned to requested internal width
+        panelOriginX = -internalWidth/2 - plywoodThickness
         panelOriginY = panelThickness
         // Side panel starts at ground clearance for forklift access (fixes #90, #109)
         const groundClearance = this.getSidePanelGroundClearance()
         panelOriginZ = groundClearance
         isVerticalPanel = true
       } else if (layout.panelName === 'RIGHT_END_PANEL') {
-        // Right panel inner surface with 1/16" clearance from floorboard edge
-        const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
-        panelOriginX = internalWidth/2 - edgeClearance  // 1/16" clearance inward
+        // Right panel inner surface remains aligned to requested internal width
+        panelOriginX = internalWidth/2
         panelOriginY = panelThickness
         // Side panel starts at ground clearance for forklift access (fixes #90, #109)
         const groundClearance = this.getSidePanelGroundClearance()
@@ -948,18 +945,14 @@ export class NXGenerator {
         panelOriginZ = skidHeight  // Match panel position
       } else if (cleatLayout.panelName === 'LEFT_END_PANEL') {
         // Left panel cleats are on the outside (left) face
-        // Panel has 1/16" clearance, cleats go on outside
-        const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
-        panelOriginX = -internalWidth/2 - plywoodThickness + edgeClearance - cleatThickness // Cleats on outside of panel
+        panelOriginX = -internalWidth/2 - plywoodThickness - cleatThickness // Cleats on outside of panel
         panelOriginY = panelThickness
         // Match panel Z origin - starts at ground clearance (fixes #90, #109)
         const groundClearance = this.getSidePanelGroundClearance()
         panelOriginZ = groundClearance
       } else if (cleatLayout.panelName === 'RIGHT_END_PANEL') {
         // Right panel cleats are on the outside (right) face
-        // Panel has 1/16" clearance, cleats go on outside
-        const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
-        panelOriginX = internalWidth/2 - edgeClearance + plywoodThickness // Cleats on outside of panel
+        panelOriginX = internalWidth/2 + plywoodThickness // Cleats on outside of panel
         panelOriginY = panelThickness
         // Match panel Z origin - starts at ground clearance (fixes #90, #109)
         const groundClearance = this.getSidePanelGroundClearance()

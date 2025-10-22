@@ -38,7 +38,11 @@ export function KlimpModel({ box, scale = 0.1, onError }: KlimpModelProps) {
 
     useEffect(() => {
       const group = groupRef.current
-      if (group && scene) {
+      if (!group || typeof (group as unknown as { add?: unknown }).add !== 'function') {
+        return
+      }
+
+      if (scene) {
         // Clone the scene to avoid modifying the original
         const clonedScene = scene.clone()
 
@@ -64,10 +68,12 @@ export function KlimpModel({ box, scale = 0.1, onError }: KlimpModelProps) {
           }
         })
 
-        group.add(clonedScene)
+        ;(group as Group).add(clonedScene)
 
         return () => {
-          group.remove(clonedScene)
+          if (typeof (group as unknown as { remove?: unknown }).remove === 'function') {
+            ;(group as Group).remove(clonedScene)
+          }
         }
       }
     }, [scene])

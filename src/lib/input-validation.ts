@@ -348,7 +348,7 @@ export function sanitizeObject(obj: any, maxDepth: number = 10): any {
   }
 
   if (typeof obj === 'object') {
-    const sanitized: any = {}
+    const sanitized: Record<string, any> = Object.create(null)
     for (const [key, value] of Object.entries(obj)) {
       // Sanitize key to prevent prototype pollution
       const sanitizedKey = sanitizeString(key, 100)

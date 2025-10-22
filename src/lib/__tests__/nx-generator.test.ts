@@ -102,6 +102,37 @@ describe('NXGenerator', () => {
     expect(exported).toContain('pattern_spacing')
   })
 
+  it('positions side panels so that interior width matches requested dimensions', () => {
+    const config = buildConfig({
+      product: { ...baseConfig.product, width: 50, length: 50, height: 50 },
+      clearances: { side: 0, end: 0, top: 0 }
+    })
+
+    const generator = new NXGenerator(config)
+    const expressions = generator.getExpressions()
+    const expectedInternalWidth = expressions.get('internal_width') || 0
+
+    const panels = generator
+      .getBoxes()
+      .filter(box => !box.suppressed && box.type === 'plywood' && (box.panelName === 'LEFT_END_PANEL' || box.panelName === 'RIGHT_END_PANEL'))
+
+    const leftPanels = panels.filter(box => box.panelName === 'LEFT_END_PANEL')
+    const rightPanels = panels.filter(box => box.panelName === 'RIGHT_END_PANEL')
+
+    expect(leftPanels.length).toBeGreaterThan(0)
+    expect(rightPanels.length).toBeGreaterThan(0)
+
+    const leftInnerFace = Math.max(
+      ...leftPanels.map(box => Math.max(box.point1.x, box.point2.x))
+    )
+    const rightInnerFace = Math.min(
+      ...rightPanels.map(box => Math.min(box.point1.x, box.point2.x))
+    )
+
+    const measuredWidth = Number((rightInnerFace - leftInnerFace).toFixed(4))
+    expect(measuredWidth).toBeCloseTo(expectedInternalWidth, 3)
+  })
+
   it('lays out floorboards from widest to narrowest with a single custom infill when needed', () => {
     const generator = new NXGenerator(buildConfig())
 

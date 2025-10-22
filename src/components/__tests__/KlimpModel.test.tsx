@@ -4,15 +4,19 @@ import { NXBox } from '@/lib/nx-generator'
 import { Canvas } from '@react-three/fiber'
 
 // Mock useGLTF
-jest.mock('@react-three/drei', () => ({
-  useGLTF: jest.fn(() => ({
+jest.mock('@react-three/drei', () => {
+  const useGLTF = jest.fn(() => ({
     scene: {
       clone: jest.fn(() => ({
         traverse: jest.fn(),
       })),
     },
-  })),
-}))
+  }))
+
+  ;(useGLTF as unknown as { preload: jest.Mock }).preload = jest.fn()
+
+  return { useGLTF }
+})
 
 const mockKlimpBox: NXBox = {
   name: 'KLIMP_1',
