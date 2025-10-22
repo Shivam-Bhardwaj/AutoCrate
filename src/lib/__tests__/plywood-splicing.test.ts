@@ -42,6 +42,20 @@ describe('PlywoodSplicer.calculateOptimizedSpliceLayout', () => {
     expect(horizontalSplice).toBeDefined()
     expect(horizontalSplice!.y).toBeGreaterThan(7)
   })
+
+  it('ensures minimum clearance before first vertical splice for stacked cleats', () => {
+    const panelWidth = 54
+    const layout = PlywoodSplicer.calculateOptimizedSpliceLayout(panelWidth, 80, 'SIDE_PANEL', false)
+
+    const minWidth = Math.min(...layout.sheets.map(section => section.width))
+    expect(minWidth).toBeGreaterThanOrEqual(7.25)
+
+    const verticalSplices = layout.splices.filter(splice => splice.orientation === 'vertical')
+    expect(verticalSplices.length).toBeGreaterThan(0)
+    verticalSplices.forEach(splice => {
+      expect(panelWidth - splice.x).toBeGreaterThan(7)
+    })
+  })
 })
 
 describe('PlywoodSplicer utility methods', () => {
