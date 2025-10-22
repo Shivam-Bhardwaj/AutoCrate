@@ -418,9 +418,9 @@ export const UI_CONSTANTS = {
   },
   /** Default product dimensions for new projects (inches) */
   DEFAULT_PRODUCT: {
-    length: 135,
-    width: 135,
-    height: 135,
+    length: 120,
+    width: 120,
+    height: 120,
     weight: 10000,
   },
 } as const
@@ -436,16 +436,16 @@ export const VALIDATION_RULES = {
   /** Product dimension constraints (inches) */
   DIMENSIONS: {
     MIN_LENGTH: 12,
-    MAX_LENGTH: 240,
+    MAX_LENGTH: 130,
     MIN_WIDTH: 12,
-    MAX_WIDTH: 180,
+    MAX_WIDTH: 130,
     MIN_HEIGHT: 12,
-    MAX_HEIGHT: 144,
+    MAX_HEIGHT: 130,
   },
   /** Weight constraints (pounds) */
   WEIGHT: {
     MIN: 50,
-    MAX: 50000,
+    MAX: 60000,
   },
   /** Clearance constraints (inches) */
   CLEARANCES: {
