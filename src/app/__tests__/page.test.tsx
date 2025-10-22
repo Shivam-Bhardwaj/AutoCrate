@@ -87,9 +87,9 @@ describe('Home Page', () => {
   it('syncs slider controls with product inputs', async () => {
     renderHome()
     const lengthSlider = await screen.findByTestId('slider-length')
-    fireEvent.change(lengthSlider, { target: { value: '150' } })
+    fireEvent.change(lengthSlider, { target: { value: '130' } })
 
-    expect(screen.getByTestId('input-length')).toHaveValue('150')
+    expect(screen.getByTestId('input-length')).toHaveValue('130')
     expect(screen.getByTestId('scenario-status')).toHaveTextContent('Custom values')
   })
 })

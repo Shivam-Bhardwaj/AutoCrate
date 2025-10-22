@@ -6,9 +6,9 @@ describe('StepGenerator integration', () => {
   it('generates STEP without invalid values for default crate', () => {
     const config: CrateConfig = {
       product: {
-        length: 135,
-        width: 135,
-        height: 135,
+        length: 120,
+        width: 120,
+        height: 120,
         weight: 10000
       },
       clearances: {

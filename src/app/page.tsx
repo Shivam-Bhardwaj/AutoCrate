@@ -39,7 +39,7 @@ const SCENARIO_PRESETS: ScenarioPreset[] = [
     id: 'heavy-industrial',
     name: 'Heavy Industrial',
     description: 'High-mass equipment requiring 6x6 skids and generous clearances.',
-    product: { length: 150, width: 120, height: 84, weight: 18000 },
+    product: { length: 130, width: 120, height: 84, weight: 18000 },
     clearances: { side: 3, end: 4, top: 6 },
     allow3x4: false,
     lumberSizes: { '2x6': false, '2x8': true, '2x10': true, '2x12': true },
