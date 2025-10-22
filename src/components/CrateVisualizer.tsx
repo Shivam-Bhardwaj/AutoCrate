@@ -8,6 +8,8 @@ import * as THREE from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { MarkingVisualizer } from './MarkingVisualizer'
 import { UI_CONSTANTS } from '@/lib/crate-constants'
+import { KlimpModel } from './KlimpModel'
+import { LagScrew3D, Washer3D } from './HardwareModel3D'
 
 type ComponentVisibility = {
   skids: boolean
@@ -550,30 +552,6 @@ function HighlightedFace({ plane, color }: { plane: SelectedPlane; color: string
         side={THREE.DoubleSide}
       />
     </Plane>
-  )
-}
-
-// Component to render Klimp 3D model
-function KlimpModel({ box, scale = 0.1 }: { box: NXBox; scale?: number }) {
-  // Temporary: Render as dark bounding box placeholder
-  // Will be replaced with actual STEP file upload in future
-  const center = {
-    x: (box.point1.x + box.point2.x) / 2,
-    y: (box.point1.y + box.point2.y) / 2,
-    z: (box.point1.z + box.point2.z) / 2,
-  }
-
-  const size = {
-    x: Math.abs(box.point2.x - box.point1.x),
-    y: Math.abs(box.point2.y - box.point1.y),
-    z: Math.abs(box.point2.z - box.point1.z),
-  }
-
-  return (
-    <mesh position={[center.x * scale, center.z * scale, -center.y * scale]}>
-      <boxGeometry args={[size.x * scale, size.z * scale, size.y * scale]} />
-      <meshStandardMaterial color="#222222" metalness={0.2} roughness={0.8} />
-    </mesh>
   )
 }
 
@@ -1124,25 +1102,60 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
           )}
 
           {/* Render visible boxes only (filter out suppressed and hidden) */}
-          {visibleBoxes.map((box, index) =>
-            box.type === 'klimp' ? (
-              <KlimpModel
-                key={`${box.name}-${index}`}
-                box={box}
-              />
-            ) : (
-              <NXBoxMesh
-                key={`${box.name}-${index}`}
-                box={box}
-                hoveredBox={hoveredBox}
-                setHoveredBox={setHoveredBox}
-                onHide={handleHideComponent}
-
-                selectedPlanes={selectedPlanes}
-                onPlaneClick={handlePlaneClick}
-              />
-            )
-          )}
+          {visibleBoxes.map((box, index) => {
+            // Handle different hardware types
+            if (box.type === 'klimp') {
+              return (
+                <KlimpModel
+                  key={`${box.name}-${index}`}
+                  box={box}
+                />
+              )
+            } else if (box.type === 'hardware' && (box.name?.toLowerCase().includes('lag') || box.name?.toLowerCase().includes('screw'))) {
+              // Render lag screw at box position
+              const center = {
+                x: (box.point1.x + box.point2.x) / 2,
+                y: (box.point1.y + box.point2.y) / 2,
+                z: (box.point1.z + box.point2.z) / 2,
+              }
+              return (
+                <LagScrew3D
+                  key={`${box.name}-${index}`}
+                  position={[center.x, center.y, center.z]}
+                  rotation={[Math.PI / 2, 0, 0]}
+                  scale={0.1}
+                  length={2.5}
+                />
+              )
+            } else if (box.type === 'hardware' && box.name?.toLowerCase().includes('washer')) {
+              // Render washer at box position
+              const center = {
+                x: (box.point1.x + box.point2.x) / 2,
+                y: (box.point1.y + box.point2.y) / 2,
+                z: (box.point1.z + box.point2.z) / 2,
+              }
+              return (
+                <Washer3D
+                  key={`${box.name}-${index}`}
+                  position={[center.x, center.y, center.z]}
+                  scale={0.1}
+                />
+              )
+            } else {
+              // Default rendering for other box types
+              return (
+                <NXBoxMesh
+                  key={`${box.name}-${index}`}
+                  box={box}
+                  hoveredBox={hoveredBox}
+                  setHoveredBox={setHoveredBox}
+                  onHide={handleHideComponent}
+                  selectedPlanes={selectedPlanes}
+                  onPlaneClick={handlePlaneClick}
+                />
+              )
+            }
+          })}
 
           {/* Render markings if generator is provided */}
           {generator && showMarkings && (
