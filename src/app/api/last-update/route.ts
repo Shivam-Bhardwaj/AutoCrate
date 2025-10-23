@@ -53,9 +53,10 @@ export async function GET() {
     vercelTimestamp || safeExec('git log -1 --format=%cI') || new Date().toISOString()
   const updatedBy = packageJson.maintainer || vercelAuthor || 'unknown@designviz.com'
 
-  // Extract issue number from branch name (e.g., feature/issue-69-description -> 69)
-  const issueMatch = branch.match(/issue-(\d+)/i)
-  const issueNumber = issueMatch ? issueMatch[1] : '0'
+  // Extract issue number from branch name or commit message (e.g., ... (#123))
+  const branchMatch = branch.match(/issue[_-](\d+)/i)
+  const commitMatch = lastChange.match(/\(#(\d+)\)/)
+  const issueNumber = branchMatch?.[1] || commitMatch?.[1] || '0'
 
   // Generate smart test instructions based on commit message
   const testInstructions: string[] = []
