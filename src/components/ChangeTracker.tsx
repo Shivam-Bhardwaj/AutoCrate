@@ -23,9 +23,10 @@ function parseIssueFromBranch(branch: string): string | null {
 
 function parseChangeInfo(metadata: ProjectMetadata): ChangeInfo | null {
   const normalizedIssue = metadata.issueNumber?.trim()
+  const commitMatch = metadata.lastChange.match((/#(\d+)))
   const issueNumber = normalizedIssue && normalizedIssue !== '0'
     ? normalizedIssue
-    : parseIssueFromBranch(metadata.branch) || '0'
+    : parseIssueFromBranch(metadata.branch) || commitMatch?.[1] || '0'
 
   // Extract simple title from commit message (first line, remove prefixes)
   const title = metadata.lastChange
