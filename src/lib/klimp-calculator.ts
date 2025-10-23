@@ -30,12 +30,20 @@ export interface CleatInfo {
   width: number // Width of the cleat
 }
 
+interface BlockInterval {
+  start: number
+  end: number
+}
+
 export class KlimpCalculator {
   private static readonly EDGE_MIN_SPACING = FASTENER_STANDARDS.KLIMP.EDGE_MIN_SPACING // Minimum 18" between hardware
   private static readonly EDGE_MAX_SPACING = FASTENER_STANDARDS.KLIMP.EDGE_MAX_SPACING // Maximum 24" between hardware
   private static readonly CLEAT_OFFSET = 1 // 1" from vertical cleat for corner klimps
   private static readonly BOTTOM_CLEAT_OFFSET = 2 // 2" above bottom horizontal cleat
   private static readonly CLEAT_WIDTH = CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width // Standard 1x4 cleat width
+  private static readonly TOP_CLEAT_CLEARANCE = CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width + 1.5
+  private static readonly SIDE_CLEAT_CLEARANCE = CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width + 2.0
+  private static readonly POSITION_TOLERANCE = 1e-6
 
   /**
    * Calculate strategic klimp positions for the front panel
@@ -53,9 +61,10 @@ export class KlimpCalculator {
   static calculateKlimpLayout(
     panelWidth: number,
     panelHeight: number,
-    _topCleats: CleatInfo[] = [],
-    _leftCleats: CleatInfo[] = [],
-    _rightCleats: CleatInfo[] = []
+    topCleats: CleatInfo[] = [],
+    leftCleats: CleatInfo[] = [],
+    rightCleats: CleatInfo[] = [],
+    targetSpacing: number = 16
   ): KlimpLayout {
     const klimps: Klimp[] = []
     let klimpId = 0
@@ -64,12 +73,14 @@ export class KlimpCalculator {
     // === TOP EDGE KLIMPS ===
     const topStart = this.CLEAT_WIDTH + this.CLEAT_OFFSET
     const topEnd = panelWidth - this.CLEAT_WIDTH - this.CLEAT_OFFSET
-    const topPositions = this.generatePositionsWithSpacing(
+    const topBlocked = this.buildBlockedIntervals(topCleats, topStart, topEnd, this.TOP_CLEAT_CLEARANCE)
+    const topPositions = this.generateEdgePositions(
       topStart,
       topEnd,
+      topBlocked,
       this.EDGE_MIN_SPACING,
       this.EDGE_MAX_SPACING,
-      2
+      targetSpacing
     )
 
     for (const position of topPositions) {
@@ -84,17 +95,21 @@ export class KlimpCalculator {
     }
 
     // === SIDE EDGE KLIMPS ===
-    // Strategy: Symmetric placement with 18"-24" spacing from bottom and top
+    // Strategy: Symmetric placement with 16"-24" spacing from bottom
+    // Keep away from top to avoid interference with top edge klimps
+    // Use symmetric clearance: same gap at top as at bottom for visual balance
 
     const bottomStart = bottomCleatHeight + this.BOTTOM_CLEAT_OFFSET
-    const sideTopLimit = panelHeight - 4 // 4" from top to avoid interference
+    const sideTopLimit = panelHeight - (bottomCleatHeight + this.BOTTOM_CLEAT_OFFSET) // Symmetric: 5.5" from top matches 5.5" from bottom
 
-    const sidePositions = this.generatePositionsWithSpacing(
+    const sideBlocked = this.buildBlockedIntervals(leftCleats.concat(rightCleats), bottomStart, sideTopLimit, this.SIDE_CLEAT_CLEARANCE)
+    const sidePositions = this.generateEdgePositions(
       bottomStart,
       sideTopLimit,
+      sideBlocked,
       this.EDGE_MIN_SPACING,
       this.EDGE_MAX_SPACING,
-      2
+      targetSpacing
     )
 
     // Add left edge klimps
@@ -128,92 +143,153 @@ export class KlimpCalculator {
     }
   }
 
-  private static generatePositionsWithSpacing(
+  private static generateEdgePositions(
     start: number,
     end: number,
+    blocked: BlockInterval[],
     minSpacing: number,
     maxSpacing: number,
-    minCount: number
+    targetSpacing: number
   ): number[] {
-    const tolerance = 1e-6
-
-    if (end <= start) {
-      return [start]
-    }
-
+    const tolerance = 1e-4
     const span = end - start
-    if (span < minSpacing && minCount <= 1) {
-      return [start + span / 2]
+
+    if (span <= tolerance) {
+      return [this.roundPosition(start)]
     }
 
-    const baseCount = Math.max(minCount, span >= minSpacing ? 2 : 1)
-    const maxCandidate = Math.max(baseCount, Math.floor(span / minSpacing) + 2)
-    const targetSpacing = (minSpacing + maxSpacing) / 2
+    // Always place klimps at extremities (like lag screws)
+    if (span <= maxSpacing + tolerance) {
+      // Short edge: just place at start and end
+      return [this.roundPosition(start), this.roundPosition(end)]
+    }
 
-    let bestPositions: number[] | null = null
-    let bestScore = Number.POSITIVE_INFINITY
-    let bestCount = Number.POSITIVE_INFINITY
+    // Calculate optimal number of intervals for better distribution
+    // Uses user-provided target spacing (adjustable via slider)
+    const minIntervals = Math.ceil(span / maxSpacing)  // Minimum needed to respect max spacing
+    const maxIntervals = Math.floor(span / minSpacing) // Maximum possible respecting min spacing
+    const targetIntervals = Math.round(span / targetSpacing) // Optimal for target spacing
 
-    for (let count = baseCount; count <= maxCandidate + 4; count++) {
-      if (count <= 1) {
+    // Choose the best interval count: prefer target, but stay within bounds
+    let intervalCount = Math.max(minIntervals, Math.min(maxIntervals, targetIntervals))
+    intervalCount = Math.max(1, intervalCount)
+
+    let actualSpacing = span / intervalCount
+
+    // Verify spacing is within bounds
+    if (actualSpacing < minSpacing - tolerance || actualSpacing > maxSpacing + tolerance) {
+      // Fallback to minimum intervals if target doesn't work
+      intervalCount = minIntervals
+      actualSpacing = span / intervalCount
+    }
+
+    if (intervalCount <= 1) {
+      return [this.roundPosition(start), this.roundPosition(end)]
+    }
+
+    // Generate evenly spaced positions (start, middle points, end)
+    const step = span / intervalCount
+    const preliminaryPositions: number[] = []
+
+    for (let i = 0; i <= intervalCount; i++) {
+      let position = start + i * step
+
+      // Check if this position is blocked by a cleat
+      position = this.avoidBlockedIntervals(position, blocked, minSpacing)
+
+      preliminaryPositions.push(this.roundPosition(position))
+    }
+
+    // Filter out positions that are too close together after shifting
+    const finalPositions: number[] = []
+    for (let i = 0; i < preliminaryPositions.length; i++) {
+      const position = preliminaryPositions[i]
+
+      // Always keep first and last positions (corner klimps)
+      if (i === 0 || i === preliminaryPositions.length - 1) {
+        finalPositions.push(position)
         continue
       }
 
-      const intervals = count - 1
-      const minOffset = Math.max(0, (span - maxSpacing * intervals) / 2)
-      const maxOffset = Math.max(0, (span - minSpacing * intervals) / 2)
+      // Check spacing with previous position
+      const prevPosition = finalPositions[finalPositions.length - 1]
+      const spacing = position - prevPosition
 
-      if (minOffset > maxOffset + tolerance) {
-        continue
+      // Only add if spacing is adequate (respects minimum spacing)
+      if (spacing >= minSpacing - tolerance) {
+        finalPositions.push(position)
       }
+      // Otherwise skip this klimp - it's too close after cleat avoidance
+    }
 
-      let offset = (span - targetSpacing * intervals) / 2
-      offset = Math.max(minOffset, Math.min(maxOffset, offset))
+    return finalPositions
+  }
 
-      if (offset > span / 2) {
-        continue
+  /**
+   * Shift a position if it's blocked by a cleat
+   * Try to move it just outside the blocked area
+   */
+  private static avoidBlockedIntervals(
+    position: number,
+    blocked: BlockInterval[],
+    minShift: number
+  ): number {
+    for (const interval of blocked) {
+      if (position >= interval.start && position <= interval.end) {
+        // Position is blocked, try to shift it
+        const shiftAfter = interval.end + 0.5
+        const shiftBefore = interval.start - 0.5
+
+        // Prefer shifting to the closer side
+        if (Math.abs(shiftAfter - position) <= Math.abs(shiftBefore - position)) {
+          return shiftAfter
+        } else {
+          return shiftBefore
+        }
       }
+    }
+    return position
+  }
 
-      const run = span - 2 * offset
-      if (run < -tolerance) {
-        continue
-      }
+  private static buildBlockedIntervals(
+    cleats: CleatInfo[],
+    start: number,
+    end: number,
+    clearance: number
+  ): BlockInterval[] {
+    const intervals: BlockInterval[] = []
 
-      const spacing = intervals > 0 ? run / intervals : 0
-
-      if (spacing < minSpacing - tolerance || spacing > maxSpacing + tolerance) {
-        continue
-      }
-
-      const actualStart = start + offset
-      const positions = Array.from({ length: count }, (_, index) => actualStart + index * spacing)
-      const score = Math.abs(spacing - targetSpacing)
-
-      if (
-        !bestPositions ||
-        score < bestScore - tolerance ||
-        (Math.abs(score - bestScore) <= tolerance && count < bestCount)
-      ) {
-        bestPositions = positions
-        bestScore = score
-        bestCount = count
+    for (const cleat of cleats) {
+      const blockStart = Math.max(start, cleat.position - clearance)
+      const blockEnd = Math.min(end, cleat.position + cleat.width + clearance)
+      if (blockEnd - blockStart > this.POSITION_TOLERANCE) {
+        intervals.push({ start: blockStart, end: blockEnd })
       }
     }
 
-    if (!bestPositions) {
-      if (span < minSpacing - tolerance) {
-        return [start + span / 2]
+    intervals.sort((a, b) => a.start - b.start)
+
+    // Merge overlapping intervals
+    const merged: BlockInterval[] = []
+    for (const interval of intervals) {
+      if (merged.length === 0) {
+        merged.push({ ...interval })
+        continue
       }
 
-      const count = Math.max(baseCount, 2)
-      const intervals = count - 1
-      const spacing = Math.min(maxSpacing, Math.max(span / intervals, minSpacing))
-      const offset = Math.max(0, (span - spacing * intervals) / 2)
-      const actualStart = start + offset
-      bestPositions = Array.from({ length: count }, (_, index) => actualStart + index * spacing)
+      const last = merged[merged.length - 1]
+      if (interval.start <= last.end + this.POSITION_TOLERANCE) {
+        last.end = Math.max(last.end, interval.end)
+      } else {
+        merged.push({ ...interval })
+      }
     }
 
-    return bestPositions.map(value => Number(value.toFixed(6)))
+    return merged
+  }
+
+  private static roundPosition(value: number): number {
+    return Number(value.toFixed(6))
   }
 
   /**

@@ -54,6 +54,7 @@ export interface CrateConfig {
   hardware?: {
     lagScrewsPerVerticalCleat?: number
     lagScrewSpacing?: number
+    klimpTargetSpacing?: number
   }
   geometry?: {
     sidePanelGroundClearance?: number
@@ -1517,12 +1518,14 @@ export class NXGenerator {
     }
 
     // Calculate optimal klimp positions
+    const klimpTargetSpacing = this.config.hardware?.klimpTargetSpacing ?? 16 // Default to 16" for maximum klimps
     const klimpLayout = KlimpCalculator.calculateKlimpLayout(
       frontPanelLayout.panelWidth,
       frontPanelLayout.panelHeight,
       topCleats,
       leftCleats,
-      rightCleats
+      rightCleats,
+      klimpTargetSpacing
     )
 
     this.klimpLayouts = [klimpLayout]

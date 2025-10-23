@@ -157,7 +157,7 @@ export const FASTENER_STANDARDS = {
   /** Klimp fastener spacing */
   KLIMP: {
     /** Minimum spacing between edge klimps (inches) */
-    EDGE_MIN_SPACING: 18,
+    EDGE_MIN_SPACING: 16,
     /** Maximum spacing between edge klimps (inches) */
     EDGE_MAX_SPACING: 24,
   },
