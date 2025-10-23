@@ -26,6 +26,8 @@ describe('KlimpCalculator spacing', () => {
 
     expect(topPositions.length).toBeGreaterThanOrEqual(2)
     withinSpacingBounds(topPositions, minSpacing, maxSpacing)
+    expect(topPositions[0]).toBeCloseTo(CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width + 1, 3)
+    expect(topPositions[topPositions.length - 1]).toBeCloseTo(120 - (CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width + 1), 3)
   })
 
   it('mirrors side klimps with matched spacing', () => {
@@ -48,7 +50,7 @@ describe('KlimpCalculator spacing', () => {
   it('avoids placing top klimps directly over vertical cleats', () => {
     const cleatWidth = CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width
     const cleatPosition = 40
-    const clearance = (cleatWidth / 2) + 0.5
+    const clearance = CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width + 1.5
     const layout = KlimpCalculator.calculateKlimpLayout(
       120,
       96,
@@ -70,7 +72,7 @@ describe('KlimpCalculator spacing', () => {
   it('avoids horizontal cleats when placing side klimps', () => {
     const cleatWidth = CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width
     const cleatPosition = 28
-    const clearance = (cleatWidth / 2) + 0.5
+    const clearance = CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width + 2.0
     const layout = KlimpCalculator.calculateKlimpLayout(
       120,
       96,
@@ -89,5 +91,16 @@ describe('KlimpCalculator spacing', () => {
     sidePositions.forEach(position => {
       expect(position <= blockedStart || position >= blockedEnd).toBe(true)
     })
+  })
+
+  it('adds additional top klimps as panel width grows', () => {
+    const narrow = KlimpCalculator.calculateKlimpLayout(50, 96)
+    const wide = KlimpCalculator.calculateKlimpLayout(100, 96)
+
+    const narrowCount = narrow.klimps.filter(klimp => klimp.edge === 'top').length
+    const wideCount = wide.klimps.filter(klimp => klimp.edge === 'top').length
+
+    expect(wideCount).toBeGreaterThan(narrowCount)
+    expect(wideCount).toBeGreaterThanOrEqual(4)
   })
 })

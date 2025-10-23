@@ -2,6 +2,7 @@ import {
   PlywoodSplicer,
   calculatePlywoodPieces
 } from '../plywood-splicing'
+import { CLEAT_STANDARDS } from '../crate-constants'
 
 describe('PlywoodSplicer.calculateOptimizedSpliceLayout', () => {
   it('prefers rotated sheets when rotation removes all splices', () => {
@@ -53,7 +54,7 @@ describe('PlywoodSplicer.calculateOptimizedSpliceLayout', () => {
     const verticalSplices = layout.splices.filter(splice => splice.orientation === 'vertical')
     expect(verticalSplices.length).toBeGreaterThan(0)
     verticalSplices.forEach(splice => {
-      expect(panelWidth - splice.x).toBeGreaterThan(7)
+      expect(panelWidth - splice.x).toBeGreaterThan(CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width + 2)
     })
   })
 })
