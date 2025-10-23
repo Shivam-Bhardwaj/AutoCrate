@@ -17,13 +17,13 @@ interface ChangeInfo {
 
 function parseIssueFromBranch(branch: string): string | null {
   // Extract issue number from branch name (e.g., feature/issue-69-change-tracking -> 69)
-  const match = branch.match(/issue-(\d+)/i)
+  const match = branch.match(/issue[_-](\d+)/i)
   return match ? match[1] : null
 }
 
 function parseChangeInfo(metadata: ProjectMetadata): ChangeInfo | null {
   const normalizedIssue = metadata.issueNumber?.trim()
-  const commitMatch = metadata.lastChange.match((/#(\d+)))
+  const commitMatch = metadata.lastChange.match(/\(#(\d+)\)/)
   const issueNumber = normalizedIssue && normalizedIssue !== '0'
     ? normalizedIssue
     : parseIssueFromBranch(metadata.branch) || commitMatch?.[1] || '0'
