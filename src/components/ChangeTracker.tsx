@@ -17,14 +17,36 @@ interface ChangeInfo {
 
 function parseIssueFromBranch(branch: string): string | null {
   // Extract issue number from branch name (e.g., feature/issue-69-change-tracking -> 69)
-  const match = branch.match(/issue-(\d+)/i)
+  const match = branch.match(/issue[_-](\d+)/i)
   return match ? match[1] : null
 }
 
+function deriveIssueNumber(metadata: ProjectMetadata): string {
+  const normalizedIssue = metadata.issueNumber?.trim()
+  if (normalizedIssue && normalizedIssue !== '0') {
+    return normalizedIssue
+  }
+
+  const branchIssue = parseIssueFromBranch(metadata.branch)
+  if (branchIssue) {
+    return branchIssue
+  }
+
+  const commitMatch = metadata.lastChange?.match(/\(#(\d+)\)/)
+  if (commitMatch?.[1]) {
+    return commitMatch[1]
+  }
+
+  const tiMatch = metadata.tiNumber?.match(/(\d+)/)
+  if (tiMatch?.[1]) {
+    return tiMatch[1]
+  }
+
+  return '0'
+}
+
 function parseChangeInfo(metadata: ProjectMetadata): ChangeInfo | null {
-  const issueNumber = metadata.issueNumber ||
-                      parseIssueFromBranch(metadata.branch) ||
-                      '0'
+  const issueNumber = deriveIssueNumber(metadata)
 
   // Extract simple title from commit message (first line, remove prefixes)
   const title = metadata.lastChange
@@ -145,6 +167,13 @@ export function ChangeTracker() {
     }
   }
 
+  const issueNumber = changeInfo.issueNumber
+  const hasIssueLink = issueNumber !== '0'
+  const issueLabel = hasIssueLink ? `Issue #${issueNumber}` : 'Issue #N/A'
+  const issueHref = hasIssueLink
+    ? `https://github.com/Shivam-Bhardwaj/AutoCrate/issues/${issueNumber}`
+    : undefined
+
   return (
     <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-all duration-300">
       {/* Compact header bar */}
@@ -154,15 +183,21 @@ export function ChangeTracker() {
       >
         <div className="flex items-center gap-3 text-xs">
           {/* Issue badge */}
-          <a
-            href={`https://github.com/Shivam-Bhardwaj/AutoCrate/issues/${changeInfo.issueNumber}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="font-mono">Issue #{changeInfo.issueNumber}</span>
-          </a>
+          {hasIssueLink ? (
+            <a
+              href={issueHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span className="font-mono">{issueLabel}</span>
+            </a>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full">
+              <span className="font-mono">{issueLabel}</span>
+            </span>
+          )}
 
           {/* Change title */}
           <span className="font-medium text-gray-900 dark:text-gray-100">

@@ -58,6 +58,60 @@ describe('ChangeTracker', () => {
     })
   })
 
+  it('should fall back to issue number in commit message when branch is missing', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      json: async () => ({
+        ...mockMetadata,
+        issueNumber: '0',
+        branch: 'main',
+        lastChange: 'fix: header shows wrong issue (#147)'
+      })
+    })
+
+    render(<ChangeTracker />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Issue #147/)).toBeInTheDocument()
+    })
+  })
+
+  it('should fall back to tiNumber when other sources missing', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      json: async () => ({
+        ...mockMetadata,
+        issueNumber: '0',
+        branch: 'main',
+        tiNumber: 'TI-205-CUSTOM',
+        lastChange: 'docs: update handbook'
+      })
+    })
+
+    render(<ChangeTracker />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Issue #205/)).toBeInTheDocument()
+    })
+  })
+
+  it('should render placeholder when no issue information is available', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      json: async () => ({
+        ...mockMetadata,
+        issueNumber: '0',
+        branch: 'main',
+        tiNumber: 'TI-PLACEHOLDER',
+        lastChange: 'chore: run cleanup'
+      })
+    })
+
+    render(<ChangeTracker />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Issue #N/A')).toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: /Issue/ })).not.toBeInTheDocument()
+    })
+  })
+
   it('should toggle expanded state on click', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       json: async () => mockMetadata
