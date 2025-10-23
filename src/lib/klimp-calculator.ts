@@ -145,38 +145,75 @@ export class KlimpCalculator {
     minSpacing: number,
     maxSpacing: number
   ): number[] {
-    if (end <= start + this.POSITION_TOLERANCE) {
+    const tolerance = 1e-4
+    const span = end - start
+
+    if (span <= tolerance) {
+      return [this.roundPosition(start)]
+    }
+
+    // Always place klimps at extremities (like lag screws)
+    if (span <= maxSpacing + tolerance) {
+      // Short edge: just place at start and end
       return [this.roundPosition(start), this.roundPosition(end)]
     }
 
+    // Calculate number of intervals needed
+    let intervalCount = Math.ceil(span / maxSpacing)
+    intervalCount = Math.max(1, intervalCount)
+
+    let actualSpacing = span / intervalCount
+
+    // Avoid over-tight patterns that violate minimum spacing
+    while (intervalCount > 1 && actualSpacing < minSpacing - tolerance) {
+      intervalCount -= 1
+      actualSpacing = span / intervalCount
+    }
+
+    if (intervalCount <= 1) {
+      return [this.roundPosition(start), this.roundPosition(end)]
+    }
+
+    // Generate evenly spaced positions (start, middle points, end)
+    const step = span / intervalCount
     const positions: number[] = []
-    let current = this.snapForwardAnchor(start, blocked)
-    const endAnchor = this.snapBackwardAnchor(end, blocked)
 
-    positions.push(current)
+    for (let i = 0; i <= intervalCount; i++) {
+      let position = start + i * step
 
-    while (endAnchor - current > maxSpacing + this.POSITION_TOLERANCE) {
-      const nextPosition = this.findNextPosition(current, endAnchor, blocked, minSpacing, maxSpacing)
-      if (nextPosition === null) {
-        break
-      }
-      positions.push(nextPosition)
-      current = nextPosition
+      // Check if this position is blocked by a cleat
+      position = this.avoidBlockedIntervals(position, blocked, minSpacing)
+
+      positions.push(this.roundPosition(position))
     }
 
-    if (endAnchor - positions[positions.length - 1] < minSpacing - this.POSITION_TOLERANCE && positions.length > 1) {
-      positions.pop()
-    }
-
-    if (endAnchor - positions[positions.length - 1] > maxSpacing + this.POSITION_TOLERANCE) {
-      const fallback = this.findNextPosition(positions[positions.length - 1], endAnchor, blocked, minSpacing, maxSpacing)
-      if (fallback !== null) {
-        positions.push(fallback)
-      }
-    }
-
-    positions.push(endAnchor)
     return positions
+  }
+
+  /**
+   * Shift a position if it's blocked by a cleat
+   * Try to move it just outside the blocked area
+   */
+  private static avoidBlockedIntervals(
+    position: number,
+    blocked: BlockInterval[],
+    minShift: number
+  ): number {
+    for (const interval of blocked) {
+      if (position >= interval.start && position <= interval.end) {
+        // Position is blocked, try to shift it
+        const shiftAfter = interval.end + 0.5
+        const shiftBefore = interval.start - 0.5
+
+        // Prefer shifting to the closer side
+        if (Math.abs(shiftAfter - position) <= Math.abs(shiftBefore - position)) {
+          return shiftAfter
+        } else {
+          return shiftBefore
+        }
+      }
+    }
+    return position
   }
 
   private static buildBlockedIntervals(
@@ -197,6 +234,7 @@ export class KlimpCalculator {
 
     intervals.sort((a, b) => a.start - b.start)
 
+    // Merge overlapping intervals
     const merged: BlockInterval[] = []
     for (const interval of intervals) {
       if (merged.length === 0) {
@@ -213,96 +251,6 @@ export class KlimpCalculator {
     }
 
     return merged
-  }
-
-  private static findNextPosition(
-    current: number,
-    endAnchor: number,
-    blocked: BlockInterval[],
-    minSpacing: number,
-    maxSpacing: number
-  ): number | null {
-    const searchStart = current + minSpacing
-    const searchEnd = Math.min(endAnchor - minSpacing, current + maxSpacing)
-    if (searchEnd <= searchStart + this.POSITION_TOLERANCE) {
-      return null
-    }
-
-    const segments = this.computeAllowedSegments(searchStart, searchEnd, blocked, minSpacing)
-    if (segments.length === 0) {
-      return null
-    }
-
-    const target = current + maxSpacing
-    for (const segment of segments) {
-      const candidate = this.roundPosition(Math.min(segment.end, Math.max(segment.start, target)))
-      if (candidate - current >= minSpacing - this.POSITION_TOLERANCE && candidate - current <= maxSpacing + this.POSITION_TOLERANCE) {
-        return candidate
-      }
-    }
-
-    const lastSegment = segments[segments.length - 1]
-    const fallback = this.roundPosition(lastSegment.end)
-    if (fallback - current >= minSpacing - this.POSITION_TOLERANCE) {
-      return fallback
-    }
-
-    return null
-  }
-
-  private static snapForwardAnchor(anchor: number, blocked: BlockInterval[]): number {
-    let position = this.roundPosition(anchor)
-    for (const interval of blocked) {
-      if (position >= interval.start - this.POSITION_TOLERANCE && position <= interval.end + this.POSITION_TOLERANCE) {
-        position = this.roundPosition(interval.end + this.POSITION_TOLERANCE)
-      }
-    }
-    return position
-  }
-
-  private static snapBackwardAnchor(anchor: number, blocked: BlockInterval[]): number {
-    let position = this.roundPosition(anchor)
-    for (let i = blocked.length - 1; i >= 0; i--) {
-      const interval = blocked[i]
-      if (position >= interval.start - this.POSITION_TOLERANCE && position <= interval.end + this.POSITION_TOLERANCE) {
-        position = this.roundPosition(interval.start - this.POSITION_TOLERANCE)
-      }
-    }
-    return position
-  }
-
-  private static computeAllowedSegments(
-    start: number,
-    end: number,
-    blocked: BlockInterval[],
-    _minSpacing: number
-  ): BlockInterval[] {
-    const segments: BlockInterval[] = []
-    let cursor = start
-
-    for (const interval of blocked) {
-      if (interval.end <= cursor + this.POSITION_TOLERANCE) {
-        continue
-      }
-      if (interval.start >= end - this.POSITION_TOLERANCE) {
-        break
-      }
-
-      if (interval.start > cursor + this.POSITION_TOLERANCE) {
-        segments.push({ start: cursor, end: Math.min(end, interval.start) })
-      }
-
-      cursor = Math.max(cursor, Math.min(end, interval.end))
-    }
-
-    if (cursor < end - this.POSITION_TOLERANCE) {
-      segments.push({ start: cursor, end })
-    }
-
-    return segments.map(segment => ({
-      start: this.roundPosition(segment.start),
-      end: this.roundPosition(segment.end)
-    }))
   }
 
   private static roundPosition(value: number): number {
