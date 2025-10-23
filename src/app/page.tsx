@@ -126,7 +126,7 @@ export default function Home() {
   })
 
   const [lagSpacing, setLagSpacing] = useState<number>(FASTENER_STANDARDS.LAG_SCREW.DEFAULT_SPACING)
-  const [klimpTargetSpacing, setKlimpTargetSpacing] = useState<number>(18) // Target spacing for klimps (16-24")
+  const [klimpTargetSpacing, setKlimpTargetSpacing] = useState<number>(16) // Target spacing for klimps (16-24"), default to minimum for max klimps
   const [sideGroundClearance, setSideGroundClearance] = useState<number>(GEOMETRY_STANDARDS.SIDE_PANEL_GROUND_CLEARANCE)
 
   const [pmiVisibility, setPmiVisibility] = useState({

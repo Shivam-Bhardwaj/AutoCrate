@@ -1518,7 +1518,7 @@ export class NXGenerator {
     }
 
     // Calculate optimal klimp positions
-    const klimpTargetSpacing = this.config.hardware?.klimpTargetSpacing ?? 18 // Default to 18"
+    const klimpTargetSpacing = this.config.hardware?.klimpTargetSpacing ?? 16 // Default to 16" for maximum klimps
     const klimpLayout = KlimpCalculator.calculateKlimpLayout(
       frontPanelLayout.panelWidth,
       frontPanelLayout.panelHeight,

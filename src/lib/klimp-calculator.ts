@@ -64,7 +64,7 @@ export class KlimpCalculator {
     topCleats: CleatInfo[] = [],
     leftCleats: CleatInfo[] = [],
     rightCleats: CleatInfo[] = [],
-    targetSpacing: number = 18
+    targetSpacing: number = 16
   ): KlimpLayout {
     const klimps: Klimp[] = []
     let klimpId = 0
