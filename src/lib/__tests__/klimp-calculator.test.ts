@@ -103,4 +103,37 @@ describe('KlimpCalculator spacing', () => {
     expect(wideCount).toBeGreaterThan(narrowCount)
     expect(wideCount).toBeGreaterThanOrEqual(4)
   })
+
+  it('generates sufficient klimps for large panels (120" x 96")', () => {
+    const layout = KlimpCalculator.calculateKlimpLayout(120, 96)
+    const leftKlimps = layout.klimps.filter(k => k.edge === 'left')
+    const rightKlimps = layout.klimps.filter(k => k.edge === 'right')
+    const topKlimps = layout.klimps.filter(k => k.edge === 'top')
+
+    // Log actual counts for debugging
+    console.log(`\n120" x 96" panel klimp counts:`)
+    console.log(`  Top: ${topKlimps.length}`)
+    console.log(`  Left: ${leftKlimps.length}`)
+    console.log(`  Right: ${rightKlimps.length}`)
+    console.log(`  Total: ${layout.totalKlimps}`)
+
+    // Log left edge positions and spacings
+    const sortedLeft = leftKlimps.map(k => k.position).sort((a, b) => a - b)
+    console.log(`  Left positions: ${sortedLeft.map(p => p.toFixed(2)).join(', ')}`)
+    if (sortedLeft.length > 1) {
+      console.log(`  Left spacings:`)
+      for (let i = 1; i < sortedLeft.length; i++) {
+        const spacing = sortedLeft[i] - sortedLeft[i-1]
+        console.log(`    ${spacing.toFixed(2)}"`)
+      }
+    }
+
+    // For a 96" tall panel with side range of ~86.5", we need at least 4 klimps
+    // to keep maximum spacing under 24"
+    expect(leftKlimps.length).toBeGreaterThanOrEqual(4)
+    expect(rightKlimps.length).toBeGreaterThanOrEqual(4)
+
+    // For a 120" wide panel with top range of ~115", we need at least 5 klimps
+    expect(topKlimps.length).toBeGreaterThanOrEqual(5)
+  })
 })
