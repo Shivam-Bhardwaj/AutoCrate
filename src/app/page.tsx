@@ -126,6 +126,7 @@ export default function Home() {
   })
 
   const [lagSpacing, setLagSpacing] = useState<number>(FASTENER_STANDARDS.LAG_SCREW.DEFAULT_SPACING)
+  const [klimpTargetSpacing, setKlimpTargetSpacing] = useState<number>(18) // Target spacing for klimps (16-24")
   const [sideGroundClearance, setSideGroundClearance] = useState<number>(GEOMETRY_STANDARDS.SIDE_PANEL_GROUND_CLEARANCE)
 
   const [pmiVisibility, setPmiVisibility] = useState({
@@ -303,7 +304,8 @@ export default function Home() {
       markings: markings,
       hardware: {
         ...(config.hardware ?? {}),
-        lagScrewSpacing: lagSpacing
+        lagScrewSpacing: lagSpacing,
+        klimpTargetSpacing: klimpTargetSpacing
       },
       geometry: {
         ...(config.geometry ?? {}),
@@ -316,7 +318,7 @@ export default function Home() {
         capPartNumber: partNumbers.cap
       }
     }))
-  }, [config, allow3x4Lumber, displayOptions.lumberSizes, lagSpacing, sideGroundClearance, partNumbers, markings])
+  }, [config, allow3x4Lumber, displayOptions.lumberSizes, lagSpacing, klimpTargetSpacing, sideGroundClearance, partNumbers, markings])
 
   const handleInputChange = (field: keyof typeof inputValues, value: string) => {
     // Update input value immediately
@@ -899,6 +901,49 @@ export default function Home() {
               </div>
               <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
                 Side fasteners stay centred in the cleat, with spacing adjustable between {FASTENER_STANDARDS.LAG_SCREW.MIN_SPACING}" and {FASTENER_STANDARDS.LAG_SCREW.MAX_SPACING}" in 1/16" increments.
+              </p>
+            </section>
+
+            <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Klimps (Spring Clamps)</h3>
+                <span className="text-[11px] text-gray-500 dark:text-gray-400">Target spacing (inches)</span>
+              </div>
+              <div className="mt-2 space-y-2">
+                <input
+                  type="range"
+                  min={16}
+                  max={24}
+                  step={0.5}
+                  value={klimpTargetSpacing}
+                  onChange={event => {
+                    const raw = Number(event.target.value)
+                    if (!Number.isNaN(raw)) {
+                      setKlimpTargetSpacing(Math.min(24, Math.max(16, raw)))
+                    }
+                  }}
+                  className="w-full"
+                />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={16}
+                    max={24}
+                    step={0.5}
+                    value={klimpTargetSpacing}
+                    onChange={event => {
+                      const raw = Number(event.target.value)
+                      if (!Number.isNaN(raw)) {
+                        setKlimpTargetSpacing(Math.min(24, Math.max(16, raw)))
+                      }
+                    }}
+                    className="w-20 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-gray-600 dark:text-gray-400">{klimpTargetSpacing.toFixed(1)}" target</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+                Lower values = more klimps, higher values = fewer klimps. Actual spacing will be symmetric and stay within {FASTENER_STANDARDS.KLIMP.EDGE_MIN_SPACING}"-{FASTENER_STANDARDS.KLIMP.EDGE_MAX_SPACING}" range.
               </p>
             </section>
 

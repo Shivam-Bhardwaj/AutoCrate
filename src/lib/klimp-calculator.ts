@@ -63,7 +63,8 @@ export class KlimpCalculator {
     panelHeight: number,
     topCleats: CleatInfo[] = [],
     leftCleats: CleatInfo[] = [],
-    rightCleats: CleatInfo[] = []
+    rightCleats: CleatInfo[] = [],
+    targetSpacing: number = 18
   ): KlimpLayout {
     const klimps: Klimp[] = []
     let klimpId = 0
@@ -78,7 +79,8 @@ export class KlimpCalculator {
       topEnd,
       topBlocked,
       this.EDGE_MIN_SPACING,
-      this.EDGE_MAX_SPACING
+      this.EDGE_MAX_SPACING,
+      targetSpacing
     )
 
     for (const position of topPositions) {
@@ -105,7 +107,8 @@ export class KlimpCalculator {
       sideTopLimit,
       sideBlocked,
       this.EDGE_MIN_SPACING,
-      this.EDGE_MAX_SPACING
+      this.EDGE_MAX_SPACING,
+      targetSpacing
     )
 
     // Add left edge klimps
@@ -144,7 +147,8 @@ export class KlimpCalculator {
     end: number,
     blocked: BlockInterval[],
     minSpacing: number,
-    maxSpacing: number
+    maxSpacing: number,
+    targetSpacing: number
   ): number[] {
     const tolerance = 1e-4
     const span = end - start
@@ -160,8 +164,7 @@ export class KlimpCalculator {
     }
 
     // Calculate optimal number of intervals for better distribution
-    // Target spacing: 18" (closer to minimum for better support and load distribution)
-    const targetSpacing = 18
+    // Uses user-provided target spacing (adjustable via slider)
     const minIntervals = Math.ceil(span / maxSpacing)  // Minimum needed to respect max spacing
     const maxIntervals = Math.floor(span / minSpacing) // Maximum possible respecting min spacing
     const targetIntervals = Math.round(span / targetSpacing) // Optimal for target spacing
