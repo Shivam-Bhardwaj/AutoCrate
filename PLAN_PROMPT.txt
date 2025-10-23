@@ -1,0 +1,29 @@
+You are Claude Code. Create a precise implementation plan for this repository, addressing GitHub issue #145: "[BUG] issue number not updating in main branch".
+- Use minimal, focused diffs; reference files as path:line
+- Include commands to validate (tests/build)
+- List potential risks, edge cases, and a rollback note
+- Keep plan 200-400 words; bullets preferred
+
+Issue description:
+## What's broken?
+when the PR is merged, the latest issue that is worked on is not properly displayed. neither is the check to do.
+<!-- Quick description of the problem -->
+
+
+## Steps to reproduce
+
+<!-- How can we see it? -->
+
+1.
+2.
+
+## What should happen?
+We need a simple one line meta data on the top about the last update, time, by whom, what, github link of the commit, etc. 
+
+<!-- Expected behavior -->
+
+## Browser/OS (if relevant)
+
+<!-- e.g., Chrome on Windows -->
+
+<img width="3839" height="317" alt="Image" src="https://github.com/user-attachments/assets/6cabb5ef-838b-43be-adc9-2c72cd22f26e" />
