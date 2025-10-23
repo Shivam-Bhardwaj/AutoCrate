@@ -349,6 +349,30 @@ For more detailed workflow documentation, see:
 - `.claude/workflows/MAKING_CHANGES.md` - Development workflow
 - `.claude/workflows/REVERTING.md` - Rollback procedures
 
+## Recent Work
+
+### Klimp Placement Algorithm (October 2025)
+
+**Commit timeline**
+
+| Date (UTC) | Author          | Commit    | Message                                                                        |
+| ---------- | --------------- | --------- | ------------------------------------------------------------------------------ |
+| 2025-10-23 | Shivam Bhardwaj | `f8d3bc6` | Improve klimp symmetry with balanced top/bottom clearances                     |
+| 2025-10-23 | Shivam Bhardwaj | `ff137e1` | Change default klimp target spacing to 16" for maximum density                 |
+| 2025-10-23 | Shivam Bhardwaj | `ca27e60` | Add klimp target spacing slider for user control                               |
+| 2025-10-23 | Shivam Bhardwaj | `9adda45` | Optimize klimp distribution with 18" target spacing                            |
+| 2025-10-23 | Shivam Bhardwaj | `52a4fbe` | Improve klimp placement: enforce minimum spacing and avoid corner interference |
+
+This update keeps klimp spacing inside a 16-24" window with a user slider, holds balanced 5.5" end clearances for symmetry, shifts placements away from intermediate or splice cleats, enforces the 16" minimum to prevent corner interference, and extends test coverage across small and large panels.
+
+Key files: `src/lib/klimp-calculator.ts`, `src/app/page.tsx` (klimp slider controls), `src/lib/nx-generator.ts`, and `src/lib/__tests__/klimp-calculator.test.ts`.
+
+Algorithm strategy: round the span by the target spacing to select a candidate interval count, clamp the value inside the allowed bounds, mirror positions across the span, translate away from blocked cleat ranges, and drop any residual conflicts after shifting.
+
+### UI/UX Improvements
+
+Datum planes now start hidden to clean up the 3D scene, and the klimp spacing slider (16-24" range) mirrors the lag screw controls for a consistent workflow.
+
 ## Contributing
 
 When adding new commands:

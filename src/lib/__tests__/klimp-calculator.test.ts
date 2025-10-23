@@ -258,4 +258,45 @@ describe('KlimpCalculator spacing', () => {
     withinSpacingBounds(sortedTop, minSpacing, maxSpacing)
     withinSpacingBounds(sortedLeft, minSpacing, maxSpacing)
   })
+
+  it('handles 111" x 117" panel with horizontal intermediate cleat at 48"', () => {
+    // Simulate a tall panel with horizontal splice at 48" (typical for plywood sheets)
+    const horizontalCleatPosition = 48
+    const cleatWidth = CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width
+
+    const layout = KlimpCalculator.calculateKlimpLayout(
+      111, // width
+      117, // height
+      [], // topCleats
+      [{ position: horizontalCleatPosition, width: cleatWidth }], // leftCleats
+      [{ position: horizontalCleatPosition, width: cleatWidth }], // rightCleats
+      16 // targetSpacing
+    )
+
+    const leftKlimps = layout.klimps.filter(k => k.edge === 'left')
+    const sortedLeft = leftKlimps.map(k => k.position).sort((a, b) => a - b)
+
+    console.log(`\n111" x 117" panel with horizontal cleat at 48":`)
+    console.log(`  Left klimps: ${leftKlimps.length}`)
+    console.log(`  Positions: ${sortedLeft.map(p => p.toFixed(2)).join(', ')}`)
+    console.log(`  Spacings:`)
+    for (let i = 1; i < sortedLeft.length; i++) {
+      const spacing = sortedLeft[i] - sortedLeft[i-1]
+      console.log(`    ${sortedLeft[i-1].toFixed(2)}" → ${sortedLeft[i].toFixed(2)}": ${spacing.toFixed(2)}"`)
+    }
+
+    // Verify no klimps are placed within the blocked zone around the cleat
+    const clearance = CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width + 2.0 // 5.5"
+    const blockedStart = horizontalCleatPosition - clearance // 42.5"
+    const blockedEnd = horizontalCleatPosition + cleatWidth + clearance // 57"
+
+    console.log(`  Blocked zone: ${blockedStart.toFixed(2)}" - ${blockedEnd.toFixed(2)}"`)
+
+    sortedLeft.forEach(position => {
+      expect(position <= blockedStart || position >= blockedEnd).toBe(true)
+    })
+
+    // Check minimum spacing is respected
+    withinSpacingBounds(sortedLeft, minSpacing, maxSpacing)
+  })
 })
