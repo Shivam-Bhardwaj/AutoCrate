@@ -172,4 +172,36 @@ describe('KlimpCalculator spacing', () => {
     // Minimum 6 total (2 per edge × 3 edges)
     expect(layout.totalKlimps).toBeGreaterThanOrEqual(15)
   })
+
+  it('handles problematic dimensions (120" x 111")', () => {
+    const layout = KlimpCalculator.calculateKlimpLayout(120, 111)
+    const leftKlimps = layout.klimps.filter(k => k.edge === 'left')
+    const topKlimps = layout.klimps.filter(k => k.edge === 'top')
+
+    console.log(`\n120" x 111" panel klimp counts:`)
+    console.log(`  Top: ${topKlimps.length}`)
+    console.log(`  Left: ${leftKlimps.length}`)
+    console.log(`  Total: ${layout.totalKlimps}`)
+
+    const sortedTop = topKlimps.map(k => k.position).sort((a, b) => a - b)
+    const sortedLeft = leftKlimps.map(k => k.position).sort((a, b) => a - b)
+
+    console.log(`  Top positions: ${sortedTop.map(p => p.toFixed(2)).join(', ')}`)
+    console.log(`  Top spacings:`)
+    for (let i = 1; i < sortedTop.length; i++) {
+      const spacing = sortedTop[i] - sortedTop[i-1]
+      console.log(`    ${spacing.toFixed(2)}"`)
+    }
+
+    console.log(`  Left positions: ${sortedLeft.map(p => p.toFixed(2)).join(', ')}`)
+    console.log(`  Left spacings:`)
+    for (let i = 1; i < sortedLeft.length; i++) {
+      const spacing = sortedLeft[i] - sortedLeft[i-1]
+      console.log(`    ${spacing.toFixed(2)}"`)
+    }
+
+    // Check minimum spacing is respected
+    withinSpacingBounds(sortedTop, minSpacing, maxSpacing)
+    withinSpacingBounds(sortedLeft, minSpacing, maxSpacing)
+  })
 })

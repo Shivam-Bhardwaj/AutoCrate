@@ -93,10 +93,11 @@ export class KlimpCalculator {
     }
 
     // === SIDE EDGE KLIMPS ===
-    // Strategy: Symmetric placement with 18"-24" spacing from bottom and top
+    // Strategy: Symmetric placement with 16"-24" spacing from bottom
+    // Keep away from top to avoid interference with top edge klimps
 
     const bottomStart = bottomCleatHeight + this.BOTTOM_CLEAT_OFFSET
-    const sideTopLimit = panelHeight - 4 // 4" from top to avoid interference
+    const sideTopLimit = panelHeight - 8 // 8" from top to avoid corner klimp interference
 
     const sideBlocked = this.buildBlockedIntervals(leftCleats.concat(rightCleats), bottomStart, sideTopLimit, this.SIDE_CLEAT_CLEARANCE)
     const sidePositions = this.generateEdgePositions(
@@ -176,7 +177,7 @@ export class KlimpCalculator {
 
     // Generate evenly spaced positions (start, middle points, end)
     const step = span / intervalCount
-    const positions: number[] = []
+    const preliminaryPositions: number[] = []
 
     for (let i = 0; i <= intervalCount; i++) {
       let position = start + i * step
@@ -184,10 +185,32 @@ export class KlimpCalculator {
       // Check if this position is blocked by a cleat
       position = this.avoidBlockedIntervals(position, blocked, minSpacing)
 
-      positions.push(this.roundPosition(position))
+      preliminaryPositions.push(this.roundPosition(position))
     }
 
-    return positions
+    // Filter out positions that are too close together after shifting
+    const finalPositions: number[] = []
+    for (let i = 0; i < preliminaryPositions.length; i++) {
+      const position = preliminaryPositions[i]
+
+      // Always keep first and last positions (corner klimps)
+      if (i === 0 || i === preliminaryPositions.length - 1) {
+        finalPositions.push(position)
+        continue
+      }
+
+      // Check spacing with previous position
+      const prevPosition = finalPositions[finalPositions.length - 1]
+      const spacing = position - prevPosition
+
+      // Only add if spacing is adequate (respects minimum spacing)
+      if (spacing >= minSpacing - tolerance) {
+        finalPositions.push(position)
+      }
+      // Otherwise skip this klimp - it's too close after cleat avoidance
+    }
+
+    return finalPositions
   }
 
   /**
