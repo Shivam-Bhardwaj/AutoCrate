@@ -764,7 +764,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
     skids: false,
     cleats: false,
     floor: false,
-    datumPlanes: true,
+    datumPlanes: false,
   }
 
   const derivedPartNumbers = {
