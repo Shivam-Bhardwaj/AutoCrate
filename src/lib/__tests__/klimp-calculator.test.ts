@@ -204,4 +204,26 @@ describe('KlimpCalculator spacing', () => {
     withinSpacingBounds(sortedTop, minSpacing, maxSpacing)
     withinSpacingBounds(sortedLeft, minSpacing, maxSpacing)
   })
+
+  it('generates optimal klimp count for 120" height', () => {
+    const layout = KlimpCalculator.calculateKlimpLayout(96, 120)
+    const leftKlimps = layout.klimps.filter(k => k.edge === 'left')
+
+    console.log(`\n96" x 120" panel (120" height) klimp counts:`)
+    console.log(`  Left: ${leftKlimps.length}`)
+    console.log(`  Total: ${layout.totalKlimps}`)
+
+    const sortedLeft = leftKlimps.map(k => k.position).sort((a, b) => a - b)
+    console.log(`  Left positions: ${sortedLeft.map(p => p.toFixed(2)).join(', ')}`)
+    console.log(`  Left spacings:`)
+    for (let i = 1; i < sortedLeft.length; i++) {
+      const spacing = sortedLeft[i] - sortedLeft[i-1]
+      console.log(`    ${spacing.toFixed(2)}"`)
+    }
+
+    // For 120" height with 8" top clearance, span is ~106.5"
+    // With 18" target spacing: 106.5/18 = 5.9 → 6 intervals = 7 klimps
+    expect(leftKlimps.length).toBeGreaterThanOrEqual(7)
+    withinSpacingBounds(sortedLeft, minSpacing, maxSpacing)
+  })
 })

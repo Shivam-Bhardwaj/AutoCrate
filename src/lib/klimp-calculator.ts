@@ -159,15 +159,23 @@ export class KlimpCalculator {
       return [this.roundPosition(start), this.roundPosition(end)]
     }
 
-    // Calculate number of intervals needed
-    let intervalCount = Math.ceil(span / maxSpacing)
+    // Calculate optimal number of intervals for better distribution
+    // Target spacing: 18" (closer to minimum for better support and load distribution)
+    const targetSpacing = 18
+    const minIntervals = Math.ceil(span / maxSpacing)  // Minimum needed to respect max spacing
+    const maxIntervals = Math.floor(span / minSpacing) // Maximum possible respecting min spacing
+    const targetIntervals = Math.round(span / targetSpacing) // Optimal for target spacing
+
+    // Choose the best interval count: prefer target, but stay within bounds
+    let intervalCount = Math.max(minIntervals, Math.min(maxIntervals, targetIntervals))
     intervalCount = Math.max(1, intervalCount)
 
     let actualSpacing = span / intervalCount
 
-    // Avoid over-tight patterns that violate minimum spacing
-    while (intervalCount > 1 && actualSpacing < minSpacing - tolerance) {
-      intervalCount -= 1
+    // Verify spacing is within bounds
+    if (actualSpacing < minSpacing - tolerance || actualSpacing > maxSpacing + tolerance) {
+      // Fallback to minimum intervals if target doesn't work
+      intervalCount = minIntervals
       actualSpacing = span / intervalCount
     }
 
