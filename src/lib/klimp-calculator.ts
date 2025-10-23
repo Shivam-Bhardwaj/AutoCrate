@@ -97,9 +97,10 @@ export class KlimpCalculator {
     // === SIDE EDGE KLIMPS ===
     // Strategy: Symmetric placement with 16"-24" spacing from bottom
     // Keep away from top to avoid interference with top edge klimps
+    // Use symmetric clearance: same gap at top as at bottom for visual balance
 
     const bottomStart = bottomCleatHeight + this.BOTTOM_CLEAT_OFFSET
-    const sideTopLimit = panelHeight - 8 // 8" from top to avoid corner klimp interference
+    const sideTopLimit = panelHeight - (bottomCleatHeight + this.BOTTOM_CLEAT_OFFSET) // Symmetric: 5.5" from top matches 5.5" from bottom
 
     const sideBlocked = this.buildBlockedIntervals(leftCleats.concat(rightCleats), bottomStart, sideTopLimit, this.SIDE_CLEAT_CLEARANCE)
     const sidePositions = this.generateEdgePositions(
