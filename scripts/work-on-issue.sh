@@ -61,8 +61,34 @@ fi
 cd "$WORKTREE_DIR"
 print_success "Changed to worktree: $WORKTREE_DIR"
 
-# Launch the LLM
-print_info "Launching $LLM_COMMAND in worktree..."
-print_info "You can now give it the /issue command or issue URL to start working"
+# Show context for the LLM
+if [ -f "scripts/show-llm-context.sh" ]; then
+    "${SCRIPT_DIR}/show-llm-context.sh"
+else
+    print_info "Context: You are in issues/$ISSUE_NUMBER on branch sbl-$ISSUE_NUMBER"
+    print_info "Read .issue-context.md to understand the issue"
+fi
+
+echo ""
+print_info "Launching $LLM_COMMAND..."
+print_info "Paste this to the LLM when it starts:"
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+cat << 'EOF'
+Read LLM_ONBOARDING.md for complete instructions.
+
+CRITICAL: You are in an isolated worktree.
+- Directory: issues/[NUMBER]/
+- Branch: sbl-[NUMBER]
+- DON'T navigate to ../repo/ or other directories
+- DON'T switch branches
+
+Start by reading: cat .issue-context.md
+EOF
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Give user time to read
+sleep 2
 
 exec "$LLM_COMMAND"
