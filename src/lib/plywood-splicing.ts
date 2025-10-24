@@ -2,7 +2,7 @@
 // Optimizes panel layouts for 48x96 inch plywood sheets
 // Splicing rules: Vertical splices on right, Horizontal splices on bottom
 
-import { PLYWOOD_STANDARDS } from './crate-constants'
+import { CLEAT_STANDARDS, PLYWOOD_STANDARDS } from './crate-constants'
 
 export interface PlywoodSheet {
   width: number  // 48 inches max
@@ -60,6 +60,12 @@ export class PlywoodSplicer {
   private static readonly MAX_SHEET_WIDTH = PLYWOOD_STANDARDS.SHEET_WIDTH
   private static readonly MAX_SHEET_HEIGHT = PLYWOOD_STANDARDS.SHEET_LENGTH
   private static readonly SPLICE_WIDTH = 0.125 // 1/8" for splice overlap
+  private static readonly HORIZONTAL_SPLICE_TOLERANCE = 0.25 // Additional clearance beyond cleat stack
+  private static readonly VERTICAL_SPLICE_TOLERANCE = 0.25
+  private static readonly MIN_HORIZONTAL_SPLICE_CLEARANCE =
+    (CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width * 2) + PlywoodSplicer.HORIZONTAL_SPLICE_TOLERANCE // ≥7" + tolerance
+  private static readonly MIN_VERTICAL_SPLICE_CLEARANCE =
+    (CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width * 2) + PlywoodSplicer.VERTICAL_SPLICE_TOLERANCE
 
   /**
    * Calculate optimal splicing layout for a panel with rotation optimization
@@ -126,13 +132,32 @@ export class PlywoodSplicer {
 
     let sheetId = 0
 
+    const columnWidths = PlywoodSplicer.calculateColumnWidths(panelWidth, sheetWidth, horizontalSections)
+    const columnStarts: number[] = []
+    {
+      let runningX = 0
+      for (let i = 0; i < horizontalSections; i++) {
+        columnStarts.push(runningX)
+        runningX += columnWidths[i] ?? sheetWidth
+      }
+    }
+
     // Build panels with full sheets at top, partials at bottom
     // This ensures horizontal splices are on the bottom
-    const remainderHeight = panelHeight % sheetHeight
+    let remainderHeight = panelHeight % sheetHeight
+
+    if (
+      verticalSections > 1 &&
+      remainderHeight > 0 &&
+      remainderHeight < this.MIN_HORIZONTAL_SPLICE_CLEARANCE
+    ) {
+      remainderHeight = Math.min(this.MIN_HORIZONTAL_SPLICE_CLEARANCE, panelHeight)
+    }
 
     for (let vSection = 0; vSection < verticalSections; vSection++) {
       for (let hSection = 0; hSection < horizontalSections; hSection++) {
-        const x = hSection * sheetWidth
+        const sectionWidth = columnWidths[hSection] ?? sheetWidth
+        const x = columnStarts[hSection]
         let y, sectionHeight
 
         if (vSection === 0 && remainderHeight > 0) {
@@ -147,11 +172,6 @@ export class PlywoodSplicer {
         }
 
         // Width calculation (partial on right)
-        const sectionWidth = Math.min(
-          sheetWidth,
-          panelWidth - x
-        )
-
         sections.push({
           id: `${panelName}_S${vSection}_${hSection}`,
           x: x,
@@ -166,7 +186,7 @@ export class PlywoodSplicer {
         // Add vertical splice if not the rightmost section
         if (hSection < horizontalSections - 1) {
           splices.push({
-            x: (hSection + 1) * sheetWidth - this.SPLICE_WIDTH,
+            x: x + sectionWidth - this.SPLICE_WIDTH,
             y: y,
             orientation: 'vertical'
           })
@@ -201,6 +221,39 @@ export class PlywoodSplicer {
       rotatedSheetWidth: useRotated ? sheetWidth : undefined,
       rotatedSheetHeight: useRotated ? sheetHeight : undefined
     }
+  }
+
+  private static calculateColumnWidths(
+    panelWidth: number,
+    sheetWidth: number,
+    horizontalSections: number
+  ): number[] {
+    if (horizontalSections <= 1) {
+      return [panelWidth]
+    }
+
+    const widths = new Array(horizontalSections).fill(sheetWidth)
+    const remainderWidth = panelWidth % sheetWidth
+
+    if (remainderWidth === 0) {
+      widths[horizontalSections - 1] = sheetWidth
+      return widths
+    }
+
+    widths[horizontalSections - 1] = remainderWidth
+
+    if (remainderWidth < this.MIN_VERTICAL_SPLICE_CLEARANCE) {
+      const delta = this.MIN_VERTICAL_SPLICE_CLEARANCE - remainderWidth
+      const adjustmentPerColumn = delta / (horizontalSections - 1)
+
+      for (let i = 0; i < horizontalSections - 1; i++) {
+        widths[i] = Number((widths[i] - adjustmentPerColumn).toFixed(6))
+      }
+
+      widths[horizontalSections - 1] = this.MIN_VERTICAL_SPLICE_CLEARANCE
+    }
+
+    return widths
   }
 
   /**

@@ -12,7 +12,7 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 import { LumberCutList } from '@/components/LumberCutList'
 import { ChangeTracker } from '@/components/ChangeTracker'
 import { VisualChecklistButton } from '@/components/VisualChecklist'
-import { PART_NUMBER_STANDARDS, FASTENER_STANDARDS, UI_CONSTANTS, GEOMETRY_STANDARDS, PLYWOOD_STANDARDS } from '@/lib/crate-constants'
+import { PART_NUMBER_STANDARDS, FASTENER_STANDARDS, UI_CONSTANTS, GEOMETRY_STANDARDS, PLYWOOD_STANDARDS, VALIDATION_RULES } from '@/lib/crate-constants'
 
 const SCENARIO_PRESETS: ScenarioPreset[] = [
   {
@@ -39,7 +39,7 @@ const SCENARIO_PRESETS: ScenarioPreset[] = [
     id: 'heavy-industrial',
     name: 'Heavy Industrial',
     description: 'High-mass equipment requiring 6x6 skids and generous clearances.',
-    product: { length: 160, width: 120, height: 84, weight: 18000 },
+    product: { length: 130, width: 120, height: 84, weight: 18000 },
     clearances: { side: 3, end: 4, top: 6 },
     allow3x4: false,
     lumberSizes: { '2x6': false, '2x8': true, '2x10': true, '2x12': true },
@@ -56,6 +56,37 @@ const SCENARIO_PRESETS: ScenarioPreset[] = [
     note: 'Use to check plywood splicing and cap calculations for tall crates.'
   }
 ]
+
+const PRODUCT_SLIDER_CONFIG = {
+  length: {
+    min: VALIDATION_RULES.DIMENSIONS.MIN_LENGTH,
+    max: VALIDATION_RULES.DIMENSIONS.MAX_LENGTH,
+    step: 1,
+    fallback: UI_CONSTANTS.DEFAULT_PRODUCT.length
+  },
+  width: {
+    min: VALIDATION_RULES.DIMENSIONS.MIN_WIDTH,
+    max: VALIDATION_RULES.DIMENSIONS.MAX_WIDTH,
+    step: 1,
+    fallback: UI_CONSTANTS.DEFAULT_PRODUCT.width
+  },
+  height: {
+    min: VALIDATION_RULES.DIMENSIONS.MIN_HEIGHT,
+    max: VALIDATION_RULES.DIMENSIONS.MAX_HEIGHT,
+    step: 1,
+    fallback: UI_CONSTANTS.DEFAULT_PRODUCT.height
+  },
+  weight: {
+    min: VALIDATION_RULES.WEIGHT.MIN,
+    max: VALIDATION_RULES.WEIGHT.MAX,
+    step: 50,
+    fallback: UI_CONSTANTS.DEFAULT_PRODUCT.weight
+  }
+} as const
+
+type ProductField = keyof typeof PRODUCT_SLIDER_CONFIG
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 
 export default function Home() {
   // Store input values as strings for better input handling
@@ -95,6 +126,7 @@ export default function Home() {
   })
 
   const [lagSpacing, setLagSpacing] = useState<number>(FASTENER_STANDARDS.LAG_SCREW.DEFAULT_SPACING)
+  const [klimpTargetSpacing, setKlimpTargetSpacing] = useState<number>(16) // Target spacing for klimps (16-24"), default to minimum for max klimps
   const [sideGroundClearance, setSideGroundClearance] = useState<number>(GEOMETRY_STANDARDS.SIDE_PANEL_GROUND_CLEARANCE)
 
   const [pmiVisibility, setPmiVisibility] = useState({
@@ -185,6 +217,30 @@ export default function Home() {
     }
   }, [mobileMenuOpen])
 
+  const getSliderValue = (field: ProductField) => {
+    const raw = parseFloat(inputValues[field])
+    if (!Number.isFinite(raw)) {
+      return PRODUCT_SLIDER_CONFIG[field].fallback
+    }
+    const { min, max } = PRODUCT_SLIDER_CONFIG[field]
+    return clamp(raw, min, max)
+  }
+
+  const handleProductSliderChange = (field: ProductField, value: number) => {
+    setActiveScenarioId(null)
+    setInputValues(prev => ({ ...prev, [field]: value.toString() }))
+
+    if (debounceTimeoutRef.current[field]) {
+      clearTimeout(debounceTimeoutRef.current[field])
+      delete debounceTimeoutRef.current[field]
+    }
+
+    setConfig(prev => ({
+      ...prev,
+      product: { ...prev.product, [field]: value }
+    }))
+  }
+
   const applyScenario = (scenario: ScenarioPreset) => {
     setActiveScenarioId(scenario.id)
 
@@ -248,7 +304,8 @@ export default function Home() {
       markings: markings,
       hardware: {
         ...(config.hardware ?? {}),
-        lagScrewSpacing: lagSpacing
+        lagScrewSpacing: lagSpacing,
+        klimpTargetSpacing: klimpTargetSpacing
       },
       geometry: {
         ...(config.geometry ?? {}),
@@ -261,7 +318,7 @@ export default function Home() {
         capPartNumber: partNumbers.cap
       }
     }))
-  }, [config, allow3x4Lumber, displayOptions.lumberSizes, lagSpacing, sideGroundClearance, partNumbers, markings])
+  }, [config, allow3x4Lumber, displayOptions.lumberSizes, lagSpacing, klimpTargetSpacing, sideGroundClearance, partNumbers, markings])
 
   const handleInputChange = (field: keyof typeof inputValues, value: string) => {
     // Update input value immediately
@@ -626,50 +683,122 @@ export default function Home() {
             <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-2">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">Product Dimensions</h3>
               <div className="grid grid-cols-2 gap-2">
-                <label className="flex flex-col gap-0.5">
-                  <span className="text-xs text-gray-600 dark:text-gray-400">Length (Y)"</span>
+                <div className="flex flex-col gap-1.5">
+                  <label className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Length (Y)"</span>
+                    <input
+                      data-testid="input-length"
+                      type="text"
+                      value={inputValues.length}
+                      onChange={(e) => handleInputChange('length', e.target.value)}
+                      onBlur={() => handleInputBlur('length')}
+                      className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                  </label>
                   <input
-                    data-testid="input-length"
-                    type="text"
-                    value={inputValues.length}
-                    onChange={(e) => handleInputChange('length', e.target.value)}
-                    onBlur={() => handleInputBlur('length')}
-                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    data-testid="slider-length"
+                    type="range"
+                    min={PRODUCT_SLIDER_CONFIG.length.min}
+                    max={PRODUCT_SLIDER_CONFIG.length.max}
+                    step={PRODUCT_SLIDER_CONFIG.length.step}
+                    value={getSliderValue('length')}
+                    onChange={(event) => {
+                      const numericValue = Number(event.target.value)
+                      if (!Number.isNaN(numericValue)) {
+                        handleProductSliderChange('length', numericValue)
+                      }
+                    }}
+                    className="w-full cursor-pointer accent-blue-600"
+                    aria-label="Length in inches"
                   />
-                </label>
-                <label className="flex flex-col gap-0.5">
-                  <span className="text-xs text-gray-600 dark:text-gray-400">Width (X)"</span>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Width (X)"</span>
+                    <input
+                      data-testid="input-width"
+                      type="text"
+                      value={inputValues.width}
+                      onChange={(e) => handleInputChange('width', e.target.value)}
+                      onBlur={() => handleInputBlur('width')}
+                      className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                  </label>
                   <input
-                    data-testid="input-width"
-                    type="text"
-                    value={inputValues.width}
-                    onChange={(e) => handleInputChange('width', e.target.value)}
-                    onBlur={() => handleInputBlur('width')}
-                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    data-testid="slider-width"
+                    type="range"
+                    min={PRODUCT_SLIDER_CONFIG.width.min}
+                    max={PRODUCT_SLIDER_CONFIG.width.max}
+                    step={PRODUCT_SLIDER_CONFIG.width.step}
+                    value={getSliderValue('width')}
+                    onChange={(event) => {
+                      const numericValue = Number(event.target.value)
+                      if (!Number.isNaN(numericValue)) {
+                        handleProductSliderChange('width', numericValue)
+                      }
+                    }}
+                    className="w-full cursor-pointer accent-blue-600"
+                    aria-label="Width in inches"
                   />
-                </label>
-                <label className="flex flex-col gap-0.5">
-                  <span className="text-xs text-gray-600 dark:text-gray-400">Height (Z)"</span>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Height (Z)"</span>
+                    <input
+                      data-testid="input-height"
+                      type="text"
+                      value={inputValues.height}
+                      onChange={(e) => handleInputChange('height', e.target.value)}
+                      onBlur={() => handleInputBlur('height')}
+                      className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                  </label>
                   <input
-                    data-testid="input-height"
-                    type="text"
-                    value={inputValues.height}
-                    onChange={(e) => handleInputChange('height', e.target.value)}
-                    onBlur={() => handleInputBlur('height')}
-                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    data-testid="slider-height"
+                    type="range"
+                    min={PRODUCT_SLIDER_CONFIG.height.min}
+                    max={PRODUCT_SLIDER_CONFIG.height.max}
+                    step={PRODUCT_SLIDER_CONFIG.height.step}
+                    value={getSliderValue('height')}
+                    onChange={(event) => {
+                      const numericValue = Number(event.target.value)
+                      if (!Number.isNaN(numericValue)) {
+                        handleProductSliderChange('height', numericValue)
+                      }
+                    }}
+                    className="w-full cursor-pointer accent-blue-600"
+                    aria-label="Height in inches"
                   />
-                </label>
-                <label className="flex flex-col gap-0.5">
-                  <span className="text-xs text-gray-600 dark:text-gray-400">Weight (lb)</span>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Weight (lb)</span>
+                    <input
+                      data-testid="input-weight"
+                      type="text"
+                      value={inputValues.weight}
+                      onChange={(e) => handleInputChange('weight', e.target.value)}
+                      onBlur={() => handleInputBlur('weight')}
+                      className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                  </label>
                   <input
-                    data-testid="input-weight"
-                    type="text"
-                    value={inputValues.weight}
-                    onChange={(e) => handleInputChange('weight', e.target.value)}
-                    onBlur={() => handleInputBlur('weight')}
-                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    data-testid="slider-weight"
+                    type="range"
+                    min={PRODUCT_SLIDER_CONFIG.weight.min}
+                    max={PRODUCT_SLIDER_CONFIG.weight.max}
+                    step={PRODUCT_SLIDER_CONFIG.weight.step}
+                    value={getSliderValue('weight')}
+                    onChange={(event) => {
+                      const numericValue = Number(event.target.value)
+                      if (!Number.isNaN(numericValue)) {
+                        handleProductSliderChange('weight', numericValue)
+                      }
+                    }}
+                    className="w-full cursor-pointer accent-blue-600"
+                    aria-label="Weight in pounds"
                   />
-                </label>
+                </div>
               </div>
             </section>
 
@@ -772,6 +901,49 @@ export default function Home() {
               </div>
               <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
                 Side fasteners stay centred in the cleat, with spacing adjustable between {FASTENER_STANDARDS.LAG_SCREW.MIN_SPACING}" and {FASTENER_STANDARDS.LAG_SCREW.MAX_SPACING}" in 1/16" increments.
+              </p>
+            </section>
+
+            <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Klimps (Spring Clamps)</h3>
+                <span className="text-[11px] text-gray-500 dark:text-gray-400">Target spacing (inches)</span>
+              </div>
+              <div className="mt-2 space-y-2">
+                <input
+                  type="range"
+                  min={16}
+                  max={24}
+                  step={0.5}
+                  value={klimpTargetSpacing}
+                  onChange={event => {
+                    const raw = Number(event.target.value)
+                    if (!Number.isNaN(raw)) {
+                      setKlimpTargetSpacing(Math.min(24, Math.max(16, raw)))
+                    }
+                  }}
+                  className="w-full"
+                />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={16}
+                    max={24}
+                    step={0.5}
+                    value={klimpTargetSpacing}
+                    onChange={event => {
+                      const raw = Number(event.target.value)
+                      if (!Number.isNaN(raw)) {
+                        setKlimpTargetSpacing(Math.min(24, Math.max(16, raw)))
+                      }
+                    }}
+                    className="w-20 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-gray-600 dark:text-gray-400">{klimpTargetSpacing.toFixed(1)}" target</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+                Lower values = more klimps, higher values = fewer klimps. Actual spacing will be symmetric and stay within {FASTENER_STANDARDS.KLIMP.EDGE_MIN_SPACING}"-{FASTENER_STANDARDS.KLIMP.EDGE_MAX_SPACING}" range.
               </p>
             </section>
 

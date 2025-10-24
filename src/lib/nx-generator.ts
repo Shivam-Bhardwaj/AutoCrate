@@ -54,6 +54,7 @@ export interface CrateConfig {
   hardware?: {
     lagScrewsPerVerticalCleat?: number
     lagScrewSpacing?: number
+    klimpTargetSpacing?: number
   }
   geometry?: {
     sidePanelGroundClearance?: number
@@ -810,19 +811,16 @@ export class NXGenerator {
         panelOriginY = internalLength + 1  // Move 1 inch further back to align with last floorboard's inner edge
         panelOriginZ = skidHeight  // Sits on top of skids
       } else if (layout.panelName === 'LEFT_END_PANEL') {
-        // Left panel inner surface with 1/16" clearance from floorboard edge
-        // Floorboards run from -internalWidth/2 to internalWidth/2
-        const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
-        panelOriginX = -internalWidth/2 - plywoodThickness + edgeClearance  // 1/16" clearance inward
+        // Left panel inner surface remains aligned to requested internal width
+        panelOriginX = -internalWidth/2 - plywoodThickness
         panelOriginY = panelThickness
         // Side panel starts at ground clearance for forklift access (fixes #90, #109)
         const groundClearance = this.getSidePanelGroundClearance()
         panelOriginZ = groundClearance
         isVerticalPanel = true
       } else if (layout.panelName === 'RIGHT_END_PANEL') {
-        // Right panel inner surface with 1/16" clearance from floorboard edge
-        const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
-        panelOriginX = internalWidth/2 - edgeClearance  // 1/16" clearance inward
+        // Right panel inner surface remains aligned to requested internal width
+        panelOriginX = internalWidth/2
         panelOriginY = panelThickness
         // Side panel starts at ground clearance for forklift access (fixes #90, #109)
         const groundClearance = this.getSidePanelGroundClearance()
@@ -948,18 +946,14 @@ export class NXGenerator {
         panelOriginZ = skidHeight  // Match panel position
       } else if (cleatLayout.panelName === 'LEFT_END_PANEL') {
         // Left panel cleats are on the outside (left) face
-        // Panel has 1/16" clearance, cleats go on outside
-        const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
-        panelOriginX = -internalWidth/2 - plywoodThickness + edgeClearance - cleatThickness // Cleats on outside of panel
+        panelOriginX = -internalWidth/2 - plywoodThickness - cleatThickness // Cleats on outside of panel
         panelOriginY = panelThickness
         // Match panel Z origin - starts at ground clearance (fixes #90, #109)
         const groundClearance = this.getSidePanelGroundClearance()
         panelOriginZ = groundClearance
       } else if (cleatLayout.panelName === 'RIGHT_END_PANEL') {
         // Right panel cleats are on the outside (right) face
-        // Panel has 1/16" clearance, cleats go on outside
-        const edgeClearance = GEOMETRY_STANDARDS.SIDE_PANEL_EDGE_CLEARANCE
-        panelOriginX = internalWidth/2 - edgeClearance + plywoodThickness // Cleats on outside of panel
+        panelOriginX = internalWidth/2 + plywoodThickness // Cleats on outside of panel
         panelOriginY = panelThickness
         // Match panel Z origin - starts at ground clearance (fixes #90, #109)
         const groundClearance = this.getSidePanelGroundClearance()
@@ -1093,38 +1087,39 @@ export class NXGenerator {
     this.expressions.set('lag_screw_count', this.lagScrewCount)
   }
   private generateLagRowPositions(start: number, end: number, spacing: number): number[] {
-    // Adaptive spacing based on edge length for better small crate handling
     const span = end - start
-    const MIN_SPACING = span < 36 ? 6 : 12  // Small crates: 6" min, Large: 12" min
-    const MAX_SPACING = span < 36 ? 18 : 24  // Small crates: 18" max, Large: 24" max
     const tolerance = 1e-4
-
-    const clampedSpacing = Math.round(Math.min(MAX_SPACING, Math.max(MIN_SPACING, spacing)) * 16) / 16
+    const MIN_SPACING = 16
+    const MAX_SPACING = 24
+    const effectiveSpacing = Math.min(MAX_SPACING, Math.max(MIN_SPACING, spacing))
 
     if (end <= start + tolerance) {
       return [Number(((start + end) / 2).toFixed(4))]
     }
 
-    // Always place screws at start and end positions (fixes #91, #92)
-    // Minimum 2 lags per edge for structural integrity
-    if (span < MIN_SPACING) {
-      // Edge too small for proper spacing - place at ends only
+    // Always place screws at the extremities whenever the requested spacing can accommodate the span
+    if (span <= effectiveSpacing + tolerance) {
       return [Number(start.toFixed(4)), Number(end.toFixed(4))]
     }
 
-    // Calculate minimum number of screws needed to satisfy MAX_SPACING
-    const minCount = Math.max(2, Math.ceil(span / MAX_SPACING) + 1)
+    let intervalCount = Math.ceil(span / effectiveSpacing)
+    intervalCount = Math.max(1, intervalCount)
 
-    // For very small spans, just place at ends
-    if (span <= MAX_SPACING) {
+    let actualSpacing = span / intervalCount
+
+    // Avoid over-tight patterns that violate the 16" minimum spacing requirement
+    while (intervalCount > 1 && actualSpacing < MIN_SPACING - tolerance) {
+      intervalCount -= 1
+      actualSpacing = span / intervalCount
+    }
+
+    if (intervalCount <= 1) {
       return [Number(start.toFixed(4)), Number(end.toFixed(4))]
     }
 
-    // Place screws at start, end, and evenly spaced intermediates
-    const intervals = minCount - 1
-    const actualSpacing = span / intervals
-    const positions = Array.from({ length: minCount }, (_, index) =>
-      Number((start + index * actualSpacing).toFixed(4))
+    const step = span / intervalCount
+    const positions = Array.from({ length: intervalCount + 1 }, (_, index) =>
+      Number((start + index * step).toFixed(4))
     )
 
     return positions
@@ -1354,7 +1349,7 @@ export class NXGenerator {
     if (configured === undefined || Number.isNaN(configured)) {
       return 21
     }
-    const clamped = Math.min(24, Math.max(18, configured))
+    const clamped = Math.min(24, Math.max(16, configured))
     return Math.round(clamped * 16) / 16
   }
 
@@ -1523,12 +1518,14 @@ export class NXGenerator {
     }
 
     // Calculate optimal klimp positions
+    const klimpTargetSpacing = this.config.hardware?.klimpTargetSpacing ?? 16 // Default to 16" for maximum klimps
     const klimpLayout = KlimpCalculator.calculateKlimpLayout(
       frontPanelLayout.panelWidth,
       frontPanelLayout.panelHeight,
       topCleats,
       leftCleats,
-      rightCleats
+      rightCleats,
+      klimpTargetSpacing
     )
 
     this.klimpLayouts = [klimpLayout]

@@ -2,6 +2,7 @@ import {
   PlywoodSplicer,
   calculatePlywoodPieces
 } from '../plywood-splicing'
+import { CLEAT_STANDARDS } from '../crate-constants'
 
 describe('PlywoodSplicer.calculateOptimizedSpliceLayout', () => {
   it('prefers rotated sheets when rotation removes all splices', () => {
@@ -26,6 +27,35 @@ describe('PlywoodSplicer.calculateOptimizedSpliceLayout', () => {
 
     expect(layout.isRotated).toBe(false)
     expect(layout.splices.some(splice => splice.orientation === 'vertical')).toBe(true)
+  })
+
+  it('ensures minimum clearance before first horizontal splice for stacked cleats', () => {
+    const layout = PlywoodSplicer.calculateOptimizedSpliceLayout(54, 99.5, 'FRONT_PANEL', false)
+
+    const bottomPiece = layout.sheets
+      .filter(section => section.y === 0)
+      .sort((a, b) => a.height - b.height)[0]
+
+    expect(bottomPiece).toBeDefined()
+    expect(bottomPiece!.height).toBeGreaterThanOrEqual(7.25)
+
+    const horizontalSplice = layout.splices.find(splice => splice.orientation === 'horizontal')
+    expect(horizontalSplice).toBeDefined()
+    expect(horizontalSplice!.y).toBeGreaterThan(7)
+  })
+
+  it('ensures minimum clearance before first vertical splice for stacked cleats', () => {
+    const panelWidth = 54
+    const layout = PlywoodSplicer.calculateOptimizedSpliceLayout(panelWidth, 80, 'SIDE_PANEL', false)
+
+    const minWidth = Math.min(...layout.sheets.map(section => section.width))
+    expect(minWidth).toBeGreaterThanOrEqual(7.25)
+
+    const verticalSplices = layout.splices.filter(splice => splice.orientation === 'vertical')
+    expect(verticalSplices.length).toBeGreaterThan(0)
+    verticalSplices.forEach(splice => {
+      expect(panelWidth - splice.x).toBeGreaterThan(CLEAT_STANDARDS.DEFAULT_DIMENSIONS.width + 2)
+    })
   })
 })
 

@@ -96,12 +96,13 @@ describe('PanelStopCalculator', () => {
       })
     })
 
-    it('should position stops flush against front panel', () => {
+    it('should position stops with 0.625" clearance from front panel', () => {
       const config = createTestConfig()
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
       const { thickness, width } = PANEL_STOP_STANDARDS.MATERIAL
+      const { edgeInset } = PANEL_STOP_STANDARDS.POSITIONING
 
       // Verify stops are positioned with correct thickness
       layout.frontPanelStops.forEach(stop => {
@@ -124,12 +125,12 @@ describe('PanelStopCalculator', () => {
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      // Calculate panel bottom position (skid + floorboard)
-      // For weight 1000 lbs, skid is 4x4 (3.5") and floorboard is 2x6 (1.5")
+      // Calculate panel bottom position - panel sits on skids (fixes #126)
+      // For weight 500 lbs, skid is 4x4 (3.5") and floorboard is 2x6 (1.5")
       const skidHeight = 3.5
       const floorboardThickness = 1.5
-      const panelBottomZ = skidHeight + floorboardThickness
-      const panelHeight = config.product.height + config.clearances.top
+      const panelBottomZ = skidHeight  // Panel starts on top of skids
+      const panelHeight = config.product.height + config.clearances.top + floorboardThickness  // Include floorboard
       const expectedCenterZ = panelBottomZ + panelHeight / 2
       const stopLength = layout.stopLength
 
@@ -392,12 +393,11 @@ describe('PanelStopCalculator', () => {
       const calculator = new PanelStopCalculator(config)
       const layout = calculator.calculatePanelStops()
 
-      // Front panel stops should center on actual panel position (skid + floorboard)
-      // not ground clearance
+      // Front panel stops should center on actual panel position (skid top) not ground clearance (fixes #126)
       const skidHeight = 3.5
       const floorboardThickness = 1.5
-      const panelBottomZ = skidHeight + floorboardThickness
-      const panelHeight = config.product.height + config.clearances.top
+      const panelBottomZ = skidHeight  // Panel starts on top of skids
+      const panelHeight = config.product.height + config.clearances.top + floorboardThickness  // Include floorboard
       const expectedCenterZ = panelBottomZ + panelHeight / 2
 
       const centerZ = (layout.frontPanelStops[0].point1.z + layout.frontPanelStops[0].point2.z) / 2

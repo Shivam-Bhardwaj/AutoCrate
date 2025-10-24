@@ -428,12 +428,12 @@ function ScenePMIOverlays({
 }
 
 function CameraResetter({
-  boxes,
+  visibleBoxes,
   resetTrigger,
   controlsRef,
   onTargetChange
 }: {
-  boxes: NXBox[];
+  visibleBoxes: NXBox[];
   resetTrigger: number;
   controlsRef: MutableRefObject<OrbitControlsImpl | null>;
   onTargetChange: (target: [number, number, number]) => void;
@@ -441,13 +441,13 @@ function CameraResetter({
   const { camera, size } = useThree()
 
   useEffect(() => {
-    if (resetTrigger === 0 || boxes.length === 0) return
+    if (resetTrigger === 0 || visibleBoxes.length === 0) return
 
     const scale = 0.1
     const min = new THREE.Vector3(Infinity, Infinity, Infinity)
     const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity)
 
-    boxes.forEach(box => {
+    visibleBoxes.forEach(box => {
       const xValues = [box.point1.x, box.point2.x]
       const yValues = [box.point1.y, box.point2.y]
       const zValues = [box.point1.z, box.point2.z]
@@ -502,7 +502,7 @@ function CameraResetter({
     }
 
     onTargetChange([center.x, center.y, center.z])
-  }, [boxes, resetTrigger, camera, size, controlsRef, onTargetChange])
+  }, [visibleBoxes, resetTrigger, camera, size, controlsRef, onTargetChange])
 
   return null
 }
@@ -555,48 +555,27 @@ function HighlightedFace({ plane, color }: { plane: SelectedPlane; color: string
 
 // Component to render Klimp 3D model
 function KlimpModel({ box, scale = 0.1 }: { box: NXBox; scale?: number }) {
-  const { scene } = useGLTF('/models/klimp.glb')
-
+  // Temporary: Render as dark bounding box placeholder
+  // Will be replaced with actual STEP file upload in future
   const center = {
     x: (box.point1.x + box.point2.x) / 2,
     y: (box.point1.y + box.point2.y) / 2,
     z: (box.point1.z + box.point2.z) / 2,
   }
 
-  // Determine rotation based on edge type from metadata
-  // IMPORTANT: Origin is at bottom of SHORT (3") side, not long side!
-  // Klimp bridges corners between perpendicular panels
-  // Default: stands vertical (4" tall), 3" depth
-  const getRotation = (): [number, number, number] => {
-    if (box.metadata?.includes('left edge')) {
-      // Left edge: 90 degree anticlockwise about Y (opposite of before)
-      return [0, -Math.PI / 2, 0] // Rotate 90° anticlockwise around Y axis
-    } else if (box.metadata?.includes('right edge')) {
-      // Right edge: 90 degree anticlockwise about Y (opposite of before)
-      return [0, -Math.PI / 2, 0] // Rotate 90° anticlockwise around Y axis
-    }
-    // Top edge: 90 degree clockwise about Y (opposite of before)
-    return [0, Math.PI / 2, 0] // Rotate 90° clockwise around Y axis
+  const size = {
+    x: Math.abs(box.point2.x - box.point1.x),
+    y: Math.abs(box.point2.y - box.point1.y),
+    z: Math.abs(box.point2.z - box.point1.z),
   }
 
-  const rotation = getRotation()
-
-  // Position at calculated center point with -Y offset to move away from cleats
-  // Add 0.5" offset in -Y direction (outward from panel)
-  const yOffset = -0.5 * scale // 0.5 inch offset in -Y direction
-
   return (
-    <Clone
-      object={scene}
-      position={[center.x * scale, center.z * scale, -center.y * scale + yOffset]}
-      rotation={rotation}
-      scale={[scale * 0.03, scale * 0.03, scale * 0.03]} // Scale for proper size
-    />
+    <mesh position={[center.x * scale, center.z * scale, -center.y * scale]}>
+      <boxGeometry args={[size.x * scale, size.z * scale, size.y * scale]} />
+      <meshStandardMaterial color="#222222" metalness={0.2} roughness={0.8} />
+    </mesh>
   )
 }
-
-// Preload the klimp model
-useGLTF.preload('/models/klimp.glb')
 
 // Component to render a single box from NX two-point definition
 function NXBoxMesh({
@@ -785,7 +764,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
     skids: false,
     cleats: false,
     floor: false,
-    datumPlanes: true,
+    datumPlanes: false,
   }
 
   const derivedPartNumbers = {
@@ -1088,7 +1067,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
       >
         <Suspense fallback={null}>
           <CameraResetter
-            boxes={visibleBoxes}
+            visibleBoxes={visibleBoxes}
             resetTrigger={resetCameraTrigger}
             controlsRef={controlsRef}
             onTargetChange={setControlTarget}

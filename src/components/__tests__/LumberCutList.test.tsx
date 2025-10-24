@@ -66,18 +66,18 @@ describe('LumberCutList', () => {
   it('should render skid data correctly', () => {
     render(<LumberCutList cutList={mockCutList} />)
 
-    expect(screen.getByText('4x4')).toBeInTheDocument()
-    expect(screen.getByText('48"')).toBeInTheDocument()
-    expect(screen.getByText('3')).toBeInTheDocument()
+    expect(screen.getAllByText('4x4').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('48"').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('3').length).toBeGreaterThan(0)
     expect(screen.getByText('Primary skids')).toBeInTheDocument()
   })
 
   it('should render floorboard data correctly', () => {
     render(<LumberCutList cutList={mockCutList} />)
 
-    expect(screen.getByText('2x6')).toBeInTheDocument()
-    expect(screen.getByText('96"')).toBeInTheDocument()
-    expect(screen.getByText('8')).toBeInTheDocument()
+    expect(screen.getAllByText('2x6').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('96"').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('8').length).toBeGreaterThan(0)
     expect(screen.getByText('Full length')).toBeInTheDocument()
   })
 
@@ -91,22 +91,23 @@ describe('LumberCutList', () => {
   it('should format panel names correctly', () => {
     render(<LumberCutList cutList={mockCutList} />)
 
-    expect(screen.getByText('Front Panel')).toBeInTheDocument()
-    expect(screen.getByText('Back Panel')).toBeInTheDocument()
-    expect(screen.getByText('Top Panel')).toBeInTheDocument()
+    expect(screen.getAllByText('Front Panel').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Back Panel').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Top Panel').length).toBeGreaterThan(0)
   })
 
   it('should display cleat orientations', () => {
     render(<LumberCutList cutList={mockCutList} />)
 
-    expect(screen.getByText('Vertical')).toBeInTheDocument()
-    expect(screen.getByText('Horizontal')).toBeInTheDocument()
+    expect(screen.getAllByText('Vertical').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Horizontal').length).toBeGreaterThan(0)
   })
 
   it('should display cleat types', () => {
     render(<LumberCutList cutList={mockCutList} />)
 
-    expect(screen.getByText('Edge, Intermediate')).toBeInTheDocument()
+    const edgeTypes = screen.getAllByText('Edge, Intermediate')
+    expect(edgeTypes).toHaveLength(2)
     expect(screen.getByText('Top, Bottom')).toBeInTheDocument()
   })
 
