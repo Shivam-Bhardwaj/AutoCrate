@@ -2,6 +2,16 @@
 
 Step-by-step instructions to build the AutoCrate model in Siemens NX using the two‑diagonal‑points method and exported expressions.
 
+```mermaid
+flowchart TD
+  A[Export NX Expressions] --> B[Import crate.exp in NX]
+  B --> C[Create Blocks with expressions]
+  C --> D[Pattern Skids by pattern_count/spacing]
+  C --> E[Add Floorboards / Panels / Cleats]
+  E --> F[Place Klimps and Lag Screws]
+  F --> G[Validate dimensions]
+```
+
 ## Prerequisites
 
 - Siemens NX 12.0 or newer
@@ -100,4 +110,26 @@ Thickness: NAME_THICKNESS (or NAME_HEIGHT when provided)
 - Always reference expressions in dialogs; avoid hard‑typed numbers.
 - Use feature suppression to reflect `_SUPPRESSED` flags.
 - Keep origin/axes consistent with the export header for predictable placement.
+## Reference Diagrams
+
+```mermaid
+graph LR
+  O[(Origin 0,0,0)] -->|+X| XR[Right]
+  O -->|+Y| YB[Back]
+  O -->|+Z| ZU[Up]
+```
+
+```mermaid
+flowchart LR
+  subgraph PANELS
+    SP[Side Panels]
+    EP[End Panels]
+    TP[Top Panel]
+  end
+  subgraph BASE
+    SK[Skids]
+    FB[Floorboards]
+  end
+  SK --> FB --> PANELS
+```
 
