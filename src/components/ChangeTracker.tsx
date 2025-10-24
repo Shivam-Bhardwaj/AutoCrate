@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Fragment, useState, useEffect } from 'react'
 import type { ProjectMetadata } from '@/app/api/last-update/route'
 
 interface TestItem {
@@ -111,8 +111,6 @@ function parseChangeInfo(metadata: ProjectMetadata): ChangeInfo | null {
 export function ChangeTracker() {
   const [metadata, setMetadata] = useState<ProjectMetadata | null>(null)
   const [changeInfo, setChangeInfo] = useState<ChangeInfo | null>(null)
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetch('/api/last-update')
@@ -129,147 +127,95 @@ export function ChangeTracker() {
 
   if (!metadata || !changeInfo) return null
 
-  const toggleCheck = (itemId: string) => {
-    setCheckedItems(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId)
-      } else {
-        newSet.add(itemId)
-      }
-      return newSet
-    })
-  }
-
-  const getTypeIcon = (type: TestItem['type']) => {
-    switch (type) {
-      case 'visual':
-        return '👁️'
-      case 'interaction':
-        return '🖱️'
-      case 'functional':
-        return '⚙️'
-      default:
-        return '✓'
-    }
-  }
-
-  const getTypeColor = (type: TestItem['type']) => {
-    switch (type) {
-      case 'visual':
-        return 'text-blue-600 dark:text-blue-400'
-      case 'interaction':
-        return 'text-purple-600 dark:text-purple-400'
-      case 'functional':
-        return 'text-green-600 dark:text-green-400'
-      default:
-        return 'text-gray-600 dark:text-gray-400'
-    }
-  }
-
   const issueNumber = changeInfo.issueNumber
   const hasIssueLink = issueNumber !== '0'
   const issueLabel = hasIssueLink ? `Issue #${issueNumber}` : 'Issue #N/A'
   const issueHref = hasIssueLink
     ? `https://github.com/Shivam-Bhardwaj/AutoCrate/issues/${issueNumber}`
     : undefined
+  const contributor = metadata.updatedBy?.split('@')[0] ?? 'unknown'
+  const formattedTimestamp = metadata.timestamp ? new Date(metadata.timestamp).toLocaleString() : null
+
+  const headerSegments: Array<{ id: string; node: JSX.Element }> = [
+    {
+      id: 'title',
+      node: (
+        <span className="font-medium text-gray-900 dark:text-gray-100 flex-shrink-0">
+          {changeInfo.title}
+        </span>
+      )
+    },
+    {
+      id: 'version',
+      node: (
+        <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">
+          v{metadata.version}
+        </span>
+      )
+    }
+  ]
+
+  if (metadata.lastCommit) {
+    headerSegments.push({
+      id: 'commit',
+      node: (
+        <span className="text-gray-500 dark:text-gray-400 flex-shrink-0 font-mono">
+          {metadata.lastCommit}
+        </span>
+      )
+    })
+  }
+
+  headerSegments.push({
+    id: 'contributor',
+    node: (
+      <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">
+        by {contributor}
+      </span>
+    )
+  })
+
+  if (formattedTimestamp) {
+    headerSegments.push({
+      id: 'timestamp',
+      node: (
+        <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">
+          {formattedTimestamp}
+        </span>
+      )
+    })
+  }
 
   return (
     <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-all duration-300">
-      {/* Compact header bar */}
-      <div
-        className="px-3 py-1.5 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        <div className="flex items-center gap-3 text-xs">
+      <div className="px-3 py-1.5">
+        <div className="flex items-center gap-2 text-xs sm:text-sm whitespace-nowrap overflow-x-auto">
           {/* Issue badge */}
           {hasIssueLink ? (
             <a
               href={issueHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800"
-              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 flex-shrink-0"
             >
               <span className="font-mono">{issueLabel}</span>
             </a>
           ) : (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full flex-shrink-0">
               <span className="font-mono">{issueLabel}</span>
             </span>
           )}
 
-          {/* Change title */}
-          <span className="font-medium text-gray-900 dark:text-gray-100">
-            {changeInfo.title}
-          </span>
-
-          {/* Version and commit */}
-          <span className="text-gray-500 dark:text-gray-400">
-            v{metadata.version} • {metadata.lastCommit}
-          </span>
-        </div>
-
-        {/* Expand/collapse indicator */}
-        <div className="flex items-center gap-2">
-          {changeInfo.testItems.length > 0 && (
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {checkedItems.size}/{changeInfo.testItems.length} tested
-            </span>
-          )}
-          <svg
-            className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+          {headerSegments.map(segment => (
+            <Fragment key={segment.id}>
+              <span className="text-gray-400 dark:text-gray-600 flex-shrink-0" aria-hidden="true">
+                •
+              </span>
+              {segment.node}
+            </Fragment>
+          ))}
         </div>
       </div>
-
-      {/* Expandable test checklist */}
-      {isExpanded && (
-        <div className="px-3 pb-2 border-t border-gray-100 dark:border-gray-800">
-          <div className="mt-2">
-            <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-              Visual Testing Checklist:
-            </h4>
-            <div className="space-y-1">
-              {changeInfo.testItems.map(item => (
-                <label
-                  key={item.id}
-                  className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 p-1 rounded"
-                >
-                  <input
-                    type="checkbox"
-                    checked={checkedItems.has(item.id)}
-                    onChange={() => toggleCheck(item.id)}
-                    className="w-3 h-3 text-blue-600 rounded focus:ring-blue-500"
-                  />
-                  <span className={`text-xs ${getTypeColor(item.type)}`}>
-                    {getTypeIcon(item.type)}
-                  </span>
-                  <span className={`text-xs ${checkedItems.has(item.id) ? 'line-through text-gray-400' : 'text-gray-700 dark:text-gray-300'}`}>
-                    {item.description}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Additional metadata */}
-          <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400">
-            <div className="flex items-center gap-3">
-              <span>{metadata.branch}</span>
-              <span>•</span>
-              <span>by {metadata.updatedBy.split('@')[0]}</span>
-              <span>•</span>
-              <span>{new Date(metadata.timestamp).toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
