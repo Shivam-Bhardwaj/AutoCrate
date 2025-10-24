@@ -82,3 +82,6 @@ For Shivam/
 
 # Security tokens
 RPI5_TOKENS.txt
+
+# Issue assignment tracker (local only)
+.issue-assignments.json
