@@ -79,11 +79,50 @@ export default function DocsPage() {
   )
 }
 
+// Modern Issue-first Quick Start (replaces legacy tmux content)
+function QuickStartDocLegacy() {
+  return (
+    <div className="prose prose-gray dark:prose-invert max-w-none">
+      <h1>Issue Workflow (Multi‑LLM)</h1>
+
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+        <p className="font-semibold mb-2">Goal: Isolated worktrees per GitHub issue using project scripts.</p>
+      </div>
+
+      <h2>1) Setup Worktree</h2>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded">{`# Create/use worktree for issue #140
+./scripts/worktree-issue.sh 140
+cd issues/140
+
+# Read the issue context
+cat .issue-context.md`}</pre>
+
+      <h2>2) Assign to Yourself</h2>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded">{`# Track assignment (example: Codex)
+./scripts/assign-issue.sh 140 codex
+
+# View all assignments
+./scripts/assign-issue.sh --list`}</pre>
+
+      <h2>3) Implement & Test</h2>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded">{`npm test               # Jest unit tests
+npm run type-check     # TypeScript type check`}</pre>
+
+      <h2>4) Commit, Push, PR</h2>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded">{`git add -A
+git commit -m "docs(nx): add in-app NX build instructions (#140)"
+git push -u origin sbl-140
+gh pr create --fill`}</pre>
+    </div>
+  )
+}
+
 // New in-app documentation: Siemens NX instructions
 function NXInstructionsDoc() {
   return (
     <div className="prose prose-gray dark:prose-invert max-w-none">
       <h1>NX: Recreate Crate Geometry</h1>
+      <p className="text-sm mt-1">View the markdown version on GitHub: <a href="https://github.com/Shivam-Bhardwaj/AutoCrate/blob/main/docs/NX_INSTRUCTIONS.md" target="_blank" rel="noopener noreferrer">docs/NX_INSTRUCTIONS.md</a></p>
 
       <p className="lead">Build the AutoCrate model in Siemens NX using imported expressions and the two‑diagonal‑points method.</p>
 
@@ -450,6 +489,10 @@ function ParallelWorkflowDoc() {
   return (
     <div className="prose prose-gray dark:prose-invert max-w-none">
       <h1>Parallel Development Workflow</h1>
+      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+        <p className="font-semibold">Archived strategies</p>
+        <p className="text-sm">Use the Issue Workflow and NX docs for the current process. Prefer <code>./scripts/worktree-issue.sh</code> and <code>./scripts/assign-issue.sh</code>.</p>
+      </div>
 
       <p className="lead">
         5 different strategies for working on multiple features simultaneously
@@ -599,7 +642,7 @@ git worktree add ../autocrate-feature-B feature/B
       <h2>Best Practices</h2>
       <ul>
         <li>[DONE] Each feature = one branch</li>
-        <li>[DONE] Check PROJECT_STATUS.md before starting</li>
+        <li>[DONE] Confirm your issue worktree/branch before starting</li>
         <li>[DONE] Commit every 15-30 minutes</li>
         <li>[DONE] Run tests continuously</li>
         <li>[DONE] Sync with main regularly</li>
@@ -633,7 +676,7 @@ function ModulesDoc() {
           <span className="text-2xl">[!]</span>
           <div>
             <div className="font-semibold">CAUTION</div>
-            <div className="text-sm">Coordinate via PROJECT_STATUS.md before modifying</div>
+            <div className="text-sm">Coordinate via issue comments/PR before modifying</div>
           </div>
         </div>
         <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded p-3">
@@ -962,33 +1005,30 @@ function ClaudeGuideDoc() {
 
       <h2>Before Starting Work</h2>
       <ol>
-        <li>Read PROJECT_STATUS.md for active work</li>
-        <li>Check MODULES.md for module boundaries</li>
-        <li>Review WORK_LOG.md for recent changes</li>
+        <li>Read <code>.issue-context.md</code> in your worktree (<code>issues/[NUMBER]/</code>).</li>
+        <li>Open <code>/docs</code> and read “Issue Workflow (LLM)” and “NX: Recreate Crate Geometry”.</li>
+        <li>Confirm you are on branch <code>sbl-[NUMBER]</code>.</li>
       </ol>
 
       <h2>While Working</h2>
       <ol>
-        <li>Update PROJECT_STATUS.md if claiming a module</li>
-        <li>Follow parallel work guidelines in MODULES.md</li>
         <li>Make atomic commits with clear messages</li>
         <li>Run tests frequently</li>
+        <li>Keep changes scoped to the issue branch</li>
       </ol>
 
       <h2>After Completing</h2>
       <ol>
-        <li>Add entry to WORK_LOG.md</li>
-        <li>Update PROJECT_STATUS.md (move to completed)</li>
-        <li>Update CHANGELOG.md if user-facing</li>
-        <li>Bump version if appropriate</li>
+        <li>Open a pull request with the issue number in title/body.</li>
+        <li>Ensure NX instructions remain accurate for tested parameters.</li>
+        <li>Update CHANGELOG.md if user-facing.</li>
       </ol>
 
       <h2>Essential Files</h2>
       <ul>
-        <li><strong>CLAUDE.md:</strong> Development guidance</li>
-        <li><strong>PROJECT_STATUS.md:</strong> Real-time work status</li>
-        <li><strong>MODULES.md:</strong> Module boundaries</li>
-        <li><strong>WORK_LOG.md:</strong> Detailed history</li>
+        <li><strong>CLAUDE.md:</strong> Development workflow and commands</li>
+        <li><strong>docs/NX_INSTRUCTIONS.md:</strong> Standalone Siemens NX guide</li>
+        <li><strong>docs/START_HERE.md:</strong> Getting started</li>
       </ul>
 
       <h2>Key Concepts</h2>
