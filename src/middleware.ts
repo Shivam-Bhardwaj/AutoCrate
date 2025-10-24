@@ -86,7 +86,7 @@ export async function middleware(request: NextRequest) {
     response.headers.set(
       'Content-Security-Policy',
       "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " + // Allow inline scripts for Next.js
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; " + // Allow Mermaid from jsDelivr
       "style-src 'self' 'unsafe-inline'; " + // Allow inline styles
       "img-src 'self' data: blob:; " + // Allow data URIs and blob URLs for images
       "font-src 'self'; " +

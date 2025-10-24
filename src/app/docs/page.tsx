@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Mermaid from '@/components/Mermaid'
 
 export default function DocsPage() {
   const [activeTab, setActiveTab] = useState<'web' | 'nx'>('web')
@@ -169,28 +170,10 @@ function NXInstructionsDoc() {
       </ul>
 
       <h3>Coordinate System (Diagram)</h3>
-      <div className="not-prose my-3 flex justify-center">
-        <svg viewBox="0 0 260 160" width="100%" height="160" aria-label="Coordinate axes diagram">
-          <defs>
-            <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-              <path d="M0,0 L6,3 L0,6 Z" fill="#64748b" />
-            </marker>
-          </defs>
-          <rect x="0" y="0" width="260" height="160" fill="transparent" />
-          <!-- Origin -->
-          <circle cx="60" cy="120" r="3" fill="#0ea5e9" />
-          <text x="66" y="118" fontSize="11" fill="#0ea5e9">Origin (0,0,0)</text>
-          <!-- X axis -->
-          <line x1="60" y1="120" x2="220" y2="120" stroke="#64748b" strokeWidth="2" markerEnd="url(#arrow)" />
-          <text x="225" y="124" fontSize="12" fill="#64748b">+X (right)</text>
-          <!-- Y axis -->
-          <line x1="60" y1="120" x2="60" y2="30" stroke="#64748b" strokeWidth="2" markerEnd="url(#arrow)" />
-          <text x="22" y="36" fontSize="12" fill="#64748b">+Y (back)</text>
-          <!-- Z axis (up out of plane) -->
-          <line x1="60" y1="120" x2="120" y2="70" stroke="#64748b" strokeWidth="2" markerEnd="url(#arrow)" />
-          <text x="122" y="70" fontSize="12" fill="#64748b">+Z (up)</text>
-        </svg>
-      </div>
+      <Mermaid
+        chart={`graph LR\n  O[(Origin 0,0,0)] -->|+X| XR[Right]\n  O -->|+Y| YB[Back]\n  O -. out of plane .-> ZU[+Z (Up)]`}
+        className="my-3"
+      />
 
       <h2>1) Get NX Expressions</h2>
       <ul>
@@ -219,27 +202,10 @@ function NXInstructionsDoc() {
 
       <h2>4) Create Geometry (Two Diagonal Points)</h2>
       <p>Use Insert → Design Feature → Block → Type: Opposite Corners. Enter expressions directly (click the <strong>fx</strong> icon to bind each field to an expression).</p>
-      <div className="not-prose my-3 flex justify-center">
-        <svg viewBox="0 0 300 160" width="100%" height="180" aria-label="Two diagonal points diagram">
-          <defs>
-            <marker id="arrow2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-              <path d="M0,0 L6,3 L0,6 Z" fill="#0ea5e9" />
-            </marker>
-          </defs>
-          <rect x="80" y="40" width="140" height="80" fill="none" stroke="#94a3b8" strokeDasharray="4 3" />
-          <circle cx="80" cy="120" r="3" fill="#0ea5e9" />
-          <text x="50" y="140" fontSize="12" fill="#0ea5e9">P1 = (NAME_X1, NAME_Y1, NAME_Z1)</text>
-          <circle cx="220" cy="40" r="3" fill="#0ea5e9" />
-          <text x="115" y="20" fontSize="12" fill="#0ea5e9">P2 = (NAME_X2, NAME_Y2, NAME_Z2)</text>
-          <line x1="80" y1="120" x2="220" y2="120" stroke="#0ea5e9" strokeWidth="2" markerEnd="url(#arrow2)" />
-          <text x="130" y="135" fontSize="11" fill="#0ea5e9">WIDTH = X2 - X1</text>
-          <line x1="220" y1="120" x2="220" y2="40" stroke="#0ea5e9" strokeWidth="2" markerEnd="url(#arrow2)" />
-          <text x="224" y="85" fontSize="11" fill="#0ea5e9">HEIGHT = Z2 - Z1</text>
-          <line x1="80" y1="120" x2="80" y2="40" stroke="#94a3b8" strokeWidth="1" />
-          <line x1="80" y1="40" x2="220" y2="40" stroke="#0ea5e9" strokeWidth="2" markerEnd="url(#arrow2)" />
-          <text x="110" y="35" fontSize="11" fill="#0ea5e9">LENGTH = Y2 - Y1</text>
-        </svg>
-      </div>
+      <Mermaid
+        chart={`flowchart TB\n  P1((P1: X1,Y1,Z1)) --- P2((P2: X2,Y2,Z2))\n  P1 -->|WIDTH| W[WIDTH = X2 - X1]\n  P1 -->|LENGTH| L[LENGTH = Y2 - Y1]\n  P1 -->|HEIGHT| H[HEIGHT = Z2 - Z1]`}
+        className="my-3"
+      />
       <ul>
         <li><strong>Generic boxes</strong> (e.g., <code>SKID</code>, <code>FLOORBOARD_*</code>): <code>NAME_X1</code>, <code>NAME_Y1</code>, <code>NAME_Z1</code> and <code>NAME_X2</code>, <code>NAME_Y2</code>, <code>NAME_Z2</code>.</li>
         <li><strong>Plywood panels</strong>: <code>NAME_X</code>, <code>NAME_Y</code>, <code>NAME_Z</code>, plus <code>NAME_WIDTH</code>, <code>NAME_LENGTH</code>, <code>NAME_HEIGHT</code> and <code>NAME_THICKNESS</code> (thickness).</li>
@@ -260,22 +226,10 @@ Tip: Click fx next to each field, type the expression name, press Enter.`}</pre>
         <li>Pattern (direction X): Count = <code>pattern_count</code>, Spacing = <code>pattern_spacing</code> (center‑to‑center).</li>
         <li>Name the patterned feature <code>PATTERN_SKID</code> for clarity.</li>
       </ol>
-      <div className="not-prose my-3 flex justify-center">
-        <svg viewBox="0 0 360 90" width="100%" height="100" aria-label="Skid pattern diagram">
-          <defs>
-            <marker id="arrow3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-              <path d="M0,0 L6,3 L0,6 Z" fill="#64748b" />
-            </marker>
-          </defs>
-          <rect x="20" y="50" width="50" height="20" fill="#cbd5e1" stroke="#94a3b8" />
-          <rect x="120" y="50" width="50" height="20" fill="#cbd5e1" stroke="#94a3b8" />
-          <rect x="220" y="50" width="50" height="20" fill="#cbd5e1" stroke="#94a3b8" />
-          <rect x="320" y="50" width="50" height="20" fill="#cbd5e1" stroke="#94a3b8" />
-          <line x1="45" y1="30" x2="145" y2="30" stroke="#64748b" strokeWidth="2" markerEnd="url(#arrow3)" />
-          <text x="60" y="25" fontSize="11" fill="#64748b">pattern_spacing</text>
-          <text x="20" y="85" fontSize="11" fill="#64748b">pattern_count →</text>
-        </svg>
-      </div>
+      <Mermaid
+        chart={`flowchart LR\n  S1[SKID#1] --- S2[SKID#2] --- S3[SKID#3] --- S4[SKID#4]\n  classDef note fill:#eef,stroke:#99f,color:#246\n  note:::note--> meta((pattern_count, pattern_spacing))`}
+        className="my-3"
+      />
 
       <h3>4.2 Floorboards</h3>
       <ul>
