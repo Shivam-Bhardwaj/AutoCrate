@@ -94,3 +94,6 @@ AutoCrate.archive/
 
 # Git worktree directories
 issues/
+
+# Issue context files
+.issue-context.md

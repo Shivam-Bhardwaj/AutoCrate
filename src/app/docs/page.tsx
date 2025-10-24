@@ -8,11 +8,10 @@ export default function DocsPage() {
 
   const docs = [
     { id: 'overview', title: 'Documentation Overview', category: 'Getting Started' },
-    { id: 'quickstart', title: 'Quick Start Guide', category: 'Getting Started' },
+    { id: 'quickstart', title: 'Issue Workflow (LLM)', category: 'Getting Started' },
+    { id: 'nx-instructions', title: 'NX: Recreate Crate Geometry', category: 'CAD / NX' },
     { id: 'parallel-workflow', title: 'Parallel Development Workflow', category: 'Development' },
     { id: 'modules', title: 'Module Architecture', category: 'Development' },
-    { id: 'project-status', title: 'Project Status & Memory', category: 'Development' },
-    { id: 'work-log', title: 'Work Log', category: 'Development' },
     { id: 'testing', title: 'Testing Guide', category: 'Quality' },
     { id: 'claude-guide', title: 'Claude Code Guide', category: 'AI Development' },
   ]
@@ -68,15 +67,111 @@ export default function DocsPage() {
           <main className="lg:col-span-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
             {activeDoc === 'overview' && <OverviewDoc />}
             {activeDoc === 'quickstart' && <QuickStartDoc />}
+            {activeDoc === 'nx-instructions' && <NXInstructionsDoc />}
             {activeDoc === 'parallel-workflow' && <ParallelWorkflowDoc />}
             {activeDoc === 'modules' && <ModulesDoc />}
-            {activeDoc === 'project-status' && <ProjectStatusDoc />}
-            {activeDoc === 'work-log' && <WorkLogDoc />}
             {activeDoc === 'testing' && <TestingDoc />}
             {activeDoc === 'claude-guide' && <ClaudeGuideDoc />}
           </main>
         </div>
       </div>
+  </div>
+  )
+}
+
+// New in-app documentation: Siemens NX instructions
+function NXInstructionsDoc() {
+  return (
+    <div className="prose prose-gray dark:prose-invert max-w-none">
+      <h1>NX: Recreate Crate Geometry</h1>
+
+      <p className="lead">Build the AutoCrate model in Siemens NX using imported expressions and the two‑diagonal‑points method.</p>
+
+      <h2>Prerequisites</h2>
+      <ul>
+        <li>NX 12.0 or newer</li>
+        <li>Units: Inches</li>
+        <li>Origin at crate center bottom (X=0, Y=0, Z=0)</li>
+      </ul>
+
+      <h2>1) Get NX Expressions</h2>
+      <ul>
+        <li>In the app, click <strong>Export NX</strong> to generate expressions.</li>
+        <li>Or call API <code>POST /api/nx-export</code> and save <code>export.content</code> to <code>crate.exp</code>:</li>
+      </ul>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`{
+  "dimensions": { "length": 48, "width": 32, "height": 36 },
+  "weight": 1200,
+  "exportFormat": "expressions",
+  "units": "inch"
+}`}</pre>
+
+      <h2>2) Import in NX</h2>
+      <ol>
+        <li>File → New → Model (Inches).</li>
+        <li>Tools → Expressions → Import… → select <code>crate.exp</code>.</li>
+        <li>Verify: <code>overall_width/length/height</code>, <code>pattern_count</code>, <code>pattern_spacing</code>, and per‑piece parameters are present.</li>
+      </ol>
+
+      <h2>3) Datum & Axes</h2>
+      <ul>
+        <li>XY at Z=0 (bottom), YZ at X=0 (center), XZ at Y=0 (front).</li>
+      </ul>
+
+      <h2>4) Create Geometry (Two Diagonal Points)</h2>
+      <p>Use Insert → Design Feature → Block → Type: Opposite Corners. Enter expressions directly.</p>
+      <ul>
+        <li><strong>Generic boxes</strong> (e.g., <code>SKID</code>, <code>FLOORBOARD_*</code>): <code>NAME_X1</code>, <code>NAME_Y1</code>, <code>NAME_Z1</code> and <code>NAME_X2</code>, <code>NAME_Y2</code>, <code>NAME_Z2</code>.</li>
+        <li><strong>Plywood panels</strong>: <code>NAME_X</code>, <code>NAME_Y</code>, <code>NAME_Z</code>, plus <code>NAME_WIDTH</code>, <code>NAME_LENGTH</code>, <code>NAME_HEIGHT</code> and <code>NAME_THICKNESS</code> (thickness).</li>
+        <li><strong>Cleats</strong>: same 7 parameters as panels; thickness is 0.750 (1×4).</li>
+      </ul>
+
+      <h3>4.1 Skids</h3>
+      <ol>
+        <li>Create one <code>SKID</code> Block from <code>SKID_X1..Z1</code> and <code>SKID_X2..Z2</code>.</li>
+        <li>Pattern (direction X): Count = <code>pattern_count</code>, Spacing = <code>pattern_spacing</code> (center‑to‑center).</li>
+      </ol>
+
+      <h3>4.2 Floorboards</h3>
+      <ul>
+        <li>Create Blocks for each <code>FLOORBOARD_n</code> using their <code>_X1.._Z1</code> and <code>_X2.._Z2</code> expressions.</li>
+        <li>Suppress features where the export marks them as suppressed.</li>
+      </ul>
+
+      <h3>4.3 Panels (Plywood)</h3>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`Corner: NAME_X, NAME_Y, NAME_Z
+Extents: NAME_WIDTH, NAME_LENGTH
+Thickness: NAME_THICKNESS (or NAME_HEIGHT when provided)`}</pre>
+
+      <h3>4.4 Cleats</h3>
+      <p>Use the 7 parameters; thickness fixed at 0.750.</p>
+
+      <h3>4.5 Klimp Fasteners</h3>
+      <ol>
+        <li>Import <code>CAD FILES/Crate Spring Clamp.STEP</code> once.</li>
+        <li>For each <code>KLIMP_n</code> with <code>KLIMP_n_ACTIVE=TRUE</code>, place at <code>KLIMP_n_POS_X/Y/Z</code> and rotate by <code>KLIMP_n_ROT_X/Y/Z</code>.</li>
+      </ol>
+
+      <h3>4.6 Lag Screws</h3>
+      <ul>
+        <li>Import <code>CAD FILES/LAG SCREW_0.38 X 2.50.stp</code>.</li>
+        <li>Place under intermediate vertical cleats; use <code>lag_screw_count</code> as quantity guidance.</li>
+      </ul>
+
+      <h2>5) Validate</h2>
+      <ul>
+        <li>Overall dims match <code>overall_width/length/height</code>.</li>
+        <li>Skid count/spacing match <code>pattern_count</code>/<code>pattern_spacing</code>.</li>
+        <li>Panels and cleats align; clearances respected.</li>
+        <li>Klimp instances only where <code>_ACTIVE=TRUE</code>.</li>
+      </ul>
+
+      <h2>Tips</h2>
+      <ul>
+        <li>Always reference expressions in dialogs (avoid raw numbers).</li>
+        <li>Use feature suppression to reflect <code>_SUPPRESSED</code> flags.</li>
+        <li>Keep origin/axes per export header for predictable placement.</li>
+      </ul>
     </div>
   )
 }
@@ -103,9 +198,9 @@ function OverviewDoc() {
       <h2>Quick Links</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose">
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <h3 className="font-semibold text-lg mb-2">Quick Start</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Get started with parallel development in 5 minutes</p>
-          <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">./scripts/tmux-autocrate.sh</code>
+          <h3 className="font-semibold text-lg mb-2">NX Instructions</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Build the crate in Siemens NX</p>
+          <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">Open via sidebar → CAD / NX</code>
         </div>
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <h3 className="font-semibold text-lg mb-2">Parallel Workflow</h3>
@@ -119,7 +214,7 @@ function OverviewDoc() {
         </div>
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <h3 className="font-semibold text-lg mb-2">Testing</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Jest and Playwright testing strategies with 76%+ coverage</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Jest and Playwright testing strategies</p>
           <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">npm run test:all</code>
         </div>
       </div>
@@ -152,22 +247,19 @@ npm run build            # Production build
 npm test                 # Run tests
 npm run type-check       # TypeScript check
 
-# Parallel Development
-make parallel-dev        # Dev + tests + docker
-make new-feature NAME=x  # Create feature branch
-make work-status         # Check current work`}
+# Issue workflow (multi-LLM)
+./scripts/worktree-issue.sh 140         # Create worktree issues/140
+./scripts/assign-issue.sh 140 codex     # Assign to Codex
+cd issues/140 && cat .issue-context.md  # Read context`}
       </pre>
 
       <h2>Documentation Files</h2>
-      <p>All documentation is now accessible via this web interface. Original markdown files:</p>
+      <p>Primary references in repo:</p>
       <ul>
-        <li><code>CLAUDE.md</code> - Development guidance</li>
-        <li><code>PROJECT_STATUS.md</code> - Real-time work tracking</li>
-        <li><code>MODULES.md</code> - Module boundaries</li>
-        <li><code>WORK_LOG.md</code> - Detailed history</li>
-        <li><code>PARALLEL_WORKFLOW.md</code> - Workflow strategies</li>
-        <li><code>QUICKSTART_PARALLEL.md</code> - Quick reference</li>
-        <li><code>TESTING.md</code> - Testing guide</li>
+        <li><code>docs/START_HERE.md</code> - Getting started</li>
+        <li><code>docs/ARCHITECTURE.md</code> - System overview</li>
+        <li><code>docs/TESTING_GUIDE.md</code> - Testing guide</li>
+        <li><code>CLAUDE.md</code> - Dev workflow and commands</li>
       </ul>
     </div>
   )
