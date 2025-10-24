@@ -18,12 +18,14 @@ You on GitHub:                  Your Machine:
 ## When to Clean Up
 
 Clean up worktrees when:
+
 - ✅ Issue is closed
 - ✅ PR is merged
 - ✅ You're done with the work
 - ✅ Branch is deleted on GitHub
 
 Keep worktrees when:
+
 - ❌ Issue is still open
 - ❌ You're still working on it
 - ❌ PR is pending review
@@ -44,6 +46,7 @@ Keep worktrees when:
 ```
 
 The script automatically:
+
 - Checks GitHub issue status
 - Identifies closed/merged issues
 - Removes worktrees safely
@@ -94,21 +97,25 @@ These are **NOT** removed:
 ## Checking Current Status
 
 ### See all worktrees
+
 ```bash
 git worktree list
 ```
 
 ### See which can be cleaned
+
 ```bash
 ./scripts/cleanup-worktrees.sh --dry-run
 ```
 
 ### See all local branches
+
 ```bash
 git branch -a | grep sbl-
 ```
 
 ### See which issues are closed
+
 ```bash
 gh issue list --state closed
 ```
@@ -197,12 +204,14 @@ Cleaning up 3 worktrees = ~750MB freed!
 ## Common Scenarios
 
 ### Scenario 1: Just merged PR #124
+
 ```bash
 # Clean it up
 ./scripts/cleanup-worktrees.sh 124
 ```
 
 ### Scenario 2: Closed multiple issues
+
 ```bash
 # See what's closed
 ./scripts/cleanup-worktrees.sh --dry-run
@@ -212,12 +221,14 @@ Cleaning up 3 worktrees = ~750MB freed!
 ```
 
 ### Scenario 3: Want to start fresh
+
 ```bash
 # Remove all except open issues
 ./scripts/cleanup-worktrees.sh
 ```
 
 ### Scenario 4: Accidentally removed
+
 ```bash
 # Recreate
 ./scripts/worktree-issue.sh 124
@@ -225,24 +236,26 @@ Cleaning up 3 worktrees = ~750MB freed!
 
 ## Quick Commands
 
-| Task | Command |
-|------|---------|
-| Preview cleanup | `./scripts/cleanup-worktrees.sh --dry-run` |
-| Interactive cleanup | `./scripts/cleanup-worktrees.sh` |
-| Clean specific issues | `./scripts/cleanup-worktrees.sh 124 145` |
-| List all worktrees | `git worktree list` |
-| Check issue status | `gh issue view 124` |
-| Recreate worktree | `./scripts/worktree-issue.sh 124` |
+| Task                  | Command                                    |
+| --------------------- | ------------------------------------------ |
+| Preview cleanup       | `./scripts/cleanup-worktrees.sh --dry-run` |
+| Interactive cleanup   | `./scripts/cleanup-worktrees.sh`           |
+| Clean specific issues | `./scripts/cleanup-worktrees.sh 124 145`   |
+| List all worktrees    | `git worktree list`                        |
+| Check issue status    | `gh issue view 124`                        |
+| Recreate worktree     | `./scripts/worktree-issue.sh 124`          |
 
 ## Summary
 
 **Key Points:**
+
 1. Local worktrees don't auto-delete when you clean up GitHub
 2. Use the cleanup script regularly to free disk space
 3. Cleaning up is safe - Git history is preserved
 4. You can always recreate worktrees if needed
 
 **Best Practice:**
+
 ```bash
 # After merging/closing issues
 ./scripts/cleanup-worktrees.sh --dry-run  # Check
