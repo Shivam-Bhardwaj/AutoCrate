@@ -19,7 +19,7 @@ export default function DocsPage() {
   const categories = Array.from(new Set(docs.map(d => d.category)))
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen h-screen overflow-y-auto bg-gray-50 dark:bg-gray-950">
       {/* Header */}
       <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -82,7 +82,7 @@ export default function DocsPage() {
 // Modern Issue-first Quick Start (replaces legacy tmux content)
 function QuickStartDocLegacy() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Issue Workflow (Multi‑LLM)</h1>
 
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
@@ -120,7 +120,7 @@ gh pr create --fill`}</pre>
 // New in-app documentation: Siemens NX instructions
 function NXInstructionsDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>NX: Recreate Crate Geometry</h1>
       <p className="text-sm mt-1">View the markdown version on GitHub: <a href="https://github.com/Shivam-Bhardwaj/AutoCrate/blob/main/docs/NX_INSTRUCTIONS.md" target="_blank" rel="noopener noreferrer">docs/NX_INSTRUCTIONS.md</a></p>
 
@@ -217,7 +217,7 @@ Thickness: NAME_THICKNESS (or NAME_HEIGHT when provided)`}</pre>
 
 function OverviewDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Documentation Overview</h1>
 
       <p className="lead">
@@ -306,7 +306,7 @@ cd issues/140 && cat .issue-context.md  # Read context`}
 
 function QuickStartDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Quick Start: Parallel Development</h1>
 
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
@@ -487,7 +487,7 @@ npm run test:all`}
 // Continuing with more doc components...
 function ParallelWorkflowDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Parallel Development Workflow</h1>
       <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
         <p className="font-semibold">Archived strategies</p>
@@ -656,7 +656,7 @@ git worktree add ../autocrate-feature-B feature/B
 // Continue with other doc components...
 function ModulesDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Module Architecture & Boundaries</h1>
 
       <p className="lead">
