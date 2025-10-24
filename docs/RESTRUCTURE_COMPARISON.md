@@ -121,22 +121,28 @@ repo/
 
 ## Critical Issues
 
-### Issue #1: Codex Didn't Use Worktree! 🚨
+### Issue #1: Dual Repository Structure Revealed 🚨
 
-**Problem:** Codex created its plan in:
-```
-❌ /home/curious/workspace/Shivam-Bhardwaj/AutoCrate/docs/
-   (Original directory - wrong location!)
-```
+**UPDATE:** Codex's feedback revealed a critical oversight in my analysis.
 
-**Should be:**
+**The Situation:**
+There are TWO separate git repositories:
 ```
-✅ /home/curious/workspace/Shivam-Bhardwaj/AutoCrate/repo/docs/
-   OR
-✅ /home/curious/workspace/Shivam-Bhardwaj/AutoCrate/issues/[NUMBER]/docs/
+/AutoCrate/.git/              # Git repo #1 (branch: fix/issue-147-header)
+/AutoCrate/repo/.git/         # Git repo #2 (branch: main, with worktrees)
 ```
 
-**This proves:** Codex needs better onboarding on the worktree workflow before doing any restructuring!
+**What Happened:**
+- Codex created the plan in `/AutoCrate/docs/` (git repo #1) ✅ VALID
+- Claude assumed only `/AutoCrate/repo/` (git repo #2) was active ❌ INCOMPLETE
+
+**Codex was RIGHT:** The parent directory IS a git repository, so creating the file there is valid.
+
+**Claude was INCOMPLETE:** I failed to recognize there are two repositories and which is authoritative.
+
+**The REAL Issue:** We have a dual-repository structure that both plans need to address explicitly.
+
+See `GIT_STRUCTURE_CLARIFICATION.md` for full analysis.
 
 ### Issue #2: Codex Wants to Archive Active Infrastructure
 
