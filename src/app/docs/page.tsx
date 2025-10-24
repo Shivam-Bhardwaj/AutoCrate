@@ -117,7 +117,8 @@ export default function DocsPage() {
 }
 
 // Modern Issue-first Quick Start (replaces legacy tmux content)
-function QuickStartDoc() {
+// Archived tmux-based quick start (kept for reference, not linked)
+function QuickStartTmuxDoc() {
   return (
     <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Issue Workflow (Multi‑LLM)</h1>
