@@ -121,28 +121,34 @@ repo/
 
 ## Critical Issues
 
-### Issue #1: Dual Repository Structure Revealed 🚨
+### Issue #1: Dual Repository Structure - RESOLVED ✅
 
-**UPDATE:** Codex's feedback revealed a critical oversight in my analysis.
+**UPDATE:** Codex's feedback revealed a critical oversight in my analysis. **User has made the decision.**
 
 **The Situation:**
 There are TWO separate git repositories:
 ```
-/AutoCrate/.git/              # Git repo #1 (branch: fix/issue-147-header)
-/AutoCrate/repo/.git/         # Git repo #2 (branch: main, with worktrees)
+/AutoCrate/.git/              # Git repo #1 (branch: fix/issue-147-header) - TO BE ARCHIVED
+/AutoCrate/repo/.git/         # Git repo #2 (branch: main, with worktrees) - AUTHORITATIVE ✅
 ```
 
+**User Decision (2025-10-24):**
+- **repo/.git is the active/authoritative repository**
+- repo/ will be promoted to be the canonical project tree
+- Top-level /AutoCrate/ clone will be archived/removed after migration
+- Any unique files from parent will be migrated first
+- All docs/scripts will reference repo/ as root
+
 **What Happened:**
-- Codex created the plan in `/AutoCrate/docs/` (git repo #1) ✅ VALID
-- Claude assumed only `/AutoCrate/repo/` (git repo #2) was active ❌ INCOMPLETE
+- Codex created the plan in `/AutoCrate/docs/` (git repo #1) ✅ VALID at the time
+- Claude assumed only `/AutoCrate/repo/` (git repo #2) was active ❌ INCOMPLETE analysis
+- Codex's feedback forced investigation that revealed the dual-repository situation
 
-**Codex was RIGHT:** The parent directory IS a git repository, so creating the file there is valid.
+**Codex was RIGHT:** The parent directory IS a git repository, so creating the file there was valid.
 
-**Claude was INCOMPLETE:** I failed to recognize there are two repositories and which is authoritative.
+**Claude was INCOMPLETE:** I failed to recognize there are two repositories initially.
 
-**The REAL Issue:** We have a dual-repository structure that both plans need to address explicitly.
-
-See `GIT_STRUCTURE_CLARIFICATION.md` for full analysis.
+**Resolution:** See `GIT_STRUCTURE_CLARIFICATION.md` for migration path from parent to repo/.
 
 ### Issue #2: Codex Wants to Archive Active Infrastructure
 

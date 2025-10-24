@@ -1,5 +1,16 @@
 # Git Structure Clarification
 
+## **DECISION: repo/ is the Canonical Project Tree** ✅
+
+**User Decision (2025-10-24):**
+- `repo/.git` is the **active and authoritative** repository
+- `repo/` will be promoted to be the canonical project tree
+- Top-level `/AutoCrate/` clone will be **archived/removed** after migration
+- Any unique files from parent directory will be migrated first
+- All docs/scripts will be updated to reference `repo/` as the root
+
+---
+
 ## The Actual Situation
 
 After investigation triggered by Codex's feedback, here's the reality:
@@ -118,33 +129,73 @@ This explains the confusion in both restructure plans. We have:
 ### Both Plans Need Update
 Neither plan addresses the dual-repository situation explicitly!
 
-## Recommended Resolution
+## Migration Path: Promoting repo/ to Root
 
-### Step 1: Determine Intent
-**Ask the human:** Which repository is the intended primary?
+**Decision: repo/ is the authoritative repository** ✅
 
-### Step 2: Migration Path
+### Migration Steps
 
-**If parent is primary:**
+**Phase 1: Audit Parent Directory**
 ```bash
-# Move worktree infrastructure to parent
-mv repo/.git/worktrees/ .git/
-mv repo/issues/ ./issues/
-# Update worktree paths
+cd /home/curious/workspace/Shivam-Bhardwaj/AutoCrate
+# Find unique files not in repo/
+diff -qr . repo/ --exclude=repo --exclude=.git --exclude=issues
+```
+
+**Phase 2: Migrate Unique Files**
+```bash
+# Move any unique documentation, scripts, or config to repo/
+# Example:
+cp -n docs/REPO_RESTRUCTURE_PLAN.md repo/docs/REPO_RESTRUCTURE_PLAN_CODEX.md
+```
+
+**Phase 3: Archive Parent Directory**
+```bash
+# Create backup
+mv /home/curious/workspace/Shivam-Bhardwaj/AutoCrate \
+   /home/curious/workspace/Shivam-Bhardwaj/AutoCrate.archive
+
+# Promote repo/ to root
+mv /home/curious/workspace/Shivam-Bhardwaj/AutoCrate.archive/repo \
+   /home/curious/workspace/Shivam-Bhardwaj/AutoCrate
+
+# Ensure issues/ directory is at correct location (if not already)
+# It should be at: /home/curious/workspace/Shivam-Bhardwaj/AutoCrate/issues/
+```
+
+**Phase 4: Repair Worktrees**
+```bash
+cd /home/curious/workspace/Shivam-Bhardwaj/AutoCrate
 git worktree repair
-# Remove repo/ directory
+# Verify all worktrees still work
+git worktree list
 ```
 
-**If repo/ is primary:**
+**Phase 5: Update All Documentation**
 ```bash
-# This is more complex - essentially need to:
-# 1. Make repo/ the new root
-# 2. Move parent directory content elsewhere
-# 3. Update all paths
+# Update all references from /repo/ paths to root paths
+# Update scripts that reference ../repo/ or similar
+# Update README.md and other docs
 ```
 
-### Step 3: Update Restructure Plans
-Once we know which is authoritative, both plans can be updated with the correct paths.
+### Validation After Migration
+
+```bash
+# Verify git structure
+git status
+git worktree list
+git branch -a
+
+# Verify scripts still work
+./scripts/worktree-issue.sh --help
+./scripts/assign-issue.sh --list
+
+# Verify build and test
+npm install
+npm run type-check
+npm test
+npm run build
+```
 
 ## Apology to Codex
 

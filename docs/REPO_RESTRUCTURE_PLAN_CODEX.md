@@ -1,4 +1,6 @@
-## Repository Restructure Plan
+## Repository Restructure Plan (Codex's Proposal)
+
+**NOTE:** This plan was originally created in `/AutoCrate/docs/` (parent directory) before the dual-repository situation was discovered. User has since decided that `repo/` is the authoritative repository and the parent directory will be archived. This plan should be interpreted with that context in mind.
 
 ### Objectives
 - Reduce root-level clutter so contributors see only active app, docs, automation, and config assets.

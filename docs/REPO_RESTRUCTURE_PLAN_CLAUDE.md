@@ -6,27 +6,31 @@
 
 **Key Principle:** Don't break what we just built. The worktree system and multi-LLM docs are ACTIVE infrastructure, not clutter.
 
+**IMPORTANT:** This plan assumes `repo/` is the authoritative repository (confirmed by user 2025-10-24). The parent directory `/AutoCrate/` will be archived/removed after migration. All paths in this document refer to locations within `repo/`.
+
 ---
 
 ## Current State Analysis
 
-### What We Have Now
+### What We Have Now (within repo/)
 ```
-AutoCrate/
-├── [Original directory - DEPRECATED, should not be used]
-├── repo/                          # Main worktree ✓ ACTIVE
+repo/                              # Root (authoritative) ✓ ACTIVE
 ├── issues/                        # LLM worktrees ✓ ACTIVE
 │   ├── 119/, 128/, 140/
 ├── Root-level docs (15+ files)   # Mix of active + legacy
 ├── scripts/                       # ✓ Well organized
-└── src/                           # ✓ Application code
+├── src/                           # ✓ Application code
+├── docs/                          # Documentation
+└── .claude/                       # ✓ Claude Code configuration
 ```
 
+**Note:** Parent directory `/AutoCrate/` exists but will be archived after unique files are migrated to `repo/`.
+
 ### Key Problems
-1. **Two competing "roots"** - Original directory AND repo/ both exist
-2. **Documentation scattered** - Active workflow docs mixed with legacy
-3. **Unclear what's current** - Multiple README variants, overlapping guides
-4. **Issue folders persist** - Closed issues leave worktree directories
+1. **Documentation scattered** - Active workflow docs mixed with legacy
+2. **Unclear what's current** - Multiple README variants, overlapping guides
+3. **Issue folders persist** - Closed issues leave worktree directories
+4. **Root clutter** - Too many files at root level
 
 ---
 
@@ -34,26 +38,26 @@ AutoCrate/
 
 ### Phase 1: Establish Clear Hierarchy (Priority: HIGH)
 
+**After parent directory migration is complete, the structure will be:**
+
 ```
-AutoCrate/
-├── repo/                          # ← PRIMARY workspace (main worktree)
-│   ├── src/                       # Application code
-│   ├── docs/                      # All documentation
-│   │   ├── guides/               # User guides
-│   │   ├── architecture/         # Technical specs
-│   │   ├── workflow/             # Multi-LLM workflow docs
-│   │   ├── archive/              # Historical documents
-│   │   └── assets/               # CAD files, images
-│   ├── scripts/                  # ✓ Already good
-│   ├── tests/                    # Test files
-│   ├── .claude/                  # ✓ Already good
-│   └── [Active root docs]        # See details below
-│
+AutoCrate/                         # ← Root (promoted from repo/)
+├── src/                           # Application code
+├── docs/                          # All documentation
+│   ├── guides/                   # User guides
+│   ├── architecture/             # Technical specs
+│   ├── workflow/                 # Multi-LLM workflow docs
+│   ├── archive/                  # Historical documents
+│   └── assets/                   # CAD files, images
+├── scripts/                       # ✓ Already good
+├── tests/                         # Test files
+├── .claude/                       # ✓ Already good
 ├── issues/                        # ← Issue worktrees (auto-managed)
 │   └── [NUMBER]/                 # Cleaned automatically by scripts
-│
-└── [Original directory]           # ← TO BE REMOVED (see Phase 3)
+└── [Active root docs]             # See details below
 ```
+
+**Note:** This assumes the parent directory migration (Phase 3) is complete. Currently, this structure exists within `repo/`.
 
 ---
 
@@ -210,34 +214,31 @@ grep -r "AGENTS.md" scripts/
 grep -r "NOTE_FOR_KEELYN" .
 ```
 
-### Phase 3: Handle Original Directory (High Risk)
+### Phase 3: Migrate from Parent Directory (High Risk) - DECIDED ✅
 **Timeline:** Plan carefully, execute quickly
 **Risk:** HIGH - Could break everything
+**Decision:** User confirmed `repo/` is authoritative; parent directory will be archived
 
-**Problem:** The original `/home/curious/workspace/Shivam-Bhardwaj/AutoCrate/` directory exists alongside `repo/`.
+**This phase addresses the dual-repository situation.**
 
-**Options:**
+See `docs/GIT_STRUCTURE_CLARIFICATION.md` for detailed migration steps.
 
-**Option A: Full Migration (Recommended)**
+**Summary:**
+1. Audit parent directory for unique files
+2. Migrate unique files to repo/
+3. Archive parent directory
+4. Promote repo/ to be the new root
+5. Repair worktree paths
+6. Update all documentation and scripts
+
+**Validation:**
 ```bash
-# 1. Ensure all work is in repo/ and issues/
-# 2. Back up original directory
-mv /path/to/AutoCrate /path/to/AutoCrate.backup
-
-# 3. Rename repo/ to AutoCrate/
-mv /path/to/AutoCrate.backup/repo /path/to/AutoCrate
-
-# 4. Move issues/ alongside
-mv /path/to/AutoCrate.backup/issues /path/to/AutoCrate/
-
-# 5. Update all worktree references
-git worktree repair
+# After migration, verify everything still works
+git worktree list
+./scripts/worktree-issue.sh --help
+npm test
+npm run build
 ```
-
-**Option B: Documentation Only (Safer)**
-- Add clear README in original directory: "DO NOT USE - See repo/ directory"
-- Update all documentation to reference repo/
-- Gradually phase out over time
 
 ### Phase 4: Asset Management (Optional)
 **Timeline:** As needed
