@@ -844,7 +844,7 @@ function ModulesDoc() {
 
 function ProjectStatusDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Project Status & Memory</h1>
       <p>Current version: <strong>13.1.0</strong></p>
       <p>Phase: <strong>Production - Active Development</strong></p>
@@ -880,7 +880,7 @@ function ProjectStatusDoc() {
 
 function WorkLogDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Work Log</h1>
       <p>Detailed work history for the project</p>
 
@@ -923,7 +923,7 @@ function WorkLogDoc() {
 
 function TestingDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Testing Guide</h1>
 
       <h2>Testing Stack</h2>
@@ -994,7 +994,7 @@ npm test -- -u`}
 
 function ClaudeGuideDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Claude Code Development Guide</h1>
 
       <h2>Project Overview</h2>
