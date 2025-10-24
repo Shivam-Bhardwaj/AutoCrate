@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 
 declare global {
   interface Window {
@@ -15,8 +15,8 @@ type MermaidProps = {
 }
 
 export default function Mermaid({ chart, className, theme = 'default' }: MermaidProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
   const [ready, setReady] = useState(false)
+  const [svg, setSvg] = useState<string | null>(null)
   const renderId = useId().replace(/:/g, '-')
 
   useEffect(() => {
@@ -49,10 +49,8 @@ export default function Mermaid({ chart, className, theme = 'default' }: Mermaid
         await ensureMermaid()
         if (cancelled) return
         const { svg } = await window.mermaid.render(`m-${renderId}`, chart)
-        if (containerRef.current) {
-          containerRef.current.innerHTML = svg
-          setReady(true)
-        }
+        setSvg(svg)
+        setReady(true)
       } catch {
         setReady(false)
       }
@@ -64,14 +62,12 @@ export default function Mermaid({ chart, className, theme = 'default' }: Mermaid
     }
   }, [chart, renderId, theme])
 
+  if (ready && svg) {
+    return <div className={className} dangerouslySetInnerHTML={{ __html: svg }} />
+  }
   return (
-    <div ref={containerRef} className={className}>
-      {!ready && (
-        <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-auto">
+    <pre className={`text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-auto ${className ?? ''}`}>
 {chart}
-        </pre>
-      )}
-    </div>
+    </pre>
   )
 }
-
