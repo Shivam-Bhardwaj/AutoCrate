@@ -28,6 +28,7 @@ npm run type-check
 ## Execute Tickets (6 Servers in Parallel)
 
 ### Server 1: Ticket #1 (Datum Frames)
+
 ```bash
 git checkout -b ticket/1-datum-frames
 
@@ -40,6 +41,7 @@ git push origin ticket/1-datum-frames
 ```
 
 ### Server 2: Ticket #2 (PMI Font)
+
 ```bash
 git checkout -b ticket/2-pmi-font-scaling
 # Copy TICKET 2 from ISSUE_ANALYSIS_AND_TICKETS.md → paste to LLM
@@ -47,6 +49,7 @@ git push origin ticket/2-pmi-font-scaling
 ```
 
 ### Server 3: Ticket #3 (Weight)
+
 ```bash
 git checkout -b ticket/3-weight-calculation
 # Copy TICKET 3 → paste to LLM
@@ -54,6 +57,7 @@ git push origin ticket/3-weight-calculation
 ```
 
 ### Server 4: Ticket #4 (BOM)
+
 ```bash
 git checkout -b ticket/4-supplier-bom
 # Copy TICKET 4 → paste to LLM
@@ -61,6 +65,7 @@ git push origin ticket/4-supplier-bom
 ```
 
 ### Server 5: Ticket #5 (Floorboards)
+
 ```bash
 git checkout -b ticket/5-floorboard-optimization
 # Copy TICKET 5 → paste to LLM
@@ -68,6 +73,7 @@ git push origin ticket/5-floorboard-optimization
 ```
 
 ### Server 6: Ticket #6 (Markings)
+
 ```bash
 git checkout -b ticket/6-marking-placement-fix
 # Copy TICKET 6 → paste to LLM

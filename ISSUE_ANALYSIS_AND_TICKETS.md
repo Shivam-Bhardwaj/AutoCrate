@@ -10,6 +10,7 @@
 ## Issue Grouping & Priority Analysis
 
 ### GROUP A: PMI & Visualization (2 issues)
+
 **Priority**: HIGH | **Complexity**: MEDIUM | **Dependencies**: None
 
 - **Issue #1**: Datum frames percentage-based positioning
@@ -20,6 +21,7 @@
 ---
 
 ### GROUP B: Bill of Materials & Weight (2 issues)
+
 **Priority**: HIGH | **Complexity**: MEDIUM | **Dependencies**: None
 
 - **Issue #2**: Add weight calculation system
@@ -30,6 +32,7 @@
 ---
 
 ### GROUP C: Lumber Optimization (1 issue)
+
 **Priority**: HIGH | **Complexity**: HIGH | **Dependencies**: None
 
 - **Issue #3**: Handle unavailable lumber sizes, optimize floorboard arrangement
@@ -39,6 +42,7 @@
 ---
 
 ### GROUP D: Markings & Labels (1 issue)
+
 **Priority**: MEDIUM | **Complexity**: HIGH | **Dependencies**: STEP export
 
 - **Issue #11**: Fix marking placement algorithm, add STEP file support
@@ -48,6 +52,7 @@
 ---
 
 ### GROUP E: Documentation (2 issues)
+
 **Priority**: MEDIUM | **Complexity**: LOW | **Dependencies**: None
 
 - **Issue #13**: Fix documentation scrolling
@@ -58,6 +63,7 @@
 ---
 
 ### GROUP F: GitHub/DevOps (3 issues)
+
 **Priority**: LOW | **Complexity**: LOW | **Dependencies**: None
 
 - **Issue #4**: Branch metadata correctness
@@ -69,6 +75,7 @@
 ---
 
 ### GROUP G: UI/UX (1 issue)
+
 **Priority**: LOW | **Complexity**: LOW | **Dependencies**: None
 
 - **Issue #9**: Hide base/crate from display window
@@ -78,6 +85,7 @@
 ---
 
 ### GROUP H: New Features (2 issues)
+
 **Priority**: LOW | **Complexity**: VERY HIGH | **Dependencies**: Multiple
 
 - **Issue #7**: Test case management UI
@@ -88,6 +96,7 @@
 ---
 
 ### GROUP I: Infrastructure (1 issue)
+
 **Priority**: MEDIUM | **Complexity**: VERY HIGH | **Dependencies**: External systems
 
 - **Issue #6**: Automated ticket submission portal
@@ -100,7 +109,7 @@
 
 ### New Template: `.github/ISSUE_TEMPLATE/llm_optimized_task.md`
 
-```markdown
+````markdown
 ---
 name: LLM-Optimized Task
 about: Task designed for lightweight LLM execution
@@ -110,43 +119,54 @@ assignees: ""
 ---
 
 ## 🎯 Task Summary
+
 <!-- Single sentence describing the goal -->
 
 ## 📦 Context (Token Budget: ~500)
+
 <!-- Minimal background information -->
 
 **Relevant Files**:
+
 - Primary: `path/to/main/file.ts:line_range`
 - Secondary: `path/to/related/file.ts:line_range`
 
 **Key Constants/Types**:
+
 ```typescript
 // Copy relevant type definitions or constants here
 ```
+````
 
 **Current Behavior**:
+
 <!-- What happens now -->
 
 **Expected Behavior**:
+
 <!-- What should happen -->
 
 ## 🔧 Implementation Guide
 
 ### Step 1: [Action]
+
 **File**: `path/to/file.ts`
 **Lines**: `X-Y`
 **Change**: [Specific modification]
 
 ### Step 2: [Action]
+
 **File**: `path/to/file.ts`
 **Lines**: `X-Y`
 **Change**: [Specific modification]
 
 ### Step 3: [Testing]
+
 **Command**: `npm test -- path/to/test.test.ts`
 **Expected**: [Test outcome]
 
 ## ✅ Acceptance Criteria
+
 - [ ] Specific testable condition 1
 - [ ] Specific testable condition 2
 - [ ] Tests pass: `npm test`
@@ -154,17 +174,21 @@ assignees: ""
 - [ ] No TypeScript errors: `npm run type-check`
 
 ## 🧠 LLM Constraints
+
 - **Token Budget**: ~2000 tokens max
 - **Memory**: Lightweight LLM (assume 4K context)
 - **Self-Sufficiency**: All info included, no external lookups
 - **File Count**: Modify ≤3 files
 
 ## 🔗 Related Issues
+
 <!-- Link to parent/related issues -->
 
 ## 📝 Notes
+
 <!-- Additional tips or gotchas -->
-```
+
+````
 
 ---
 
@@ -218,15 +242,17 @@ interface SceneBounds {
   minY: number; maxY: number
   minZ: number; maxZ: number
 }
-```
+````
 
 ## 🔧 Implementation Guide
 
 ### Step 1: Update Datum Calculation Logic
+
 **File**: `src/components/CrateVisualizer.tsx`
 **Lines**: `135-209`
 
 **Current Code** (excerpt):
+
 ```typescript
 const planeSize = Math.max(spanX, spanY, spanZ) * 1.2
 const labelOffset = Math.max(spanX, spanY, spanZ) * 0.2
@@ -237,6 +263,7 @@ labelPosition={[centerX + labelOffset, 0, 0]}
 ```
 
 **Change To**:
+
 ```typescript
 // Datum frames should be 15% outside the model bounds
 const DATUM_OFFSET_PERCENT = 0.15
@@ -253,38 +280,45 @@ labelPosition={[centerX + frameOffset, 0, -spanZ * DATUM_OFFSET_PERCENT]}
 ```
 
 ### Step 2: Update All Three Datum Planes
+
 **Lines**: `134-209`
 
 Apply percentage-based offsets to all datums:
+
 - **Datum A**: Reference bottom face, offset 15% below
 - **Datum B**: Reference front edge, offset 15% forward
 - **Datum C**: Reference left edge, offset 15% left
 
 Change labels to reflect practical references:
+
 - "A (BOTTOM REF)" instead of "A"
 - "B (FRONT EDGE)" instead of "B"
 - "C (LEFT EDGE)" instead of "C"
 
 ### Step 3: Update PMI Constants
+
 **File**: `src/lib/crate-constants.ts`
 
 Add new constant:
+
 ```typescript
 export const PMI_SETTINGS = {
-  DATUM_OFFSET_PERCENT: 0.15,  // Frames 15% outside model
+  DATUM_OFFSET_PERCENT: 0.15, // Frames 15% outside model
   DATUM_LABELS: {
-    A: 'BOTTOM REF',
-    B: 'FRONT EDGE',
-    C: 'LEFT EDGE'
-  }
-} as const
+    A: "BOTTOM REF",
+    B: "FRONT EDGE",
+    C: "LEFT EDGE",
+  },
+} as const;
 ```
 
 Import and use in CrateVisualizer.tsx
 
 ### Step 4: Test Visual Changes
+
 **Command**: `npm run dev`
 **Manual Test**:
+
 1. Open http://localhost:3000
 2. Enter crate dimensions: 40" × 40" × 40"
 3. Verify datum frames appear 15% outside model
@@ -292,6 +326,7 @@ Import and use in CrateVisualizer.tsx
 5. Verify frames scale proportionally
 
 ## ✅ Acceptance Criteria
+
 - [ ] Datum frames positioned at 15% offset from model bounds
 - [ ] Labels updated to reflect practical references
 - [ ] Frames scale proportionally with crate size
@@ -300,19 +335,23 @@ Import and use in CrateVisualizer.tsx
 - [ ] Constants defined in `crate-constants.ts`
 
 ## 🧠 LLM Constraints
+
 - **Token Budget**: 1800 tokens
 - **Memory**: 4K context window
 - **Files**: 2 (CrateVisualizer.tsx, crate-constants.ts)
 - **No External Lookups**: All info provided
 
 ## 🔗 Related Issues
+
 - Issue #8 (PMI font scaling)
 
 ## 📝 Notes
+
 - Keep ASME Y14.5 standard (three orthogonal planes)
 - Don't change coordinate transformation (NX → Three.js)
 - Preserve color scheme: Red (A), Green (B), Blue (C)
-```
+
+````
 
 ---
 
@@ -358,47 +397,51 @@ Make PMI dimension text scale dynamically based on camera distance and zoom leve
 >
   {text}
 </Html>
-```
+````
 
 **Camera System**: OrbitControls with auto-zoom based on crate size
 
 ## 🔧 Implementation Guide
 
 ### Step 1: Calculate Camera Distance
+
 **File**: `src/components/CrateVisualizer.tsx`
 **Lines**: `211-250` (ScenePMIOverlays component)
 
 **Add state to track camera**:
+
 ```typescript
-import { useThree } from '@react-three/fiber'
+import { useThree } from "@react-three/fiber";
 
 function ScenePMIOverlays({ bounds, totalDimensions }) {
-  const { camera } = useThree()
-  const [fontSize, setFontSize] = useState(12)
+  const { camera } = useThree();
+  const [fontSize, setFontSize] = useState(12);
 
   useFrame(() => {
     // Calculate distance from camera to scene center
-    const distance = camera.position.length()
+    const distance = camera.position.length();
 
     // Scale font: larger when zoomed out, smaller when zoomed in
     // Base size: 12px at reference distance (100 units)
-    const REFERENCE_DISTANCE = 100
-    const BASE_FONT_SIZE = 12
-    const scaleFactor = distance / REFERENCE_DISTANCE
-    const newFontSize = BASE_FONT_SIZE * scaleFactor
+    const REFERENCE_DISTANCE = 100;
+    const BASE_FONT_SIZE = 12;
+    const scaleFactor = distance / REFERENCE_DISTANCE;
+    const newFontSize = BASE_FONT_SIZE * scaleFactor;
 
     // Clamp between 8px and 24px
-    setFontSize(Math.max(8, Math.min(24, newFontSize)))
-  })
+    setFontSize(Math.max(8, Math.min(24, newFontSize)));
+  });
 
   // ...rest of component
 }
 ```
 
 ### Step 2: Apply Dynamic Font Size to PMI Elements
+
 **Lines**: `251-350` (PMIFrame components)
 
 **Update all Html components**:
+
 ```typescript
 <Html
   position={position}
@@ -417,24 +460,27 @@ function ScenePMIOverlays({ bounds, totalDimensions }) {
 ```
 
 ### Step 3: Add Font Scaling Constants
+
 **File**: `src/lib/crate-constants.ts`
 
 ```typescript
 export const PMI_SETTINGS = {
   FONT_SCALE: {
-    BASE_SIZE: 12,           // px
+    BASE_SIZE: 12, // px
     REFERENCE_DISTANCE: 100, // scene units
-    MIN_SIZE: 8,             // px
-    MAX_SIZE: 24,            // px
-  }
-} as const
+    MIN_SIZE: 8, // px
+    MAX_SIZE: 24, // px
+  },
+} as const;
 ```
 
 Import in CrateVisualizer.tsx
 
 ### Step 4: Test at Different Zoom Levels
+
 **Command**: `npm run dev`
 **Manual Test**:
+
 1. Open http://localhost:3000
 2. Enter dimensions: 40" × 40" × 40"
 3. Zoom out fully → verify text size ≤ 24px, still readable
@@ -442,6 +488,7 @@ Import in CrateVisualizer.tsx
 5. Rotate view → verify text always faces camera
 
 ## ✅ Acceptance Criteria
+
 - [ ] Font size scales with camera distance
 - [ ] Text remains readable when zoomed out
 - [ ] Text doesn't overlap geometry when zoomed in
@@ -451,19 +498,23 @@ Import in CrateVisualizer.tsx
 - [ ] Build succeeds: `npm run build`
 
 ## 🧠 LLM Constraints
+
 - **Token Budget**: 1600 tokens
 - **Memory**: 4K context
 - **Files**: 2 (CrateVisualizer.tsx, crate-constants.ts)
 - **Self-Sufficient**: All React Three Fiber hooks explained
 
 ## 🔗 Related Issues
+
 - Issue #1 (Datum positioning)
 
 ## 📝 Notes
+
 - Use `useFrame` hook for continuous updates
 - Don't use `useState` in useFrame loop (causes re-renders)
 - Consider performance: limit state updates to significant changes
-```
+
+````
 
 ---
 
@@ -535,9 +586,10 @@ export const LUMBER_ACTUAL_DIMENSIONS = {
   '6x6': { width: 5.5, thickness: 5.5 },
   '8x8': { width: 7.5, thickness: 7.5 },
 } as const
-```
+````
 
 ### Step 2: Create Weight Calculator
+
 **File**: `src/lib/nx-generator.ts`
 **Add new method after `generateBOM()`**:
 
@@ -647,6 +699,7 @@ public calculateCrateWeight(): {
 ```
 
 ### Step 3: Add Weight to BOM
+
 **File**: `src/lib/nx-generator.ts`
 **In `generateBOM()` method, add weight column**:
 
@@ -686,6 +739,7 @@ const weights = this.calculateCrateWeight()
 ```
 
 ### Step 4: Add Weight Display to UI
+
 **File**: `src/app/page.tsx`
 **Add weight info section after BOM**:
 
@@ -720,29 +774,36 @@ const crateWeight = generator?.calculateCrateWeight()
 ```
 
 ### Step 5: Add Tests
+
 **File**: `src/lib/__tests__/nx-generator.test.ts`
 
 ```typescript
-describe('Weight Calculations', () => {
-  test('calculates lumber weight correctly', () => {
-    const gen = new NXGenerator(config)
+describe("Weight Calculations", () => {
+  test("calculates lumber weight correctly", () => {
+    const gen = new NXGenerator(config);
     // 2x6 × 8ft Douglas Fir
     // Volume: 1.5" × 5.5" × 96" = 792 in³ = 0.458 ft³
     // Weight: 0.458 × 34 lb/ft³ = 15.6 lbs
-    expect(gen.calculateLumberWeight('2x6', 96)).toBeCloseTo(15.6, 1)
-  })
+    expect(gen.calculateLumberWeight("2x6", 96)).toBeCloseTo(15.6, 1);
+  });
 
-  test('calculates total crate weight', () => {
-    const gen = new NXGenerator(smallCrateConfig)
-    const weights = gen.calculateCrateWeight()
-    expect(weights.total).toBeGreaterThan(0)
-    expect(weights.skids + weights.floorboards + weights.cleats +
-           weights.plywood + weights.hardware).toBeCloseTo(weights.total, 1)
-  })
-})
+  test("calculates total crate weight", () => {
+    const gen = new NXGenerator(smallCrateConfig);
+    const weights = gen.calculateCrateWeight();
+    expect(weights.total).toBeGreaterThan(0);
+    expect(
+      weights.skids +
+        weights.floorboards +
+        weights.cleats +
+        weights.plywood +
+        weights.hardware,
+    ).toBeCloseTo(weights.total, 1);
+  });
+});
 ```
 
 ## ✅ Acceptance Criteria
+
 - [ ] Wood density constants added with research sources
 - [ ] Weight calculator methods implemented
 - [ ] BOM includes weight column
@@ -753,15 +814,18 @@ describe('Weight Calculations', () => {
 - [ ] Build succeeds
 
 ## 🧠 LLM Constraints
+
 - **Token Budget**: 2000 tokens
 - **Memory**: 4K context
 - **Files**: 3 (nx-generator.ts, crate-constants.ts, page.tsx)
 
 ## 📝 Notes
+
 - Use actual lumber dimensions, not nominal
 - Douglas Fir density: 34 lb/ft³ (verified source)
 - Round weights to 1 decimal place for display
-```
+
+````
 
 ---
 
@@ -947,9 +1011,10 @@ private getActualSize(nominal: string): string {
   const dims = LUMBER_ACTUAL_DIMENSIONS[nominal]
   return dims ? `${dims.width}" × ${dims.thickness}"` : 'N/A'
 }
-```
+````
 
 ### Step 2: Export Unified BOM as CSV
+
 **Update CSV export format**:
 
 ```typescript
@@ -993,6 +1058,7 @@ public exportBOMAsCSV(): string {
 ```
 
 ### Step 3: Add Plywood Cutting Diagram to BOM
+
 **Include visual cutting instructions**:
 
 ```typescript
@@ -1028,6 +1094,7 @@ private generatePlywoodCuttingDiagram(): string {
 ```
 
 ### Step 4: Update UI to Display Unified BOM
+
 **File**: `src/app/page.tsx`
 
 Replace separate BOM/cut list sections with unified display:
@@ -1038,12 +1105,8 @@ Replace separate BOM/cut list sections with unified display:
 
   {/* Download buttons */}
   <div className="flex gap-2 mb-4">
-    <button onClick={downloadBOMAsCSV}>
-      Download BOM (CSV)
-    </button>
-    <button onClick={downloadPlywoodDiagram}>
-      Download Cutting Diagram
-    </button>
+    <button onClick={downloadBOMAsCSV}>Download BOM (CSV)</button>
+    <button onClick={downloadPlywoodDiagram}>Download Cutting Diagram</button>
   </div>
 
   {/* BOM Table */}
@@ -1071,9 +1134,7 @@ Replace separate BOM/cut list sections with unified display:
             {item.totalLinearFeet && `${item.totalLinearFeet} LF`}
             {item.area && `${item.area} sq ft`}
           </td>
-          <td className="text-sm">
-            {item.cuts || item.notes}
-          </td>
+          <td className="text-sm">{item.cuts || item.notes}</td>
         </tr>
       ))}
     </tbody>
@@ -1090,6 +1151,7 @@ Replace separate BOM/cut list sections with unified display:
 ```
 
 ## ✅ Acceptance Criteria
+
 - [ ] Single unified BOM with all components
 - [ ] Supplier part numbers included
 - [ ] Actual dimensions shown (not just nominal)
@@ -1102,15 +1164,18 @@ Replace separate BOM/cut list sections with unified display:
 - [ ] No TypeScript errors
 
 ## 🧠 LLM Constraints
+
 - **Token Budget**: 1700 tokens
 - **Memory**: 4K context
 - **Files**: 2 (nx-generator.ts, page.tsx)
 
 ## 📝 Notes
+
 - Standard lumber grades: #2 & Better (most common)
 - Standard plywood: CDX (C-grade face, D-grade back, X-exterior glue)
 - Linear feet pricing typical for lumber orders
-```
+
+````
 
 ---
 
@@ -1169,9 +1234,10 @@ export const CUSTOM_BOARD_THRESHOLD = 2.5 // inches - max gap for custom board
 export const DEFAULT_LUMBER_AVAILABILITY = [
   '2x12', '2x10', '2x8', '2x6'
 ] as const
-```
+````
 
 ### Step 2: Create Floorboard Layout Optimizer
+
 **File**: `src/lib/nx-generator.ts`
 
 Add new method:
@@ -1312,6 +1378,7 @@ private optimizeFloorboardLayout(
 ```
 
 ### Step 3: Add Lumber Availability Input to UI
+
 **File**: `src/app/page.tsx`
 
 Add checkbox inputs for lumber availability:
@@ -1359,6 +1426,7 @@ const [availableLumber, setAvailableLumber] = useState([
 ```
 
 ### Step 4: Update BOM to Show Layout
+
 **File**: `src/lib/nx-generator.ts`
 
 Update BOM generation to use optimized layout:
@@ -1411,6 +1479,7 @@ public generateBOM(): BillOfMaterialsRow[] {
 ```
 
 ### Step 5: Add Visualization of Layout
+
 **File**: `src/app/page.tsx`
 
 Add visual representation of floorboard arrangement:
@@ -1425,13 +1494,11 @@ Add visual representation of floorboard arrangement:
     className="border border-gray-300"
   >
     {layout.boards.map((board, i) => {
-      const x = (board.position / crateWidth) * 400
-      const width = (board.actualWidth / crateWidth) * 400
+      const x = (board.position / crateWidth) * 400;
+      const width = (board.actualWidth / crateWidth) * 400;
       const color = board.isCustom
-        ? '#fbbf24' // yellow for custom
-        : ['#3b82f6', '#60a5fa', '#93c5fd', '#dbeafe'][
-            Math.min(i % 4, 3)
-          ]
+        ? "#fbbf24" // yellow for custom
+        : ["#3b82f6", "#60a5fa", "#93c5fd", "#dbeafe"][Math.min(i % 4, 3)];
 
       return (
         <g key={i}>
@@ -1454,7 +1521,7 @@ Add visual representation of floorboard arrangement:
             {board.size || `${board.actualWidth.toFixed(1)}"`}
           </text>
         </g>
-      )
+      );
     })}
 
     {/* Labels */}
@@ -1474,47 +1541,49 @@ Add visual representation of floorboard arrangement:
 ```
 
 ### Step 6: Add Tests
+
 **File**: `src/lib/__tests__/nx-generator.test.ts`
 
 ```typescript
-describe('Optimized Floorboard Layout', () => {
-  test('places widest boards at edges', () => {
+describe("Optimized Floorboard Layout", () => {
+  test("places widest boards at edges", () => {
     const gen = new NXGenerator({
       ...config,
-      availableLumber: ['2x12', '2x10', '2x6'],
-    })
+      availableLumber: ["2x12", "2x10", "2x6"],
+    });
 
-    const layout = gen.optimizeFloorboardLayout(60, ['2x12', '2x10', '2x6'])
+    const layout = gen.optimizeFloorboardLayout(60, ["2x12", "2x10", "2x6"]);
 
     // First and last boards should be widest (2x12)
-    expect(layout.boards[0].size).toBe('2x12')
-    expect(layout.boards[layout.boards.length - 1].size).toBe('2x12')
-  })
+    expect(layout.boards[0].size).toBe("2x12");
+    expect(layout.boards[layout.boards.length - 1].size).toBe("2x12");
+  });
 
-  test('handles unavailable sizes', () => {
-    const layout = gen.optimizeFloorboardLayout(60, ['2x8', '2x6'])
+  test("handles unavailable sizes", () => {
+    const layout = gen.optimizeFloorboardLayout(60, ["2x8", "2x6"]);
 
     // Should not use 2x10 or 2x12
-    layout.boards.forEach(board => {
-      expect(['2x8', '2x6'].includes(board.size) || board.isCustom).toBe(true)
-    })
-  })
+    layout.boards.forEach((board) => {
+      expect(["2x8", "2x6"].includes(board.size) || board.isCustom).toBe(true);
+    });
+  });
 
-  test('creates custom boards for small gaps', () => {
-    const layout = gen.optimizeFloorboardLayout(48.5, ['2x12'])
+  test("creates custom boards for small gaps", () => {
+    const layout = gen.optimizeFloorboardLayout(48.5, ["2x12"]);
 
     // 48.5 - 11.25*4 = 3.5" gap
     // Should have 1-2 custom boards ≤2.5" each
-    const customBoards = layout.customBoards
-    expect(customBoards.length).toBeGreaterThan(0)
-    customBoards.forEach(board => {
-      expect(board.width).toBeLessThanOrEqual(2.5)
-    })
-  })
-})
+    const customBoards = layout.customBoards;
+    expect(customBoards.length).toBeGreaterThan(0);
+    customBoards.forEach((board) => {
+      expect(board.width).toBeLessThanOrEqual(2.5);
+    });
+  });
+});
 ```
 
 ## ✅ Acceptance Criteria
+
 - [ ] Widest available boards placed at outer edges
 - [ ] Narrower boards toward center
 - [ ] Custom boards created for gaps ≤2.5"
@@ -1526,15 +1595,18 @@ describe('Optimized Floorboard Layout', () => {
 - [ ] Build succeeds
 
 ## 🧠 LLM Constraints
+
 - **Token Budget**: 1900 tokens
 - **Memory**: 4K context
 - **Files**: 3 (nx-generator.ts, crate-constants.ts, page.tsx)
 
 ## 📝 Notes
+
 - Algorithm prioritizes structural integrity (wide edges)
 - Custom boards ripped from standard stock (note in BOM)
 - Confirm 2.5" threshold with user
-```
+
+````
 
 ---
 
@@ -1588,9 +1660,10 @@ Find current marking calculation (likely in a method like `calculateMarkings()`)
 // Probably something like this:
 const firstPanel = this.panels[0]
 const markingPositions = this.placeMarkingsOnPanel(firstPanel)
-```
+````
 
 **Fix To**:
+
 ```typescript
 /**
  * Calculate marking positions for ALL panels
@@ -1705,6 +1778,7 @@ private calculateFragilePosition(face: PanelFace): {x: number, y: number, z: num
 ```
 
 ### Step 2: Add STEP File Representation for Markings
+
 **File**: `src/lib/step-generator.ts`
 
 Add markings as STEP entities (ANNOTATION or SURFACE TEXTURE)
@@ -1799,6 +1873,7 @@ public generateSTEP(): string {
 ```
 
 ### Step 3: Update Visualization to Show All Markings
+
 **File**: `src/components/MarkingVisualizer.tsx`
 
 ```typescript
@@ -1842,7 +1917,9 @@ function MarkingDecal({ marking }: { marking: Marking }) {
 ```
 
 ### Step 4: Add Marking Assets
+
 **Create**: `public/markings/` directory with PNG files:
+
 - `fragile.png` - Red FRAGILE stencil
 - `handling.png` - Black handling symbols
 - `autocrate.png` - Blue AUTOCRATE text
@@ -1850,48 +1927,50 @@ function MarkingDecal({ marking }: { marking: Marking }) {
 (These should be provided by user or generated programmatically)
 
 ### Step 5: Add Tests
+
 **File**: `src/lib/__tests__/nx-generator.test.ts`
 
 ```typescript
-describe('Marking Placement', () => {
-  test('places markings on all four vertical faces', () => {
-    const gen = new NXGenerator(config)
-    const markings = gen.calculateAllMarkings()
+describe("Marking Placement", () => {
+  test("places markings on all four vertical faces", () => {
+    const gen = new NXGenerator(config);
+    const markings = gen.calculateAllMarkings();
 
-    expect(markings.size).toBe(4) // front, back, left, right
-    expect(markings.has('front')).toBe(true)
-    expect(markings.has('back')).toBe(true)
-    expect(markings.has('left')).toBe(true)
-    expect(markings.has('right')).toBe(true)
-  })
+    expect(markings.size).toBe(4); // front, back, left, right
+    expect(markings.has("front")).toBe(true);
+    expect(markings.has("back")).toBe(true);
+    expect(markings.has("left")).toBe(true);
+    expect(markings.has("right")).toBe(true);
+  });
 
-  test('each face has FRAGILE, handling, and AUTOCRATE markings', () => {
-    const gen = new NXGenerator(config)
-    const markings = gen.calculateAllMarkings()
+  test("each face has FRAGILE, handling, and AUTOCRATE markings", () => {
+    const gen = new NXGenerator(config);
+    const markings = gen.calculateAllMarkings();
 
     for (const [panelId, marks] of markings.entries()) {
-      const types = marks.map(m => m.type)
-      expect(types).toContain('FRAGILE')
-      expect(types).toContain('HANDLING')
-      expect(types).toContain('AUTOCRATE')
+      const types = marks.map((m) => m.type);
+      expect(types).toContain("FRAGILE");
+      expect(types).toContain("HANDLING");
+      expect(types).toContain("AUTOCRATE");
     }
-  })
-})
+  });
+});
 
-describe('STEP Marking Export', () => {
-  test('includes marking annotations in STEP file', () => {
-    const gen = new NXGenerator(config)
-    const stepGen = new StepGenerator(gen)
-    const stepContent = stepGen.generateSTEP()
+describe("STEP Marking Export", () => {
+  test("includes marking annotations in STEP file", () => {
+    const gen = new NXGenerator(config);
+    const stepGen = new StepGenerator(gen);
+    const stepContent = stepGen.generateSTEP();
 
-    expect(stepContent).toContain('ANNOTATION_TEXT')
-    expect(stepContent).toContain('FRAGILE')
-    expect(stepContent).toContain('AUTOCRATE')
-  })
-})
+    expect(stepContent).toContain("ANNOTATION_TEXT");
+    expect(stepContent).toContain("FRAGILE");
+    expect(stepContent).toContain("AUTOCRATE");
+  });
+});
 ```
 
 ## ✅ Acceptance Criteria
+
 - [ ] Markings placed on all four vertical panels
 - [ ] FRAGILE logos appear on all faces (not just first)
 - [ ] Markings exported as STEP annotations
@@ -1902,14 +1981,17 @@ describe('STEP Marking Export', () => {
 - [ ] STEP file opens in CAD software with markings visible
 
 ## 🧠 LLM Constraints
+
 - **Token Budget**: 2000 tokens
 - **Memory**: 4K context
 - **Files**: 3 (nx-generator.ts, step-generator.ts, MarkingVisualizer.tsx)
 
 ## 📝 Notes
+
 - STEP ANNOTATION_TEXT may not be supported by all CAD software
 - Alternative: Generate markings as surface textures (SURFACE_TEXTURE entity)
 - Verify marking asset files exist in public/markings/
+
 ```
 
 ---
@@ -1985,47 +2067,52 @@ Due to token constraints, here's a condensed summary of remaining tickets:
 ### Architecture
 
 ```
+
 ┌─────────────────────────────────────────────────────────────┐
-│                    TICKET SUBMISSION PORTAL                  │
-│                     (Next.js Web App)                        │
+│ TICKET SUBMISSION PORTAL │
+│ (Next.js Web App) │
 └─────────────────────┬───────────────────────────────────────┘
-                      │
-        ┌─────────────┼─────────────┐
-        │                           │
-        ▼                           ▼
-┌───────────────┐          ┌─────────────────┐
-│  User Form    │          │  LLM Optimizer  │
-│  - Title      │          │  (GPT-4o-mini)  │
-│  - Desc       │──────────│  - Contextualize│
-│  - Screenshots│          │  - Add file refs│
-│  - Category   │          │  - Validate     │
-└───────────────┘          └────────┬────────┘
-                                    │
-                                    ▼
-                           ┌─────────────────┐
-                           │  GitHub API     │
-                           │  - Create issue │
-                           │  - Add labels   │
-                           │  - Assign agent │
-                           └─────────────────┘
+│
+┌─────────────┼─────────────┐
+│ │
+▼ ▼
+┌───────────────┐ ┌─────────────────┐
+│ User Form │ │ LLM Optimizer │
+│ - Title │ │ (GPT-4o-mini) │
+│ - Desc │──────────│ - Contextualize│
+│ - Screenshots│ │ - Add file refs│
+│ - Category │ │ - Validate │
+└───────────────┘ └────────┬────────┘
+│
+▼
+┌─────────────────┐
+│ GitHub API │
+│ - Create issue │
+│ - Add labels │
+│ - Assign agent │
+└─────────────────┘
+
 ```
 
 ### Implementation Guide
 
 **File Structure**:
 ```
+
 src/app/submit-ticket/
-├── page.tsx                 # Ticket submission form
+├── page.tsx # Ticket submission form
 ├── api/
-│   ├── optimize-ticket/     # LLM processing
-│   └── create-issue/        # GitHub API integration
+│ ├── optimize-ticket/ # LLM processing
+│ └── create-issue/ # GitHub API integration
 └── components/
-    ├── TicketForm.tsx
-    └── TicketPreview.tsx
+├── TicketForm.tsx
+└── TicketPreview.tsx
+
 ```
 
 **LLM Optimization Prompt Template**:
 ```
+
 You are a ticket optimization agent for AutoCrate codebase.
 
 USER SUBMISSION:
@@ -2037,6 +2124,7 @@ CODEBASE CONTEXT:
 {minimal_codebase_summary}
 
 TASK:
+
 1. Rewrite ticket in LLM-optimized format
 2. Add specific file references
 3. Include code snippets if relevant
@@ -2045,6 +2133,7 @@ TASK:
 
 OUTPUT FORMAT:
 {llm_optimized_template}
+
 ```
 
 ---
@@ -2068,3 +2157,4 @@ OUTPUT FORMAT:
 ---
 
 **Document End** | Generated by Claude Code | 2025-10-16
+```

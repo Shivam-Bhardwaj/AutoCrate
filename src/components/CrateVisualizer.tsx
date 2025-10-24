@@ -428,12 +428,12 @@ function ScenePMIOverlays({
 }
 
 function CameraResetter({
-  boxes,
+  visibleBoxes,
   resetTrigger,
   controlsRef,
   onTargetChange
 }: {
-  boxes: NXBox[];
+  visibleBoxes: NXBox[];
   resetTrigger: number;
   controlsRef: MutableRefObject<OrbitControlsImpl | null>;
   onTargetChange: (target: [number, number, number]) => void;
@@ -441,13 +441,13 @@ function CameraResetter({
   const { camera, size } = useThree()
 
   useEffect(() => {
-    if (resetTrigger === 0 || boxes.length === 0) return
+    if (resetTrigger === 0 || visibleBoxes.length === 0) return
 
     const scale = 0.1
     const min = new THREE.Vector3(Infinity, Infinity, Infinity)
     const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity)
 
-    boxes.forEach(box => {
+    visibleBoxes.forEach(box => {
       const xValues = [box.point1.x, box.point2.x]
       const yValues = [box.point1.y, box.point2.y]
       const zValues = [box.point1.z, box.point2.z]
@@ -502,7 +502,7 @@ function CameraResetter({
     }
 
     onTargetChange([center.x, center.y, center.z])
-  }, [boxes, resetTrigger, camera, size, controlsRef, onTargetChange])
+  }, [visibleBoxes, resetTrigger, camera, size, controlsRef, onTargetChange])
 
   return null
 }
@@ -1067,7 +1067,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
       >
         <Suspense fallback={null}>
           <CameraResetter
-            boxes={visibleBoxes}
+            visibleBoxes={visibleBoxes}
             resetTrigger={resetCameraTrigger}
             controlsRef={controlsRef}
             onTargetChange={setControlTarget}
