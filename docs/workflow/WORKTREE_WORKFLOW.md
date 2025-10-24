@@ -21,6 +21,7 @@ cd /path/to/AutoCrate
 ```
 
 This will:
+
 1. Create a worktree in `issues/124/`
 2. Set up the branch and context
 3. Launch Claude Code (or Codex) in that directory
@@ -69,6 +70,7 @@ Git worktrees allow multiple working directories from a single repository:
 - **Issue worktrees**: `issues/124/`, `issues/147/`, etc. (each on their own branch)
 
 Each worktree:
+
 - Has its own working directory with full project files
 - Has its own branch (e.g., `sbl-124`, `sbl-147`)
 - Shares the same `.git` repository
@@ -92,6 +94,7 @@ Each worktree:
 ### 2. LLM Works in Isolation
 
 The LLM:
+
 - Reads `.issue-context.md` for context
 - Makes changes in `issues/124/`
 - Runs tests: `npm test`
@@ -123,6 +126,7 @@ git push origin --delete sbl-124
 ### Example: 3 Issues, 3 LLMs
 
 **Terminal 1 - Claude on Issue #124**:
+
 ```bash
 cd /path/to/AutoCrate
 ./scripts/work-on-issue.sh 124 claude
@@ -130,6 +134,7 @@ cd /path/to/AutoCrate
 ```
 
 **Terminal 2 - Codex on Issue #147**:
+
 ```bash
 cd /path/to/AutoCrate
 ./scripts/work-on-issue.sh 147 codex
@@ -137,6 +142,7 @@ cd /path/to/AutoCrate
 ```
 
 **Terminal 3 - Claude on Issue #151**:
+
 ```bash
 cd /path/to/AutoCrate
 ./scripts/work-on-issue.sh 151 claude
@@ -144,6 +150,7 @@ cd /path/to/AutoCrate
 ```
 
 All three can:
+
 - Run tests independently
 - Make commits independently
 - Push to their own branches
@@ -196,6 +203,7 @@ The `/issue` slash command has been updated to automatically:
 5. Begin working
 
 Just run:
+
 ```
 /issue 124
 ```
@@ -207,6 +215,7 @@ Or provide the GitHub URL directly.
 ### Worktree Already Exists
 
 If you get "worktree already exists":
+
 ```bash
 cd issues/124
 git branch --show-current  # Check current branch
@@ -226,6 +235,7 @@ git worktree list
 ### Conflict During Push
 
 If there's a conflict with remote:
+
 ```bash
 cd issues/124
 git pull origin sbl-124 --rebase

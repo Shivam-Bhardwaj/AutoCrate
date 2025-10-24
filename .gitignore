@@ -85,3 +85,12 @@ RPI5_TOKENS.txt
 
 # Issue assignment tracker (local only)
 .issue-assignments.json
+
+# Generated CAD exports (explicit regenerable sample)
+debug-output.stp
+
+# Migration workspace archive (safe to remove locally)
+AutoCrate.archive/
+
+# Git worktree directories
+issues/

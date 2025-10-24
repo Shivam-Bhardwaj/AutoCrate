@@ -748,16 +748,20 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
   const controlsRef = useRef<OrbitControlsImpl | null>(null)
   const highlightColors = ['#00FF00', '#008CFF']
 
-  const componentVisibility: ComponentVisibility = visibility ?? {
-    skids: true,
-    floorboards: true,
-    frontPanel: true,
-    backPanel: true,
-    leftPanel: true,
-    rightPanel: true,
-    topPanel: true,
-    cleats: true,
-  }
+  const componentVisibility: ComponentVisibility = useMemo(
+    () =>
+      visibility ?? {
+        skids: true,
+        floorboards: true,
+        frontPanel: true,
+        backPanel: true,
+        leftPanel: true,
+        rightPanel: true,
+        topPanel: true,
+        cleats: true,
+      },
+    [visibility],
+  )
 
   const pmiState: PmiVisibilityState = pmiVisibility ?? {
     totalDimensions: true,
@@ -1367,6 +1371,5 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
     </div>
   )
 }
-
 
 

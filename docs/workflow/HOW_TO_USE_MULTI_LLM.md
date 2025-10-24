@@ -11,12 +11,14 @@ cd /path/to/AutoCrate/repo
 ```
 
 This will:
+
 1. Create/open worktree in `issues/124/`
 2. Show context information
 3. Launch Claude Code
 4. Display a prompt to paste to Claude
 
 **When Claude starts**, it will see the context and can begin with:
+
 ```
 cat .issue-context.md
 ```
@@ -49,17 +51,20 @@ Start by reading: cat .issue-context.md
 ### Scenario: 3 Issues, 2 LLMs
 
 **You want:**
+
 - Claude to fix issue #124 (reset view bug)
 - Codex to fix issue #147 (change tracker)
 - Claude to add feature #151 (new export format)
 
 **Terminal 1 - Claude on #124:**
+
 ```bash
 cd /path/to/AutoCrate/repo
 ./scripts/work-on-issue.sh 124 claude
 ```
 
 **Terminal 2 - Codex on #147:**
+
 ```bash
 cd /path/to/AutoCrate/repo
 ./scripts/work-on-issue.sh 147 codex
@@ -67,6 +72,7 @@ cd /path/to/AutoCrate/repo
 ```
 
 **Terminal 3 - Claude on #151:**
+
 ```bash
 cd /path/to/AutoCrate/repo
 ./scripts/work-on-issue.sh 151 claude
@@ -111,6 +117,7 @@ Then read .issue-context.md.
 ## How They Know Where They Are
 
 Both Claude and Codex should immediately run:
+
 ```bash
 pwd
 git branch --show-current
@@ -118,6 +125,7 @@ cat .issue-context.md
 ```
 
 **Expected output for issue #124:**
+
 ```
 /path/to/AutoCrate/issues/124
 sbl-124
@@ -129,12 +137,14 @@ sbl-124
 ### Check what each is doing
 
 **Terminal 1 (monitoring):**
+
 ```bash
 # Watch Claude's work on #124
 watch -n 5 "cd /path/to/AutoCrate/issues/124 && git status --short"
 ```
 
 **Terminal 2 (monitoring):**
+
 ```bash
 # Watch Codex's work on #147
 watch -n 5 "cd /path/to/AutoCrate/issues/147 && git status --short"
@@ -149,19 +159,20 @@ git worktree list
 
 ## Complete File Guide for Explaining to LLMs
 
-| File | Purpose | When to Use |
-|------|---------|-------------|
-| `LLM_ONBOARDING.md` | Complete guide | Always have them read this first |
-| `CODEX_STARTER_PROMPT.txt` | Quick paste prompt | Copy-paste when starting Codex |
-| `WORKTREE_WORKFLOW.md` | Technical details | If they need deeper understanding |
-| `CLAUDE.md` | Development guide | For general project info |
-| `.issue-context.md` | Issue details | Auto-generated in each worktree |
+| File                       | Purpose            | When to Use                       |
+| -------------------------- | ------------------ | --------------------------------- |
+| `LLM_ONBOARDING.md`        | Complete guide     | Always have them read this first  |
+| `CODEX_STARTER_PROMPT.txt` | Quick paste prompt | Copy-paste when starting Codex    |
+| `WORKTREE_WORKFLOW.md`     | Technical details  | If they need deeper understanding |
+| `CLAUDE.md`                | Development guide  | For general project info          |
+| `.issue-context.md`        | Issue details      | Auto-generated in each worktree   |
 
 ## Common Questions
 
 ### Q: Codex keeps trying to navigate to other directories
 
 **A:** Paste this firmly:
+
 ```
 STOP. You are in an ISOLATED WORKSPACE.
 Run: pwd
@@ -173,6 +184,7 @@ ALL your work happens in your current directory only.
 ### Q: How do I know both are working correctly?
 
 **A:** Check their branches:
+
 ```bash
 # What Claude is working on
 cd issues/124 && git branch --show-current  # Should show: sbl-124
@@ -191,6 +203,7 @@ git worktree list
 ### Q: What if one finishes before the other?
 
 **A:** They can create their PRs independently:
+
 ```bash
 # In issues/124/
 gh pr create --title "Fix: Reset view bug" --body "Closes #124" --base main
@@ -247,11 +260,11 @@ Each terminal:
 
 ## Scripts Reference
 
-| Script | Purpose | Example |
-|--------|---------|---------|
-| `worktree-issue.sh` | Create worktree only | `./scripts/worktree-issue.sh 124` |
-| `work-on-issue.sh` | Create worktree + launch LLM | `./scripts/work-on-issue.sh 124 claude` |
-| `show-llm-context.sh` | Display context info | `./scripts/show-llm-context.sh` |
+| Script                | Purpose                      | Example                                 |
+| --------------------- | ---------------------------- | --------------------------------------- |
+| `worktree-issue.sh`   | Create worktree only         | `./scripts/worktree-issue.sh 124`       |
+| `work-on-issue.sh`    | Create worktree + launch LLM | `./scripts/work-on-issue.sh 124 claude` |
+| `show-llm-context.sh` | Display context info         | `./scripts/show-llm-context.sh`         |
 
 ## Best Practices
 
@@ -268,6 +281,7 @@ Each terminal:
 **Symptom:** `pwd` shows `/path/to/AutoCrate/repo` instead of `issues/124/`
 
 **Fix:**
+
 ```bash
 # Exit the LLM session
 exit
@@ -281,6 +295,7 @@ exit
 **Symptom:** `git branch --show-current` shows `main` instead of `sbl-124`
 
 **Fix:** Tell the LLM:
+
 ```
 You switched branches incorrectly. Run:
 git checkout sbl-[YOUR_ISSUE_NUMBER]
@@ -291,6 +306,7 @@ And never switch branches again. Stay on your assigned branch.
 ### LLM wants to push but branch doesn't exist on remote
 
 **Fix:** First push creates the remote branch:
+
 ```bash
 git push -u origin sbl-124
 ```
@@ -298,12 +314,14 @@ git push -u origin sbl-124
 ## Success Indicators
 
 ✅ **Working correctly:**
+
 - `pwd` shows `issues/[NUMBER]/`
 - `git branch --show-current` shows `sbl-[NUMBER]`
 - Each LLM only modifies files in their worktree
 - PRs created from different branches
 
 ❌ **Something wrong:**
+
 - LLM navigates to `../repo/` or other directories
 - LLM switches branches
 - Conflicts between LLMs

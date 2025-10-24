@@ -13,16 +13,19 @@
 ## Critical Issues Fixed & Merged
 
 ### 1. MASTER-1: Panel Stops (PR #112)
+
 **Issues:** #93, #94, #95, #96, #107  
 **Status:** ✅ MERGED
 
 **Problem:**
+
 - Panel stops not centered on front panel
 - Top panel stop had 1/8" Z-gap
 - Front panel stops interfering with end panels by 0.62"
 - Missing 0.0625" offset calculation
 
 **Solution:**
+
 - Added `edgeInset` (1.0625") clearance to prevent interference
 - Positioned stops flush against panel surfaces (no gaps)
 - Updated all 21 tests to verify correct behavior
@@ -32,15 +35,18 @@
 ---
 
 ### 2. MASTER-2: Lag Screw Patterns (PR #113)
+
 **Issues:** #91, #92, #108  
 **Status:** ✅ MERGED
 
 **Problem:**
+
 - Missing lags on end panels for certain geometries
 - Small crates had middle lag instead of end lags
 - Incorrect spacing for various crate sizes
 
 **Solution:**
+
 - Always place screws at start and end positions
 - Adaptive spacing: Small (<36"): 6-18", Large (≥36"): 12-24"
 - Guaranteed minimum 2 lags per edge
@@ -50,15 +56,18 @@
 ---
 
 ### 3. MASTER-3: Ground Clearance (PR #114)
+
 **Issues:** #90, #109  
 **Status:** ✅ MERGED
 
 **Problem:**
+
 - Side panels at 3.5" clearance (should be 4")
 - Configuration slider had no effect
 - Forklift access blocked
 
 **Solution:**
+
 - Updated default from 0.25" to 4.0"
 - Fixed Z positioning to use `groundClearance` parameter
 - Configuration now properly updates panel positions
@@ -68,15 +77,18 @@
 ---
 
 ### 4. MASTER-4: NX Translation & Datum (PR #115)
+
 **Issues:** #86, #97, #110  
 **Status:** ✅ MERGED
 
 **Problem:**
+
 - NX expressions lacked clear coordinate system documentation
 - PMI datum planes not anchored to physical features
 - Manufacturing drawings ambiguous
 
 **Solution:**
+
 - Added comprehensive coordinate system documentation
 - Defined primary/secondary/tertiary datum planes
 - All measurements from fixed physical references (Z=0, X=0, Y=0)
@@ -108,6 +120,7 @@ Closed to focus on core B-Style manufacturing requirements:
 **Issue #116:** Complete testing guide and change documentation
 
 Contains:
+
 - Detailed change descriptions for each PR
 - Comprehensive testing checklist
 - Visual/functional testing procedures
@@ -121,6 +134,7 @@ Contains:
 ## Test Results
 
 ### Unit Tests
+
 ```bash
 ✅ All panel stop tests (21/21)
 ✅ All lag screw tests (6/6)
@@ -128,11 +142,13 @@ Contains:
 ```
 
 **Pre-existing failures (not blocking):**
+
 - KlimpModel.test.tsx (mock infrastructure)
 - LumberCutList.test.tsx (test data)
 - ThemeToggle.test.tsx (timing)
 
 ### Integration
+
 - All changes tested together
 - No regressions introduced
 - Existing functionality preserved
@@ -142,11 +158,13 @@ Contains:
 ## Files Modified
 
 **Core Logic:**
+
 - `src/lib/nx-generator.ts` (4 changes)
 - `src/lib/panel-stop-calculator.ts` (3 fixes)
 - `src/lib/crate-constants.ts` (1 update)
 
 **Tests:**
+
 - `src/lib/__tests__/panel-stop-calculator.test.ts` (3 updates)
 
 **Total Lines Changed:** ~100 lines (highly focused changes)
@@ -156,6 +174,7 @@ Contains:
 ## Testing Instructions
 
 ### Quick Test
+
 ```bash
 cd /home/curious/workspace
 npm test                    # All unit tests
@@ -163,6 +182,7 @@ npm run test:e2e           # E2E tests
 ```
 
 ### Visual Test
+
 1. Start dev server: `npm run dev`
 2. Navigate to `localhost:3000`
 3. Test small crate: 24x24x24, 300 lbs
@@ -171,6 +191,7 @@ npm run test:e2e           # E2E tests
 6. Export STEP and verify in CAD
 
 ### Configuration Test
+
 1. Adjust ground clearance slider (0-8")
 2. Verify real-time updates in 3D
 3. Adjust lag spacing (18-24")
@@ -185,6 +206,7 @@ npm run test:e2e           # E2E tests
 All critical issues resolved, tests passing, no blocking bugs.
 
 **Recommended Steps:**
+
 1. Review master tracking issue #116
 2. Run complete test suite
 3. Visual inspection of test crates
@@ -206,6 +228,7 @@ All critical issues resolved, tests passing, no blocking bugs.
 ## Next Steps (If Needed)
 
 Post-B-Style delivery enhancements (optional):
+
 1. BOM CSV export functionality
 2. Weight calculations
 3. Floorboard optimization

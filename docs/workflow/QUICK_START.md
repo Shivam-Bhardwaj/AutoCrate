@@ -1,17 +1,20 @@
 # AutoCrate Multi-LLM Quick Start
 
 ## 🎯 Goal
+
 Run multiple LLMs (Claude Code, OpenAI Codex, etc.) working on different issues simultaneously without conflicts.
 
 ## 📋 The Complete Workflow
 
 ### 1️⃣ Check What Needs Doing
+
 ```bash
 cd /path/to/AutoCrate/repo
 gh issue list --state open
 ```
 
 ### 2️⃣ Assign Tasks
+
 ```bash
 # Assign issue #119 to Claude
 ./scripts/assign-issue.sh 119 claude
@@ -24,11 +27,13 @@ gh issue list --state open
 ```
 
 ### 3️⃣ View Assignments
+
 ```bash
 ./scripts/assign-issue.sh --list
 ```
 
 Output:
+
 ```
 Issue #119
   Assigned to: claude
@@ -42,6 +47,7 @@ Issue #128
 ### 4️⃣ Launch the LLMs
 
 **Terminal 1 - Claude on #119:**
+
 ```bash
 ssh your-machine
 cd /path/to/AutoCrate/repo
@@ -49,6 +55,7 @@ cd /path/to/AutoCrate/repo
 ```
 
 **Terminal 2 - Codex on #128:**
+
 ```bash
 ssh your-machine
 cd /path/to/AutoCrate/repo
@@ -56,6 +63,7 @@ cd /path/to/AutoCrate/repo
 ```
 
 When each LLM starts, paste:
+
 ```
 Read LLM_ONBOARDING.md for complete instructions.
 
@@ -144,19 +152,20 @@ AutoCrate/
 
 ## 📚 Documentation Guide
 
-| File | What It's For |
-|------|---------------|
-| **QUICK_START.md** (this file) | Quick reference |
-| **ASSIGNING_TASKS.md** | Detailed assignment guide |
-| **HOW_TO_USE_MULTI_LLM.md** | Complete multi-LLM guide |
-| **LLM_ONBOARDING.md** | For the LLMs to read |
-| **WORKTREE_WORKFLOW.md** | Technical worktree details |
-| **WORKTREE_CLEANUP.md** | Cleanup instructions |
-| **CLAUDE.md** | Project development guide |
+| File                           | What It's For              |
+| ------------------------------ | -------------------------- |
+| **QUICK_START.md** (this file) | Quick reference            |
+| **ASSIGNING_TASKS.md**         | Detailed assignment guide  |
+| **HOW_TO_USE_MULTI_LLM.md**    | Complete multi-LLM guide   |
+| **LLM_ONBOARDING.md**          | For the LLMs to read       |
+| **WORKTREE_WORKFLOW.md**       | Technical worktree details |
+| **WORKTREE_CLEANUP.md**        | Cleanup instructions       |
+| **CLAUDE.md**                  | Project development guide  |
 
 ## 💡 Best Practices
 
 ### ✅ DO
+
 - Assign issues before launching
 - Use `--list` to see current assignments
 - Free assignments when done
@@ -164,6 +173,7 @@ AutoCrate/
 - One issue per LLM at a time
 
 ### ❌ DON'T
+
 - Assign same issue to multiple LLMs
 - Launch without assigning
 - Forget to clean up
@@ -194,20 +204,25 @@ gh issue list --state open
 ## 🆘 Troubleshooting
 
 ### Problem: "Which issue should I work on?"
+
 **Solution:** Run `./scripts/assign-issue.sh --list` to see assignments
 
 ### Problem: LLM is in wrong directory
+
 **Solution:** It didn't follow instructions. Restart with `work-on-issue.sh`
 
 ### Problem: Can't remember what's assigned
+
 **Solution:** `./scripts/assign-issue.sh --list` shows everything
 
 ### Problem: Forgot to assign before launching
+
 **Solution:** Just assign it now: `./scripts/assign-issue.sh 119 claude`
 
 ## 🎯 Success Criteria
 
 You're doing it right when:
+
 - ✅ Each LLM has a different issue number
 - ✅ Each LLM is in `issues/[DIFFERENT-NUMBER]/`
 - ✅ No merge conflicts
@@ -219,17 +234,20 @@ You're doing it right when:
 **Pick a method:**
 
 **Method 1 - Manual (More Control):**
+
 ```bash
 ./scripts/assign-issue.sh 119 claude
 ./scripts/work-on-issue.sh 119 claude
 ```
 
 **Method 2 - Automatic (Fastest):**
+
 ```bash
 ./scripts/assign-issue.sh 119 claude --start
 ```
 
 **Method 3 - Plan Everything First:**
+
 ```bash
 ./scripts/assign-issue.sh 119 claude
 ./scripts/assign-issue.sh 128 codex
@@ -243,6 +261,7 @@ You're doing it right when:
 ---
 
 **Questions?**
+
 - Read **ASSIGNING_TASKS.md** for detailed assignment guide
 - Read **HOW_TO_USE_MULTI_LLM.md** for multi-LLM examples
 - Read **LLM_ONBOARDING.md** to understand LLM perspective

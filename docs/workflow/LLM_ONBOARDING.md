@@ -9,12 +9,14 @@ This project uses **git worktrees** to allow multiple AI assistants to work simu
 ### Current Environment
 
 Check where you are:
+
 ```bash
 pwd
 git branch --show-current
 ```
 
 **Expected output:**
+
 - Directory: `/path/to/AutoCrate/issues/[NUMBER]/`
 - Branch: `sbl-[NUMBER]` (e.g., `sbl-124`)
 
@@ -30,6 +32,7 @@ git branch --show-current
 ### Your Workflow
 
 1. **Read the issue context:**
+
    ```bash
    cat .issue-context.md
    ```
@@ -37,18 +40,21 @@ git branch --show-current
 2. **Make your changes** (only in current directory)
 
 3. **Test your changes:**
+
    ```bash
    npm test
    npm run build
    ```
 
 4. **Commit:**
+
    ```bash
    git add .
    git commit -m "fix: your commit message (#[ISSUE_NUMBER])"
    ```
 
 5. **Push:**
+
    ```bash
    git push origin sbl-[NUMBER]
    ```
@@ -78,6 +84,7 @@ AutoCrate/
 ### Example: Multiple LLMs Working Simultaneously
 
 **Claude Code in issues/124/:**
+
 ```bash
 pwd  # /path/to/AutoCrate/issues/124
 git branch --show-current  # sbl-124
@@ -85,6 +92,7 @@ git branch --show-current  # sbl-124
 ```
 
 **Codex in issues/147/:**
+
 ```bash
 pwd  # /path/to/AutoCrate/issues/147
 git branch --show-current  # sbl-147
@@ -95,34 +103,38 @@ git branch --show-current  # sbl-147
 
 ### Quick Reference
 
-| Command | Purpose |
-|---------|---------|
-| `pwd` | Check your location |
-| `git branch --show-current` | Check your branch |
-| `cat .issue-context.md` | Read issue details |
-| `git status` | See your changes |
-| `git worktree list` | See all worktrees (from repo/) |
-| `npm test` | Run tests |
-| `npm run build` | Build project |
+| Command                     | Purpose                        |
+| --------------------------- | ------------------------------ |
+| `pwd`                       | Check your location            |
+| `git branch --show-current` | Check your branch              |
+| `cat .issue-context.md`     | Read issue details             |
+| `git status`                | See your changes               |
+| `git worktree list`         | See all worktrees (from repo/) |
+| `npm test`                  | Run tests                      |
+| `npm run build`             | Build project                  |
 
 ### Common Mistakes to Avoid
 
 ❌ **Wrong: Navigating to repo/**
+
 ```bash
 cd ../repo  # DON'T DO THIS
 ```
 
 ❌ **Wrong: Navigating to another issue**
+
 ```bash
 cd ../147  # DON'T DO THIS
 ```
 
 ❌ **Wrong: Switching branches**
+
 ```bash
 git checkout main  # DON'T DO THIS
 ```
 
 ✅ **Right: Stay in your worktree**
+
 ```bash
 pwd  # Check you're in /issues/[YOUR_NUMBER]/
 # Make changes here
@@ -134,6 +146,7 @@ git push origin sbl-[YOUR_NUMBER]
 ### If You Get Lost
 
 1. Check where you are:
+
    ```bash
    pwd
    git branch --show-current

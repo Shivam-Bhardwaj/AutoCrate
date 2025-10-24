@@ -13,6 +13,7 @@
 ```
 
 This will:
+
 1. ✅ Record the assignment
 2. ✅ Create the worktree
 3. ✅ Launch the LLM
@@ -37,6 +38,7 @@ This will:
 ```
 
 **Example output:**
+
 ```
 ═══════════════════════════════════════════════════════
           Current Issue Assignments
@@ -63,11 +65,13 @@ Issue #140
 ### Scenario: 3 Open Issues, Assign to 2 LLMs
 
 **Step 1: Check available issues**
+
 ```bash
 gh issue list --state open
 ```
 
 **Step 2: Assign tasks**
+
 ```bash
 # Claude handles #119 and #140
 ./scripts/assign-issue.sh 119 claude
@@ -78,6 +82,7 @@ gh issue list --state open
 ```
 
 **Step 3: View assignments**
+
 ```bash
 ./scripts/assign-issue.sh --list
 ```
@@ -85,16 +90,19 @@ gh issue list --state open
 **Step 4: Launch LLMs**
 
 **Terminal 1 - Claude on #119:**
+
 ```bash
 ./scripts/work-on-issue.sh 119 claude
 ```
 
 **Terminal 2 - Codex on #128:**
+
 ```bash
 ./scripts/work-on-issue.sh 128 codex
 ```
 
 **Terminal 3 - Claude on #140 (after #119 is done):**
+
 ```bash
 ./scripts/work-on-issue.sh 140 claude
 ```
@@ -104,6 +112,7 @@ gh issue list --state open
 ### Free Up an Issue
 
 When an issue is done:
+
 ```bash
 ./scripts/assign-issue.sh --free 119
 ```
@@ -111,6 +120,7 @@ When an issue is done:
 ### Update Status
 
 Track progress:
+
 ```bash
 # Mark as in progress
 ./scripts/assign-issue.sh --status 119 "in-progress"
@@ -136,6 +146,7 @@ Track progress:
 ### Strategy 1: Load Balancing
 
 Distribute evenly:
+
 ```bash
 ./scripts/assign-issue.sh 119 claude
 ./scripts/assign-issue.sh 128 codex
@@ -146,6 +157,7 @@ Distribute evenly:
 ### Strategy 2: By Issue Type
 
 Assign by strengths:
+
 ```bash
 # Claude: UI/Frontend issues
 ./scripts/assign-issue.sh 119 claude  # UI bug
@@ -159,6 +171,7 @@ Assign by strengths:
 ### Strategy 3: Sequential
 
 One at a time per LLM:
+
 ```bash
 # Claude does #119, then #140, then #151
 ./scripts/assign-issue.sh 119 claude --start
@@ -207,14 +220,14 @@ gh issue list --state open
 
 ## Command Reference
 
-| Command | Description |
-|---------|-------------|
-| `assign-issue.sh 119 claude` | Assign issue to LLM |
-| `assign-issue.sh 119 claude --start` | Assign and launch |
-| `assign-issue.sh --list` | View all assignments |
-| `assign-issue.sh --free 119` | Free up issue |
-| `assign-issue.sh --status 119 "testing"` | Update status |
-| `work-on-issue.sh 119 claude` | Launch LLM on assigned issue |
+| Command                                  | Description                  |
+| ---------------------------------------- | ---------------------------- |
+| `assign-issue.sh 119 claude`             | Assign issue to LLM          |
+| `assign-issue.sh 119 claude --start`     | Assign and launch            |
+| `assign-issue.sh --list`                 | View all assignments         |
+| `assign-issue.sh --free 119`             | Free up issue                |
+| `assign-issue.sh --status 119 "testing"` | Update status                |
+| `work-on-issue.sh 119 claude`            | Launch LLM on assigned issue |
 
 ## Integration with GitHub Issues
 
@@ -235,6 +248,7 @@ fi
 ### Sync Assignments to GitHub
 
 Manually add assignee to GitHub:
+
 ```bash
 gh issue edit 119 --add-assignee @me
 ```
@@ -285,6 +299,7 @@ watch -n 10 'git worktree list | grep issues'
 ### Quick Assignment Board
 
 Create a simple dashboard:
+
 ```bash
 #!/bin/bash
 clear
@@ -301,6 +316,7 @@ git worktree list | grep issues
 ### Issue shows "No worktree" but I launched it
 
 The worktree was created in the wrong location. Fix:
+
 ```bash
 ./scripts/worktree-issue.sh 119
 ```
@@ -308,6 +324,7 @@ The worktree was created in the wrong location. Fix:
 ### Assignment file corrupted
 
 Reset it:
+
 ```bash
 echo '{}' > .issue-assignments.json
 ```
@@ -315,6 +332,7 @@ echo '{}' > .issue-assignments.json
 ### Forgot who's assigned to what
 
 Check anytime:
+
 ```bash
 ./scripts/assign-issue.sh --list
 ```
@@ -328,6 +346,7 @@ Check anytime:
 3. **Free:** `./scripts/assign-issue.sh --free 119`
 
 **Best practice:**
+
 - Assign at start of day
 - View assignments often
 - Free when done
