@@ -2,16 +2,16 @@
 
 ## Quick Decision Matrix
 
-| Aspect | Codex's Plan | Claude's Plan | Recommendation |
-|--------|--------------|---------------|----------------|
-| **Aggressiveness** | More aggressive | More conservative | **Hybrid** - Start conservative |
-| **Active Workflow Docs** | Move to history/ | Move to workflow/ | **Claude** - These are active! |
-| **Root Clutter** | Minimize everything | Keep essential entry points | **Balance** - Keep 3-4 key files |
-| **CAD Files** | External or Git LFS | Organize in docs/assets/ | **Codex** - Git LFS for future |
-| **Historical Content** | Archive (maybe separate branch) | Archive in docs/archive/ | **Claude** - In-repo is fine |
-| **CI/Automation** | Add structure linting | Good idea, but later | **Codex** - Prevent future issues |
-| **Timing** | Didn't address | Wait for quiet period | **Claude** - Don't break active work |
-| **Risk Assessment** | Not explicit | Phased with risk levels | **Claude** - Safety first |
+| Aspect                   | Codex's Plan                    | Claude's Plan               | Recommendation                       |
+| ------------------------ | ------------------------------- | --------------------------- | ------------------------------------ |
+| **Aggressiveness**       | More aggressive                 | More conservative           | **Hybrid** - Start conservative      |
+| **Active Workflow Docs** | Move to history/                | Move to workflow/           | **Claude** - These are active!       |
+| **Root Clutter**         | Minimize everything             | Keep essential entry points | **Balance** - Keep 3-4 key files     |
+| **CAD Files**            | External or Git LFS             | Organize in docs/assets/    | **Codex** - Git LFS for future       |
+| **Historical Content**   | Archive (maybe separate branch) | Archive in docs/archive/    | **Claude** - In-repo is fine         |
+| **CI/Automation**        | Add structure linting           | Good idea, but later        | **Codex** - Prevent future issues    |
+| **Timing**               | Didn't address                  | Wait for quiet period       | **Claude** - Don't break active work |
+| **Risk Assessment**      | Not explicit                    | Phased with risk levels     | **Claude** - Safety first            |
 
 ---
 
@@ -20,6 +20,7 @@
 ### 1. Treatment of Multi-LLM Workflow Docs
 
 **Codex says:** Move to `docs/history/`
+
 ```
 docs/history/
 ├── AGENTS.md
@@ -29,6 +30,7 @@ docs/history/
 ```
 
 **Claude says:** Move to `docs/workflow/` (ACTIVE use)
+
 ```
 docs/workflow/
 ├── LLM_ONBOARDING.md         # ← Codex sees in issues/
@@ -38,6 +40,7 @@ docs/workflow/
 ```
 
 **Analysis:**
+
 - ❌ Codex is WRONG here - These are active infrastructure
 - ✅ Claude is correct - We literally just built this system
 - 🎯 **Decision:** Use docs/workflow/, these are NOT historical
@@ -49,6 +52,7 @@ docs/workflow/
 **Codex says:** Minimize root, move most to subdirectories
 
 **Claude says:** Keep essential entry points
+
 ```
 repo/
 ├── README.md           # Main entry
@@ -58,6 +62,7 @@ repo/
 ```
 
 **Analysis:**
+
 - Both agree root is cluttered
 - Codex wants more aggressive cleanup
 - Claude wants discoverability
@@ -72,6 +77,7 @@ repo/
 **Claude says:** Organize in docs/assets/, consider LFS later
 
 **Analysis:**
+
 - Both agree they need organization
 - Codex thinks ahead to scalability
 - Claude focuses on immediate organization
@@ -86,6 +92,7 @@ repo/
 **Claude says:** Archive in docs/archive/ in main repo
 
 **Analysis:**
+
 - Codex wants maximum cleanup
 - Claude wants accessibility
 - 🎯 **Decision:** Depends on your usage:
@@ -101,6 +108,7 @@ repo/
 **Claude says:** Good idea but not urgent
 
 **Analysis:**
+
 - ✅ Codex is forward-thinking here
 - ⚠️ Claude is pragmatic about priorities
 - 🎯 **Decision:** Add to Phase 3 (after initial cleanup)
@@ -127,12 +135,14 @@ repo/
 
 **The Situation:**
 There are TWO separate git repositories:
+
 ```
 /AutoCrate/.git/              # Git repo #1 (branch: fix/issue-147-header) - TO BE ARCHIVED
 /AutoCrate/repo/.git/         # Git repo #2 (branch: main, with worktrees) - AUTHORITATIVE ✅
 ```
 
 **User Decision (2025-10-24):**
+
 - **repo/.git is the active/authoritative repository**
 - repo/ will be promoted to be the canonical project tree
 - Top-level /AutoCrate/ clone will be archived/removed after migration
@@ -140,6 +150,7 @@ There are TWO separate git repositories:
 - All docs/scripts will reference repo/ as root
 
 **What Happened:**
+
 - Codex created the plan in `/AutoCrate/docs/` (git repo #1) ✅ VALID at the time
 - Claude assumed only `/AutoCrate/repo/` (git repo #2) was active ❌ INCOMPLETE analysis
 - Codex's feedback forced investigation that revealed the dual-repository situation
@@ -153,6 +164,7 @@ There are TWO separate git repositories:
 ### Issue #2: Codex Wants to Archive Active Infrastructure
 
 **Problem:** Codex's plan would move these to "history":
+
 - LLM_ONBOARDING.md (actively used by new LLMs)
 - WORKTREE_WORKFLOW.md (describes current system)
 - ASSIGNING_TASKS.md (just created today!)
@@ -164,6 +176,7 @@ There are TWO separate git repositories:
 ## Recommended Hybrid Plan
 
 ### Phase 1: Low-Hanging Fruit (Agree on this)
+
 ```
 ✅ Create docs/workflow/ directory
 ✅ Move multi-LLM docs there (NOT to history/)
@@ -180,6 +193,7 @@ There are TWO separate git repositories:
 **Time:** 2-3 hours
 
 ### Phase 2: Asset Organization (Both agree)
+
 ```
 ✅ Create docs/assets/cad/
 ✅ Move CAD FILES/ and .stp files there
@@ -192,6 +206,7 @@ There are TWO separate git repositories:
 **Time:** 1-2 hours
 
 ### Phase 3: The Big One (Need consensus)
+
 ```
 ⚠️ Resolve original directory vs repo/ situation
 ⚠️ Update all worktree paths
@@ -210,12 +225,14 @@ There are TWO separate git repositories:
 ### Immediate Actions (No Debate Needed)
 
 1. **Fix Codex's file location**
+
    ```bash
    mv /path/to/original/docs/REPO_RESTRUCTURE_PLAN.md \
       /path/to/repo/docs/REPO_RESTRUCTURE_PLAN_CODEX.md
    ```
 
 2. **Create documentation structure**
+
    ```bash
    mkdir -p docs/{workflow,archive,assets/cad,guides}
    ```
@@ -230,6 +247,7 @@ There are TWO separate git repositories:
 ### Decisions Needed From You
 
 **Question 1:** Where should multi-LLM workflow docs live?
+
 - [ ] A. docs/workflow/ (Claude's view - ACTIVE)
 - [ ] B. docs/history/ (Codex's view - historical)
 - [ ] C. Root level (current)
@@ -237,6 +255,7 @@ There are TWO separate git repositories:
 **Recommendation:** A - These are active infrastructure
 
 **Question 2:** How many files at root?
+
 - [ ] A. Minimal (README.md only)
 - [ ] B. Essential entry points (README.md, QUICK_START.md, CLAUDE.md)
 - [ ] C. Current state (15+ files)
@@ -244,6 +263,7 @@ There are TWO separate git repositories:
 **Recommendation:** B - Balance discoverability and cleanliness
 
 **Question 3:** CAD files and Git LFS?
+
 - [ ] A. Implement Git LFS now
 - [ ] B. Organize first, LFS later
 - [ ] C. Keep as-is
@@ -251,6 +271,7 @@ There are TWO separate git repositories:
 **Recommendation:** B - Don't over-engineer immediately
 
 **Question 4:** When to execute?
+
 - [ ] A. Immediately (today)
 - [ ] B. After current work completes
 - [ ] C. Next milestone
@@ -258,6 +279,7 @@ There are TWO separate git repositories:
 **Recommendation:** B - Wait for quiet period
 
 **Question 5:** Historical agent outputs?
+
 - [ ] A. Separate archival branch
 - [ ] B. docs/archive/ in main repo
 - [ ] C. Delete if not needed
@@ -269,12 +291,14 @@ There are TWO separate git repositories:
 ## Execution Plan (After Consensus)
 
 ### Step 1: Create Issue
+
 ```bash
 gh issue create --title "Repository restructure: Phase 1" \
   --body "Organize documentation and archive historical content per consensus plan"
 ```
 
 ### Step 2: Assign to Appropriate LLM
+
 ```bash
 # This should be done IN A WORKTREE
 ./scripts/assign-issue.sh [NEW_ISSUE] codex --start
@@ -283,6 +307,7 @@ gh issue create --title "Repository restructure: Phase 1" \
 ```
 
 ### Step 3: Execute with Safety
+
 ```bash
 # Before any changes:
 git tag pre-restructure-backup
@@ -298,6 +323,7 @@ npm run build
 ```
 
 ### Step 4: Review & Merge
+
 ```bash
 # Create PR for review
 gh pr create --title "Repository restructure: Phase 1" \
@@ -312,21 +338,25 @@ gh pr create --title "Repository restructure: Phase 1" \
 ## What NOT to Do
 
 ### ❌ Don't Rush
+
 - Wait for consensus on plan
 - Test each phase thoroughly
 - Have rollback plan
 
 ### ❌ Don't Break Active Work
+
 - No changes while issues are open
 - No changes to worktree infrastructure
 - No changes to active scripts
 
 ### ❌ Don't Lose History
+
 - Archive, don't delete
 - Keep git history intact
 - Document what moved where
 
 ### ❌ Don't Over-Engineer
+
 - Start simple (organize directories)
 - Add automation later (CI checks)
 - Git LFS only if needed
@@ -373,20 +403,24 @@ After restructure, you should have:
 ## Bottom Line
 
 **Both plans have merit:**
+
 - Codex: Forward-thinking, comprehensive
 - Claude: Risk-aware, protects active systems
 
 **Key disagreements:**
+
 1. Active vs historical classification
 2. How minimal the root should be
 3. Timing and risk tolerance
 
 **Recommended path:**
+
 - Start with Claude's Phase 1 (safer)
 - Add Codex's automation ideas (Phase 3)
 - Get consensus before executing
 
 **Most important:**
+
 - Don't break the multi-LLM workflow we just built
 - Test thoroughly at each phase
 - Keep what works, improve what doesn't

@@ -1,181 +1,134 @@
 # LLM Onboarding Guide - AutoCrate Project
 
-**For: Claude Code, OpenAI Codex, or any AI coding assistant**
+**For:** Claude Code, OpenAI Codex, or any AI coding assistant
 
-## Important: You Are in an Isolated Workspace
+This guide covers everything you need before you touch a file: where you are, what you must read, and how to stay inside the guardrails.
 
-This project uses **git worktrees** to allow multiple AI assistants to work simultaneously without conflicts.
+---
 
-### Current Environment
+## 1. Know Your Workspace
 
-Check where you are:
+AutoCrate uses **git worktrees** so multiple assistants can work in parallel.
 
 ```bash
 pwd
 git branch --show-current
 ```
 
-**Expected output:**
+You should be inside `.../AutoCrate/issues/<ISSUE>/` on branch `sbl-<ISSUE>`.
 
-- Directory: `/path/to/AutoCrate/issues/[NUMBER]/`
-- Branch: `sbl-[NUMBER]` (e.g., `sbl-124`)
+**Rules:**
 
-### Key Rules
+- ✅ Only edit files in your assigned worktree directory.
+- ✅ Commit and push to `sbl-<ISSUE>`.
+- ❌ Never `cd` into another `issues/*/` or the root.
+- ❌ Never switch to `main`.
 
-1. ✅ **DO**: Work in your assigned issue directory (`issues/[NUMBER]/`)
-2. ✅ **DO**: Only modify files in your current worktree
-3. ✅ **DO**: Commit and push to your branch (`sbl-[NUMBER]`)
-4. ❌ **DON'T**: Navigate to or modify files in other `issues/*/` directories
-5. ❌ **DON'T**: Navigate to or modify files in `repo/` or `../` directories
-6. ❌ **DON'T**: Switch branches - stay on your assigned branch
+Need a refresher? Read [Worktree Workflow](WORKTREE_WORKFLOW.md).
 
-### Your Workflow
+---
 
-1. **Read the issue context:**
+## 2. Mandatory Reads
 
+Before making changes, review:
+
+1. `.issue-context.md` (problem statement + acceptance criteria)
+2. `CLAUDE.md` (team-wide conventions)
+3. Relevant guides in `docs/workflow/`:
+   - [Quick Start](QUICK_START.md) — abbreviated checklist
+   - [Assigning Tasks](ASSIGNING_TASKS.md) — how issues are triaged and handed off
+   - [Worktree Cleanup](WORKTREE_CLEANUP.md) — how to exit cleanly
+
+---
+
+## 3. Slash Commands & Scripts
+
+All automation is driven via slash commands and matching scripts in `scripts/`.
+
+| Command         | Script                           | Purpose                               |
+| --------------- | -------------------------------- | ------------------------------------- |
+| `/issue`        | `issue-workflow.sh`              | Create worktree & fetch issue details |
+| `/assign`       | `assign-issue.sh`                | Track who is working on what          |
+| `/work-on`      | `work-on-issue.sh`               | Wrapper to jump into a worktree       |
+| `/test`         | `test-runner.js`                 | Run type check, Jest, build, security |
+| `/build`        | `deploy.sh`                      | Production build guardrail            |
+| `/quick-fix`    | `multi-file-helper.sh quick-fix` | Lightweight bug fix flow              |
+| `/feature`      | `multi-file-helper.sh feature`   | Full feature flow                     |
+| `/cleanup`      | `cleanup-worktrees.sh`           | Prune old worktrees                   |
+| `/show-context` | `show-llm-context.sh`            | Print assignment + context            |
+
+Command definitions live under `.claude/commands/*.md`.
+
+---
+
+## 4. Specialized Agent Profiles
+
+AutoCrate uses 19 pre-configured agent contexts. Pick the agent that matches your task; they preload the right files and heuristics:
+
+| Agent        | Focus                                 |
+| ------------ | ------------------------------------- |
+| `geometry`   | NX dimensions, coordinate transforms  |
+| `3d-viz`     | Three.js / R3F components             |
+| `cad-export` | STEP/NX generators                    |
+| `ui`         | React UI components                   |
+| `testing`    | Jest, Playwright, coverage            |
+| `nx`         | NX expressions and tooling            |
+| `step`       | STEP assembly integration             |
+| `lumber`     | BOM and lumber sizing                 |
+| `hardware`   | Fastener placement, Klimp integration |
+| `scenario`   | Scenario presets and selectors        |
+| `constants`  | Specification constants               |
+| `deployment` | CI/CD, Vercel, builds                 |
+| `review`     | Code review and architectural checks  |
+| `issue`      | Requirement analysis                  |
+| `pr`         | Pull request authoring                |
+| `quick-fix`  | Small bug fixes                       |
+| `feature`    | Large feature workflow                |
+| `verify`     | Done criteria validation              |
+| `build`      | Build pipeline troubleshooting        |
+
+Start with `geometry`, `ui`, or `cad-export` when in doubt. The rest are for niche issues.
+
+---
+
+## 5. Standard Workflow
+
+1. **Analyze the issue**
    ```bash
    cat .issue-context.md
    ```
-
-2. **Make your changes** (only in current directory)
-
-3. **Test your changes:**
-
+2. **Implement changes** (stay in your worktree)
+3. **Test**
    ```bash
-   npm test
+   npm run test
    npm run build
    ```
-
-4. **Commit:**
-
+4. **Commit**
    ```bash
    git add .
-   git commit -m "fix: your commit message (#[ISSUE_NUMBER])"
+   git commit -m "fix: short description (#ISSUE)"
    ```
-
-5. **Push:**
-
+5. **Push + PR**
    ```bash
-   git push origin sbl-[NUMBER]
+   git push origin sbl-<ISSUE>
+   gh pr create --title "fix: ..." --body "Closes #<ISSUE>"
    ```
 
-6. **Create PR:**
-   ```bash
-   gh pr create --title "Fix: Issue #[NUMBER]" --body "Closes #[NUMBER]" --base main
-   ```
+---
 
-### What Are Worktrees?
+## 6. Cleanup & Handoff
 
-Think of worktrees like parallel universes of the same repository:
+- Run `/cleanup` (or `./scripts/cleanup-worktrees.sh`) after merge.
+- Update `/assign` to free the issue.
+- Document anything notable in the PR description.
 
-```
-AutoCrate/
-├── repo/              # Main universe (main branch)
-├── issues/124/        # Universe for issue #124 (sbl-124 branch)
-├── issues/147/        # Universe for issue #147 (sbl-147 branch)
-└── issues/151/        # Universe for issue #151 (sbl-151 branch)
-```
+---
 
-- Each directory has the **full project** with all files
-- Each has its **own branch**
-- Changes in one **don't affect others**
-- All share the **same git history**
+## 7. If You Get Confused
 
-### Example: Multiple LLMs Working Simultaneously
+- Check `pwd` and `git branch --show-current`.
+- If you’re outside `issues/<ISSUE>/`, stop and ask the user.
+- Re-read [Worktree Workflow](WORKTREE_WORKFLOW.md) or `docs/workflow/README.md`.
+- For agent selection, consult [LLM Optimization Plan](LLM_OPTIMIZATION_PLAN.md).
 
-**Claude Code in issues/124/:**
-
-```bash
-pwd  # /path/to/AutoCrate/issues/124
-git branch --show-current  # sbl-124
-# Working on reset view bug
-```
-
-**Codex in issues/147/:**
-
-```bash
-pwd  # /path/to/AutoCrate/issues/147
-git branch --show-current  # sbl-147
-# Working on change tracker
-```
-
-**No conflicts!** Each has their own workspace and branch.
-
-### Quick Reference
-
-| Command                     | Purpose                        |
-| --------------------------- | ------------------------------ |
-| `pwd`                       | Check your location            |
-| `git branch --show-current` | Check your branch              |
-| `cat .issue-context.md`     | Read issue details             |
-| `git status`                | See your changes               |
-| `git worktree list`         | See all worktrees (from repo/) |
-| `npm test`                  | Run tests                      |
-| `npm run build`             | Build project                  |
-
-### Common Mistakes to Avoid
-
-❌ **Wrong: Navigating to repo/**
-
-```bash
-cd ../repo  # DON'T DO THIS
-```
-
-❌ **Wrong: Navigating to another issue**
-
-```bash
-cd ../147  # DON'T DO THIS
-```
-
-❌ **Wrong: Switching branches**
-
-```bash
-git checkout main  # DON'T DO THIS
-```
-
-✅ **Right: Stay in your worktree**
-
-```bash
-pwd  # Check you're in /issues/[YOUR_NUMBER]/
-# Make changes here
-git add .
-git commit -m "fix: ..."
-git push origin sbl-[YOUR_NUMBER]
-```
-
-### If You Get Lost
-
-1. Check where you are:
-
-   ```bash
-   pwd
-   git branch --show-current
-   ```
-
-2. If you're in the wrong place, **stop immediately** and ask the user
-
-3. Never make changes outside your assigned worktree
-
-### Project-Specific Information
-
-- **Language:** TypeScript, React, Next.js 14
-- **Test Command:** `npm test`
-- **Build Command:** `npm run build`
-- **Lint:** `npm run lint`
-- **Type Check:** `npm run type-check`
-
-- **Main Source:** `src/` directory
-- **Tests:** `src/**/__tests__/` directories
-- **Configuration:** All constants in `src/lib/crate-constants.ts`
-
-### Getting Help
-
-- **Development Guide:** Read `CLAUDE.md` in your worktree
-- **Worktree Details:** Read `WORKTREE_WORKFLOW.md`
-- **Issue Context:** Read `.issue-context.md` in your worktree
-
-### Summary
-
-You are an AI assistant working on **one specific issue** in an **isolated workspace**. Stay in your workspace (`issues/[NUMBER]/`), make changes, test, commit, and push to your branch (`sbl-[NUMBER]`). Don't navigate to other directories or switch branches.
-
-**You have your own sandbox - play in it safely!**
+You now have the full toolkit to operate safely inside AutoCrate. Stay in your sandbox, use the scripts, and keep the automation happy.

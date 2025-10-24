@@ -13,6 +13,7 @@
 ## Current State Analysis
 
 ### What We Have Now (within repo/)
+
 ```
 repo/                              # Root (authoritative) ✓ ACTIVE
 ├── issues/                        # LLM worktrees ✓ ACTIVE
@@ -27,6 +28,7 @@ repo/                              # Root (authoritative) ✓ ACTIVE
 **Note:** Parent directory `/AutoCrate/` exists but will be archived after unique files are migrated to `repo/`.
 
 ### Key Problems
+
 1. **Documentation scattered** - Active workflow docs mixed with legacy
 2. **Unclear what's current** - Multiple README variants, overlapping guides
 3. **Issue folders persist** - Closed issues leave worktree directories
@@ -125,11 +127,13 @@ docs/assets/
 ### Consolidate Documentation
 
 **Current problems:**
+
 - Multiple README variants (README.md vs docs/README.md)
 - Overlapping content (QUICK_REFERENCE.md vs CLAUDE.md vs PROJECT_DNA.md)
 - Unclear hierarchy
 
 **Solution:**
+
 ```
 docs/
 ├── README.md                      # Doc index with clear navigation
@@ -153,6 +157,7 @@ docs/
 ### Critical: Keep These Systems Intact
 
 **1. Worktree Infrastructure**
+
 ```
 issues/                            # ✓ KEEP - Auto-managed
 .git/worktrees/                    # ✓ KEEP - Git internal
@@ -164,6 +169,7 @@ scripts/
 ```
 
 **2. Active Configuration**
+
 ```
 .claude/commands/                  # ✓ KEEP - Slash commands
 .github/                           # ✓ KEEP - GitHub config
@@ -171,6 +177,7 @@ package.json, tsconfig.json, etc   # ✓ KEEP - Standard config
 ```
 
 **3. Essential Entry Points**
+
 ```
 README.md                          # ✓ KEEP - First thing people see
 CLAUDE.md                          # ✓ KEEP - Dev guide
@@ -182,6 +189,7 @@ QUICK_START.md                     # ✓ KEEP - Workflow entry
 ## Phase-by-Phase Execution
 
 ### Phase 1: Document Consolidation (Low Risk)
+
 **Timeline:** 1-2 days
 **Risk:** Low - No code changes
 
@@ -191,6 +199,7 @@ QUICK_START.md                     # ✓ KEEP - Workflow entry
 4. Test that all scripts still find needed files
 
 **Validation:**
+
 ```bash
 # All these must still work:
 ./scripts/assign-issue.sh --help
@@ -199,6 +208,7 @@ cat QUICK_START.md  # Or symlink to docs/workflow/
 ```
 
 ### Phase 2: Archive Historical Content (Medium Risk)
+
 **Timeline:** 1 day
 **Risk:** Medium - Might break old references
 
@@ -208,6 +218,7 @@ cat QUICK_START.md  # Or symlink to docs/workflow/
 4. Update any scripts that reference these files
 
 **Validation:**
+
 ```bash
 # Check for broken references:
 grep -r "AGENTS.md" scripts/
@@ -215,6 +226,7 @@ grep -r "NOTE_FOR_KEELYN" .
 ```
 
 ### Phase 3: Migrate from Parent Directory (High Risk) - DECIDED ✅
+
 **Timeline:** Plan carefully, execute quickly
 **Risk:** HIGH - Could break everything
 **Decision:** User confirmed `repo/` is authoritative; parent directory will be archived
@@ -224,6 +236,7 @@ grep -r "NOTE_FOR_KEELYN" .
 See `docs/GIT_STRUCTURE_CLARIFICATION.md` for detailed migration steps.
 
 **Summary:**
+
 1. Audit parent directory for unique files
 2. Migrate unique files to repo/
 3. Archive parent directory
@@ -232,6 +245,7 @@ See `docs/GIT_STRUCTURE_CLARIFICATION.md` for detailed migration steps.
 6. Update all documentation and scripts
 
 **Validation:**
+
 ```bash
 # After migration, verify everything still works
 git worktree list
@@ -241,6 +255,7 @@ npm run build
 ```
 
 ### Phase 4: Asset Management (Optional)
+
 **Timeline:** As needed
 **Risk:** Low if using Git LFS
 
@@ -262,13 +277,13 @@ npm run build
 
 ### Where We Disagree ⚠️
 
-| Topic | Codex's View | Claude's View | Recommendation |
-|-------|-------------|---------------|----------------|
-| **Workflow Docs** | Move to `docs/history/` | Move to `docs/workflow/` (active) | Claude's - these are ACTIVE |
-| **Root Entry Points** | Minimize everything | Keep essential guides | Claude's - discoverability matters |
-| **Git LFS** | Consider using | Optional, not urgent | Codex's - good for future |
-| **CI Checks** | Add file structure linting | Good idea but later | Codex's - prevent future clutter |
-| **Timing** | Can do anytime | Wait for quiet period | Claude's - don't disrupt active work |
+| Topic                 | Codex's View               | Claude's View                     | Recommendation                       |
+| --------------------- | -------------------------- | --------------------------------- | ------------------------------------ |
+| **Workflow Docs**     | Move to `docs/history/`    | Move to `docs/workflow/` (active) | Claude's - these are ACTIVE          |
+| **Root Entry Points** | Minimize everything        | Keep essential guides             | Claude's - discoverability matters   |
+| **Git LFS**           | Consider using             | Optional, not urgent              | Codex's - good for future            |
+| **CI Checks**         | Add file structure linting | Good idea but later               | Codex's - prevent future clutter     |
+| **Timing**            | Can do anytime             | Wait for quiet period             | Claude's - don't disrupt active work |
 
 ### Where We Need Clarification 🤔
 
@@ -294,8 +309,10 @@ npm run build
 ### Prevent Future Clutter
 
 **1. Documentation Rules**
+
 ```markdown
 docs/README.md should define:
+
 - Root-level docs: Only README.md, QUICK_START.md, CLAUDE.md
 - New guides: Always go in docs/guides/
 - Workflow docs: Always go in docs/workflow/
@@ -303,14 +320,17 @@ docs/README.md should define:
 ```
 
 **2. Automated Checks (Optional)**
+
 ```yaml
 # .github/workflows/structure-check.yml
 # Warn if new root-level .md files added (except allowed list)
 ```
 
 **3. CONTRIBUTING.md**
+
 ```markdown
 ## Adding Documentation
+
 - Entry points: Root level (ask first)
 - Guides: docs/guides/
 - Workflow: docs/workflow/
@@ -320,18 +340,21 @@ docs/README.md should define:
 ### Regular Maintenance
 
 **Weekly:**
+
 ```bash
 # Clean up closed issue worktrees
 ./scripts/cleanup-worktrees.sh
 ```
 
 **Monthly:**
+
 ```bash
 # Review docs/ for outdated content
 # Archive anything no longer active
 ```
 
 **Per Release:**
+
 ```bash
 # Update version docs
 # Archive previous release notes
@@ -342,17 +365,20 @@ docs/README.md should define:
 ## Risk Assessment
 
 ### Low Risk (Do First)
+
 - ✅ Create new directory structure in docs/
 - ✅ Copy (don't move) files to new locations
 - ✅ Update README.md with navigation
 - ✅ Test all scripts still work
 
 ### Medium Risk (Do Carefully)
+
 - ⚠️ Move workflow docs to docs/workflow/
 - ⚠️ Archive historical agent outputs
 - ⚠️ Consolidate overlapping documentation
 
 ### High Risk (Plan Thoroughly)
+
 - 🚨 Resolve original directory vs repo/ situation
 - 🚨 Update all worktree paths
 - 🚨 Change any absolute paths in scripts
@@ -362,6 +388,7 @@ docs/README.md should define:
 ## Success Criteria
 
 ### Immediate (After Phase 1-2)
+
 - [ ] Clear navigation from README.md
 - [ ] Workflow docs organized in docs/workflow/
 - [ ] Historical content archived
@@ -369,6 +396,7 @@ docs/README.md should define:
 - [ ] All worktrees still work
 
 ### Long-term (After all phases)
+
 - [ ] Single clear root directory
 - [ ] No duplicate/overlapping docs
 - [ ] Clear categories for all content
@@ -430,6 +458,7 @@ docs/README.md should define:
 **Claude's Plan:** More conservative, protects active multi-LLM infrastructure, phased with lower risk
 
 **Recommended Hybrid:**
+
 - Use Claude's structure (docs/workflow/ not docs/history/)
 - Use Codex's CI idea (prevent future clutter)
 - Agree on Phase 1-2 quickly
