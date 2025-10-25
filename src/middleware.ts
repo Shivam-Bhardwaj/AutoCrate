@@ -85,13 +85,22 @@ export async function middleware(request: NextRequest) {
   if (process.env.NODE_ENV === 'production') {
     response.headers.set(
       'Content-Security-Policy',
-      "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; " + // Allow Mermaid from jsDelivr
-      "style-src 'self' 'unsafe-inline'; " + // Allow inline styles
-      "img-src 'self' data: blob:; " + // Allow data URIs and blob URLs for images
-      "font-src 'self'; " +
-      "connect-src 'self'; " +
-      "frame-ancestors 'none';"
+      [
+        "default-src 'self'",
+        // Allow Mermaid and Vercel Live Feedback scripts on preview
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://vercel.live",
+        // Explicit worker sources (fix blob worker CSP error)
+        "worker-src 'self' blob:",
+        // Style and images
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data: blob:",
+        // Fonts
+        "font-src 'self'",
+        // XHR/WebSocket connections (preview comments use vercel.live)
+        "connect-src 'self' https://vercel.live wss://vercel.live",
+        // Disallow embedding
+        "frame-ancestors 'none'",
+      ].join('; ')
     )
   }
 
