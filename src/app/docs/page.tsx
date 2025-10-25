@@ -1,12 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
 import Mermaid from '@/components/Mermaid'
 
 export default function DocsPage() {
   const [activeTab, setActiveTab] = useState<'web' | 'nx'>('web')
   const [activeDoc, setActiveDoc] = useState<string>('overview')
+  const webTabRef = useRef<HTMLButtonElement>(null)
+  const nxTabRef = useRef<HTMLButtonElement>(null)
 
   const webDocs = [
     { id: 'overview', title: 'Documentation Overview', category: 'Getting Started' },
@@ -43,19 +45,57 @@ export default function DocsPage() {
             Back to App
           </Link>
         </div>
-        {/* Tabs */}
-        <div className="max-w-7xl mx-auto mt-3 flex items-center gap-2">
+        {/* Tabs (ARIA) */}
+        <div
+          className="max-w-7xl mx-auto mt-3 flex items-center gap-2"
+          role="tablist"
+          aria-label="Documentation Tabs"
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+              e.preventDefault()
+              const next = activeTab === 'web' ? 'nx' : 'web'
+              setActiveTab(next)
+              setActiveDoc(next === 'web' ? 'overview' : 'nx-instructions')
+              const ref = next === 'web' ? webTabRef.current : nxTabRef.current
+              ref?.focus()
+            }
+            if (e.key === 'Home') {
+              e.preventDefault()
+              setActiveTab('web')
+              setActiveDoc('overview')
+              webTabRef.current?.focus()
+            }
+            if (e.key === 'End') {
+              e.preventDefault()
+              setActiveTab('nx')
+              setActiveDoc('nx-instructions')
+              nxTabRef.current?.focus()
+            }
+          }}
+        >
           <button
+            id="tab-web"
+            ref={webTabRef}
+            role="tab"
+            aria-selected={activeTab === 'web'}
+            aria-controls="panel-web"
+            tabIndex={activeTab === 'web' ? 0 : -1}
             onClick={() => { setActiveTab('web'); setActiveDoc('overview') }}
-            className={`px-3 py-1.5 rounded border text-sm ${activeTab === 'web' ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700'}`}
+            className={`px-3 py-1.5 rounded border text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${activeTab === 'web' ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700'}`}
           >
-            Web App Docs
+            Web App
           </button>
           <button
+            id="tab-nx"
+            ref={nxTabRef}
+            role="tab"
+            aria-selected={activeTab === 'nx'}
+            aria-controls="panel-nx"
+            tabIndex={activeTab === 'nx' ? 0 : -1}
             onClick={() => { setActiveTab('nx'); setActiveDoc('nx-instructions') }}
-            className={`px-3 py-1.5 rounded border text-sm ${activeTab === 'nx' ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700'}`}
+            className={`px-3 py-1.5 rounded border text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${activeTab === 'nx' ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700'}`}
           >
-            NX Docs
+            NX
           </button>
         </div>
       </div>
@@ -89,26 +129,41 @@ export default function DocsPage() {
 
           {/* Main Content */}
           <main className="lg:col-span-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
-            {/* Web App Docs */}
-            {activeTab === 'web' && (
-              <>
-                {activeDoc === 'overview' && <OverviewDoc />}
-                {activeDoc === 'quickstart' && <QuickStartDoc />}
-                {activeDoc === 'parallel-workflow' && <ParallelWorkflowDoc />}
-                {activeDoc === 'modules' && <ModulesDoc />}
-                {activeDoc === 'testing' && <TestingDoc />}
-                {activeDoc === 'claude-guide' && <ClaudeGuideDoc />}
-              </>
-            )}
-            {/* NX Docs */}
-            {activeTab === 'nx' && (
-              <>
-                {activeDoc === 'nx-instructions' && <NXInstructionsDoc />}
-                {activeDoc === 'nx-expressions' && <NXExpressionsReferenceDoc />}
-                {activeDoc === 'nx-assembly' && <NXAssemblyStructureDoc />}
-                {activeDoc === 'nx-troubleshooting' && <NXTroubleshootingDoc />}
-              </>
-            )}
+            {/* Web App Docs Panel */}
+            <div
+              id="panel-web"
+              role="tabpanel"
+              aria-labelledby="tab-web"
+              hidden={activeTab !== 'web'}
+            >
+              {activeTab === 'web' && (
+                <>
+                  {activeDoc === 'overview' && <OverviewDoc />}
+                  {activeDoc === 'quickstart' && <QuickStartDoc />}
+                  {activeDoc === 'parallel-workflow' && <ParallelWorkflowDoc />}
+                  {activeDoc === 'modules' && <ModulesDoc />}
+                  {activeDoc === 'testing' && <TestingDoc />}
+                  {activeDoc === 'claude-guide' && <ClaudeGuideDoc />}
+                </>
+              )}
+            </div>
+
+            {/* NX Docs Panel */}
+            <div
+              id="panel-nx"
+              role="tabpanel"
+              aria-labelledby="tab-nx"
+              hidden={activeTab !== 'nx'}
+            >
+              {activeTab === 'nx' && (
+                <>
+                  {activeDoc === 'nx-instructions' && <NXInstructionsDoc />}
+                  {activeDoc === 'nx-expressions' && <NXExpressionsReferenceDoc />}
+                  {activeDoc === 'nx-assembly' && <NXAssemblyStructureDoc />}
+                  {activeDoc === 'nx-troubleshooting' && <NXTroubleshootingDoc />}
+                </>
+              )}
+            </div>
           </main>
         </div>
       </div>
@@ -257,6 +312,29 @@ Thickness: NAME_THICKNESS (or NAME_HEIGHT when provided)`}</pre>
       <ul>
         <li>Import <code>CAD FILES/LAG SCREW_0.38 X 2.50.stp</code>.</li>
         <li>Place under intermediate vertical cleats; use <code>lag_screw_count</code> as quantity guidance.</li>
+      </ul>
+
+      <h3>4.7 Panel Splicing Layout</h3>
+      <p>When a panel exceeds sheet limits, pieces are split and positioned per the export. Vertical splices go to the right; horizontal splices go to the bottom.</p>
+      <Mermaid
+        chart={`flowchart LR\n  subgraph SIDE_PANEL\n    P1[Piece 1] --- P2[Piece 2] --- P3[Piece 3]\n  end\n  note1((vertical_splice_right)):::note\n  note2((horizontal_splice_bottom)):::note\n  classDef note fill:#eef,stroke:#99f,color:#246`}
+        className="my-3"
+      />
+      <ul>
+        <li>Follow exported <code>NAME_X/NAME_Y/NAME_Z</code> and <code>NAME_WIDTH/LENGTH/HEIGHT</code> to size/locate each piece.</li>
+        <li>Respect suppression flags for unused pieces.</li>
+      </ul>
+
+      <h3>4.8 Cleat Spacing Rules</h3>
+      <p>Cleats respect edge clearance and maximum spacing. Use expression guidance to place and pattern if needed.</p>
+      <Mermaid
+        chart={`flowchart TB\n  Start[Edge Clearance] --> S1[First Cleat]\n  S1 -->|<= 16\"| S2[Next Cleat]\n  S2 -->|<= 16\"| S3[Next Cleat]\n  S3 --> End[End Clearance]\n  classDef rule fill:#ecfeff,stroke:#06b6d4,color:#0e7490`}
+        className="my-3"
+      />
+      <ul>
+        <li>Max spacing: 16" (unless otherwise specified in expressions).</li>
+        <li>Maintain minimum edge clearances around openings and edges.</li>
+        <li>Keep minimum 1" clearance from Klimp placements.</li>
       </ul>
 
       <h2>5) Validate</h2>
