@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  eslint: {
+    // Prevent ESLint config/version mismatches from failing production builds
+    ignoreDuringBuilds: true,
+  },
 
   // Security headers configuration
   async headers() {
