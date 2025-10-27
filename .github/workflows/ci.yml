@@ -21,12 +21,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
         env:
-          npm_config_ignore_scripts: 'true'
+          npm_config_ignore_scripts: "true"
 
       - name: Lint
         run: npm run lint
@@ -47,16 +47,10 @@ jobs:
           name: coverage-report
           path: coverage
 
-      - name: Build Playwright smoke-test image
-        run: docker build -f Dockerfile.playwright -t autocrate-playwright .
-
-      - name: Playwright smoke tests (desktop)
+      - name: Dockerized Playwright smoke (Desktop Chrome)
         run: |
           mkdir -p playwright-report
-          docker run --rm \
-            -e CI=1 \
-            -v "${{ github.workspace }}/playwright-report:/app/playwright-report" \
-            autocrate-playwright
+          npm run test:e2e:docker
 
       - name: Upload Playwright HTML report
         if: always()
@@ -65,5 +59,34 @@ jobs:
           name: playwright-report
           path: playwright-report
 
+      - name: Setup Vercel CLI
+        run: npm install -g vercel
+
+      - name: Vercel env pull (preview)
+        run: vercel pull --yes --environment=preview --token ${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Vercel build
+        run: vercel build --token ${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Upload Vercel build output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vercel-output
+          path: .vercel/output
+
       - name: Build production bundle
         run: npm run build
+
+      - name: Deploy prebuilt bundle to Vercel
+        if: ${{ secrets.VERCEL_TOKEN && secrets.VERCEL_ORG_ID && secrets.VERCEL_PROJECT_ID }}
+        run: vercel deploy --prebuilt --yes --token ${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
