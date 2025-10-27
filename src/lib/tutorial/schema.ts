@@ -114,14 +114,19 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
   })
   for (const [panel, arr] of plywoodByPanel.entries()) {
     const meta = panelMap[panel] || { title: `${panel} (Plywood Pieces)` }
+    const plywoodSuffixes = ['X', 'Y', 'Z', 'WIDTH', 'LENGTH', 'HEIGHT', 'THICKNESS']
+    const plywoodExpressions = Array.from(new Set(
+      arr.flatMap(box => plywoodSuffixes.map(suffix => `${box.name}_${suffix}`))
+    ))
+    const thicknessLabel = arr[0] ? `${arr[0].name}_THICKNESS` : 'PLY_THICKNESS'
     steps.push({
       id: `plywood-${panel.toLowerCase()}`,
       title: meta.title,
       description: 'For each piece, create a Block by base corner and extents bound to expressions (7 parameters). Suppress any piece marked as suppressed.',
       target: { boxNames: arr.map(b => b.name) },
-      expressions: ['NAME_X', 'NAME_Y', 'NAME_Z', 'NAME_WIDTH', 'NAME_LENGTH', 'NAME_HEIGHT', 'NAME_THICKNESS'],
+      expressions: plywoodExpressions,
       tips: [
-        'Use NAME_THICKNESS for plywood thickness (typically 0.250).',
+        `Use ${thicknessLabel} for plywood thickness (typically 0.250).`,
         'Orientation is consistent with coordinate system: X width, Y length, Z thickness.',
       ],
     })
@@ -136,14 +141,19 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
     cleatsByPanel.set(key, arr)
   })
   for (const [panel, arr] of cleatsByPanel.entries()) {
+    const cleatSuffixes = ['X', 'Y', 'Z', 'WIDTH', 'LENGTH', 'HEIGHT', 'THICKNESS']
+    const cleatExpressions = Array.from(new Set(
+      arr.flatMap(box => cleatSuffixes.map(suffix => `${box.name}_${suffix}`))
+    ))
+    const thicknessLabel = arr[0] ? `${arr[0].name}_THICKNESS` : 'CLEAT_THICKNESS'
     steps.push({
       id: `cleats-${panel.toLowerCase()}`,
       title: `${panel} Cleats (7 Parameters)`,
       description: 'Create cleat solids using the same 7-parameter set as plywood; thickness is 0.750 for 1x4.',
       target: { boxNames: arr.map(b => b.name) },
-      expressions: ['NAME_X', 'NAME_Y', 'NAME_Z', 'NAME_WIDTH', 'NAME_LENGTH', 'NAME_HEIGHT', 'NAME_THICKNESS'],
+      expressions: cleatExpressions,
       tips: [
-        'Use NAME_THICKNESS = 0.750 for 1x4 cleats.',
+        `Use ${thicknessLabel} = 0.750 for 1x4 cleats.`,
         'Respect edge clearances and spacing rules defined by the expressions.',
       ],
     })
@@ -183,13 +193,44 @@ export function getStepHighlightTargets(step: TutorialStep, boxes: NXBox[]): str
 }
 
 export function buildCallouts(step: TutorialStep, boxes: NXBox[]): { boxName: string; label: string }[] {
-  const label = step.expressions && step.expressions.length > 0 ? `Use: ${step.expressions.join(', ')}` : step.title
+  const hasExpressions = step.expressions && step.expressions.length > 0
+  const expressionMap = new Map<string, string[]>()
+  if (hasExpressions) {
+    for (const expr of step.expressions!) {
+      const key = (() => {
+        if (expr.includes('=')) return expr.split('=')[0]
+        const idx = expr.lastIndexOf('_')
+        if (idx <= 0) return null
+        return expr.slice(0, idx)
+      })()
+      if (!key) continue
+      const arr = expressionMap.get(key) || []
+      arr.push(expr)
+      expressionMap.set(key, arr)
+    }
+  }
+
+  const makeLabel = (boxName: string) => {
+    const specific = expressionMap.get(boxName)
+    if (specific && specific.length > 0) {
+      return `Use: ${specific.join(', ')}`
+    }
+    if (hasExpressions) {
+      return `Use: ${step.expressions!.join(', ')}`
+    }
+    return step.title
+  }
+
   const results: { boxName: string; label: string }[] = []
   const names = new Set(step.target?.boxNames || [])
-  names.forEach(n => results.push({ boxName: n, label }))
+  names.forEach(n => results.push({ boxName: n, label: makeLabel(n) }))
   if (step.target?.types?.length) {
     const typeSet = new Set(step.target.types)
-    boxes.forEach(b => { if (typeSet.has(b.type!)) results.push({ boxName: b.name, label }) })
+    boxes.forEach(b => {
+      if (typeSet.has(b.type!)) {
+        results.push({ boxName: b.name, label: makeLabel(b.name) })
+      }
+    })
   }
   return results
 }

@@ -263,9 +263,9 @@ function NXInstructionsDoc() {
   P1 -->|LENGTH| L[LENGTH = Y2 - Y1]
   P1 -->|HEIGHT| H[HEIGHT = Z2 - Z1]`}</pre>
       <ul>
-        <li><strong>Generic boxes</strong> (e.g., <code>SKID</code>, <code>FLOORBOARD_*</code>): <code>NAME_X1</code>, <code>NAME_Y1</code>, <code>NAME_Z1</code> and <code>NAME_X2</code>, <code>NAME_Y2</code>, <code>NAME_Z2</code>.</li>
-        <li><strong>Plywood panels</strong>: <code>NAME_X</code>, <code>NAME_Y</code>, <code>NAME_Z</code>, plus <code>NAME_WIDTH</code>, <code>NAME_LENGTH</code>, <code>NAME_HEIGHT</code> and <code>NAME_THICKNESS</code> (thickness).</li>
-        <li><strong>Cleats</strong>: same 7 parameters as panels; thickness is 0.750 (1×4).</li>
+        <li><strong>Generic boxes</strong> (e.g., <code>SKID</code>, <code>FLOORBOARD_1</code>): bind the corner coordinates for the specific name, such as <code>SKID_X1</code>/<code>SKID_X2</code> and <code>FLOORBOARD_1_X1</code>/<code>FLOORBOARD_1_X2</code> (repeat for Y and Z).</li>
+        <li><strong>Plywood panels</strong>: expressions follow <code>{'{PANEL}_PLY_{N}_*'}</code>. Example: <code>FRONT_PANEL_PLY_1_X</code>, <code>FRONT_PANEL_PLY_1_WIDTH</code>, <code>FRONT_PANEL_PLY_1_THICKNESS</code>.</li>
+        <li><strong>Cleats</strong>: expressions follow <code>{'{PANEL}_CLEAT_{N}_*'}</code>, e.g., <code>FRONT_PANEL_CLEAT_1_X</code> … <code>FRONT_PANEL_CLEAT_1_THICKNESS</code> (0.750).</li>
       </ul>
 
       <h3>Recommended Block Setup (Example)</h3>
@@ -291,10 +291,10 @@ Tip: Click fx next to each field, type the expression name, press Enter.`}</pre>
       </ul>
 
       <h3>4.3 Panels (Plywood)</h3>
-      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`Corner: NAME_X, NAME_Y, NAME_Z
-Extents: NAME_WIDTH, NAME_LENGTH
-Thickness: NAME_THICKNESS (or NAME_HEIGHT when provided)`}</pre>
-      <p>Use feature names like <code>SIDE_PANEL_PIECE_1</code>, <code>END_PANEL_PIECE_2</code> to mirror exported names.</p>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`Corner: FRONT_PANEL_PLY_1_X, FRONT_PANEL_PLY_1_Y, FRONT_PANEL_PLY_1_Z
+Extents: FRONT_PANEL_PLY_1_WIDTH, FRONT_PANEL_PLY_1_LENGTH
+Thickness: FRONT_PANEL_PLY_1_THICKNESS`}</pre>
+      <p>Each panel piece follows the pattern <code>{'{PANEL}_PLY_{N}'}</code>; bind the exact names such as <code>FRONT_PANEL_PLY_1</code>, <code>BACK_PANEL_PLY_2</code>, <code>RIGHT_END_PANEL_PLY_1</code>.</p>
 
       <h3>4.4 Cleats</h3>
       <p>Use the 7 parameters; thickness fixed at 0.750.</p>
@@ -315,7 +315,7 @@ Thickness: NAME_THICKNESS (or NAME_HEIGHT when provided)`}</pre>
       <p>When a panel exceeds sheet limits, pieces are split and positioned per the export. Vertical splices go to the right; horizontal splices go to the bottom.</p>
       <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`flowchart LR\n  subgraph SIDE_PANEL\n    P1[Piece 1] --- P2[Piece 2] --- P3[Piece 3]\n  end\n  note1((vertical_splice_right)):::note\n  note2((horizontal_splice_bottom)):::note\n  classDef note fill:#eef,stroke:#99f,color:#246`}</pre>
       <ul>
-        <li>Follow exported <code>NAME_X/NAME_Y/NAME_Z</code> and <code>NAME_WIDTH/LENGTH/HEIGHT</code> to size/locate each piece.</li>
+        <li>Follow exported <code>{'{PANEL}_PLY_{N}_X/Y/Z'}</code> and <code>{'{PANEL}_PLY_{N}_WIDTH/LENGTH/HEIGHT'}</code> to size/locate each piece.</li>
         <li>Respect suppression flags for unused pieces.</li>
       </ul>
 
@@ -361,18 +361,21 @@ function NXExpressionsReferenceDoc() {
 
       <h2>Boxes (Two Corners)</h2>
       <p>Generic solids use two diagonal points:</p>
-      <pre>{`NAME_X1, NAME_Y1, NAME_Z1
-NAME_X2, NAME_Y2, NAME_Z2`}</pre>
+      <pre>{`SKID_X1, SKID_Y1, SKID_Z1
+SKID_X2, SKID_Y2, SKID_Z2`}</pre>
+      <p>Floorboards follow the same pattern, e.g., <code>FLOORBOARD_1_X1</code>/<code>FLOORBOARD_1_X2</code>.</p>
 
       <h2>Plywood Pieces (7 parameters)</h2>
-      <pre>{`NAME_X, NAME_Y, NAME_Z
-NAME_WIDTH, NAME_LENGTH, NAME_HEIGHT
-NAME_THICKNESS`}</pre>
+      <pre>{`FRONT_PANEL_PLY_1_X, FRONT_PANEL_PLY_1_Y, FRONT_PANEL_PLY_1_Z
+FRONT_PANEL_PLY_1_WIDTH, FRONT_PANEL_PLY_1_LENGTH, FRONT_PANEL_PLY_1_HEIGHT
+FRONT_PANEL_PLY_1_THICKNESS`}</pre>
+      <p>Replace the panel/id to match each piece, e.g., <code>BACK_PANEL_PLY_2</code>, <code>LEFT_END_PANEL_PLY_3</code>.</p>
 
       <h2>Cleats (7 parameters)</h2>
-      <pre>{`NAME_X, NAME_Y, NAME_Z
-NAME_WIDTH, NAME_LENGTH, NAME_HEIGHT
-THICKNESS = 0.750`}</pre>
+      <pre>{`FRONT_PANEL_CLEAT_1_X, FRONT_PANEL_CLEAT_1_Y, FRONT_PANEL_CLEAT_1_Z
+FRONT_PANEL_CLEAT_1_WIDTH, FRONT_PANEL_CLEAT_1_LENGTH, FRONT_PANEL_CLEAT_1_HEIGHT
+FRONT_PANEL_CLEAT_1_THICKNESS = 0.750`}</pre>
+      <p>Cleat expressions follow <code>{'{PANEL}_CLEAT_{N}_*'}</code>.</p>
 
       <h2>Klimp Instances</h2>
       <pre>{`KLIMP_n_ACTIVE (TRUE/FALSE)

@@ -33,7 +33,6 @@ describe('Tutorial schema (browserless)', () => {
     const boxes = gen.getBoxes()
     const steps = buildFullTutorial(gen, boxes)
 
-    // Find skid-block step and verify targets include SKID
     const skidBlock = steps.find(s => s.id === 'skid-block')!
     const targets = getStepHighlightTargets(skidBlock, boxes)
     expect(targets).toEqual(expect.arrayContaining(['SKID']))
@@ -41,5 +40,28 @@ describe('Tutorial schema (browserless)', () => {
     const callouts = buildCallouts(skidBlock, boxes)
     expect(callouts.find(c => c.boxName === 'SKID')).toBeTruthy()
   })
-})
 
+  it('uses real plywood expression names in tutorial guidance', () => {
+    const gen = makeGenerator()
+    const boxes = gen.getBoxes()
+    const steps = buildFullTutorial(gen, boxes)
+
+    const frontPlywoodStep = steps.find(s => s.id === 'plywood-front_panel')
+    expect(frontPlywoodStep).toBeTruthy()
+    expect(frontPlywoodStep?.expressions).toBeTruthy()
+    frontPlywoodStep?.expressions?.forEach(expr => {
+      expect(expr.startsWith('NAME_')).toBe(false)
+    })
+    expect(frontPlywoodStep?.expressions).toEqual(expect.arrayContaining([
+      'FRONT_PANEL_PLY_1_X',
+      'FRONT_PANEL_PLY_1_WIDTH',
+      'FRONT_PANEL_PLY_1_THICKNESS',
+    ]))
+
+    const plywoodCallouts = buildCallouts(frontPlywoodStep!, boxes)
+    const firstPiece = plywoodCallouts.find(c => c.boxName === 'FRONT_PANEL_PLY_1')
+    expect(firstPiece).toBeTruthy()
+    expect(firstPiece?.label).toContain('FRONT_PANEL_PLY_1_X')
+    expect(firstPiece?.label).toContain('FRONT_PANEL_PLY_1_THICKNESS')
+  })
+})
