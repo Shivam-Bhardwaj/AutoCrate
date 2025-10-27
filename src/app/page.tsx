@@ -13,7 +13,7 @@ import { LumberCutList } from '@/components/LumberCutList'
 import { ChangeTracker } from '@/components/ChangeTracker'
 import { VisualChecklistButton } from '@/components/VisualChecklist'
 import { PART_NUMBER_STANDARDS, FASTENER_STANDARDS, UI_CONSTANTS, GEOMETRY_STANDARDS, PLYWOOD_STANDARDS, VALIDATION_RULES } from '@/lib/crate-constants'
-import { buildBasicTutorial } from '@/lib/tutorial/schema'
+import { buildFullTutorial, getStepHighlightTargets, buildCallouts } from '@/lib/tutorial/schema'
 import TutorialOverlay from '@/components/tutorial/TutorialOverlay'
 
 const SCENARIO_PRESETS: ScenarioPreset[] = [
@@ -207,7 +207,7 @@ export default function Home() {
   const debounceTimeoutRef = useRef<{ [key: string]: NodeJS.Timeout }>({})
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const lumberCutList = useMemo(() => generator.generateCutList(), [generator])
-  const tutorialSteps = useMemo(() => buildBasicTutorial(generator, generator.getBoxes()), [generator])
+  const tutorialSteps = useMemo(() => buildFullTutorial(generator, generator.getBoxes()), [generator])
   useEffect(() => {
     if (tutorialStepIndex > tutorialSteps.length - 1) {
       setTutorialStepIndex(Math.max(0, tutorialSteps.length - 1))
@@ -1125,31 +1125,8 @@ export default function Home() {
                       pmiVisibility={pmiVisibility}
                       onTogglePmi={togglePmiLayer}
                       partNumbers={partNumbers}
-                      tutorialHighlightNames={(() => {
-                        if (!tutorialActive || tutorialSteps.length === 0) return []
-                        const step = tutorialSteps[tutorialStepIndex]
-                        const targets: string[] = []
-                        if (step?.target?.boxNames?.length) targets.push(...step.target.boxNames)
-                        if (step?.target?.types?.length) {
-                          const typeSet = new Set(step.target.types)
-                          generator.getBoxes().forEach(b => { if (typeSet.has(b.type!)) targets.push(b.name) })
-                        }
-                        return targets
-                      })()}
-                      tutorialCallouts={(() => {
-                        if (!tutorialActive || tutorialSteps.length === 0) return []
-                        const step = tutorialSteps[tutorialStepIndex]
-                        const callouts: { boxName: string; label: string }[] = []
-                        const label = step.expressions && step.expressions.length > 0 ? `Use: ${step.expressions.join(', ')}` : step.title
-                        if (step?.target?.boxNames?.length) {
-                          step.target.boxNames.forEach(n => callouts.push({ boxName: n, label }))
-                        }
-                        if (step?.target?.types?.length) {
-                          const typeSet = new Set(step.target.types)
-                          generator.getBoxes().forEach(b => { if (typeSet.has(b.type!)) callouts.push({ boxName: b.name, label }) })
-                        }
-                        return callouts.slice(0, 8)
-                      })()}
+                      tutorialHighlightNames={tutorialActive && tutorialSteps.length > 0 ? getStepHighlightTargets(tutorialSteps[tutorialStepIndex], generator.getBoxes()) : []}
+                      tutorialCallouts={tutorialActive && tutorialSteps.length > 0 ? buildCallouts(tutorialSteps[tutorialStepIndex], generator.getBoxes()).slice(0, 8) : []}
                     />
                     <TutorialOverlay
                       active={tutorialActive}
@@ -1182,31 +1159,8 @@ export default function Home() {
                           pmiVisibility={pmiVisibility}
                           onTogglePmi={togglePmiLayer}
                           partNumbers={partNumbers}
-                          tutorialHighlightNames={(() => {
-                            if (!tutorialActive || tutorialSteps.length === 0) return []
-                            const step = tutorialSteps[tutorialStepIndex]
-                            const targets: string[] = []
-                            if (step?.target?.boxNames?.length) targets.push(...step.target.boxNames)
-                            if (step?.target?.types?.length) {
-                              const typeSet = new Set(step.target.types)
-                              generator.getBoxes().forEach(b => { if (typeSet.has(b.type!)) targets.push(b.name) })
-                            }
-                            return targets
-                          })()}
-                          tutorialCallouts={(() => {
-                            if (!tutorialActive || tutorialSteps.length === 0) return []
-                            const step = tutorialSteps[tutorialStepIndex]
-                            const callouts: { boxName: string; label: string }[] = []
-                            const label = step.expressions && step.expressions.length > 0 ? `Use: ${step.expressions.join(', ')}` : step.title
-                            if (step?.target?.boxNames?.length) {
-                              step.target.boxNames.forEach(n => callouts.push({ boxName: n, label }))
-                            }
-                            if (step?.target?.types?.length) {
-                              const typeSet = new Set(step.target.types)
-                              generator.getBoxes().forEach(b => { if (typeSet.has(b.type!)) callouts.push({ boxName: b.name, label }) })
-                            }
-                            return callouts.slice(0, 8)
-                          })()}
+                          tutorialHighlightNames={tutorialActive && tutorialSteps.length > 0 ? getStepHighlightTargets(tutorialSteps[tutorialStepIndex], generator.getBoxes()) : []}
+                          tutorialCallouts={tutorialActive && tutorialSteps.length > 0 ? buildCallouts(tutorialSteps[tutorialStepIndex], generator.getBoxes()).slice(0, 8) : []}
                         />
                         <TutorialOverlay
                           active={tutorialActive}
