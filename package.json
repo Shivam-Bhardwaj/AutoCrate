@@ -27,7 +27,7 @@
     "deploy": "./scripts/deploy.sh patch",
     "deploy:minor": "./scripts/deploy.sh minor",
     "deploy:major": "./scripts/deploy.sh major",
-    "test:e2e:docker": "docker build -f Dockerfile.playwright -t autocrate-playwright . && docker run --rm -e CI=1 -v \"$(pwd)/playwright-report:/app/playwright-report\" autocrate-playwright"
+    "test:e2e:docker": "docker build -f Dockerfile.playwright -t autocrate-playwright . && docker run --rm -e CI=1 -v /home/curious/projects/AutoCrate/playwright-report:/app/playwright-report autocrate-playwright"
   },
   "dependencies": {
     "@react-three/drei": "^9.92.0",
