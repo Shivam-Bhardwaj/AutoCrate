@@ -9,8 +9,8 @@ Build order
 - SKID Block (Opposite Corners): Use SKID_X1..Z2.
 - Pattern Skids: pattern_count, pattern_spacing (X direction, center-to-center).
 - Floorboards: One Block per FLOORBOARD_n (X1..Z2). Suppress flagged boards.
-- Panels (Plywood): For each panel piece, set NAME_X/Y/Z + NAME_WIDTH/LENGTH/HEIGHT + NAME_THICKNESS.
-- Cleats: Same 7 parameters; THICKNESS = 0.750 (1x4).
+- Panels (Plywood): For each panel piece, bind `{PANEL}_PLY_{N}_X/Y/Z`, `{PANEL}_PLY_{N}_WIDTH/LENGTH/HEIGHT`, `{PANEL}_PLY_{N}_THICKNESS` (e.g., `FRONT_PANEL_PLY_1_*`).
+- Cleats: Bind `{PANEL}_CLEAT_{N}_X/Y/Z`, `{PANEL}_CLEAT_{N}_WIDTH/LENGTH/HEIGHT`, `{PANEL}_CLEAT_{N}_THICKNESS` (value = 0.750 for 1x4).
 - Hardware Guidance: Klimp + lag placement from expressions and counts; import STEP once.
 
 Tips

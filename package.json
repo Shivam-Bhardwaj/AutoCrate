@@ -5,7 +5,7 @@
   "tiNumber": "TI-124-QUICK-TEST",
   "maintainer": "shivam@designviz.com",
   "scripts": {
-    "dev": "next dev",
+    "dev": "cross-env NODE_ENV=development next dev",
     "build": "next build",
     "start": "next start",
     "test": "jest --runInBand",
@@ -27,7 +27,7 @@
     "deploy": "./scripts/deploy.sh patch",
     "deploy:minor": "./scripts/deploy.sh minor",
     "deploy:major": "./scripts/deploy.sh major",
-    "test:e2e:docker": "docker build -f Dockerfile.playwright -t autocrate-playwright . && docker run --rm -e CI=1 -v \"$(pwd)/playwright-report:/app/playwright-report\" autocrate-playwright"
+    "test:e2e:docker": "docker build -f Dockerfile.playwright -t autocrate-playwright . && docker run --rm -e CI=1 -v /home/curious/projects/AutoCrate/playwright-report:/app/playwright-report autocrate-playwright"
   },
   "dependencies": {
     "@react-three/drei": "^9.92.0",
@@ -67,7 +67,8 @@
     "tailwindcss": "^3",
     "ts-jest": "^29.4.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "cross-env": "^7.0.3"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

@@ -26,6 +26,7 @@ const customJestConfig = {
     '^.+\\.module\\.(css|sass|scss)$',
   ],
   moduleDirectories: ['node_modules', '<rootDir>/'],
+  modulePathIgnorePatterns: ['/issues/'],
   testMatch: [
     '**/__tests__/**/*.[jt]s?(x)',
     '**/?(*.)+(spec|test).[jt]s?(x)',

@@ -11,6 +11,7 @@ export type TutorialStep = {
   description: string
   target?: TutorialTarget
   expressions?: string[]
+  expressionValues?: Record<string, number>
   tips?: string[]
 }
 
@@ -75,6 +76,67 @@ export function buildBasicTutorial(generator: NXGenerator, boxes: NXBox[]): Tuto
 export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): TutorialStep[] {
   const base = buildBasicTutorial(generator, boxes)
   const steps: TutorialStep[] = [...base]
+  const exprMap = generator.getExpressions()
+  const boxesByName = new Map<string, NXBox>()
+  boxes.forEach(box => boxesByName.set(box.name, box))
+
+  const resolveExpressionValue = (expr: string): number | undefined => {
+    if (expr.includes('..')) return undefined
+    const key = expr.includes('=') ? expr.split('=')[0] : expr
+    const direct = exprMap.get(key)
+    if (typeof direct === 'number') return direct
+
+    const suffixHandlers: Array<[string, (box: NXBox) => number | undefined]> = [
+      ['_SUPPRESSED', box => (box.suppressed ? 1 : 0)],
+      ['_X1', box => box.point1.x],
+      ['_Y1', box => box.point1.y],
+      ['_Z1', box => box.point1.z],
+      ['_X2', box => box.point2.x],
+      ['_Y2', box => box.point2.y],
+      ['_Z2', box => box.point2.z],
+      ['_X', box => box.point1.x],
+      ['_Y', box => box.point1.y],
+      ['_Z', box => box.point1.z],
+      ['_WIDTH', box => Math.abs(box.point2.x - box.point1.x)],
+      ['_LENGTH', box => Math.abs(box.point2.y - box.point1.y)],
+      ['_HEIGHT', box => Math.abs(box.point2.z - box.point1.z)],
+      ['_THICKNESS', box => {
+        const zSpan = Math.abs(box.point2.z - box.point1.z)
+        if (zSpan > 0) return zSpan
+        const xSpan = Math.abs(box.point2.x - box.point1.x)
+        if (xSpan > 0 && xSpan <= 1.5) return xSpan
+        const ySpan = Math.abs(box.point2.y - box.point1.y)
+        if (ySpan > 0 && ySpan <= 1.5) return ySpan
+        const globalThickness = exprMap.get('plywood_thickness')
+        return typeof globalThickness === 'number' ? globalThickness : undefined
+      }],
+    ]
+
+    for (const [suffix, getter] of suffixHandlers) {
+      if (key.endsWith(suffix)) {
+        const baseName = key.slice(0, -suffix.length)
+        const box = boxesByName.get(baseName)
+        if (!box) return undefined
+        return getter(box)
+      }
+    }
+
+    return undefined
+  }
+
+  const attachExpressionValues = (step: TutorialStep) => {
+    if (!step.expressions || step.expressions.length === 0) return
+    const values: Record<string, number> = {}
+    for (const expr of step.expressions) {
+      const value = resolveExpressionValue(expr)
+      if (typeof value === 'number') {
+        values[expr] = value
+      }
+    }
+    if (Object.keys(values).length > 0) {
+      step.expressionValues = values
+    }
+  }
 
   const hasFloors = boxes.some(b => b.type === 'floor')
   if (hasFloors) {
@@ -104,7 +166,6 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
     TOP_PANEL: { title: 'Top Panel (Plywood Pieces)' },
   }
 
-  // Group by panel and add one step per panel for plywood
   const plywoodByPanel = new Map<string, NXBox[]>()
   boxes.filter(b => b.type === 'plywood' && !b.suppressed).forEach(b => {
     const key = b.panelName || 'UNKNOWN_PANEL'
@@ -114,20 +175,26 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
   })
   for (const [panel, arr] of plywoodByPanel.entries()) {
     const meta = panelMap[panel] || { title: `${panel} (Plywood Pieces)` }
-    steps.push({
+    const plywoodSuffixes = ['X', 'Y', 'Z', 'WIDTH', 'LENGTH', 'HEIGHT', 'THICKNESS']
+    const plywoodExpressions = Array.from(new Set(
+      arr.flatMap(box => plywoodSuffixes.map(suffix => `${box.name}_${suffix}`))
+    ))
+    const thicknessLabel = arr[0] ? `${arr[0].name}_THICKNESS` : 'PLY_THICKNESS'
+    const step: TutorialStep = {
       id: `plywood-${panel.toLowerCase()}`,
       title: meta.title,
       description: 'For each piece, create a Block by base corner and extents bound to expressions (7 parameters). Suppress any piece marked as suppressed.',
       target: { boxNames: arr.map(b => b.name) },
-      expressions: ['NAME_X', 'NAME_Y', 'NAME_Z', 'NAME_WIDTH', 'NAME_LENGTH', 'NAME_HEIGHT', 'NAME_THICKNESS'],
+      expressions: plywoodExpressions,
       tips: [
-        'Use NAME_THICKNESS for plywood thickness (typically 0.250).',
+        `Use ${thicknessLabel} for plywood thickness (typically 0.250).`,
         'Orientation is consistent with coordinate system: X width, Y length, Z thickness.',
       ],
-    })
+    }
+    attachExpressionValues(step)
+    steps.push(step)
   }
 
-  // Cleats per panel (7 parameters, fixed thickness 0.750)
   const cleatsByPanel = new Map<string, NXBox[]>()
   boxes.filter(b => b.type === 'cleat' && !b.suppressed).forEach(b => {
     const key = b.panelName || 'UNKNOWN_PANEL'
@@ -136,20 +203,26 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
     cleatsByPanel.set(key, arr)
   })
   for (const [panel, arr] of cleatsByPanel.entries()) {
-    steps.push({
+    const cleatSuffixes = ['X', 'Y', 'Z', 'WIDTH', 'LENGTH', 'HEIGHT', 'THICKNESS']
+    const cleatExpressions = Array.from(new Set(
+      arr.flatMap(box => cleatSuffixes.map(suffix => `${box.name}_${suffix}`))
+    ))
+    const thicknessLabel = arr[0] ? `${arr[0].name}_THICKNESS` : 'CLEAT_THICKNESS'
+    const step: TutorialStep = {
       id: `cleats-${panel.toLowerCase()}`,
       title: `${panel} Cleats (7 Parameters)`,
       description: 'Create cleat solids using the same 7-parameter set as plywood; thickness is 0.750 for 1x4.',
       target: { boxNames: arr.map(b => b.name) },
-      expressions: ['NAME_X', 'NAME_Y', 'NAME_Z', 'NAME_WIDTH', 'NAME_LENGTH', 'NAME_HEIGHT', 'NAME_THICKNESS'],
+      expressions: cleatExpressions,
       tips: [
-        'Use NAME_THICKNESS = 0.750 for 1x4 cleats.',
+        `Use ${thicknessLabel} = 0.750 for 1x4 cleats.`,
         'Respect edge clearances and spacing rules defined by the expressions.',
       ],
-    })
+    }
+    attachExpressionValues(step)
+    steps.push(step)
   }
 
-  // Hardware guidance (no solids created directly; STEP import guidance)
   const expr = generator.getExpressions()
   const lagCount = expr.get('lag_screw_count') || 0
   const klimpTotal = expr.get('klimp_instances_active') || expr.get('klimp_total_count') || 0
@@ -168,6 +241,8 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
     ],
   })
 
+  steps.forEach(attachExpressionValues)
+
   return steps
 }
 
@@ -183,13 +258,44 @@ export function getStepHighlightTargets(step: TutorialStep, boxes: NXBox[]): str
 }
 
 export function buildCallouts(step: TutorialStep, boxes: NXBox[]): { boxName: string; label: string }[] {
-  const label = step.expressions && step.expressions.length > 0 ? `Use: ${step.expressions.join(', ')}` : step.title
+  const hasExpressions = step.expressions && step.expressions.length > 0
+  const expressionMap = new Map<string, string[]>()
+  if (hasExpressions) {
+    for (const expr of step.expressions!) {
+      const key = (() => {
+        if (expr.includes('=')) return expr.split('=')[0]
+        const idx = expr.lastIndexOf('_')
+        if (idx <= 0) return null
+        return expr.slice(0, idx)
+      })()
+      if (!key) continue
+      const arr = expressionMap.get(key) || []
+      arr.push(expr)
+      expressionMap.set(key, arr)
+    }
+  }
+
+  const makeLabel = (boxName: string) => {
+    const specific = expressionMap.get(boxName)
+    if (specific && specific.length > 0) {
+      return `Use: ${specific.join(', ')}`
+    }
+    if (hasExpressions) {
+      return `Use: ${step.expressions!.join(', ')}`
+    }
+    return step.title
+  }
+
   const results: { boxName: string; label: string }[] = []
   const names = new Set(step.target?.boxNames || [])
-  names.forEach(n => results.push({ boxName: n, label }))
+  names.forEach(n => results.push({ boxName: n, label: makeLabel(n) }))
   if (step.target?.types?.length) {
     const typeSet = new Set(step.target.types)
-    boxes.forEach(b => { if (typeSet.has(b.type!)) results.push({ boxName: b.name, label }) })
+    boxes.forEach(b => {
+      if (typeSet.has(b.type!)) {
+        results.push({ boxName: b.name, label: makeLabel(b.name) })
+      }
+    })
   }
   return results
 }
