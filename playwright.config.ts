@@ -1,9 +1,5 @@
 import { defineConfig, devices } from '@playwright/test'
 
-if (!process.env.NODE_ENV || process.env.NODE_ENV === 'test') {
-  process.env.NODE_ENV = 'development'
-}
-
 /**
  * Read environment variables from file.
  */
