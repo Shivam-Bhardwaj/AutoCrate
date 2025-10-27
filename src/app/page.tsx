@@ -14,6 +14,7 @@ import { ChangeTracker } from '@/components/ChangeTracker'
 import { VisualChecklistButton } from '@/components/VisualChecklist'
 import { PART_NUMBER_STANDARDS, FASTENER_STANDARDS, UI_CONSTANTS, GEOMETRY_STANDARDS, PLYWOOD_STANDARDS, VALIDATION_RULES } from '@/lib/crate-constants'
 import { buildFullTutorial, getStepHighlightTargets, buildCallouts } from '@/lib/tutorial/schema'
+import { useSearchParams } from 'next/navigation'
 import TutorialOverlay from '@/components/tutorial/TutorialOverlay'
 
 const SCENARIO_PRESETS: ScenarioPreset[] = [
@@ -91,6 +92,7 @@ type ProductField = keyof typeof PRODUCT_SLIDER_CONFIG
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 
 export default function Home() {
+  const searchParams = useSearchParams()
   // Store input values as strings for better input handling
   const [inputValues, setInputValues] = useState({
     length: String(UI_CONSTANTS.DEFAULT_PRODUCT.length),
@@ -213,6 +215,16 @@ export default function Home() {
       setTutorialStepIndex(Math.max(0, tutorialSteps.length - 1))
     }
   }, [tutorialSteps, tutorialStepIndex])
+
+  // Auto-enable tutorial via ?tutorial=1
+  useEffect(() => {
+    const t = searchParams?.get('tutorial')
+    if (t === '1') {
+      setTutorialActive(true)
+      setTutorialStepIndex(0)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Close mobile menu when clicking outside
   useEffect(() => {
