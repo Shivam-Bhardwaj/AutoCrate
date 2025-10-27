@@ -41,7 +41,7 @@ describe('Tutorial schema (browserless)', () => {
     expect(callouts.find(c => c.boxName === 'SKID')).toBeTruthy()
   })
 
-  it('uses real plywood expression names in tutorial guidance', () => {
+  it('surfaces real plywood expression names with values for tutorial guidance', () => {
     const gen = makeGenerator()
     const boxes = gen.getBoxes()
     const steps = buildFullTutorial(gen, boxes)
@@ -59,9 +59,28 @@ describe('Tutorial schema (browserless)', () => {
     ]))
 
     const plywoodCallouts = buildCallouts(frontPlywoodStep!, boxes)
-    const firstPiece = plywoodCallouts.find(c => c.boxName === 'FRONT_PANEL_PLY_1')
-    expect(firstPiece).toBeTruthy()
-    expect(firstPiece?.label).toContain('FRONT_PANEL_PLY_1_X')
-    expect(firstPiece?.label).toContain('FRONT_PANEL_PLY_1_THICKNESS')
+    const firstPieceCallout = plywoodCallouts.find(c => c.boxName === 'FRONT_PANEL_PLY_1')
+    expect(firstPieceCallout).toBeTruthy()
+    expect(firstPieceCallout?.label).toContain('FRONT_PANEL_PLY_1_X')
+    expect(firstPieceCallout?.label).toContain('FRONT_PANEL_PLY_1_THICKNESS')
+
+    expect(frontPlywoodStep?.expressionValues).toBeTruthy()
+    expect(frontPlywoodStep?.expressionValues).toHaveProperty('FRONT_PANEL_PLY_1_X')
+    expect(frontPlywoodStep?.expressionValues).toHaveProperty('FRONT_PANEL_PLY_1_THICKNESS')
+    expect(frontPlywoodStep?.expressionValues?.FRONT_PANEL_PLY_1_WIDTH).toBeGreaterThan(0)
+    expect(frontPlywoodStep?.expressionValues?.FRONT_PANEL_PLY_1_LENGTH).toBeGreaterThan(0)
+    expect(frontPlywoodStep?.expressionValues?.FRONT_PANEL_PLY_1_HEIGHT).toBeGreaterThan(0)
+    expect(frontPlywoodStep?.expressionValues?.FRONT_PANEL_PLY_1_THICKNESS).toBeGreaterThan(0)
+
+    const cleatStep = steps.find(s => s.id === 'cleats-front_panel')
+    expect(cleatStep).toBeTruthy()
+    expect(cleatStep?.expressions).toEqual(expect.arrayContaining([
+      expect.stringMatching(/FRONT_PANEL_CLEAT_/)
+    ]))
+    expect(cleatStep?.expressionValues).toBeTruthy()
+    const cleatThicknessKey = Object.keys(cleatStep?.expressionValues || {}).find(key => key.endsWith('_THICKNESS'))
+    expect(cleatThicknessKey).toBeTruthy()
+    expect(cleatStep?.expressionValues?.[cleatThicknessKey!]).toBeGreaterThan(0)
   })
+
 })
