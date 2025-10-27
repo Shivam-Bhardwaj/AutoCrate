@@ -32,10 +32,40 @@ const customJestConfig = {
   ],
   coverageThreshold: {
     global: {
-      branches: 0,
-      functions: 0,
-      lines: 0,
-      statements: 0,
+      statements: 70,
+      branches: 55,
+      functions: 60,
+      lines: 70,
+    },
+    'src/lib/nx-generator.ts': {
+      statements: 90,
+      branches: 70,
+      functions: 95,
+      lines: 90,
+    },
+    'src/lib/tutorial/schema.ts': {
+      statements: 85,
+      branches: 55,
+      functions: 85,
+      lines: 85,
+    },
+    'src/lib/crate-constants.ts': {
+      statements: 70,
+      branches: 60,
+      functions: 25,
+      lines: 70,
+    },
+    'src/components/tutorial/**/*.tsx': {
+      statements: 50,
+      branches: 30,
+      functions: 40,
+      lines: 50,
+    },
+    'src/components/VisualChecklist.tsx': {
+      statements: 35,
+      branches: 20,
+      functions: 30,
+      lines: 35,
     },
   },
 }
