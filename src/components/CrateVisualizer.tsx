@@ -1356,7 +1356,6 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 space-y-2">
           <div className="text-[11px] text-gray-600 dark:text-gray-400 space-y-1">
             <div>Base: {derivedPartNumbers.base}</div>
-            <div>Crate: {derivedPartNumbers.crate}</div>
             <div>Cap: {derivedPartNumbers.cap}</div>
           </div>
         </div>
