@@ -1816,6 +1816,12 @@ export class NXGenerator {
 
         if (box.type === 'plywood') {
           push(formatBoolean(`${box.name}_SUPPRESSED`, !!box.suppressed))
+          push(formatExpression(`${box.name}_X1`, box.point1.x))
+          push(formatExpression(`${box.name}_Y1`, box.point1.y))
+          push(formatExpression(`${box.name}_Z1`, box.point1.z))
+          push(formatExpression(`${box.name}_X2`, box.point2.x))
+          push(formatExpression(`${box.name}_Y2`, box.point2.y))
+          push(formatExpression(`${box.name}_Z2`, box.point2.z))
           push(formatExpression(`${box.name}_X`, box.point1.x))
           push(formatExpression(`${box.name}_Y`, box.point1.y))
           push(formatExpression(`${box.name}_Z`, box.point1.z))
@@ -1826,6 +1832,12 @@ export class NXGenerator {
           push(formatExpression(`${box.name}_THICKNESS`, plywoodThickness))
         } else if (box.type === 'cleat') {
           push(formatBoolean(`${box.name}_SUPPRESSED`, !!box.suppressed))
+          push(formatExpression(`${box.name}_X1`, box.point1.x))
+          push(formatExpression(`${box.name}_Y1`, box.point1.y))
+          push(formatExpression(`${box.name}_Z1`, box.point1.z))
+          push(formatExpression(`${box.name}_X2`, box.point2.x))
+          push(formatExpression(`${box.name}_Y2`, box.point2.y))
+          push(formatExpression(`${box.name}_Z2`, box.point2.z))
           push(formatExpression(`${box.name}_X`, box.point1.x))
           push(formatExpression(`${box.name}_Y`, box.point1.y))
           push(formatExpression(`${box.name}_Z`, box.point1.z))
