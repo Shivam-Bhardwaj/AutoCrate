@@ -1644,220 +1644,266 @@ export class NXGenerator {
   }
 
   exportNXExpressions(): string {
-    let output = '# NX Expressions for AutoCrate\n'
-    output += '# Generated: ' + new Date().toISOString() + '\n'
-    output += '# \n'
-    output += '# COORDINATE SYSTEM & DATUM PLANES (fixes #86, #97, #110):\n'
-    output += '# - Origin: Center bottom of crate (X=0, Y=0, Z=0)\n'
-    output += '# - X-axis: Width (left negative, right positive)\n'
-    output += '# - Y-axis: Length (front negative, back positive)\n'
-    output += '# - Z-axis: Height (upward positive)\n'
-    output += '# - Units: INCHES (all measurements)\n'
-    output += '# \n'
-    output += '# DATUM REFERENCES:\n'
-    output += '# - Primary Datum (XY-plane): Bottom surface at Z=0\n'
-    output += '# - Secondary Datum (YZ-plane): Center plane at X=0\n'
-    output += '# - Tertiary Datum (XZ-plane): Front face at Y=0\n'
-    output += '# - All vertical measurements from bottom (Z=0)\n'
-    output += '# - All horizontal measurements from center (X=0)\n'
-    output += '# \n'
-    output += '# PLYWOOD SPLICING INFORMATION:\n'
-    output += `# - Maximum sheet size: ${PLYWOOD_STANDARDS.SHEET_WIDTH}" x ${PLYWOOD_STANDARDS.SHEET_LENGTH}"\n`
-    output += '# - Vertical splices positioned on RIGHT side\n'
-    output += '# - Horizontal splices positioned on BOTTOM\n'
-    output += `# - Total plywood sheets required: ${this.expressions.get('total_plywood_sheets') || 0}\n`
-    output += `# - Material efficiency: ${this.expressions.get('plywood_efficiency') || 0}%\n`
-    output += '# \n'
-    output += '# SKID PATTERN INSTRUCTIONS:\n'
-    output += '# - Create single SKID component at leftmost position\n'
-    output += '# - Pattern along X-axis (left to right) using:\n'
-    output += '#   * Count: pattern_count\n'
-    output += '#   * Spacing: pattern_spacing (center-to-center)\n'
-    output += '# - Skids run along Y-axis (front to back)\n'
-    output += '# \n'
-    output += '# KLIMP FASTENER INSTRUCTIONS:\n'
-    output += '# - L-shaped fasteners connecting front panel to adjacent panels\n'
-    output += '# - Positioned on top and side edges of front panel\n'
-    output += '# - Maximum 16" spacing, minimum 2" apart from each other\n'
-    output += '# - Minimum 1" clearance from cleats\n'
-    output += `# - Total klimps: ${this.expressions.get('klimp_count') || 0}\n`
-    output += `#   * Top edge: ${this.expressions.get('klimp_top_count') || 0}\n`
-    output += `#   * Left edge: ${this.expressions.get('klimp_left_count') || 0}\n`
-    output += `#   * Right edge: ${this.expressions.get('klimp_right_count') || 0}\n`
-    output += '# \n'
-    output += '# KLIMP INSTANCE MANAGEMENT:\n'
-    output += `# - Total pre-allocated instances: ${this.expressions.get('klimp_instances_total') || 20}\n`
-    output += `# - Active instances: ${this.expressions.get('klimp_instances_active') || 0}\n`
-    output += '# - STEP file: CAD FILES/Crate Spring Clamp.STEP\n'
-    output += '# - Import the STEP file once, then pattern/position instances\n'
-    output += '# \n'
-    output += '# LAG SCREW INSTALLATION:\n'
-    output += '# - 3/8" x 2.50" lag hardware under each intermediate side cleat\n'
-    output += `# - Total lag screws: ${this.expressions.get('lag_screw_count') || 0}\n`
-    output += '# - STEP file: CAD FILES/LAG SCREW_0.38 X 2.50.stp\n'
-    output += '# - Import once and reuse at generated positions\n'
-    output += '# \n'
+    const lines: string[] = []
+    const push = (line: string = '') => {
+      lines.push(line)
+    }
 
-    // Add marking instructions if configured
-    output += this.getMarkingInstructions()
+    const formatValue = (value: number): string => {
+      const roundedThree = Number(value.toFixed(3))
+      if (Math.abs(roundedThree - value) < 1e-6) {
+        return roundedThree.toFixed(3)
+      }
+      if (Math.abs(value) > 0 && Math.abs(value) < 0.001) {
+        return value.toFixed(6)
+      }
+      return value.toFixed(4)
+    }
 
-    output += '# FLOORBOARD INSTRUCTIONS:\n'
-    output += '# - Optimized floorboard layout using available lumber sizes\n'
-    output += '# - Floorboards run along X-axis (perpendicular to skids)\n'
-    output += '# - Floorboards sit on top of skids (Z position = skid_height)\n'
-    output += '# - Symmetric placement: larger boards outside, smaller toward center\n'
-    output += '# - 1" clearance from front and back edges for panel/cleat space\n'
-    output += '# - Custom boards may be created to fill remaining gaps\n'
-    output += `# - Active floorboards: ${this.expressions.get('floorboard_count')} out of 40 total\n`
+    const inferUnit = (key: string): string | null => {
+      const lower = key.toLowerCase()
+      if (lower.includes('weight')) return '[lbm]'
+      if (lower.includes('angle') || lower.includes('_rot')) return '[Deg]'
+      if (lower.includes('feet') || lower.includes('foot')) return '[Ft]'
+      if (lower.endsWith('_x') || lower.endsWith('_y') || lower.endsWith('_z')) return '[Inch]'
+      const inchIndicators = [
+        'length',
+        'width',
+        'height',
+        'thickness',
+        'spacing',
+        'clearance',
+        'offset',
+        'radius',
+        'diameter',
+        'depth',
+        'gap',
+        'pitch',
+        'span',
+        'origin',
+        'center',
+        'position',
+        'pos',
+        'distance',
+        'overhang',
+        'projection'
+      ]
+      if (inchIndicators.some(indicator => lower.includes(indicator))) {
+        return '[Inch]'
+      }
+      return null
+    }
 
-    const layout = this.getFloorboardLayout()
-    const lumberSizes = [...new Set(layout.map(b => b.nominal))].join(', ')
-    output += `# - Lumber sizes used: ${lumberSizes}\n`
+    const formatExpression = (key: string, value: number): string => {
+      const unit = inferUnit(key)
+      const numericString = unit === '[Deg]' ? value.toFixed(1) : formatValue(value)
+      return `${unit ? `${unit}` : ''}${key} = ${numericString}`
+    }
 
-    const customBoards = layout.filter(b => b.isCustom)
+    const formatBoolean = (key: string, value: boolean): string => `${key} = ${value ? 1 : 0}`
+    const formatComment = (line: string) => `// ${line}`
+
+    push('// NX Expressions - AutoCrate')
+    push(`// Generated: ${new Date().toISOString()}`)
+    push('')
+    push('// --- COORDINATE SYSTEM & DATUM PLANES ---')
+    push('// Origin: Center bottom of crate (X=0, Y=0, Z=0)')
+    push('// X-axis: Width (negative = left, positive = right)')
+    push('// Y-axis: Length (negative = front, positive = back)')
+    push('// Z-axis: Height (upward positive)')
+    push('// Units: Inches unless noted')
+    push('')
+    push('// --- DATUM REFERENCES ---')
+    push('// Primary Datum (A): XY-plane at Z=0')
+    push('// Secondary Datum (B): YZ-plane at X=0')
+    push('// Tertiary Datum (C): XZ-plane at Y=0')
+    push('')
+    push('// --- PLYWOOD SPLICING GUIDANCE ---')
+    push(`// Maximum sheet size: ${PLYWOOD_STANDARDS.SHEET_WIDTH}" x ${PLYWOOD_STANDARDS.SHEET_LENGTH}"`)
+    push('// Vertical splices on RIGHT side, horizontal splices on BOTTOM')
+    const totalSheets = this.expressions.get('total_plywood_sheets') ?? 0
+    const efficiency = this.expressions.get('plywood_efficiency') ?? 0
+    push(`// Total plywood sheets required: ${formatValue(totalSheets)}`)
+    push(`// Material efficiency: ${formatValue(efficiency)}%`)
+    push('')
+    push('// --- SKID PATTERN GUIDANCE ---')
+    push('// Create a single SKID block at the master position, then pattern along X-axis.')
+    push('// Pattern count: pattern_count — spacing: pattern_spacing (center-to-center).')
+    push('// Skids run along Y-axis (front to back).')
+    push('')
+    push('// --- KLIMP FASTENER GUIDANCE ---')
+    const klimpCount = this.expressions.get('klimp_count') ?? 0
+    const klimpTop = this.expressions.get('klimp_top_count') ?? 0
+    const klimpLeft = this.expressions.get('klimp_left_count') ?? 0
+    const klimpRight = this.expressions.get('klimp_right_count') ?? 0
+    const klimpInstances = this.expressions.get('klimp_instances_active') ?? 0
+    const klimpTotal = this.expressions.get('klimp_instances_total') ?? 0
+    push('// L-shaped Klimp fasteners connect front panel edges. Maintain <=16" spacing and >=1" from cleats.')
+    push(`// Active klimps: ${formatValue(klimpCount)} (Top: ${formatValue(klimpTop)}, Left: ${formatValue(klimpLeft)}, Right: ${formatValue(klimpRight)}).`)
+    push(`// Instances available: ${formatValue(klimpInstances)} active of ${formatValue(klimpTotal)} allocated.`)
+    push('// STEP file: "CAD FILES/Crate Spring Clamp.STEP" — import once and reuse.')
+    push('')
+    push('// --- LAG SCREW GUIDANCE ---')
+    const lagCount = this.expressions.get('lag_screw_count') ?? 0
+    push('// Lag screws: 3/8" x 3.00" under intermediate side cleats.')
+    push(`// Total lag screws: ${formatValue(lagCount)} — STEP file: "CAD FILES/LAG SCREW_0.38 X 3.00.stp".`)
+    push('')
+    const floorboardCount = this.expressions.get('floorboard_count') ?? 0
+    push('// --- FLOORBOARD GUIDANCE ---')
+    push('// Floorboards run along X-axis, seated on skids (Z = skid_height). Maintain 1" clearance front/back.')
+    push(`// Active floorboards: ${formatValue(floorboardCount)} of 40 maximum.`)
+    const floorLayout = this.getFloorboardLayout()
+    const lumberSizes = [...new Set(floorLayout.map(board => board.nominal))].join(', ')
+    if (lumberSizes) {
+      push(`// Lumber sizes used: ${lumberSizes}.`)
+    }
+    const customBoards = floorLayout.filter(board => board.isCustom)
     if (customBoards.length > 0) {
-      output += `# - Custom boards: ${customBoards.length} (${customBoards.map(b => b.width.toFixed(2) + '"').join(', ')})\n`
-    }
-    output += '\n'
-
-    // Export dimensions
-    output += '# Product and Crate Dimensions\n'
-    for (const [key, value] of this.expressions) {
-      output += `${key}=${value.toFixed(3)}\n`
+      const widths = customBoards.map(b => formatValue(b.width)).join(', ')
+      push(`// Custom board widths: ${widths}.`)
     }
 
-    // Export panel splice details
-    output += '\n# PANEL SPLICE LAYOUTS\n'
-    for (const layout of this.panelSpliceLayouts) {
-      output += `\n# ${layout.panelName}\n`
-      output += `# Panel size: ${layout.panelWidth.toFixed(1)}" x ${layout.panelHeight.toFixed(1)}"\n`
-      output += `# Sheets required: ${layout.sheetCount}\n`
-      output += `# Splices: ${layout.splices.length}\n`
+    const markingLines = this.getMarkingInstructions()
+    if (markingLines.length > 0) {
+      push('')
+      markingLines.forEach(push)
+    }
 
-      // Export splice positions
-      if (layout.splices.length > 0) {
-        for (let i = 0; i < layout.splices.length; i++) {
-          const splice = layout.splices[i]
-          output += `${layout.panelName}_SPLICE_${i}_X=${splice.x.toFixed(3)}\n`
-          output += `${layout.panelName}_SPLICE_${i}_Y=${splice.y.toFixed(3)}\n`
-          output += `${layout.panelName}_SPLICE_${i}_TYPE="${splice.orientation}"\n`
+    push('')
+    push('// --- AUTOGENERATED EXPRESSIONS ---')
+    const expressionEntries = Array.from(this.expressions.entries()).sort(([a], [b]) => a.localeCompare(b))
+    for (const [key, value] of expressionEntries) {
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        push(formatExpression(key, value))
+      }
+    }
+
+    if (this.panelSpliceLayouts.length > 0) {
+      push('')
+      push('// --- PANEL SPLICE LAYOUTS ---')
+      for (const layout of this.panelSpliceLayouts) {
+        push('')
+        push(`// ${layout.panelName}`)
+        push(`// Panel size: ${formatValue(layout.panelWidth)}" x ${formatValue(layout.panelHeight)}"`)
+        push(`// Sheets required: ${layout.sheetCount}, splices: ${layout.splices.length}`)
+        layout.splices.forEach((splice, index) => {
+          push(`[Inch]${layout.panelName}_SPLICE_${index}_X = ${formatValue(splice.x)}`)
+          push(`[Inch]${layout.panelName}_SPLICE_${index}_Y = ${formatValue(splice.y)}`)
+          push(`${layout.panelName}_SPLICE_${index}_TYPE = "${splice.orientation}"`)
+        })
+        layout.sheets.forEach(section => {
+          push(`[Inch]${section.id}_X = ${formatValue(section.x)}`)
+          push(`[Inch]${section.id}_Y = ${formatValue(section.y)}`)
+          push(`[Inch]${section.id}_WIDTH = ${formatValue(section.width)}`)
+          push(`[Inch]${section.id}_HEIGHT = ${formatValue(section.height)}`)
+        })
+      }
+    }
+
+    if (this.boxes.length > 0) {
+      push('')
+      push('// --- COMPONENT POSITIONS (TWO-POINT METHOD) ---')
+      for (const box of this.boxes) {
+        push('')
+        const descriptors: string[] = [box.name]
+        if (box.panelName) {
+          descriptors.push(`Panel: ${box.panelName}`)
         }
-      }
-
-      // Export sheet sections
-      for (const section of layout.sheets) {
-        output += `${section.id}_X=${section.x.toFixed(3)}\n`
-        output += `${section.id}_Y=${section.y.toFixed(3)}\n`
-        output += `${section.id}_WIDTH=${section.width.toFixed(3)}\n`
-        output += `${section.id}_HEIGHT=${section.height.toFixed(3)}\n`
-      }
-    }
-
-    // Export component positions
-    output += '\n# Component Positions (Two Diagonal Points)\n'
-    for (const box of this.boxes) {
-      output += `\n# ${box.name}\n`
-      if (box.name === 'SKID') {
-        output += `# NOTE: Pattern this component ${this.expressions.get('pattern_count')} times along X-axis\n`
-        output += `# with center-to-center spacing of ${this.expressions.get('pattern_spacing')?.toFixed(3)}" \n`
-      }
-      if (box.name.startsWith('FLOORBOARD_')) {
-        const suppressedText = box.suppressed ? ' (SUPPRESSED)' : ' (ACTIVE)'
-        const metadataText = box.metadata ? ` - ${box.metadata}` : ''
-        output += `# ${box.name}${suppressedText}${metadataText}\n`
-      }
-      if (box.type === 'plywood') {
-        const suppressedText = box.suppressed ? ' (SUPPRESSED)' : ' (ACTIVE)'
-        output += `# Panel: ${box.panelName}, Piece ${(box.plywoodPieceIndex || 0) + 1}/6${suppressedText}\n`
+        push(formatComment(descriptors.join(' — ')))
         if (box.metadata) {
-          output += `# ${box.metadata}\n`
+          push(formatComment(box.metadata))
         }
-        // Export 7 parameters for plywood pieces
-        output += `# 7 PLYWOOD PARAMETERS:\n`
-        output += `${box.name}_X=${box.point1.x.toFixed(3)}\n`
-        output += `${box.name}_Y=${box.point1.y.toFixed(3)}\n`
-        output += `${box.name}_Z=${box.point1.z.toFixed(3)}\n`
-        output += `${box.name}_WIDTH=${Math.abs(box.point2.x - box.point1.x).toFixed(3)}\n`
-        output += `${box.name}_LENGTH=${Math.abs(box.point2.y - box.point1.y).toFixed(3)}\n`
-        output += `${box.name}_HEIGHT=${Math.abs(box.point2.z - box.point1.z).toFixed(3)}\n`
-        output += `${box.name}_THICKNESS=${this.expressions.get('plywood_thickness')?.toFixed(3) || '0.250'}\n`
-        if (box.suppressed) {
-          output += `${box.name}_SUPPRESSED=TRUE\n`
-        }
-      } else if (box.type === 'cleat') {
-        // Export 7 parameters for cleat pieces
-        const suppressedText = box.suppressed ? ' (SUPPRESSED)' : ' (ACTIVE)'
-        output += `# Cleat component${suppressedText}\n`
-        if (box.metadata) {
-          output += `# ${box.metadata}\n`
-        }
-        output += `# 7 CLEAT PARAMETERS:\n`
-        output += `${box.name}_X=${box.point1.x.toFixed(3)}\n`
-        output += `${box.name}_Y=${box.point1.y.toFixed(3)}\n`
-        output += `${box.name}_Z=${box.point1.z.toFixed(3)}\n`
-        output += `${box.name}_WIDTH=${Math.abs(box.point2.x - box.point1.x).toFixed(3)}\n`
-        output += `${box.name}_LENGTH=${Math.abs(box.point2.y - box.point1.y).toFixed(3)}\n`
-        output += `${box.name}_HEIGHT=${Math.abs(box.point2.z - box.point1.z).toFixed(3)}\n`
-        output += `${box.name}_THICKNESS=0.750\n`  // 1x4 lumber thickness
-        if (box.suppressed) {
-          output += `${box.name}_SUPPRESSED=TRUE\n`
-        }
-      } else if (box.type === 'klimp') {
-        // Export klimp instance parameters
-        output += `# Klimp spring clamp instance\n`
-        if (box.metadata) {
-          output += `# ${box.metadata}\n`
-        }
-        // Find the corresponding instance
-        const instanceIndex = parseInt(box.name.split('_').pop() || '0') - 1
-        const instance = this.klimpInstances[instanceIndex]
-        if (instance) {
-          output += `# Instance configuration:\n`
-          output += `${box.name}_ACTIVE=${instance.active ? 'TRUE' : 'FALSE'}\n`
-          output += `${box.name}_EDGE="${instance.edge}"\n`
-          output += `${box.name}_POS_X=${instance.position.x.toFixed(3)}\n`
-          output += `${box.name}_POS_Y=${instance.position.y.toFixed(3)}\n`
-          output += `${box.name}_POS_Z=${instance.position.z.toFixed(3)}\n`
-          output += `${box.name}_ROT_X=${instance.rotation.x.toFixed(1)}\n`
-          output += `${box.name}_ROT_Y=${instance.rotation.y.toFixed(1)}\n`
-          output += `${box.name}_ROT_Z=${instance.rotation.z.toFixed(1)}\n`
-        }
-      } else {
-        if (box.suppressed) {
-          output += `# ${box.name}_SUPPRESSED=TRUE\n`
-        }
-        output += `${box.name}_X1=${box.point1.x.toFixed(3)}\n`
-        output += `${box.name}_Y1=${box.point1.y.toFixed(3)}\n`
-        output += `${box.name}_Z1=${box.point1.z.toFixed(3)}\n`
-        output += `${box.name}_X2=${box.point2.x.toFixed(3)}\n`
-        output += `${box.name}_Y2=${box.point2.y.toFixed(3)}\n`
-        output += `${box.name}_Z2=${box.point2.z.toFixed(3)}\n`
-      }
-    }
 
-    // Export all klimp instance placeholders
-    output += '\n# KLIMP INSTANCE PLACEHOLDERS\n'
-    output += '# Import "CAD FILES/Crate Spring Clamp.STEP" once, then position these instances\n'
-    for (let i = 0; i < KlimpSTEPIntegration.getMaxKlimpCount(); i++) {
-      const instance = this.klimpInstances[i]
-      if (instance) {
-        output += `\n# KLIMP_${i + 1}:\n`
-        output += `KLIMP_${i + 1}_ACTIVE=${instance.active ? 'TRUE' : 'FALSE'}\n`
-        if (instance.active) {
-          output += `KLIMP_${i + 1}_EDGE="${instance.edge}"\n`
-          output += `KLIMP_${i + 1}_POS_X=${instance.position.x.toFixed(3)}\n`
-          output += `KLIMP_${i + 1}_POS_Y=${instance.position.y.toFixed(3)}\n`
-          output += `KLIMP_${i + 1}_POS_Z=${instance.position.z.toFixed(3)}\n`
-          output += `KLIMP_${i + 1}_ROT_X=${instance.rotation.x.toFixed(1)}\n`
-          output += `KLIMP_${i + 1}_ROT_Y=${instance.rotation.y.toFixed(1)}\n`
-          output += `KLIMP_${i + 1}_ROT_Z=${instance.rotation.z.toFixed(1)}\n`
+        if (box.type === 'plywood') {
+          push(formatBoolean(`${box.name}_SUPPRESSED`, !!box.suppressed))
+          push(formatExpression(`${box.name}_X1`, box.point1.x))
+          push(formatExpression(`${box.name}_Y1`, box.point1.y))
+          push(formatExpression(`${box.name}_Z1`, box.point1.z))
+          push(formatExpression(`${box.name}_X2`, box.point2.x))
+          push(formatExpression(`${box.name}_Y2`, box.point2.y))
+          push(formatExpression(`${box.name}_Z2`, box.point2.z))
+          push(formatExpression(`${box.name}_X`, box.point1.x))
+          push(formatExpression(`${box.name}_Y`, box.point1.y))
+          push(formatExpression(`${box.name}_Z`, box.point1.z))
+          push(formatExpression(`${box.name}_WIDTH`, Math.abs(box.point2.x - box.point1.x)))
+          push(formatExpression(`${box.name}_LENGTH`, Math.abs(box.point2.y - box.point1.y)))
+          push(formatExpression(`${box.name}_HEIGHT`, Math.abs(box.point2.z - box.point1.z)))
+          const plywoodThickness = this.expressions.get('plywood_thickness') ?? PLYWOOD_STANDARDS.DEFAULT_THICKNESS
+          push(formatExpression(`${box.name}_THICKNESS`, plywoodThickness))
+        } else if (box.type === 'cleat') {
+          push(formatBoolean(`${box.name}_SUPPRESSED`, !!box.suppressed))
+          push(formatExpression(`${box.name}_X1`, box.point1.x))
+          push(formatExpression(`${box.name}_Y1`, box.point1.y))
+          push(formatExpression(`${box.name}_Z1`, box.point1.z))
+          push(formatExpression(`${box.name}_X2`, box.point2.x))
+          push(formatExpression(`${box.name}_Y2`, box.point2.y))
+          push(formatExpression(`${box.name}_Z2`, box.point2.z))
+          push(formatExpression(`${box.name}_X`, box.point1.x))
+          push(formatExpression(`${box.name}_Y`, box.point1.y))
+          push(formatExpression(`${box.name}_Z`, box.point1.z))
+          push(formatExpression(`${box.name}_WIDTH`, Math.abs(box.point2.x - box.point1.x)))
+          push(formatExpression(`${box.name}_LENGTH`, Math.abs(box.point2.y - box.point1.y)))
+          push(formatExpression(`${box.name}_HEIGHT`, Math.abs(box.point2.z - box.point1.z)))
+          push(formatExpression(`${box.name}_THICKNESS`, 0.75))
+        } else if (box.type === 'klimp') {
+          const instanceIndex = parseInt(box.name.split('_').pop() || '0', 10) - 1
+          const instance = this.klimpInstances[instanceIndex]
+          const isActive = instance?.active ?? false
+          push(formatBoolean(`${box.name}_ACTIVE`, isActive))
+          if (isActive && instance) {
+            push(`${box.name}_EDGE = "${instance.edge}"`)
+            push(formatExpression(`${box.name}_POS_X`, instance.position.x))
+            push(formatExpression(`${box.name}_POS_Y`, instance.position.y))
+            push(formatExpression(`${box.name}_POS_Z`, instance.position.z))
+            push(formatExpression(`${box.name}_ROT_X`, instance.rotation.x))
+            push(formatExpression(`${box.name}_ROT_Y`, instance.rotation.y))
+            push(formatExpression(`${box.name}_ROT_Z`, instance.rotation.z))
+          } else {
+            push(formatComment('Inactive Klimp instance for this configuration.'))
+          }
         } else {
-          output += `# Suppressed - not used for this crate size\n`
+          push(formatBoolean(`${box.name}_SUPPRESSED`, !!box.suppressed))
+          push(formatExpression(`${box.name}_X1`, box.point1.x))
+          push(formatExpression(`${box.name}_Y1`, box.point1.y))
+          push(formatExpression(`${box.name}_Z1`, box.point1.z))
+          push(formatExpression(`${box.name}_X2`, box.point2.x))
+          push(formatExpression(`${box.name}_Y2`, box.point2.y))
+          push(formatExpression(`${box.name}_Z2`, box.point2.z))
         }
       }
     }
 
-    return output
+    const maxKlimpInstances = KlimpSTEPIntegration.getMaxKlimpCount()
+    if (maxKlimpInstances > 0) {
+      push('')
+      push('// --- KLIMP INSTANCE PLACEHOLDERS ---')
+      push('// Import "CAD FILES/Crate Spring Clamp.STEP" once, then drive instances via expressions below.')
+      for (let i = 0; i < maxKlimpInstances; i++) {
+        push('')
+        const label = `KLIMP_${i + 1}`
+        const instance = this.klimpInstances[i]
+        if (instance) {
+          push(formatComment(label))
+          push(formatBoolean(`${label}_ACTIVE`, instance.active))
+          if (instance.active) {
+            push(`${label}_EDGE = "${instance.edge}"`)
+            push(formatExpression(`${label}_POS_X`, instance.position.x))
+            push(formatExpression(`${label}_POS_Y`, instance.position.y))
+            push(formatExpression(`${label}_POS_Z`, instance.position.z))
+            push(formatExpression(`${label}_ROT_X`, instance.rotation.x))
+            push(formatExpression(`${label}_ROT_Y`, instance.rotation.y))
+            push(formatExpression(`${label}_ROT_Z`, instance.rotation.z))
+          } else {
+            push(formatComment('Suppressed placeholder.'))
+          }
+        } else {
+          push(formatComment(`${label} (unused placeholder)`))
+          push(formatBoolean(`${label}_ACTIVE`, false))
+        }
+      }
+    }
+
+    return lines.join('\n') + '\n'
   }
 
   generateCutList(): LumberCutList {
@@ -2211,42 +2257,32 @@ export class NXGenerator {
   }
 
   // Generate marking instructions for NX output
-  getMarkingInstructions(): string {
+  getMarkingInstructions(): string[] {
     if (!this.config.markings) {
-      return ''
+      return []
     }
 
-    let instructions = '# MARKING AND DECAL SPECIFICATIONS:\n'
+    const lines: string[] = ['// --- MARKING AND DECAL SPECIFICATIONS ---']
 
     const fragileDims = this.getMarkingDimensions('fragile')
     if (fragileDims) {
-      instructions += `# Fragile Stencil (${fragileDims.partNumber}):\n`
-      instructions += `#   - Size: ${fragileDims.width}" x ${fragileDims.height}"\n`
-      instructions += '#   - Position: Center on each side and end panel\n'
-      instructions += '#   - Orientation: 10 degree angle\n'
-      instructions += '#   - Quantity: 4 per crate\n'
+      lines.push(`// Fragile Stencil (${fragileDims.partNumber})`)
+      lines.push(`// Size: ${fragileDims.width}" x ${fragileDims.height}" — Center on each side and end panel (10° orientation), quantity 4.`)
     }
 
     const handlingDims = this.getMarkingDimensions('handling')
     if (handlingDims) {
-      instructions += `# Handling Symbols (${handlingDims.partNumber}):\n`
-      instructions += `#   - Size: ${handlingDims.width}" x ${handlingDims.height}"\n`
-      instructions += '#   - Position: Upper right corner of each side and end panel\n'
-      instructions += '#   - Note: Horizontal orientation takes priority over vertical\n'
-      instructions += '#   - Quantity: Up to 4 per crate\n'
+      lines.push(`// Handling Symbols (${handlingDims.partNumber})`)
+      lines.push(`// Size: ${handlingDims.width}" x ${handlingDims.height}" — Upper right corner of each side/end panel (horizontal takes priority), up to 4.`)
     }
 
     const autocrateDims = this.getMarkingDimensions('autocrate')
     if (autocrateDims) {
-      instructions += `# AUTOCRATE Text (${autocrateDims.partNumber}):\n`
-      instructions += `#   - Size: ${autocrateDims.width}" x ${autocrateDims.height}"\n`
-      instructions += '#   - Position: Center on each side and end panel\n'
-      instructions += '#   - Text: "AUTOCRATE" in bold letters\n'
-      instructions += '#   - Quantity: 4 per crate\n'
+      lines.push(`// AUTOCRATE Text (${autocrateDims.partNumber})`)
+      lines.push(`// Size: ${autocrateDims.width}" x ${autocrateDims.height}" — Center on each panel, bold "AUTOCRATE" text, quantity 4.`)
     }
 
-    instructions += '# \n'
-    return instructions
+    return lines
   }
 }
 

@@ -41,4 +41,29 @@ describe('CrateVisualizer', () => {
       )
     ).not.toThrow()
   })
+
+  it('renders tutorial callouts and combines filtered boxes', () => {
+    const boxes: NXBox[] = [
+      makeBox('SKID', 'skid', { x: -5, y: 0, z: 0 }, { x: 5, y: 2, z: 2 }),
+      makeBox('FLOORBOARD_1', 'floor', { x: -4, y: 0, z: 2 }, { x: 4, y: 1, z: 3 }),
+      {
+        ...makeBox('FRONT_PANEL_PLY_1', 'plywood', { x: -6, y: 0, z: 0 }, { x: 6, y: 1, z: 10 }),
+        panelName: 'FRONT_PANEL',
+        plywoodPieceIndex: 0,
+        suppressed: false
+      }
+    ]
+
+    const { getByText } = render(
+      <CrateVisualizer
+        boxes={boxes}
+        generator={generator}
+        tutorialHighlightNames={['SKID']}
+        tutorialCallouts={[{ boxName: 'SKID', label: 'Use: SKID_X1, SKID_X2' }]}
+        pmiVisibility={{ totalDimensions: true, skids: true, cleats: true, floor: true, datumPlanes: true }}
+      />
+    )
+
+    expect(getByText(/Use: SKID_X1, SKID_X2/)).toBeInTheDocument()
+  })
 })

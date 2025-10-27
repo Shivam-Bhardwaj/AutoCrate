@@ -98,7 +98,7 @@ describe('NXGenerator', () => {
     expect(instances.filter(instance => instance.active).length).toBe(klimpLayout.totalKlimps)
 
     const exported = generator.exportNXExpressions()
-    expect(exported).toContain('# KLIMP FASTENER INSTRUCTIONS')
+    expect(exported).toContain('// --- KLIMP FASTENER GUIDANCE ---')
     expect(exported).toContain('pattern_spacing')
   })
 
@@ -568,8 +568,8 @@ describe('NXGenerator', () => {
   it('generateNXExpressions wrapper returns a populated expression bundle', () => {
     const bundle = generateNXExpressions({ length: 48, width: 40, height: 20 }, 2000)
 
-    expect(bundle).toContain('# NX Expressions for AutoCrate')
-    expect(bundle).toContain('product_length=48.000')
-    expect(bundle).toContain('skid_count=')
+    expect(bundle).toContain('// NX Expressions - AutoCrate')
+    expect(bundle).toContain('[Inch]product_length = 48.000')
+    expect(bundle).toContain('skid_count = ')
   })
 })

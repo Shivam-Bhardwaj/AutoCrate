@@ -2,7 +2,6 @@
 
 import { useRef, useState } from 'react'
 import Link from 'next/link'
-import Mermaid from '@/components/Mermaid'
 
 export default function DocsPage() {
   const [activeTab, setActiveTab] = useState<'web' | 'nx'>('web')
@@ -226,10 +225,10 @@ function NXInstructionsDoc() {
       </ul>
 
       <h3>Coordinate System (Diagram)</h3>
-      <Mermaid
-        chart={`graph LR\n  O[(Origin 0,0,0)] -->|+X| XR[Right]\n  O -->|+Y| YB[Back]\n  O -. out of plane .-> ZU[+Z (Up)]`}
-        className="my-3"
-      />
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`graph LR
+  O[(Origin 0,0,0)] -->|+X| XR[Right]
+  O -->|+Y| YB[Back]
+  O -. out of plane .-> ZU[+Z (Up)]`}</pre>
 
       <h2>1) Get NX Expressions</h2>
       <ul>
@@ -258,10 +257,11 @@ function NXInstructionsDoc() {
 
       <h2>4) Create Geometry (Two Diagonal Points)</h2>
       <p>Use Insert → Design Feature → Block → Type: Opposite Corners. Enter expressions directly (click the <strong>fx</strong> icon to bind each field to an expression).</p>
-      <Mermaid
-        chart={`flowchart TB\n  P1((P1: X1,Y1,Z1)) --- P2((P2: X2,Y2,Z2))\n  P1 -->|WIDTH| W[WIDTH = X2 - X1]\n  P1 -->|LENGTH| L[LENGTH = Y2 - Y1]\n  P1 -->|HEIGHT| H[HEIGHT = Z2 - Z1]`}
-        className="my-3"
-      />
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`flowchart TB
+  P1((P1: X1,Y1,Z1)) --- P2((P2: X2,Y2,Z2))
+  P1 -->|WIDTH| W[WIDTH = X2 - X1]
+  P1 -->|LENGTH| L[LENGTH = Y2 - Y1]
+  P1 -->|HEIGHT| H[HEIGHT = Z2 - Z1]`}</pre>
       <ul>
         <li><strong>Generic boxes</strong> (e.g., <code>SKID</code>, <code>FLOORBOARD_*</code>): <code>NAME_X1</code>, <code>NAME_Y1</code>, <code>NAME_Z1</code> and <code>NAME_X2</code>, <code>NAME_Y2</code>, <code>NAME_Z2</code>.</li>
         <li><strong>Plywood panels</strong>: <code>NAME_X</code>, <code>NAME_Y</code>, <code>NAME_Z</code>, plus <code>NAME_WIDTH</code>, <code>NAME_LENGTH</code>, <code>NAME_HEIGHT</code> and <code>NAME_THICKNESS</code> (thickness).</li>
@@ -282,10 +282,7 @@ Tip: Click fx next to each field, type the expression name, press Enter.`}</pre>
         <li>Pattern (direction X): Count = <code>pattern_count</code>, Spacing = <code>pattern_spacing</code> (center‑to‑center).</li>
         <li>Name the patterned feature <code>PATTERN_SKID</code> for clarity.</li>
       </ol>
-      <Mermaid
-        chart={`flowchart LR\n  S1[SKID#1] --- S2[SKID#2] --- S3[SKID#3] --- S4[SKID#4]\n  classDef note fill:#eef,stroke:#99f,color:#246\n  note:::note--> meta((pattern_count, pattern_spacing))`}
-        className="my-3"
-      />
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`flowchart LR\n  S1[SKID#1] --- S2[SKID#2] --- S3[SKID#3] --- S4[SKID#4]\n  classDef note fill:#eef,stroke:#99f,color:#246\n  note:::note--> meta((pattern_count, pattern_spacing))`}</pre>
 
       <h3>4.2 Floorboards</h3>
       <ul>
@@ -316,10 +313,7 @@ Thickness: NAME_THICKNESS (or NAME_HEIGHT when provided)`}</pre>
 
       <h3>4.7 Panel Splicing Layout</h3>
       <p>When a panel exceeds sheet limits, pieces are split and positioned per the export. Vertical splices go to the right; horizontal splices go to the bottom.</p>
-      <Mermaid
-        chart={`flowchart LR\n  subgraph SIDE_PANEL\n    P1[Piece 1] --- P2[Piece 2] --- P3[Piece 3]\n  end\n  note1((vertical_splice_right)):::note\n  note2((horizontal_splice_bottom)):::note\n  classDef note fill:#eef,stroke:#99f,color:#246`}
-        className="my-3"
-      />
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`flowchart LR\n  subgraph SIDE_PANEL\n    P1[Piece 1] --- P2[Piece 2] --- P3[Piece 3]\n  end\n  note1((vertical_splice_right)):::note\n  note2((horizontal_splice_bottom)):::note\n  classDef note fill:#eef,stroke:#99f,color:#246`}</pre>
       <ul>
         <li>Follow exported <code>NAME_X/NAME_Y/NAME_Z</code> and <code>NAME_WIDTH/LENGTH/HEIGHT</code> to size/locate each piece.</li>
         <li>Respect suppression flags for unused pieces.</li>
@@ -327,10 +321,7 @@ Thickness: NAME_THICKNESS (or NAME_HEIGHT when provided)`}</pre>
 
       <h3>4.8 Cleat Spacing Rules</h3>
       <p>Cleats respect edge clearance and maximum spacing. Use expression guidance to place and pattern if needed.</p>
-      <Mermaid
-        chart={`flowchart TB\n  Start[Edge Clearance] --> S1[First Cleat]\n  S1 -->|<= 16\"| S2[Next Cleat]\n  S2 -->|<= 16\"| S3[Next Cleat]\n  S3 --> End[End Clearance]\n  classDef rule fill:#ecfeff,stroke:#06b6d4,color:#0e7490`}
-        className="my-3"
-      />
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`flowchart TB\n  Start[Edge Clearance] --> S1[First Cleat]\n  S1 -->|<= 16\"| S2[Next Cleat]\n  S2 -->|<= 16\"| S3[Next Cleat]\n  S3 --> End[End Clearance]\n  classDef rule fill:#ecfeff,stroke:#06b6d4,color:#0e7490`}</pre>
       <ul>
         <li>Max spacing: 16" (unless otherwise specified in expressions).</li>
         <li>Maintain minimum edge clearances around openings and edges.</li>

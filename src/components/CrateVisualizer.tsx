@@ -44,6 +44,8 @@ interface CrateVisualizerProps {
     crate?: string
     cap?: string
   }
+  tutorialHighlightNames?: string[]
+  tutorialCallouts?: { boxName: string; label: string }[]
 }
 
 // Represents a selected plane with its position and normal vector
@@ -584,7 +586,8 @@ function NXBoxMesh({
   setHoveredBox,
   onHide,
   selectedPlanes,
-  onPlaneClick
+  onPlaneClick,
+  highlighted = false
 }: {
   box: NXBox;
   hoveredBox: string | null;
@@ -592,6 +595,7 @@ function NXBoxMesh({
   onHide: (boxName: string) => void;
   selectedPlanes: SelectedPlane[];
   onPlaneClick: (plane: SelectedPlane) => void;
+  highlighted?: boolean;
 }) {
   const isHovered = hoveredBox === box.name
   // Calculate center and size from two diagonal points
@@ -706,9 +710,11 @@ function NXBoxMesh({
         }}
       >
         <meshStandardMaterial
-          color={box.color || '#F4E4BC'}
+          color={highlighted ? '#fde68a' : (box.color || '#F4E4BC')}
           opacity={1}
           transparent={false}
+          emissive={highlighted ? new THREE.Color('#f59e0b') : new THREE.Color('#000000')}
+          emissiveIntensity={highlighted ? 0.2 : 0}
         />
         <Edges
           color='#1f2937'
@@ -736,7 +742,7 @@ function NXBoxMesh({
   )
 }
 
-export default function CrateVisualizer({ boxes, showGrid = true, showLabels = true, generator, showMarkings = true, visibility, onToggleVisibility, onToggleMarkings, pmiVisibility, onTogglePmi, partNumbers }: CrateVisualizerProps) {
+export default function CrateVisualizer({ boxes, showGrid = true, showLabels = true, generator, showMarkings = true, visibility, onToggleVisibility, onToggleMarkings, pmiVisibility, onTogglePmi, partNumbers, tutorialHighlightNames = [], tutorialCallouts = [] }: CrateVisualizerProps) {
   const [hiddenComponents, setHiddenComponents] = useState<Set<string>>(new Set())
   const [hoveredBox, setHoveredBox] = useState<string | null>(null)
   const [showHiddenList, setShowHiddenList] = useState(false)
@@ -747,6 +753,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
   const [controlTarget, setControlTarget] = useState<[number, number, number]>([0, 3, 0])
   const controlsRef = useRef<OrbitControlsImpl | null>(null)
   const highlightColors = ['#00FF00', '#008CFF']
+  const tutorialHighlightSet = useMemo(() => new Set(tutorialHighlightNames || []), [tutorialHighlightNames])
 
   const componentVisibility: ComponentVisibility = useMemo(
     () =>
@@ -1144,6 +1151,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
 
                 selectedPlanes={selectedPlanes}
                 onPlaneClick={handlePlaneClick}
+                highlighted={tutorialHighlightSet.has(box.name)}
               />
             )
           )}
@@ -1173,6 +1181,30 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
               pmiState={pmiState}
             />
           )}
+
+          {/* Tutorial callouts */}
+          {tutorialCallouts.map((c, idx) => {
+            const box = visibleBoxes.find(b => b.name === c.boxName)
+            if (!box) return null
+            const center = {
+              x: (box.point1.x + box.point2.x) / 2,
+              y: (box.point1.y + box.point2.y) / 2,
+              z: (box.point1.z + box.point2.z) / 2,
+            }
+            const scale = 0.1
+            return (
+              <Html
+                key={`callout-${c.boxName}-${idx}`}
+                position={[center.x * scale, (center.z * scale) + 0.8, -center.y * scale]}
+                center
+                distanceFactor={10}
+              >
+                <div className="bg-amber-50 border border-amber-300 text-amber-900 text-xs rounded px-2 py-1 shadow">
+                  {c.label}
+                </div>
+              </Html>
+            )
+          })}
 
           {/* Render measurement line between parallel planes */}
           {selectedPlanes.length === 2 && measurementDistance !== null && (
@@ -1371,5 +1403,4 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
     </div>
   )
 }
-
 

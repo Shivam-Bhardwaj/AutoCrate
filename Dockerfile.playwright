@@ -1,0 +1,15 @@
+# Playwright test runner container for AutoCrate
+FROM mcr.microsoft.com/playwright:v1.55.1-jammy
+
+WORKDIR /app
+
+ENV CI=1 \
+    NODE_ENV=development \
+    HUSKY=0
+
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts
+
+COPY . .
+
+CMD ["npm", "run", "test:e2e", "--", "--project=Desktop Chrome", "--reporter=html"]

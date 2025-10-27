@@ -13,6 +13,8 @@ import { LumberCutList } from '@/components/LumberCutList'
 import { ChangeTracker } from '@/components/ChangeTracker'
 import { VisualChecklistButton } from '@/components/VisualChecklist'
 import { PART_NUMBER_STANDARDS, FASTENER_STANDARDS, UI_CONSTANTS, GEOMETRY_STANDARDS, PLYWOOD_STANDARDS, VALIDATION_RULES } from '@/lib/crate-constants'
+import { buildFullTutorial, getStepHighlightTargets, buildCallouts } from '@/lib/tutorial/schema'
+import TutorialOverlay from '@/components/tutorial/TutorialOverlay'
 
 const SCENARIO_PRESETS: ScenarioPreset[] = [
   {
@@ -184,6 +186,9 @@ export default function Home() {
   })
 
   const [generator, setGenerator] = useState<NXGenerator>(() => new NXGenerator(config))
+  // Tutorial state
+  const [tutorialActive, setTutorialActive] = useState(false)
+  const [tutorialStepIndex, setTutorialStepIndex] = useState(0)
   const [activeTab, setActiveTab] = useState<'visualization' | 'expressions' | 'bom' | 'plywood' | 'lumber'>('visualization')
   const [activeScenarioId, setActiveScenarioId] = useState<string | null>('default')
   // Initialize all plywood pieces as visible by default
@@ -202,6 +207,22 @@ export default function Home() {
   const debounceTimeoutRef = useRef<{ [key: string]: NodeJS.Timeout }>({})
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const lumberCutList = useMemo(() => generator.generateCutList(), [generator])
+  const tutorialSteps = useMemo(() => buildFullTutorial(generator, generator.getBoxes()), [generator])
+  useEffect(() => {
+    if (tutorialStepIndex > tutorialSteps.length - 1) {
+      setTutorialStepIndex(Math.max(0, tutorialSteps.length - 1))
+    }
+  }, [tutorialSteps, tutorialStepIndex])
+
+  // Auto-enable tutorial via ?tutorial=1
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('tutorial') === '1') {
+      setTutorialActive(true)
+      setTutorialStepIndex(0)
+    }
+  }, [])
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -547,6 +568,13 @@ export default function Home() {
           {/* Desktop actions */}
           <div className="hidden lg:flex items-center gap-2">
             <ThemeToggle />
+            <button
+              onClick={() => { setTutorialActive(prev => !prev); setTutorialStepIndex(0) }}
+              className={`px-3 py-1 text-sm rounded transition-colors ${tutorialActive ? 'bg-amber-600 text-white hover:bg-amber-700' : 'bg-amber-100 text-amber-900 hover:bg-amber-200'}`}
+              title="Toggle Tutorial Mode"
+            >
+              {tutorialActive ? 'Tutorial: On' : 'Start Tutorial'}
+            </button>
             <button
               onClick={downloadExpressions}
               className="bg-blue-600 text-white px-3 py-1 text-sm rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
@@ -1096,17 +1124,30 @@ export default function Home() {
             <div className="lg:hidden flex-1 flex flex-col min-h-0 overflow-hidden">
               <div className="flex-1 min-h-0 overflow-hidden" data-testid="crate-visualizer">
                 <VisualizationErrorBoundary>
-                  <CrateVisualizer
-                    boxes={getFilteredBoxes()}
-                    generator={generator}
-                    showMarkings={displayOptions.showMarkings}
-                    visibility={displayOptions.visibility}
-                    onToggleVisibility={toggleComponentVisibility}
-                    onToggleMarkings={() => setDisplayOptions(prev => ({ ...prev, showMarkings: !prev.showMarkings }))}
-                    pmiVisibility={pmiVisibility}
-                    onTogglePmi={togglePmiLayer}
-                    partNumbers={partNumbers}
-                  />
+                  <div className="relative w-full h-full">
+                    <CrateVisualizer
+                      boxes={getFilteredBoxes()}
+                      generator={generator}
+                      showMarkings={displayOptions.showMarkings}
+                      visibility={displayOptions.visibility}
+                      onToggleVisibility={toggleComponentVisibility}
+                      onToggleMarkings={() => setDisplayOptions(prev => ({ ...prev, showMarkings: !prev.showMarkings }))}
+                      pmiVisibility={pmiVisibility}
+                      onTogglePmi={togglePmiLayer}
+                      partNumbers={partNumbers}
+                      tutorialHighlightNames={tutorialActive && tutorialSteps.length > 0 ? getStepHighlightTargets(tutorialSteps[tutorialStepIndex], generator.getBoxes()) : []}
+                      tutorialCallouts={tutorialActive && tutorialSteps.length > 0 ? buildCallouts(tutorialSteps[tutorialStepIndex], generator.getBoxes()).slice(0, 8) : []}
+                    />
+                    <TutorialOverlay
+                      active={tutorialActive}
+                      stepIndex={tutorialStepIndex}
+                      steps={tutorialSteps}
+                      onClose={() => setTutorialActive(false)}
+                      onPrev={() => setTutorialStepIndex(s => Math.max(0, s - 1))}
+                      onNext={() => setTutorialStepIndex(s => Math.min(tutorialSteps.length - 1, s + 1))}
+                      onCopy={(text) => navigator.clipboard?.writeText(text)}
+                    />
+                  </div>
                 </VisualizationErrorBoundary>
               </div>
             </div>
@@ -1117,17 +1158,30 @@ export default function Home() {
                 <div className="flex-1 flex flex-col min-h-0 overflow-hidden h-full">
                   <div className="flex-1 min-h-0 overflow-hidden" data-testid="crate-visualizer">
                     <VisualizationErrorBoundary>
-                      <CrateVisualizer
-                        boxes={getFilteredBoxes()}
-                        generator={generator}
-                        showMarkings={displayOptions.showMarkings}
-                        visibility={displayOptions.visibility}
-                        onToggleVisibility={toggleComponentVisibility}
-                        onToggleMarkings={() => setDisplayOptions(prev => ({ ...prev, showMarkings: !prev.showMarkings }))}
-                        pmiVisibility={pmiVisibility}
-                        onTogglePmi={togglePmiLayer}
-                        partNumbers={partNumbers}
-                      />
+                      <div className="relative w-full h-full">
+                        <CrateVisualizer
+                          boxes={getFilteredBoxes()}
+                          generator={generator}
+                          showMarkings={displayOptions.showMarkings}
+                          visibility={displayOptions.visibility}
+                          onToggleVisibility={toggleComponentVisibility}
+                          onToggleMarkings={() => setDisplayOptions(prev => ({ ...prev, showMarkings: !prev.showMarkings }))}
+                          pmiVisibility={pmiVisibility}
+                          onTogglePmi={togglePmiLayer}
+                          partNumbers={partNumbers}
+                          tutorialHighlightNames={tutorialActive && tutorialSteps.length > 0 ? getStepHighlightTargets(tutorialSteps[tutorialStepIndex], generator.getBoxes()) : []}
+                          tutorialCallouts={tutorialActive && tutorialSteps.length > 0 ? buildCallouts(tutorialSteps[tutorialStepIndex], generator.getBoxes()).slice(0, 8) : []}
+                        />
+                        <TutorialOverlay
+                          active={tutorialActive}
+                          stepIndex={tutorialStepIndex}
+                          steps={tutorialSteps}
+                          onClose={() => setTutorialActive(false)}
+                          onPrev={() => setTutorialStepIndex(s => Math.max(0, s - 1))}
+                          onNext={() => setTutorialStepIndex(s => Math.min(tutorialSteps.length - 1, s + 1))}
+                          onCopy={(text) => navigator.clipboard?.writeText(text)}
+                        />
+                      </div>
                     </VisualizationErrorBoundary>
                   </div>
                   <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">

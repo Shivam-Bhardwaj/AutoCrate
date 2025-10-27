@@ -26,7 +26,7 @@ describe('API /api/calculate-crate', () => {
     const json = await response.json()
     expect(json.status).toBe('success')
     expect(json.calculations.crateDimensions.length).toBe(baseBody.productDimensions.length + 150)
-    expect(json.nxExpressions).toMatch(/# NX Expressions/)
+    expect(json.nxExpressions).toMatch(/\/\/ NX Expressions/)
     expect(json.nxExpressions.length).toBeLessThan(json.fullNxExpressionsLength)
   })
 
