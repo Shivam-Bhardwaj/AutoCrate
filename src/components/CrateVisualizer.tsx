@@ -1351,16 +1351,6 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
         )}
       </div>
 
-      {/* PMI controls moved to right-side control panel - Hidden on mobile */}
-      <div className="hidden lg:block absolute top-2 left-2 w-64 max-w-xs pointer-events-auto">
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 space-y-2">
-          <div className="text-[11px] text-gray-600 dark:text-gray-400 space-y-1">
-            <div>Base: {derivedPartNumbers.base}</div>
-            <div>Cap: {derivedPartNumbers.cap}</div>
-          </div>
-        </div>
-      </div>
-
       {selectedPlanes.length > 0 && (
         <div className="hidden lg:block absolute bottom-20 left-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg p-3">
           <div className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
