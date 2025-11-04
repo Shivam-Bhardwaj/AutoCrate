@@ -318,6 +318,89 @@ This creates an isolated worktree in `issues/124/` on branch `sbl-124`.
 - **Each worktree is completely isolated** - changes don't affect others
 - See [WORKTREE_WORKFLOW.md](WORKTREE_WORKFLOW.md) for complete documentation
 
+## Standard Issue-to-PR Workflow
+
+**CRITICAL RULE**: When a user starts a new agent session with an issue or task request, the agent MUST follow this complete workflow:
+
+### Workflow Steps
+
+1. **Create GitHub Issue** (if not already created)
+   ```bash
+   gh issue create --title "Issue Title" --body "Issue description with acceptance criteria"
+   ```
+   - Capture the issue number from the output
+   - Include clear acceptance criteria
+   - Add appropriate labels if available
+
+2. **Create Branch and Make Changes**
+   ```bash
+   git checkout -b fix/issue-description
+   # or
+   git checkout -b feature/issue-description
+   ```
+   - Make all necessary code changes
+   - Test thoroughly: `npm test`, `npm run build`
+   - Fix any linting errors: `npm run lint`
+   - Commit changes with descriptive messages
+
+3. **Push Branch**
+   ```bash
+   git push -u origin fix/issue-description
+   ```
+
+4. **Create Pull Request**
+   ```bash
+   gh pr create --title "PR Title" --body "Description. Closes #<ISSUE_NUMBER>" --base main
+   ```
+   - Link PR to issue using `Closes #<ISSUE_NUMBER>`
+   - Include summary of changes
+   - List files changed
+   - Note any breaking changes or impacts
+
+5. **Verify**
+   - Confirm PR was created successfully
+   - Verify issue is linked (will auto-close when PR is merged)
+   - Ensure all checks pass
+
+### Important Notes
+
+- **Always create an issue first** for tracking and context
+- **Link PR to issue** using `Closes #<NUMBER>` in PR description
+- **Do not merge PRs** unless explicitly requested by user
+- **Wait for user approval** before merging to production
+- **Test before PR** - ensure builds pass and linting is clean
+
+### Example Workflow
+
+```bash
+# 1. Create issue
+gh issue create --title "Remove visual check section" --body "Remove the visual check button..."
+
+# Output: https://github.com/user/repo/issues/161
+
+# 2. Create branch and make changes
+git checkout -b remove/visual-check-section
+# ... make changes ...
+git add .
+git commit -m "Remove visual check section from crate application"
+git push -u origin remove/visual-check-section
+
+# 3. Create PR (replace 161 with actual issue number)
+gh pr create --title "Remove Visual Check Section" \
+  --body "This PR removes the visual check section. Closes #161" \
+  --base main
+
+# 4. Verify
+gh pr view 162  # Check PR was created
+gh issue view 161  # Verify issue exists
+```
+
+This workflow ensures:
+- All work is tracked in issues
+- Changes are reviewed via PRs
+- Issues auto-close when PRs are merged
+- Clear history and documentation
+
 ## Support & Documentation
 
 - **Project Maintainer**: Shivam Bhardwaj (shivam@designviz.com)
