@@ -135,7 +135,7 @@ export default function Home() {
     skids: false,
     cleats: false,
     floor: false,
-    datumPlanes: true
+    datumPlanes: false
   })
 
   // State for display options
