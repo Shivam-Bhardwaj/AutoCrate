@@ -142,9 +142,9 @@ export default function TutorialOverlay({
         </div>
 
         {groupedExpressions.length > 0 && (
-          <div className="mb-2 flex-1 min-h-0">
+          <div className="mb-4 flex flex-col flex-shrink-0">
             <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">Expressions</div>
-            <div className="space-y-1.5 overflow-y-auto pr-1">
+            <div className="space-y-1.5 overflow-y-auto pr-1 max-h-[200px] pb-2">
               {groupedExpressions.map(group => {
                 const isExpanded = expandedGroupId === group.id
                 const isGeneral = group.id === 'general'
@@ -209,7 +209,7 @@ export default function TutorialOverlay({
         )}
 
         {step.tips && step.tips.length > 0 && (
-          <ul className="list-disc pl-4 text-[11px] text-gray-700 dark:text-gray-300 space-y-0.5 mb-1">
+          <ul className="list-disc pl-4 text-[11px] text-gray-700 dark:text-gray-300 space-y-0.5 mb-1 mt-4 flex-shrink-0">
             {step.tips.map((tip, i) => (
               <li key={i}>{tip}</li>
             ))}

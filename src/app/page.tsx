@@ -11,7 +11,6 @@ import ScenarioSelector, { ScenarioPreset } from '@/components/ScenarioSelector'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { LumberCutList } from '@/components/LumberCutList'
 import { ChangeTracker } from '@/components/ChangeTracker'
-import { VisualChecklistButton } from '@/components/VisualChecklist'
 import { PART_NUMBER_STANDARDS, FASTENER_STANDARDS, UI_CONSTANTS, GEOMETRY_STANDARDS, PLYWOOD_STANDARDS, VALIDATION_RULES } from '@/lib/crate-constants'
 import { buildFullTutorial, getStepHighlightTargets, buildCallouts } from '@/lib/tutorial/schema'
 import TutorialOverlay from '@/components/tutorial/TutorialOverlay'
@@ -1477,8 +1476,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Visual Checklist Button */}
-      <VisualChecklistButton />
     </main>
   )
 }
