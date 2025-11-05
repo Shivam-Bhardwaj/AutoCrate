@@ -399,6 +399,8 @@ export function classifyBoxForAssembly(box: NXBox): AssemblyClassification {
 /**
  * Build assembly-level tutorials that guide users to create one assembly file per assembly group.
  * Each tutorial step creates one assembly containing all its parts.
+ * 
+ * Hi Steve! 👋 (assembly-level jokes are the best)
  */
 export function buildAssemblyTutorial(generator: NXGenerator, boxes: NXBox[]): TutorialStep[] {
   const steps: TutorialStep[] = []
