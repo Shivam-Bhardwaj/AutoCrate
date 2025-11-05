@@ -22,11 +22,13 @@ function parseIssueFromBranch(branch: string): string | null {
 }
 
 function deriveIssueNumber(metadata: ProjectMetadata): string {
+  // Use the issueNumber directly from the API response, which already extracts it correctly
   const normalizedIssue = metadata.issueNumber?.trim()
   if (normalizedIssue && normalizedIssue !== '0') {
     return normalizedIssue
   }
 
+  // Fallback: if API didn't provide it, try to derive from other sources
   const branchIssue = parseIssueFromBranch(metadata.branch)
   if (branchIssue) {
     return branchIssue
@@ -46,7 +48,11 @@ function deriveIssueNumber(metadata: ProjectMetadata): string {
 }
 
 function parseChangeInfo(metadata: ProjectMetadata): ChangeInfo | null {
-  const issueNumber = deriveIssueNumber(metadata)
+  // The API already extracts issueNumber correctly, so use it directly
+  // deriveIssueNumber is kept as a fallback in case API doesn't provide it
+  const issueNumber = metadata.issueNumber && metadata.issueNumber.trim() !== '0' 
+    ? metadata.issueNumber.trim() 
+    : deriveIssueNumber(metadata)
 
   // Extract simple title from commit message (first line, remove prefixes)
   const title = metadata.lastChange

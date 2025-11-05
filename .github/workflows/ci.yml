@@ -21,12 +21,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
         env:
-          npm_config_ignore_scripts: 'true'
+          npm_config_ignore_scripts: "true"
 
       - name: Lint
         run: npm run lint
@@ -47,16 +47,13 @@ jobs:
           name: coverage-report
           path: coverage
 
-      - name: Build Playwright smoke-test image
-        run: docker build -f Dockerfile.playwright -t autocrate-playwright .
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
 
       - name: Playwright smoke tests (desktop)
-        run: |
-          mkdir -p playwright-report
-          docker run --rm \
-            -e CI=1 \
-            -v "${{ github.workspace }}/playwright-report:/app/playwright-report" \
-            autocrate-playwright
+        run: npx playwright test --reporter=html
+        env:
+          CI: true
 
       - name: Upload Playwright HTML report
         if: always()
