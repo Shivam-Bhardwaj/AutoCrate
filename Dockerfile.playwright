@@ -1,0 +1,26 @@
+# Dockerfile for Playwright E2E tests
+# This image builds the Next.js app and runs Playwright tests
+
+FROM mcr.microsoft.com/playwright:v1.40.0-focal
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies (without running scripts to avoid postinstall hooks)
+RUN npm ci --ignore-scripts
+
+# Copy application files
+COPY . .
+
+# Install Playwright browsers
+RUN npx playwright install --with-deps chromium
+
+# Build the Next.js application
+RUN npm run build
+
+# Run Playwright tests
+# The webServer in playwright.config.ts will start the dev server automatically
+CMD ["npx", "playwright", "test", "--reporter=html"]
+
