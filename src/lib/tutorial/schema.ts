@@ -3,6 +3,7 @@ import type { NXBox, NXGenerator } from '@/lib/nx-generator'
 export type TutorialTarget = {
   boxNames?: string[]
   types?: NXBox['type'][]
+  assemblyNames?: string[] // For assembly-level tutorials
 }
 
 export type TutorialStep = {
@@ -254,6 +255,16 @@ export function getStepHighlightTargets(step: TutorialStep, boxes: NXBox[]): str
     const typeSet = new Set(step.target.types)
     boxes.forEach(b => { if (typeSet.has(b.type!)) targets.push(b.name) })
   }
+  // For assembly-level tutorials, include all boxes that belong to those assemblies
+  if (step.target?.assemblyNames?.length) {
+    const assemblyNames = new Set(step.target.assemblyNames)
+    for (const box of boxes) {
+      const classification = classifyBoxForAssembly(box)
+      if (assemblyNames.has(classification.subName || '') || assemblyNames.has(classification.topName)) {
+        targets.push(box.name)
+      }
+    }
+  }
   return targets
 }
 
@@ -297,5 +308,232 @@ export function buildCallouts(step: TutorialStep, boxes: NXBox[]): { boxName: st
       }
     })
   }
+  // For assembly-level tutorials, include callouts for boxes in those assemblies
+  if (step.target?.assemblyNames?.length) {
+    const assemblyNames = new Set(step.target.assemblyNames)
+    boxes.forEach(b => {
+      const classification = classifyBoxForAssembly(b)
+      if (assemblyNames.has(classification.subName || '') || assemblyNames.has(classification.topName)) {
+        if (!names.has(b.name)) {
+          results.push({ boxName: b.name, label: makeLabel(b.name) })
+        }
+      }
+    })
+  }
   return results
+}
+
+// Assembly classification (mirrors step-generator logic)
+interface AssemblyClassification {
+  topKey: string
+  topName: string
+  subKey?: string
+  subName?: string
+}
+
+export function classifyBoxForAssembly(box: NXBox): AssemblyClassification {
+  const type = box.type ?? 'misc'
+  const panelName = box.panelName ?? ''
+  const metadata = (box.metadata || '').toLowerCase()
+
+  if (type === 'skid') {
+    return {
+      topKey: 'SHIPPING_BASE',
+      topName: 'SHIPPING_BASE',
+      subKey: 'SHIPPING_BASE::SKID_ASSEMBLY',
+      subName: 'SKID_ASSEMBLY'
+    }
+  }
+
+  if (type === 'floor') {
+    return {
+      topKey: 'SHIPPING_BASE',
+      topName: 'SHIPPING_BASE',
+      subKey: 'SHIPPING_BASE::FLOORBOARD_ASSEMBLY',
+      subName: 'FLOORBOARD_ASSEMBLY'
+    }
+  }
+
+  if (type === 'klimp' || metadata.includes('fastener')) {
+    return {
+      topKey: 'KLIMP_FASTENERS',
+      topName: 'KLIMP_FASTENERS'
+    }
+  }
+
+  if (metadata.includes('stencil') || metadata.includes('decal')) {
+    return {
+      topKey: 'STENCILS',
+      topName: 'STENCILS'
+    }
+  }
+
+  const topKey = 'CRATE_CAP'
+  const topName = 'CRATE_CAP'
+
+  if (panelName) {
+    const panelAssemblyMap: Record<string, string> = {
+      TOP_PANEL: 'TOP_PANEL_ASSEMBLY',
+      FRONT_PANEL: 'FRONT_PANEL_ASSEMBLY',
+      BACK_PANEL: 'BACK_PANEL_ASSEMBLY',
+      LEFT_END_PANEL: 'LEFT_PANEL_ASSEMBLY',
+      RIGHT_END_PANEL: 'RIGHT_PANEL_ASSEMBLY'
+    }
+    const subName = panelAssemblyMap[panelName] || `${panelName}_ASSEMBLY`
+    return {
+      topKey,
+      topName,
+      subKey: `${topKey}::${subName}`,
+      subName
+    }
+  }
+
+  return {
+    topKey,
+    topName,
+    subKey: `${topKey}::CAP_MISC_ASSEMBLY`,
+    subName: 'CAP_MISC_ASSEMBLY'
+  }
+}
+
+/**
+ * Build assembly-level tutorials that guide users to create one assembly file per assembly group.
+ * Each tutorial step creates one assembly containing all its parts.
+ */
+export function buildAssemblyTutorial(generator: NXGenerator, boxes: NXBox[]): TutorialStep[] {
+  const steps: TutorialStep[] = []
+  
+  // Group boxes by assembly classification
+  const topLevelAssemblies = new Map<string, {
+    topName: string
+    subAssemblies: Map<string, { subName: string; boxes: NXBox[] }>
+    directBoxes: NXBox[]
+  }>()
+
+  for (const box of boxes) {
+    const classification = classifyBoxForAssembly(box)
+    
+    let topLevel = topLevelAssemblies.get(classification.topKey)
+    if (!topLevel) {
+      topLevel = {
+        topName: classification.topName,
+        subAssemblies: new Map(),
+        directBoxes: []
+      }
+      topLevelAssemblies.set(classification.topKey, topLevel)
+    }
+
+    if (classification.subName) {
+      let subAssembly = topLevel.subAssemblies.get(classification.subKey!)
+      if (!subAssembly) {
+        subAssembly = {
+          subName: classification.subName,
+          boxes: []
+        }
+        topLevel.subAssemblies.set(classification.subKey!, subAssembly)
+      }
+      subAssembly.boxes.push(box)
+    } else {
+      topLevel.directBoxes.push(box)
+    }
+  }
+
+  const exprMap = generator.getExpressions()
+  const boxesByName = new Map<string, NXBox>()
+  boxes.forEach(box => boxesByName.set(box.name, box))
+
+  // Helper to collect all expressions for boxes in an assembly
+  const collectExpressions = (assemblyBoxes: NXBox[]): string[] => {
+    const exprSet = new Set<string>()
+    for (const box of assemblyBoxes) {
+      if (box.suppressed) continue
+      
+      // Add box-specific expressions (check if they exist in the expression map)
+      const suffixes = ['X1', 'Y1', 'Z1', 'X2', 'Y2', 'Z2', 'X', 'Y', 'Z', 'WIDTH', 'LENGTH', 'HEIGHT', 'THICKNESS']
+      for (const suffix of suffixes) {
+        const expr = `${box.name}_${suffix}`
+        // Check if expression exists in map
+        if (exprMap.has(expr)) {
+          exprSet.add(expr)
+        }
+      }
+    }
+    return Array.from(exprSet).sort()
+  }
+
+  // Create tutorial steps for sub-assemblies first (they're more specific)
+  const processedTopLevels = new Set<string>()
+  
+  for (const [topKey, topLevel] of topLevelAssemblies.entries()) {
+    // Process sub-assemblies
+    for (const [subKey, subAssembly] of topLevel.subAssemblies.entries()) {
+      if (subAssembly.boxes.length === 0) continue
+
+      const assemblyBoxes = subAssembly.boxes.filter(b => !b.suppressed)
+      if (assemblyBoxes.length === 0) continue
+
+      const expressions = collectExpressions(assemblyBoxes)
+      const boxNames = assemblyBoxes.map(b => b.name)
+
+      const assemblyTitleMap: Record<string, string> = {
+        'SKID_ASSEMBLY': 'SKID Assembly',
+        'FLOORBOARD_ASSEMBLY': 'FLOORBOARD Assembly',
+        'FRONT_PANEL_ASSEMBLY': 'FRONT_PANEL Assembly',
+        'BACK_PANEL_ASSEMBLY': 'BACK_PANEL Assembly',
+        'LEFT_PANEL_ASSEMBLY': 'LEFT_PANEL Assembly',
+        'RIGHT_PANEL_ASSEMBLY': 'RIGHT_PANEL Assembly',
+        'TOP_PANEL_ASSEMBLY': 'TOP_PANEL Assembly',
+        'CAP_MISC_ASSEMBLY': 'CAP_MISC Assembly'
+      }
+
+      const title = assemblyTitleMap[subAssembly.subName] || `${subAssembly.subName} Assembly`
+
+      steps.push({
+        id: `assembly-${subKey.toLowerCase().replace(/::/g, '-')}`,
+        title: `Create ${title}`,
+        description: `Create a new assembly part file named "${subAssembly.subName}". Add all components for this assembly as separate parts and assemble them using the expressions. This creates one assembly file containing all ${assemblyBoxes.length} parts for ${subAssembly.subName}.`,
+        target: {
+          assemblyNames: [subAssembly.subName],
+          boxNames: boxNames
+        },
+        expressions: expressions.length > 0 ? expressions : undefined,
+        tips: [
+          `This assembly contains ${assemblyBoxes.length} component(s).`,
+          'Use File → New → Assembly to create a new assembly part.',
+          'Add components as parts and constrain them using the coordinate expressions.',
+          'Each component should reference its expressions for positioning.'
+        ],
+      })
+    }
+
+    // Process top-level assemblies with direct parts (no sub-assemblies)
+    if (topLevel.directBoxes.length > 0 && topLevel.subAssemblies.size === 0) {
+      const directBoxes = topLevel.directBoxes.filter(b => !b.suppressed)
+      if (directBoxes.length > 0) {
+        const expressions = collectExpressions(directBoxes)
+        const boxNames = directBoxes.map(b => b.name)
+
+        steps.push({
+          id: `assembly-${topKey.toLowerCase()}`,
+          title: `Create ${topLevel.topName} Assembly`,
+          description: `Create a new assembly part file named "${topLevel.topName}". Add all components for this assembly as separate parts and assemble them using the expressions. This creates one assembly file containing all ${directBoxes.length} parts for ${topLevel.topName}.`,
+          target: {
+            assemblyNames: [topLevel.topName],
+            boxNames: boxNames
+          },
+          expressions: expressions.length > 0 ? expressions : undefined,
+          tips: [
+            `This assembly contains ${directBoxes.length} component(s).`,
+            'Use File → New → Assembly to create a new assembly part.',
+            'Add components as parts and constrain them using the coordinate expressions.',
+            'Each component should reference its expressions for positioning.'
+          ],
+        })
+      }
+    }
+
+    processedTopLevels.add(topKey)
+  }
+
+  return steps
 }
