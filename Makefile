@@ -1,4 +1,4 @@
-.PHONY: help dev test watch-tests docker-up parallel-dev work-status new-feature
+.PHONY: help dev test watch-tests parallel-dev work-status new-feature
 
 # Default target
 help:
@@ -8,8 +8,7 @@ help:
 	@echo ""
 	@echo "Development:"
 	@echo "  make dev              Start Next.js development server"
-	@echo "  make docker-up        Start Docker containers"
-	@echo "  make parallel-dev     Run dev + tests + docker in parallel"
+	@echo "  make parallel-dev     Run dev + tests in parallel"
 	@echo ""
 	@echo "Testing:"
 	@echo "  make test             Run all tests once"
@@ -36,17 +35,13 @@ help:
 dev:
 	npm run dev
 
-docker-up:
-	cd ../container && docker compose up
-
 # Run multiple tasks in parallel
 parallel-dev:
 	@echo "Starting parallel development environment..."
 	@echo "  • Next.js dev server"
 	@echo "  • Test watcher"
-	@echo "  • Docker containers"
 	@echo ""
-	@$(MAKE) -j3 dev watch-tests docker-up
+	@$(MAKE) -j2 dev watch-tests
 
 # Testing
 test:

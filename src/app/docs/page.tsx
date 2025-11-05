@@ -494,7 +494,6 @@ function OverviewDoc() {
         <div><strong>3D:</strong> Three.js + R3F</div>
         <div><strong>Styling:</strong> Tailwind CSS 3</div>
         <div><strong>Testing:</strong> Jest + Playwright</div>
-        <div><strong>Container:</strong> Docker</div>
       </div>
 
       <h2>Essential Commands</h2>
@@ -546,10 +545,9 @@ tmux attach -t autocrate`}
 
       <p><strong>You get:</strong></p>
       <ul>
-        <li>5 panes ready for parallel work</li>
+        <li>4 panes ready for parallel work</li>
         <li>Feature A workspace (top-left)</li>
         <li>Feature B workspace (top-right)</li>
-        <li>Docker logs (middle)</li>
         <li>Test runner (bottom-left)</li>
         <li>Status monitor (bottom-right)</li>
       </ul>
@@ -566,10 +564,7 @@ git checkout -b feature/klimp-spacing
 claude code
 # Tell Claude: "Adjust klimp spacing to allow 0.5 inch increments"
 
-# In Pane 2 (Docker):
-docker compose up
-
-# In Pane 3 (Tests):
+# In Pane 2 (Tests):
 npm test:watch`}
       </pre>
 
@@ -590,7 +585,7 @@ make help
 
 # Start everything in parallel:
 make parallel-dev
-# This runs: dev server + test watcher + docker containers
+# This runs: dev server + test watcher
 
 # In separate terminals:
 # Terminal 1: Feature A
@@ -781,8 +776,6 @@ tmux attach -t autocrate`}
 │  Feature A           │  Feature B           │
 │  (Claude Code)       │  (Claude Code)       │
 │  branch: feat-A      │  branch: feat-B      │
-├──────────────────────┴──────────────────────┤
-│  Docker logs (main branch)                  │
 ├──────────────────────┬──────────────────────┤
 │  Test runner (watch) │  Status monitor      │
 └──────────────────────┴──────────────────────┘`}
@@ -814,7 +807,7 @@ tmux attach -t autocrate`}
 
       <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded">
 {`make help              # Show all commands
-make parallel-dev      # Run dev + tests + docker
+make parallel-dev      # Run dev + tests in parallel
 make new-feature NAME=x  # Create feature branch
 make work-status       # Show current work`}
       </pre>
