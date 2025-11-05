@@ -54,15 +54,17 @@ export async function GET() {
   const updatedBy = packageJson.maintainer || vercelAuthor || 'unknown@designviz.com'
 
   // Extract issue number from available metadata sources
-  const branchMatch = branch.match(/issue[_-](\d+)/i)
+  // Priority order: commit message > branch name > package.json tiNumber
+  // This ensures production shows the latest merged PR's issue number, not stale package.json values
   const commitMatch = lastChange.match(/\(#(\d+)\)/)
+  const branchMatch = branch.match(/issue[_-](\d+)/i)
   const packageMatch = typeof packageJson.tiNumber === 'string'
     ? packageJson.tiNumber.match(/(\d+)/)
     : null
   const issueNumber =
-    branchMatch?.[1] ||
-    commitMatch?.[1] ||
-    packageMatch?.[1] ||
+    commitMatch?.[1] ||  // Prioritize commit message (PR merge commits)
+    branchMatch?.[1] ||  // Then branch name
+    packageMatch?.[1] || // Finally package.json (fallback)
     '0'
 
   // Generate smart test instructions based on commit message
