@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { readFile } from 'fs/promises'
 import { join } from 'path'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export interface ProjectMetadata {
   version: string
   tiNumber: string  // Deprecated - kept for backwards compatibility

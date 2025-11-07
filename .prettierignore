@@ -1,0 +1,20 @@
+# GitHub Actions workflows
+.github/workflows/*.yml
+
+# Coverage reports
+coverage/
+
+# Build outputs
+.next/
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+
+# Environment files
+.env*
+

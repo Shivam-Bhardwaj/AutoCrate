@@ -128,6 +128,28 @@ See **[CLAUDE_AGENTS_GUIDE.md](CLAUDE_AGENTS_GUIDE.md)** for complete usage guid
 
 ## Development
 
+### GitHub Actions Workflow
+
+AutoCrate uses **minimal GitHub Actions** for automated workflows:
+
+- **Just provide a GitHub issue link** - system handles setup automatically
+- **Automated PR checks** - validates version bumps, runs tests
+- **CI pipeline** - fast feedback on all branches
+- **Auto-merge** - optional automatic merging after checks pass
+
+See **[docs/GITHUB_ACTIONS_WORKFLOW.md](docs/GITHUB_ACTIONS_WORKFLOW.md)** for complete guide.
+
+**Quick start:**
+
+```bash
+# Process issue link
+./scripts/process-issue-link.sh https://github.com/Shivam-Bhardwaj/AutoCrate/issues/124
+
+# Work in isolated workspace
+cd issues/124
+# Make changes, test, commit, push, create PR
+```
+
 ### Project Structure
 
 ```
@@ -137,6 +159,12 @@ src/
 │   └── CrateVisualizer.tsx
 ├── lib/             # Core logic
 │   └── nx-generator.ts
+.github/
+└── workflows/       # GitHub Actions workflows
+    ├── ci.yml       # CI pipeline
+    ├── pr-checks.yml # PR validation
+    ├── issue-setup.yml # Issue automation
+    └── auto-merge.yml # Auto merge
 ```
 
 ### Key Files
@@ -144,6 +172,7 @@ src/
 - `nx-generator.ts` - NX expression generation logic
 - `CrateVisualizer.tsx` - 3D visualization component
 - `page.tsx` - Main application interface
+- `.github/workflows/` - GitHub Actions automation
 
 ## Project Maintainer
 

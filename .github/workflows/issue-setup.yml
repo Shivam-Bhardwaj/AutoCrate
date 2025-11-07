@@ -1,0 +1,89 @@
+name: Issue Setup Automation
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'GitHub Issue Number'
+        required: true
+        type: string
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  setup-branch:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'issues' && contains(github.event.label.name, 'ready'))
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract issue number
+        id: issue
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "number=${{ github.event.inputs.issue_number }}" >> $GITHUB_OUTPUT
+          else
+            echo "number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get issue details
+        id: issue-details
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = '${{ steps.issue.outputs.number }}';
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber
+            });
+            
+            core.setOutput('title', issue.title);
+            core.setOutput('body', issue.body || '');
+            core.setOutput('number', issue.number);
+            
+            return {
+              title: issue.title,
+              body: issue.body || '',
+              number: issue.number
+            };
+
+      - name: Create branch
+        run: |
+          ISSUE_NUM="${{ steps.issue.outputs.number }}"
+          BRANCH_NAME="sbl-${ISSUE_NUM}"
+          
+          # Check if branch exists
+          if git ls-remote --heads origin "$BRANCH_NAME" | grep -q "$BRANCH_NAME"; then
+            echo "Branch $BRANCH_NAME already exists"
+            git checkout "$BRANCH_NAME"
+          else
+            git checkout -b "$BRANCH_NAME" origin/main
+            git push -u origin "$BRANCH_NAME"
+          fi
+
+      - name: Comment on issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = '${{ steps.issue.outputs.number }}';
+            const branchName = `sbl-${issueNumber}`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: `✅ Branch \`${branchName}\` has been created and is ready for development.
+
+**Next steps:**
+1. Checkout the branch locally: \`git fetch && git checkout ${branchName}\`
+2. Or use the worktree script: \`./scripts/worktree-issue.sh ${issueNumber}\`
+3. Make your changes and push to this branch
+4. Create a PR that closes this issue: \`Closes #${issueNumber}\``
+            });
+
