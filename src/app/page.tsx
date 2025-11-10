@@ -571,6 +571,7 @@ export default function Home() {
             <div>
               <h1 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 dark:text-gray-100">AutoCrate</h1>
               <p className="text-xs text-gray-600 dark:text-gray-400 hidden lg:block">Two Diagonal Points Method</p>
+              <p className="text-xs text-blue-600 dark:text-blue-400">Hi Landon!</p>
             </div>
           </div>
 

@@ -3,6 +3,8 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import stepCatalog from '@/lib/step-file-catalog.json'
+import { nxToThreeJS } from '@/lib/coordinate-transform'
+import { VISUAL_MATERIALS } from '@/lib/visual-geometries'
 
 export interface StepBoundingBoxProps {
   stepFileName: string
@@ -32,7 +34,27 @@ export function StepBoundingBox({
     return null
   }
 
-  const { dimensions, boundingBox, color } = catalogEntry
+  const { dimensions, boundingBox, color, type } = catalogEntry
+
+  // Use visual materials for stencils to ensure visibility
+  const isStencil = type === 'stencil'
+  const getMaterial = () => {
+    if (isStencil) {
+      if (stepFileName.includes('FRAGILE')) {
+        return VISUAL_MATERIALS.stencilFragile.clone()
+      }
+      return VISUAL_MATERIALS.stencilHandling.clone()
+    }
+    return new THREE.MeshStandardMaterial({
+      color: color,
+      metalness: 0.3,
+      roughness: 0.7,
+      opacity: 0.9,
+      transparent: true
+    })
+  }
+
+  const material = useMemo(() => getMaterial(), [isStencil, stepFileName, color])
 
   // Calculate size from bounding box dimensions
   const size = {
@@ -41,16 +63,12 @@ export function StepBoundingBox({
     z: boundingBox.dimensions.depth,
   }
 
-  // Convert NX coordinates to Three.js coordinates
-  // NX: X=width, Y=length/depth, Z=height
-  // Three.js: X=width, Y=height, Z=-depth
+  // Convert NX coordinates to Three.js coordinates using utility
+  const position3D = nxToThreeJS({ x: position[0], y: position[1], z: position[2] })
+
   return (
     <mesh
-      position={[
-        position[0] * scale,
-        position[2] * scale,
-        -position[1] * scale
-      ]}
+      position={position3D}
       rotation={rotation}
     >
       <boxGeometry args={[
@@ -58,13 +76,7 @@ export function StepBoundingBox({
         size.z * scale,
         size.y * scale
       ]} />
-      <meshStandardMaterial
-        color={color}
-        metalness={0.3}
-        roughness={0.7}
-        opacity={0.9}
-        transparent
-      />
+      <primitive object={material} attach="material" />
     </mesh>
   )
 }

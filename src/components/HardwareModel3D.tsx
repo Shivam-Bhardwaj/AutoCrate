@@ -12,6 +12,7 @@ import {
   COMPONENT_MATERIALS
 } from '@/lib/hardcoded-geometries'
 import { NXBox } from '@/lib/nx-generator'
+import { nxToThreeJS, nxCenter } from '@/lib/coordinate-transform'
 
 interface Hardware3DProps {
   position?: [number, number, number]
@@ -34,12 +35,9 @@ export function Klimp3D({
   // Create geometry once
   const geometry = useMemo(() => createKlimpGeometry(), [])
 
-  // Calculate position from box
-  const center = {
-    x: (box.point1.x + box.point2.x) / 2,
-    y: (box.point1.y + box.point2.y) / 2,
-    z: (box.point1.z + box.point2.z) / 2,
-  }
+  // Calculate position from box using utility function
+  const center = nxCenter(box.point1, box.point2)
+  const position = nxToThreeJS(center)
 
   // Determine rotation based on edge
   const getRotation = (): [number, number, number] => {
@@ -70,7 +68,7 @@ export function Klimp3D({
       ref={meshRef}
       geometry={geometry}
       material={COMPONENT_MATERIALS.klimp}
-      position={[center.x * scale, center.z * scale, -center.y * scale]}
+      position={position}
       rotation={rotation}
       scale={scale}
       castShadow
