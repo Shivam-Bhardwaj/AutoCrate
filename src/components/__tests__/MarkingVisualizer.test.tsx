@@ -38,7 +38,8 @@ describe('MarkingVisualizer', () => {
       makePanel('BACK_PANEL')
     ]
 
-    render(<MarkingVisualizer boxes={boxes} generator={generator} />)
+    // Test text rendering mode (useBoundingBox=false)
+    render(<MarkingVisualizer boxes={boxes} generator={generator} useBoundingBox={false} />)
 
     expect(screen.getAllByTestId('drei-plane').length).toBeGreaterThan(0)
     expect(screen.getAllByText(/FRAGILE/i).length).toBeGreaterThan(0)
