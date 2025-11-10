@@ -8,6 +8,7 @@ import { KlimpBoundingBox, useStepDimensions } from './StepBoundingBox'
 import { OrientationDetector } from '@/lib/orientation-detector'
 import { StepFileViewer } from './StepFileViewer'
 import { Klimp3D } from './HardwareModel3D'
+import { VisualKlimp } from './VisualKlimp'
 import { nxToThreeJS, nxCenter } from '@/lib/coordinate-transform'
 
 interface KlimpModelProps {
@@ -16,11 +17,21 @@ interface KlimpModelProps {
   onError?: () => void
   useBoundingBox?: boolean  // Control whether to use bounding box, GLB, or STEP
   useStepFile?: boolean  // New prop to use actual STEP file geometry
-  use3DModel?: boolean  // Use hardcoded 3D model (most reliable)
+  use3DModel?: boolean  // Use hardcoded 3D model
+  useVisualModel?: boolean  // Use simplified visual model (default: true)
 }
 
 // Component to load and display actual Klimp 3D model or bounding box
-export function KlimpModel({ box, scale = 0.1, onError, useBoundingBox = false, useStepFile = false, use3DModel = true }: KlimpModelProps) {
+// Defaults to VisualKlimp (simplified, guaranteed to render) for reliable visual representation
+export function KlimpModel({ 
+  box, 
+  scale = 0.1, 
+  onError, 
+  useBoundingBox = false, 
+  useStepFile = false, 
+  use3DModel = false,
+  useVisualModel = true  // Default to visual model for reliability
+}: KlimpModelProps) {
   const groupRef = useRef<Group>(null)
   const [useBox, setUseBox] = useState(useBoundingBox && !useStepFile)
 
@@ -48,7 +59,12 @@ export function KlimpModel({ box, scale = 0.1, onError, useBoundingBox = false, 
     return [orientation.rotation.x, orientation.rotation.y, orientation.rotation.z]
   }
 
-  // Use hardcoded 3D model (most reliable option)
+  // Default: Use VisualKlimp (simplified, guaranteed to render)
+  if (useVisualModel && !use3DModel && !useStepFile && !useBox) {
+    return <VisualKlimp box={box} scale={scale} />
+  }
+
+  // Use hardcoded 3D model if explicitly requested
   if (use3DModel) {
     return <Klimp3D box={box} scale={scale} />
   }
@@ -146,10 +162,9 @@ export function KlimpModel({ box, scale = 0.1, onError, useBoundingBox = false, 
       />
     )
   } catch (error) {
-    // If GLB model doesn't exist or fails to load, fall back to bounding box
-    setUseBox(true)
-    onError?.()
-    return null
+    // If GLB model doesn't exist or fails to load, fall back to VisualKlimp
+    console.warn('GLB model failed to load, falling back to VisualKlimp')
+    return <VisualKlimp box={box} scale={scale} />
   }
 }
 
