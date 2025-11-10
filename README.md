@@ -79,9 +79,9 @@ See **[CLAUDE_AGENTS_GUIDE.md](CLAUDE_AGENTS_GUIDE.md)** for complete usage guid
 
 ## Documentation
 
-- [Documentation index](docs/README.md)
-- [STEP to Web Conversion guide](docs/STEP_TO_WEB_CONVERSION.md)
-- [Web stack primer (HTML)](docs/web-stack-overview.html)
+- **Workflow Guides**: See [`docs/workflow/`](docs/workflow/) for the multi-LLM development workflow and handoff docs.
+- **Architecture & Guides**: Explore [`docs/`](docs/) for technical references, including the architecture overview and conversion guides.
+- **Historical Archive**: Browse [`docs/archive/`](docs/archive/) for legacy agent handoffs and prior delivery summaries.
 
 3. **Export Files**
    - Click "Download NX Expressions" for .exp file

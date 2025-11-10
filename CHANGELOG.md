@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+#### Tutorial Overlay
+
+- **Text Overlap** - Fixed overlapping text in tutorial overlay between expressions section and tips section by adding proper spacing (mb-4 on expressions container, mt-3 on tips list)
+
 #### 3D Visualization
 
 - **Datum Plane Scaling** - Datum planes now scale proportionally (40% of max dimension) to model size, preventing oversized planes on small crates

@@ -1,237 +1,294 @@
 # AutoCrate Development Scripts
 
-This directory contains helper scripts to streamline development workflows.
+Essential scripts for the AutoCrate multi-LLM development workflow.
 
-## 🚀 Quick Start
+## 🚀 Quick Start - Multi-LLM Workflow
 
 ### Working on a GitHub Issue
 
 ```bash
-# Method 1: Using issue number
-./scripts/issue-workflow.sh 77
+# Create worktree for issue #123
+./scripts/worktree-issue.sh 123
 
-# Method 2: Using GitHub URL
-./scripts/issue-workflow.sh https://github.com/Shivam-Bhardwaj/AutoCrate/issues/77
+# Or work on it with specific LLM
+./scripts/work-on-issue.sh 123 claude
+./scripts/work-on-issue.sh 123 codex
 
-# Method 3: Using multi-file helper
-./scripts/multi-file-helper.sh issue 77
-```
+# Assign to LLM
+./scripts/assign-issue.sh 123 claude
 
-This will:
+# View assignments
+./scripts/assign-issue.sh --list
 
-- Fetch issue details from GitHub
-- Create a feature branch
-- Set up an issue context file
-- Open relevant files for editing
-- Provide quick commands for testing and PR creation
-
-### Opening Multiple Files
-
-```bash
-# Open core files (main UI, generator, visualizer)
-./scripts/multi-file-helper.sh core
-
-# Open all UI components
-./scripts/multi-file-helper.sh ui
-
-# Open hardware-related files
-./scripts/multi-file-helper.sh hardware
-
-# Search for a pattern
-./scripts/multi-file-helper.sh search "PMI"
-
-# Find all TODOs
-./scripts/multi-file-helper.sh todo
-
-# Show project status
-./scripts/multi-file-helper.sh status
+# Clean up closed issues
+./scripts/cleanup-worktrees.sh
 ```
 
 ## 📁 Scripts Overview
 
-### issue-workflow.sh
+### Multi-LLM Workflow Scripts
 
-**Purpose**: Automates the entire workflow for working on GitHub issues.
+#### worktree-issue.sh
 
-**Features**:
-
-- Fetches issue details using GitHub CLI
-- Creates appropriately named feature branches
-- Generates issue context files with all relevant information
-- Creates quick access scripts for returning to issues
-- Handles git operations (stashing, branching, pulling)
-- Provides ready-to-use commands for commits and PRs
-
-**Requirements**:
-
-- GitHub CLI (`gh`) installed and authenticated
-- Git repository with remote configured
+**Purpose**: Create isolated git worktree for an issue.
 
 **Usage**:
 
 ```bash
-./scripts/issue-workflow.sh [issue-number-or-url]
+./scripts/worktree-issue.sh [issue-number]
+./scripts/worktree-issue.sh 123
 ```
 
-**Output**:
+**What it does**:
 
-- `.issue-context-XX.md` - Issue details and notes
-- `.issue-XX-quick.sh` - Quick access script for the issue
-- Feature branch created and checked out
+- Fetches issue details from GitHub
+- Creates worktree in `issues/[NUMBER]/`
+- Creates branch `sbl-[NUMBER]`
+- Generates `.issue-context.md` with issue details
 
-### multi-file-helper.sh
+#### work-on-issue.sh
 
-**Purpose**: Helps open and work with multiple related files simultaneously.
-
-**Features**:
-
-- Pre-defined file groups (core, ui, lib, tests, api, etc.)
-- Pattern search across codebase
-- Find TODO/FIXME comments
-- Show recently modified files
-- Project status overview
-- Copies file paths to clipboard (if xclip available)
+**Purpose**: Launch LLM in specific issue worktree.
 
 **Usage**:
 
 ```bash
-./scripts/multi-file-helper.sh [command] [options]
+./scripts/work-on-issue.sh [issue-number] [llm-name]
+./scripts/work-on-issue.sh 123 claude
+./scripts/work-on-issue.sh 123 codex
 ```
 
-**Commands**:
+**What it does**:
 
-- `core` - Open core system files
-- `ui` - Open UI components
-- `lib` - Open library files
-- `tests` - Open test files
-- `api` - Open API routes
-- `hardware` - Open hardware-related files
-- `step` - Open STEP export files
-- `plywood` - Open plywood optimization files
-- `search` - Search for pattern
-- `recent` - Show recent files
-- `todo` - Find TODOs
-- `status` - Show project status
+- Changes to issue worktree
+- Shows context (branch, issue info)
+- Launches specified LLM
 
-### tmux-autocrate.sh
+#### assign-issue.sh
 
-**Purpose**: Creates a tmux session with multiple panes for parallel development.
-
-**Features**:
-
-- 5-pane layout for different workflows
-- Pre-configured windows for features, testing, monitoring
-- Automatic session management
+**Purpose**: Track which LLM is working on which issue.
 
 **Usage**:
 
 ```bash
-./scripts/tmux-autocrate.sh
+# Assign issue to LLM
+./scripts/assign-issue.sh 123 claude
+
+# List assignments
+./scripts/assign-issue.sh --list
+
+# Free/unassign issue
+./scripts/assign-issue.sh 123 --free
+
+# Mark as in-progress or done
+./scripts/assign-issue.sh 123 --status in-progress
+./scripts/assign-issue.sh 123 --status done
 ```
 
-## 🔧 Configuration
+#### cleanup-worktrees.sh
 
-### Setting Up GitHub CLI
+**Purpose**: Remove worktrees for closed GitHub issues.
 
-If you haven't set up GitHub CLI:
+**Usage**:
 
 ```bash
-# Install (Ubuntu/Debian)
-sudo apt install gh
+# Interactive cleanup (asks for confirmation)
+./scripts/cleanup-worktrees.sh
 
-# Install (macOS)
-brew install gh
+# Dry run (see what would be removed)
+./scripts/cleanup-worktrees.sh --dry-run
 
-# Configure authentication
+# Clean specific issue
+./scripts/cleanup-worktrees.sh 123
+
+# Force cleanup (no confirmation)
+./scripts/cleanup-worktrees.sh --force
+```
+
+#### show-llm-context.sh
+
+**Purpose**: Display context information for LLMs.
+
+**Usage**:
+
+```bash
+./scripts/show-llm-context.sh
+```
+
+**Shows**:
+
+- Current directory location
+- Git branch
+- Issue number (if in worktree)
+- Issue context file location
+
+---
+
+### Development & Deployment Scripts
+
+#### deploy.sh
+
+**Purpose**: Bump version and deploy to Vercel.
+
+**Usage**:
+
+```bash
+./scripts/deploy.sh patch  # 1.0.0 → 1.0.1
+./scripts/deploy.sh minor  # 1.0.0 → 1.1.0
+./scripts/deploy.sh major  # 1.0.0 → 2.0.0
+```
+
+#### create-pr.sh
+
+**Purpose**: Create pull request for current branch.
+
+**Usage**:
+
+```bash
+./scripts/create-pr.sh
+```
+
+---
+
+### Build & Test Scripts (Used by pre-commit hooks)
+
+#### run-tsc.js
+
+**Purpose**: TypeScript type checking for pre-commit hook.
+
+**Usage**: Automatically run by Husky pre-commit hook.
+
+#### test-runner.js
+
+**Purpose**: Comprehensive test suite runner.
+
+**Usage**: Automatically run by pre-commit hook.
+
+```bash
+node scripts/test-runner.js
+```
+
+**Runs**:
+
+- TypeScript type check
+- Next.js production build
+- Jest unit tests
+- STEP file validation
+- npm security audit
+
+#### security-agent.js
+
+**Purpose**: Scan for secrets in commits.
+
+**Usage**: Automatically run by pre-commit hook.
+
+#### sync-version.js
+
+**Purpose**: Sync version number across all files.
+
+**Usage**:
+
+```bash
+node scripts/sync-version.js
+```
+
+---
+
+### Utility Scripts
+
+#### multi-file-helper.sh
+
+**Purpose**: Open groups of related files.
+
+**Usage**:
+
+```bash
+# File groups
+./scripts/multi-file-helper.sh core      # Core system files
+./scripts/multi-file-helper.sh ui        # UI components
+./scripts/multi-file-helper.sh lib       # Library files
+./scripts/multi-file-helper.sh tests     # Test files
+./scripts/multi-file-helper.sh api       # API routes
+./scripts/multi-file-helper.sh hardware  # Hardware files
+./scripts/multi-file-helper.sh step      # STEP export files
+
+# Search operations
+./scripts/multi-file-helper.sh search "PMI"
+./scripts/multi-file-helper.sh todo
+./scripts/multi-file-helper.sh recent
+./scripts/multi-file-helper.sh status
+```
+
+---
+
+## 🔧 Setup Requirements
+
+### GitHub CLI
+
+All worktree scripts require GitHub CLI:
+
+```bash
+# Install
+sudo apt install gh          # Ubuntu/Debian
+brew install gh              # macOS
+
+# Authenticate
 gh auth login
 ```
 
-### Making Scripts Available Globally
-
-Add to your shell configuration (`~/.bashrc` or `~/.zshrc`):
+### Make Scripts Executable
 
 ```bash
-# AutoCrate helpers
-alias ac-issue='~/workspace/AutoCrate/scripts/issue-workflow.sh'
-alias ac-files='~/workspace/AutoCrate/scripts/multi-file-helper.sh'
-alias ac-tmux='~/workspace/AutoCrate/scripts/tmux-autocrate.sh'
-
-# Quick shortcuts
-alias ac-core='ac-files core'
-alias ac-search='ac-files search'
-alias ac-todo='ac-files todo'
-alias ac-status='ac-files status'
+chmod +x scripts/*.sh
 ```
 
-Then reload your shell:
+---
+
+## 📂 Archive
+
+Platform-specific and obsolete scripts are in `scripts/archive/`:
+
+- `rpi5-setup.sh` - Raspberry Pi 5 setup (rarely needed)
+
+---
+
+## 💡 Workflow Tips
+
+### Parallel Development
+
+Multiple LLMs can work simultaneously:
 
 ```bash
-source ~/.bashrc  # or ~/.zshrc
+# Terminal 1: Claude on issue 140
+./scripts/work-on-issue.sh 140 claude
+
+# Terminal 2: Codex on issue 149
+./scripts/work-on-issue.sh 149 codex
 ```
 
-## 💡 Tips
-
-### Working on Multiple Issues
-
-You can have multiple issue workspaces:
+### Monitoring Active Work
 
 ```bash
-# Start issue 77
-./scripts/issue-workflow.sh 77
-# Work on it...
-
-# Switch to issue 78
-git stash
-./scripts/issue-workflow.sh 78
-# Work on it...
-
-# Return to issue 77
-git checkout issue-77-[branch-name]
-git stash pop
-./.issue-77-quick.sh
+./scripts/assign-issue.sh --list
 ```
 
-### Quick File Access in VS Code
+### Regular Cleanup
 
-The multi-file helper copies paths to clipboard. In VS Code:
-
-1. Run: `./scripts/multi-file-helper.sh core`
-2. Press `Ctrl+P` (Quick Open)
-3. Paste the file paths
-4. VS Code will open all files in tabs
-
-### Combining with Editor
-
-For Neovim users:
+After merging PRs:
 
 ```bash
-# Open core files in Neovim
-nvim $(./scripts/multi-file-helper.sh core | tail -1)
-
-# Open files with search results
-nvim $(grep -l "PMI" src/**/*.tsx)
+./scripts/cleanup-worktrees.sh
 ```
 
-For VS Code users:
-
-```bash
-# Open core files in VS Code
-code $(./scripts/multi-file-helper.sh core | tail -1)
-```
+---
 
 ## 🐛 Troubleshooting
 
 ### "gh: command not found"
 
-Install GitHub CLI:
-
-- Ubuntu/Debian: `sudo apt install gh`
-- macOS: `brew install gh`
-- Other: https://cli.github.com/
+Install GitHub CLI (see Setup Requirements).
 
 ### "Permission denied"
-
-Make scripts executable:
 
 ```bash
 chmod +x scripts/*.sh
@@ -239,31 +296,37 @@ chmod +x scripts/*.sh
 
 ### Can't fetch issue details
 
-Authenticate with GitHub:
-
 ```bash
 gh auth login
 ```
 
-### Scripts not finding files
-
-Ensure you're in the project root:
+### Worktree already exists
 
 ```bash
-cd /path/to/AutoCrate
-./scripts/issue-workflow.sh 77
+# Remove existing worktree
+git worktree remove issues/123 --force
+
+# Or clean up all closed issues
+./scripts/cleanup-worktrees.sh
 ```
 
-## 📝 Contributing
+---
 
-To add new scripts or improve existing ones:
+## 📝 Script Development
 
-1. Follow the existing patterns (colors, error handling, usage info)
-2. Make scripts executable: `chmod +x script-name.sh`
-3. Update this README with documentation
-4. Test on both Linux and macOS if possible
-5. Use shellcheck for validation: `shellcheck script-name.sh`
+When adding new scripts:
 
-## 📄 License
+1. Follow naming convention: `kebab-case.sh` or `kebab-case.js`
+2. Add execute permissions: `chmod +x script-name.sh`
+3. Include usage documentation at top of script
+4. Update this README
+5. Use shellcheck for bash scripts: `shellcheck script-name.sh`
 
-These scripts are part of the AutoCrate project and follow the same license.
+---
+
+## 📄 Related Documentation
+
+- [Worktree Workflow](../docs/workflow/WORKTREE_WORKFLOW.md)
+- [LLM Onboarding](../docs/workflow/LLM_ONBOARDING.md)
+- [Assigning Tasks](../docs/workflow/ASSIGNING_TASKS.md)
+- [Quick Start](../docs/workflow/QUICK_START.md)

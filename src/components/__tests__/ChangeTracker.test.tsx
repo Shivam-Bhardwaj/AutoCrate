@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { ChangeTracker } from '../ChangeTracker'
 
 // Mock fetch
@@ -38,11 +38,15 @@ describe('ChangeTracker', () => {
 
     render(<ChangeTracker />)
 
+    const formattedTimestamp = new Date(mockMetadata.timestamp).toLocaleString()
+
     await waitFor(() => {
       expect(screen.getByText(/Issue #83/)).toBeInTheDocument()
       expect(screen.getByText(/improve dark mode visibility/)).toBeInTheDocument()
       expect(screen.getByText(/v13\.3\.0/)).toBeInTheDocument()
       expect(screen.getByText(/abc1234/)).toBeInTheDocument()
+      expect(screen.getAllByText(/by test/)[0]).toBeInTheDocument()
+      expect(screen.getAllByText(formattedTimestamp)[0]).toBeInTheDocument()
     })
   })
 
@@ -58,81 +62,57 @@ describe('ChangeTracker', () => {
     })
   })
 
-  it('should toggle expanded state on click', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      json: async () => mockMetadata
-    })
-
-    render(<ChangeTracker />)
-
-    await waitFor(() => {
-      expect(screen.getByText(/improve dark mode visibility/)).toBeInTheDocument()
-    })
-
-    // Should not show checklist initially
-    expect(screen.queryByText('Visual Testing Checklist:')).not.toBeInTheDocument()
-
-    // Click to expand
-    const banner = screen.getByText(/improve dark mode visibility/).closest('div')
-    if (banner) {
-      fireEvent.click(banner)
-    }
-
-    // Should show checklist
-    await waitFor(() => {
-      expect(screen.getByText('Visual Testing Checklist:')).toBeInTheDocument()
-    })
-  })
-
-  it('should generate test items based on change title', async () => {
+  it('should fall back to issue number in commit message when branch is missing', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       json: async () => ({
         ...mockMetadata,
-        lastChange: 'feat: add 3D visualization export button'
+        issueNumber: '0',
+        branch: 'main',
+        lastChange: 'fix: header shows wrong issue (#147)'
       })
     })
 
     render(<ChangeTracker />)
 
     await waitFor(() => {
-      const banner = screen.getByText(/3D visualization export/).closest('div')
-      if (banner) {
-        fireEvent.click(banner)
-      }
-    })
-
-    await waitFor(() => {
-      expect(screen.getByText(/Verify 3D crate visualization renders properly/)).toBeInTheDocument()
-      expect(screen.getByText(/Verify file export\/download works/)).toBeInTheDocument()
+      expect(screen.getByText(/Issue #147/)).toBeInTheDocument()
     })
   })
 
-  it('should track checked items', async () => {
+  it('should fall back to tiNumber when other sources missing', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
-      json: async () => mockMetadata
+      json: async () => ({
+        ...mockMetadata,
+        issueNumber: '0',
+        branch: 'main',
+        tiNumber: 'TI-205-CUSTOM',
+        lastChange: 'docs: update handbook'
+      })
     })
 
     render(<ChangeTracker />)
 
     await waitFor(() => {
-      const banner = screen.getByText(/improve dark mode visibility/).closest('div')
-      if (banner) {
-        fireEvent.click(banner)
-      }
+      expect(screen.getByText(/Issue #205/)).toBeInTheDocument()
+    })
+  })
+
+  it('should render placeholder when no issue information is available', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      json: async () => ({
+        ...mockMetadata,
+        issueNumber: '0',
+        branch: 'main',
+        tiNumber: 'TI-PLACEHOLDER',
+        lastChange: 'chore: run cleanup'
+      })
     })
 
+    render(<ChangeTracker />)
+
     await waitFor(() => {
-      const checkboxes = screen.getAllByRole('checkbox')
-      expect(checkboxes.length).toBeGreaterThan(0)
-
-      // Should show 0/N tested initially
-      expect(screen.getByText(/0\/\d+ tested/)).toBeInTheDocument()
-
-      // Check first checkbox
-      fireEvent.click(checkboxes[0])
-
-      // Should update counter
-      expect(screen.getByText(/1\/\d+ tested/)).toBeInTheDocument()
+      expect(screen.getByText('Issue #N/A')).toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: /Issue/ })).not.toBeInTheDocument()
     })
   })
 
@@ -151,26 +131,6 @@ describe('ChangeTracker', () => {
     })
   })
 
-  it('should display branch and author information when expanded', async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      json: async () => mockMetadata
-    })
-
-    render(<ChangeTracker />)
-
-    await waitFor(() => {
-      const banner = screen.getByText(/improve dark mode visibility/).closest('div')
-      if (banner) {
-        fireEvent.click(banner)
-      }
-    })
-
-    await waitFor(() => {
-      expect(screen.getByText(/feature\/issue-83-dark-mode/)).toBeInTheDocument()
-      expect(screen.getByText(/by test/)).toBeInTheDocument()
-    })
-  })
-
   it('should remove conventional commit prefixes from title', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       json: async () => ({
@@ -186,26 +146,19 @@ describe('ChangeTracker', () => {
       expect(screen.queryByText('feat:')).not.toBeInTheDocument()
     })
   })
-
-  it('should handle UI-related changes', async () => {
+  it('should not render additional sections', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
-      json: async () => ({
-        ...mockMetadata,
-        lastChange: 'update UI components and display'
-      })
+      json: async () => mockMetadata
     })
 
     render(<ChangeTracker />)
 
     await waitFor(() => {
-      const banner = screen.getByText(/UI components/).closest('div')
-      if (banner) {
-        fireEvent.click(banner)
-      }
+      expect(screen.getByText(/Issue #83/)).toBeInTheDocument()
     })
 
-    await waitFor(() => {
-      expect(screen.getByText(/Check that the UI displays correctly/)).toBeInTheDocument()
-    })
+    expect(screen.queryByText('Visual Testing Checklist:')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Check that the UI displays correctly/)).not.toBeInTheDocument()
+    expect(screen.queryByText(mockMetadata.branch)).not.toBeInTheDocument()
   })
 })

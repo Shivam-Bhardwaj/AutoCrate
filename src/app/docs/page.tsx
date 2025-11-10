@@ -1,26 +1,35 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
 
 export default function DocsPage() {
+  const [activeTab, setActiveTab] = useState<'web' | 'nx'>('web')
   const [activeDoc, setActiveDoc] = useState<string>('overview')
+  const webTabRef = useRef<HTMLButtonElement>(null)
+  const nxTabRef = useRef<HTMLButtonElement>(null)
 
-  const docs = [
+  const webDocs = [
     { id: 'overview', title: 'Documentation Overview', category: 'Getting Started' },
-    { id: 'quickstart', title: 'Quick Start Guide', category: 'Getting Started' },
+    { id: 'quickstart', title: 'Issue Workflow (LLM)', category: 'Getting Started' },
     { id: 'parallel-workflow', title: 'Parallel Development Workflow', category: 'Development' },
     { id: 'modules', title: 'Module Architecture', category: 'Development' },
-    { id: 'project-status', title: 'Project Status & Memory', category: 'Development' },
-    { id: 'work-log', title: 'Work Log', category: 'Development' },
     { id: 'testing', title: 'Testing Guide', category: 'Quality' },
     { id: 'claude-guide', title: 'Claude Code Guide', category: 'AI Development' },
   ]
 
-  const categories = Array.from(new Set(docs.map(d => d.category)))
+  const nxDocs = [
+    { id: 'nx-instructions', title: 'NX: Recreate Crate Geometry', category: 'Guides' },
+    { id: 'nx-expressions', title: 'Expressions Reference', category: 'Reference' },
+    { id: 'nx-assembly', title: 'Assembly Structure', category: 'Reference' },
+    { id: 'nx-troubleshooting', title: 'Troubleshooting', category: 'Guides' },
+  ]
+
+  const currentDocs = activeTab === 'web' ? webDocs : nxDocs
+  const categories = Array.from(new Set(currentDocs.map(d => d.category)))
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen h-screen overflow-y-auto bg-gray-50 dark:bg-gray-950">
       {/* Header */}
       <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -35,6 +44,59 @@ export default function DocsPage() {
             Back to App
           </Link>
         </div>
+        {/* Tabs (ARIA) */}
+        <div
+          className="max-w-7xl mx-auto mt-3 flex items-center gap-2"
+          role="tablist"
+          aria-label="Documentation Tabs"
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+              e.preventDefault()
+              const next = activeTab === 'web' ? 'nx' : 'web'
+              setActiveTab(next)
+              setActiveDoc(next === 'web' ? 'overview' : 'nx-instructions')
+              const ref = next === 'web' ? webTabRef.current : nxTabRef.current
+              ref?.focus()
+            }
+            if (e.key === 'Home') {
+              e.preventDefault()
+              setActiveTab('web')
+              setActiveDoc('overview')
+              webTabRef.current?.focus()
+            }
+            if (e.key === 'End') {
+              e.preventDefault()
+              setActiveTab('nx')
+              setActiveDoc('nx-instructions')
+              nxTabRef.current?.focus()
+            }
+          }}
+        >
+          <button
+            id="tab-web"
+            ref={webTabRef}
+            role="tab"
+            aria-selected={activeTab === 'web'}
+            aria-controls="panel-web"
+            tabIndex={activeTab === 'web' ? 0 : -1}
+            onClick={() => { setActiveTab('web'); setActiveDoc('overview') }}
+            className={`px-3 py-1.5 rounded border text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${activeTab === 'web' ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700'}`}
+          >
+            Web App
+          </button>
+          <button
+            id="tab-nx"
+            ref={nxTabRef}
+            role="tab"
+            aria-selected={activeTab === 'nx'}
+            aria-controls="panel-nx"
+            tabIndex={activeTab === 'nx' ? 0 : -1}
+            onClick={() => { setActiveTab('nx'); setActiveDoc('nx-instructions') }}
+            className={`px-3 py-1.5 rounded border text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${activeTab === 'nx' ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700'}`}
+          >
+            NX
+          </button>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto p-4">
@@ -46,7 +108,7 @@ export default function DocsPage() {
               <div key={category} className="mb-4">
                 <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">{category}</h3>
                 <div className="space-y-1">
-                  {docs.filter(d => d.category === category).map(doc => (
+                  {currentDocs.filter(d => d.category === category).map(doc => (
                     <button
                       key={doc.id}
                       onClick={() => setActiveDoc(doc.id)}
@@ -66,24 +128,315 @@ export default function DocsPage() {
 
           {/* Main Content */}
           <main className="lg:col-span-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
-            {activeDoc === 'overview' && <OverviewDoc />}
-            {activeDoc === 'quickstart' && <QuickStartDoc />}
-            {activeDoc === 'parallel-workflow' && <ParallelWorkflowDoc />}
-            {activeDoc === 'modules' && <ModulesDoc />}
-            {activeDoc === 'project-status' && <ProjectStatusDoc />}
-            {activeDoc === 'work-log' && <WorkLogDoc />}
-            {activeDoc === 'testing' && <TestingDoc />}
-            {activeDoc === 'claude-guide' && <ClaudeGuideDoc />}
+            {/* Web App Docs Panel */}
+            <div
+              id="panel-web"
+              role="tabpanel"
+              aria-labelledby="tab-web"
+              hidden={activeTab !== 'web'}
+            >
+              {activeTab === 'web' && (
+                <>
+                  {activeDoc === 'overview' && <OverviewDoc />}
+                  {activeDoc === 'quickstart' && <QuickStartDoc />}
+                  {activeDoc === 'parallel-workflow' && <ParallelWorkflowDoc />}
+                  {activeDoc === 'modules' && <ModulesDoc />}
+                  {activeDoc === 'testing' && <TestingDoc />}
+                  {activeDoc === 'claude-guide' && <ClaudeGuideDoc />}
+                </>
+              )}
+            </div>
+
+            {/* NX Docs Panel */}
+            <div
+              id="panel-nx"
+              role="tabpanel"
+              aria-labelledby="tab-nx"
+              hidden={activeTab !== 'nx'}
+            >
+              {activeTab === 'nx' && (
+                <>
+                  {activeDoc === 'nx-instructions' && <NXInstructionsDoc />}
+                  {activeDoc === 'nx-expressions' && <NXExpressionsReferenceDoc />}
+                  {activeDoc === 'nx-assembly' && <NXAssemblyStructureDoc />}
+                  {activeDoc === 'nx-troubleshooting' && <NXTroubleshootingDoc />}
+                </>
+              )}
+            </div>
           </main>
         </div>
       </div>
+  </div>
+  )
+}
+
+// Modern Issue-first Quick Start (replaces legacy tmux content)
+// Archived tmux-based quick start (kept for reference, not linked)
+function QuickStartTmuxDoc() {
+  return (
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
+      <h1>Issue Workflow (Multi‑LLM)</h1>
+
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+        <p className="font-semibold mb-2">Goal: Isolated worktrees per GitHub issue using project scripts.</p>
+      </div>
+
+      <h2>1) Setup Worktree</h2>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded">{`# Create/use worktree for issue #140
+./scripts/worktree-issue.sh 140
+cd issues/140
+
+# Read the issue context
+cat .issue-context.md`}</pre>
+
+      <h2>2) Assign to Yourself</h2>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded">{`# Track assignment (example: Codex)
+./scripts/assign-issue.sh 140 codex
+
+# View all assignments
+./scripts/assign-issue.sh --list`}</pre>
+
+      <h2>3) Implement & Test</h2>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded">{`npm test               # Jest unit tests
+npm run type-check     # TypeScript type check`}</pre>
+
+      <h2>4) Commit, Push, PR</h2>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded">{`git add -A
+git commit -m "docs(nx): add in-app NX build instructions (#140)"
+git push -u origin sbl-140
+gh pr create --fill`}</pre>
+    </div>
+  )
+}
+
+// New in-app documentation: Siemens NX instructions
+function NXInstructionsDoc() {
+  return (
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
+      <h1>NX: Recreate Crate Geometry</h1>
+
+      <p className="lead">Build the AutoCrate model in Siemens NX using imported expressions and the two‑diagonal‑points method.</p>
+
+      <h2>Prerequisites</h2>
+      <ul>
+        <li>NX 12.0 or newer</li>
+        <li>Units: Inches</li>
+        <li>Origin at crate center bottom (X=0, Y=0, Z=0)</li>
+      </ul>
+
+      <h3>Coordinate System (Diagram)</h3>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`graph LR
+  O[(Origin 0,0,0)] -->|+X| XR[Right]
+  O -->|+Y| YB[Back]
+  O -. out of plane .-> ZU[+Z (Up)]`}</pre>
+
+      <h2>1) Get NX Expressions</h2>
+      <ul>
+        <li>In the app, click <strong>Export NX</strong> to generate expressions.</li>
+        <li>Or call API <code>POST /api/nx-export</code> and save <code>export.content</code> to <code>crate.exp</code>:</li>
+      </ul>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`{
+  "dimensions": { "length": 48, "width": 32, "height": 36 },
+  "weight": 1200,
+  "exportFormat": "expressions",
+  "units": "inch"
+}`}</pre>
+
+      <h2>2) Import in NX</h2>
+      <ol>
+        <li>File → New → Model (Inches).</li>
+        <li>Tools → Expressions → Import… → select <code>crate.exp</code>.</li>
+        <li>Verify: <code>overall_width/length/height</code>, <code>pattern_count</code>, <code>pattern_spacing</code>, and per‑piece parameters are present.</li>
+        <li>Tip: Use the filter/search box in Expressions to find parts like <code>FLOORBOARD_</code>, <code>SKID</code>, <code>SIDE_PANEL</code>.</li>
+      </ol>
+
+      <h2>3) Datum & Axes</h2>
+      <ul>
+        <li>XY at Z=0 (bottom), YZ at X=0 (center), XZ at Y=0 (front).</li>
+      </ul>
+
+      <h2>4) Create Geometry (Two Diagonal Points)</h2>
+      <p>Use Insert → Design Feature → Block → Type: Opposite Corners. Enter expressions directly (click the <strong>fx</strong> icon to bind each field to an expression).</p>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`flowchart TB
+  P1((P1: X1,Y1,Z1)) --- P2((P2: X2,Y2,Z2))
+  P1 -->|WIDTH| W[WIDTH = X2 - X1]
+  P1 -->|LENGTH| L[LENGTH = Y2 - Y1]
+  P1 -->|HEIGHT| H[HEIGHT = Z2 - Z1]`}</pre>
+      <ul>
+        <li><strong>Generic boxes</strong> (e.g., <code>SKID</code>, <code>FLOORBOARD_1</code>): bind the corner coordinates for the specific name, such as <code>SKID_X1</code>/<code>SKID_X2</code>, <code>FLOORBOARD_1_X1</code>/<code>FLOORBOARD_1_X2</code> (repeat for Y and Z).</li>
+        <li><strong>Plywood panels</strong>: expressions follow <code>{'{PANEL}_PLY_{N}_*'}</code>. Example: <code>FRONT_PANEL_PLY_1_X</code>, <code>FRONT_PANEL_PLY_1_Y</code>, <code>FRONT_PANEL_PLY_1_WIDTH</code>, <code>FRONT_PANEL_PLY_1_LENGTH</code>, <code>FRONT_PANEL_PLY_1_HEIGHT</code>, <code>FRONT_PANEL_PLY_1_THICKNESS</code>.</li>
+        <li><strong>Cleats</strong>: expressions follow <code>{'{PANEL}_CLEAT_{N}_*'}</code>, e.g., <code>FRONT_PANEL_CLEAT_1_X</code> … <code>FRONT_PANEL_CLEAT_1_THICKNESS</code> (value exported as 0.750 for 1×4).</li>
+      </ul>
+
+      <h3>Recommended Block Setup (Example)</h3>
+      <pre>{`Insert → Design Feature → Block → Type: Opposite Corners
+
+Corner 1 (X, Y, Z):  = SKID_X1,  = SKID_Y1,  = SKID_Z1
+Corner 2 (X, Y, Z):  = SKID_X2,  = SKID_Y2,  = SKID_Z2
+
+Tip: Click fx next to each field, type the expression name, press Enter.`}</pre>
+
+      <h3>4.1 Skids</h3>
+      <ol>
+        <li>Create one <code>SKID</code> Block from <code>SKID_X1..Z1</code> and <code>SKID_X2..Z2</code>.</li>
+        <li>Pattern (direction X): Count = <code>pattern_count</code>, Spacing = <code>pattern_spacing</code> (center‑to‑center).</li>
+        <li>Name the patterned feature <code>PATTERN_SKID</code> for clarity.</li>
+      </ol>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`flowchart LR\n  S1[SKID#1] --- S2[SKID#2] --- S3[SKID#3] --- S4[SKID#4]\n  classDef note fill:#eef,stroke:#99f,color:#246\n  note:::note--> meta((pattern_count, pattern_spacing))`}</pre>
+
+      <h3>4.2 Floorboards</h3>
+      <ul>
+        <li>Create Blocks for each <code>FLOORBOARD_n</code> using their <code>_X1.._Z1</code> and <code>_X2.._Z2</code> expressions.</li>
+        <li>Suppress features where the export marks them as suppressed.</li>
+      </ul>
+
+      <h3>4.3 Panels (Plywood)</h3>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`Corner: FRONT_PANEL_PLY_1_X, FRONT_PANEL_PLY_1_Y, FRONT_PANEL_PLY_1_Z
+Extents: FRONT_PANEL_PLY_1_WIDTH, FRONT_PANEL_PLY_1_LENGTH
+Thickness: FRONT_PANEL_PLY_1_THICKNESS`}</pre>
+      <p>Each panel piece follows the pattern <code>{'{PANEL}_PLY_{N}'}</code>; bind the exact names such as <code>FRONT_PANEL_PLY_1</code>, <code>BACK_PANEL_PLY_2</code>, <code>RIGHT_END_PANEL_PLY_1</code>.</p>
+
+      <h3>4.4 Cleats</h3>
+      <p>Use the 7 parameters; thickness fixed at 0.750.</p>
+
+      <h3>4.5 Klimp Fasteners</h3>
+      <ol>
+        <li>Import <code>CAD FILES/Crate Spring Clamp.STEP</code> once.</li>
+        <li>For each <code>KLIMP_n</code> with <code>KLIMP_n_ACTIVE=TRUE</code>, place at <code>KLIMP_n_POS_X/Y/Z</code> and rotate by <code>KLIMP_n_ROT_X/Y/Z</code>.</li>
+      </ol>
+
+      <h3>4.6 Lag Screws</h3>
+      <ul>
+        <li>Import <code>CAD FILES/LAG SCREW_0.38 X 2.50.stp</code>.</li>
+        <li>Place under intermediate vertical cleats; use <code>lag_screw_count</code> as quantity guidance.</li>
+      </ul>
+
+      <h3>4.7 Panel Splicing Layout</h3>
+      <p>When a panel exceeds sheet limits, pieces are split and positioned per the export. Vertical splices go to the right; horizontal splices go to the bottom.</p>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`flowchart LR\n  subgraph SIDE_PANEL\n    P1[Piece 1] --- P2[Piece 2] --- P3[Piece 3]\n  end\n  note1((vertical_splice_right)):::note\n  note2((horizontal_splice_bottom)):::note\n  classDef note fill:#eef,stroke:#99f,color:#246`}</pre>
+      <ul>
+        <li>Follow exported <code>{'{PANEL}_PLY_{N}_X/Y/Z'}</code> and <code>{'{PANEL}_PLY_{N}_WIDTH/LENGTH/HEIGHT'}</code> to size/locate each piece.</li>
+        <li>Respect suppression flags for unused pieces.</li>
+      </ul>
+
+      <h3>4.8 Cleat Spacing Rules</h3>
+      <p>Cleats respect edge clearance and maximum spacing. Use expression guidance to place and pattern if needed.</p>
+      <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">{`flowchart TB\n  Start[Edge Clearance] --> S1[First Cleat]\n  S1 -->|<= 16\"| S2[Next Cleat]\n  S2 -->|<= 16\"| S3[Next Cleat]\n  S3 --> End[End Clearance]\n  classDef rule fill:#ecfeff,stroke:#06b6d4,color:#0e7490`}</pre>
+      <ul>
+        <li>Max spacing: 16" (unless otherwise specified in expressions).</li>
+        <li>Maintain minimum edge clearances around openings and edges.</li>
+        <li>Keep minimum 1" clearance from Klimp placements.</li>
+      </ul>
+
+      <h2>5) Validate</h2>
+      <ul>
+        <li>Overall dims match <code>overall_width/length/height</code>.</li>
+        <li>Skid count/spacing match <code>pattern_count</code>/<code>pattern_spacing</code>.</li>
+        <li>Panels and cleats align; clearances respected.</li>
+        <li>Klimp instances only where <code>_ACTIVE=TRUE</code>.</li>
+      </ul>
+
+      <h2>Tips</h2>
+      <ul>
+        <li>Always reference expressions in dialogs (avoid raw numbers).</li>
+        <li>Use feature suppression to reflect <code>_SUPPRESSED</code> flags.</li>
+        <li>Keep origin/axes per export header for predictable placement.</li>
+      </ul>
+    </div>
+  )
+}
+
+function NXExpressionsReferenceDoc() {
+  return (
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
+      <h1>NX Expressions Reference</h1>
+
+      <h2>Global</h2>
+      <ul>
+        <li><code>overall_width</code>, <code>overall_length</code>, <code>overall_height</code> — Overall crate envelope</li>
+        <li><code>pattern_count</code>, <code>pattern_spacing</code> — Skid array along X</li>
+        <li><code>plywood_thickness</code> — Panel piece thickness</li>
+        <li><code>lag_screw_count</code> — Total lag screws (guidance)</li>
+      </ul>
+
+      <h2>Boxes (Two Corners)</h2>
+      <p>Generic solids use two diagonal points:</p>
+      <pre>{`SKID_X1, SKID_Y1, SKID_Z1
+SKID_X2, SKID_Y2, SKID_Z2`}</pre>
+      <p>Floorboards follow the same pattern, e.g., <code>FLOORBOARD_1_X1</code>/<code>FLOORBOARD_1_X2</code>.</p>
+
+      <h2>Plywood Pieces (7 parameters)</h2>
+      <pre>{`FRONT_PANEL_PLY_1_X, FRONT_PANEL_PLY_1_Y, FRONT_PANEL_PLY_1_Z
+FRONT_PANEL_PLY_1_WIDTH, FRONT_PANEL_PLY_1_LENGTH, FRONT_PANEL_PLY_1_HEIGHT
+FRONT_PANEL_PLY_1_THICKNESS`}</pre>
+      <p>Replace the panel/id to match each piece, e.g., <code>BACK_PANEL_PLY_2</code>, <code>LEFT_END_PANEL_PLY_3</code>.</p>
+
+      <h2>Cleats (7 parameters)</h2>
+      <pre>{`FRONT_PANEL_CLEAT_1_X, FRONT_PANEL_CLEAT_1_Y, FRONT_PANEL_CLEAT_1_Z
+FRONT_PANEL_CLEAT_1_WIDTH, FRONT_PANEL_CLEAT_1_LENGTH, FRONT_PANEL_CLEAT_1_HEIGHT
+FRONT_PANEL_CLEAT_1_THICKNESS = 0.750`}</pre>
+      <p>Cleat expressions follow <code>{'{PANEL}_CLEAT_{N}_*'}</code>.</p>
+
+      <h2>Klimp Instances</h2>
+      <pre>{`KLIMP_n_ACTIVE (TRUE/FALSE)
+KLIMP_n_EDGE (TOP/LEFT/RIGHT)
+KLIMP_n_POS_X/Y/Z
+KLIMP_n_ROT_X/Y/Z`}</pre>
+    </div>
+  )
+}
+
+function NXAssemblyStructureDoc() {
+  return (
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
+      <h1>NX Assembly Structure</h1>
+
+      <p>Recommended naming and grouping for clarity:</p>
+      <ul>
+        <li>Part: <code>CRATE_ASM</code></li>
+        <li>Groups: <code>SKIDS</code>, <code>FLOORBOARDS</code>, <code>PANELS</code>, <code>CLEATS</code>, <code>KLIMPS</code>, <code>HARDWARE</code></li>
+        <li>Feature names mirror expression owners (e.g., <code>SIDE_PANEL_PIECE_1</code>)</li>
+      </ul>
+
+      <h2>Layering (optional)</h2>
+      <ul>
+        <li>Layer 1: Datums & reference</li>
+        <li>Layer 10–19: Skids & floorboards</li>
+        <li>Layer 20–39: Panels</li>
+        <li>Layer 40–49: Cleats</li>
+        <li>Layer 50+: Hardware (Klimps, lag screws)</li>
+      </ul>
+    </div>
+  )
+}
+
+function NXTroubleshootingDoc() {
+  return (
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
+      <h1>NX Troubleshooting</h1>
+
+      <h2>Units mismatch</h2>
+      <p>Ensure the NX part is in Inches, and expressions values match inches.</p>
+
+      <h2>Expressions not updating</h2>
+      <ul>
+        <li>Confirm fields are bound via <strong>fx</strong> (not hard values).</li>
+        <li>Reimport or update expressions in Tools → Expressions.</li>
+        <li>Check for name typos (use the Expressions filter).</li>
+      </ul>
+
+      <h2>Flipped directions</h2>
+      <p>Verify origin and axis directions (X right, Y back, Z up). If needed, swap corners so X2≥X1, etc.</p>
+
+      <h2>Suppressed parts</h2>
+      <p>Pieces flagged as suppressed in the export should be suppressed or omitted in NX.</p>
     </div>
   )
 }
 
 function OverviewDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Documentation Overview</h1>
 
       <p className="lead">
@@ -103,9 +456,9 @@ function OverviewDoc() {
       <h2>Quick Links</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose">
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <h3 className="font-semibold text-lg mb-2">Quick Start</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Get started with parallel development in 5 minutes</p>
-          <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">./scripts/tmux-autocrate.sh</code>
+          <h3 className="font-semibold text-lg mb-2">NX Instructions</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Build the crate in Siemens NX</p>
+          <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">Use the NX tab above</code>
         </div>
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <h3 className="font-semibold text-lg mb-2">Parallel Workflow</h3>
@@ -119,7 +472,7 @@ function OverviewDoc() {
         </div>
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <h3 className="font-semibold text-lg mb-2">Testing</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Jest and Playwright testing strategies with 76%+ coverage</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Jest and Playwright testing strategies</p>
           <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">npm run test:all</code>
         </div>
       </div>
@@ -141,7 +494,6 @@ function OverviewDoc() {
         <div><strong>3D:</strong> Three.js + R3F</div>
         <div><strong>Styling:</strong> Tailwind CSS 3</div>
         <div><strong>Testing:</strong> Jest + Playwright</div>
-        <div><strong>Container:</strong> Docker</div>
       </div>
 
       <h2>Essential Commands</h2>
@@ -152,22 +504,19 @@ npm run build            # Production build
 npm test                 # Run tests
 npm run type-check       # TypeScript check
 
-# Parallel Development
-make parallel-dev        # Dev + tests + docker
-make new-feature NAME=x  # Create feature branch
-make work-status         # Check current work`}
+# Issue workflow (multi-LLM)
+./scripts/worktree-issue.sh 140         # Create worktree issues/140
+./scripts/assign-issue.sh 140 codex     # Assign to Codex
+cd issues/140 && cat .issue-context.md  # Read context`}
       </pre>
 
       <h2>Documentation Files</h2>
-      <p>All documentation is now accessible via this web interface. Original markdown files:</p>
+      <p>Primary references in repo:</p>
       <ul>
-        <li><code>CLAUDE.md</code> - Development guidance</li>
-        <li><code>PROJECT_STATUS.md</code> - Real-time work tracking</li>
-        <li><code>MODULES.md</code> - Module boundaries</li>
-        <li><code>WORK_LOG.md</code> - Detailed history</li>
-        <li><code>PARALLEL_WORKFLOW.md</code> - Workflow strategies</li>
-        <li><code>QUICKSTART_PARALLEL.md</code> - Quick reference</li>
-        <li><code>TESTING.md</code> - Testing guide</li>
+        <li><code>docs/START_HERE.md</code> - Getting started</li>
+        <li><code>docs/ARCHITECTURE.md</code> - System overview</li>
+        <li><code>docs/TESTING_GUIDE.md</code> - Testing guide</li>
+        <li><code>CLAUDE.md</code> - Dev workflow and commands</li>
       </ul>
     </div>
   )
@@ -175,7 +524,7 @@ make work-status         # Check current work`}
 
 function QuickStartDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Quick Start: Parallel Development</h1>
 
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
@@ -196,10 +545,9 @@ tmux attach -t autocrate`}
 
       <p><strong>You get:</strong></p>
       <ul>
-        <li>5 panes ready for parallel work</li>
+        <li>4 panes ready for parallel work</li>
         <li>Feature A workspace (top-left)</li>
         <li>Feature B workspace (top-right)</li>
-        <li>Docker logs (middle)</li>
         <li>Test runner (bottom-left)</li>
         <li>Status monitor (bottom-right)</li>
       </ul>
@@ -216,10 +564,7 @@ git checkout -b feature/klimp-spacing
 claude code
 # Tell Claude: "Adjust klimp spacing to allow 0.5 inch increments"
 
-# In Pane 2 (Docker):
-docker compose up
-
-# In Pane 3 (Tests):
+# In Pane 2 (Tests):
 npm test:watch`}
       </pre>
 
@@ -240,7 +585,7 @@ make help
 
 # Start everything in parallel:
 make parallel-dev
-# This runs: dev server + test watcher + docker containers
+# This runs: dev server + test watcher
 
 # In separate terminals:
 # Terminal 1: Feature A
@@ -356,8 +701,12 @@ npm run test:all`}
 // Continuing with more doc components...
 function ParallelWorkflowDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Parallel Development Workflow</h1>
+      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+        <p className="font-semibold">Archived strategies</p>
+        <p className="text-sm">Use the Issue Workflow and NX docs for the current process. Prefer <code>./scripts/worktree-issue.sh</code> and <code>./scripts/assign-issue.sh</code>.</p>
+      </div>
 
       <p className="lead">
         5 different strategies for working on multiple features simultaneously
@@ -427,8 +776,6 @@ tmux attach -t autocrate`}
 │  Feature A           │  Feature B           │
 │  (Claude Code)       │  (Claude Code)       │
 │  branch: feat-A      │  branch: feat-B      │
-├──────────────────────┴──────────────────────┤
-│  Docker logs (main branch)                  │
 ├──────────────────────┬──────────────────────┤
 │  Test runner (watch) │  Status monitor      │
 └──────────────────────┴──────────────────────┘`}
@@ -460,7 +807,7 @@ tmux attach -t autocrate`}
 
       <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded">
 {`make help              # Show all commands
-make parallel-dev      # Run dev + tests + docker
+make parallel-dev      # Run dev + tests in parallel
 make new-feature NAME=x  # Create feature branch
 make work-status       # Show current work`}
       </pre>
@@ -507,7 +854,7 @@ git worktree add ../autocrate-feature-B feature/B
       <h2>Best Practices</h2>
       <ul>
         <li>[DONE] Each feature = one branch</li>
-        <li>[DONE] Check PROJECT_STATUS.md before starting</li>
+        <li>[DONE] Confirm your issue worktree/branch before starting</li>
         <li>[DONE] Commit every 15-30 minutes</li>
         <li>[DONE] Run tests continuously</li>
         <li>[DONE] Sync with main regularly</li>
@@ -521,7 +868,7 @@ git worktree add ../autocrate-feature-B feature/B
 // Continue with other doc components...
 function ModulesDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Module Architecture & Boundaries</h1>
 
       <p className="lead">
@@ -541,7 +888,7 @@ function ModulesDoc() {
           <span className="text-2xl">[!]</span>
           <div>
             <div className="font-semibold">CAUTION</div>
-            <div className="text-sm">Coordinate via PROJECT_STATUS.md before modifying</div>
+            <div className="text-sm">Coordinate via issue comments/PR before modifying</div>
           </div>
         </div>
         <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded p-3">
@@ -709,7 +1056,7 @@ function ModulesDoc() {
 
 function ProjectStatusDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Project Status & Memory</h1>
       <p>Current version: <strong>13.1.0</strong></p>
       <p>Phase: <strong>Production - Active Development</strong></p>
@@ -745,7 +1092,7 @@ function ProjectStatusDoc() {
 
 function WorkLogDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Work Log</h1>
       <p>Detailed work history for the project</p>
 
@@ -788,7 +1135,7 @@ function WorkLogDoc() {
 
 function TestingDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Testing Guide</h1>
 
       <h2>Testing Stack</h2>
@@ -859,7 +1206,7 @@ npm test -- -u`}
 
 function ClaudeGuideDoc() {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none">
+    <div className="prose prose-gray dark:prose-invert max-w-none docs-content leading-relaxed">
       <h1>Claude Code Development Guide</h1>
 
       <h2>Project Overview</h2>
@@ -870,33 +1217,30 @@ function ClaudeGuideDoc() {
 
       <h2>Before Starting Work</h2>
       <ol>
-        <li>Read PROJECT_STATUS.md for active work</li>
-        <li>Check MODULES.md for module boundaries</li>
-        <li>Review WORK_LOG.md for recent changes</li>
+        <li>Read <code>.issue-context.md</code> in your worktree (<code>issues/[NUMBER]/</code>).</li>
+        <li>Open <code>/docs</code> and read “Issue Workflow (LLM)” and “NX: Recreate Crate Geometry”.</li>
+        <li>Confirm you are on branch <code>sbl-[NUMBER]</code>.</li>
       </ol>
 
       <h2>While Working</h2>
       <ol>
-        <li>Update PROJECT_STATUS.md if claiming a module</li>
-        <li>Follow parallel work guidelines in MODULES.md</li>
         <li>Make atomic commits with clear messages</li>
         <li>Run tests frequently</li>
+        <li>Keep changes scoped to the issue branch</li>
       </ol>
 
       <h2>After Completing</h2>
       <ol>
-        <li>Add entry to WORK_LOG.md</li>
-        <li>Update PROJECT_STATUS.md (move to completed)</li>
-        <li>Update CHANGELOG.md if user-facing</li>
-        <li>Bump version if appropriate</li>
+        <li>Open a pull request with the issue number in title/body.</li>
+        <li>Ensure NX instructions remain accurate for tested parameters.</li>
+        <li>Update CHANGELOG.md if user-facing.</li>
       </ol>
 
       <h2>Essential Files</h2>
       <ul>
-        <li><strong>CLAUDE.md:</strong> Development guidance</li>
-        <li><strong>PROJECT_STATUS.md:</strong> Real-time work status</li>
-        <li><strong>MODULES.md:</strong> Module boundaries</li>
-        <li><strong>WORK_LOG.md:</strong> Detailed history</li>
+        <li><strong>CLAUDE.md:</strong> Development workflow and commands</li>
+        <li><strong>docs/NX_INSTRUCTIONS.md:</strong> Standalone Siemens NX guide</li>
+        <li><strong>docs/START_HERE.md:</strong> Getting started</li>
       </ul>
 
       <h2>Key Concepts</h2>

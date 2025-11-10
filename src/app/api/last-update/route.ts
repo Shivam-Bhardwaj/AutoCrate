@@ -53,9 +53,24 @@ export async function GET() {
     vercelTimestamp || safeExec('git log -1 --format=%cI') || new Date().toISOString()
   const updatedBy = packageJson.maintainer || vercelAuthor || 'unknown@designviz.com'
 
-  // Extract issue number from branch name (e.g., feature/issue-69-description -> 69)
-  const issueMatch = branch.match(/issue-(\d+)/i)
-  const issueNumber = issueMatch ? issueMatch[1] : '0'
+  // Extract issue number from available metadata sources
+  // Priority order: commit message (last occurrence = PR number) > branch name > package.json tiNumber
+  // This ensures production shows the latest merged PR's number, not stale package.json values
+  // When multiple issue refs exist like "(#124) (#170)", use the last one (PR number)
+  const commitMatches = lastChange.matchAll(/\(#(\d+)\)/g)
+  const commitMatchesArray = Array.from(commitMatches)
+  const commitMatch = commitMatchesArray.length > 0 
+    ? commitMatchesArray[commitMatchesArray.length - 1] // Use last match (PR number)
+    : null
+  const branchMatch = branch.match(/issue[_-](\d+)/i)
+  const packageMatch = typeof packageJson.tiNumber === 'string'
+    ? packageJson.tiNumber.match(/(\d+)/)
+    : null
+  const issueNumber =
+    commitMatch?.[1] ||  // Prioritize commit message (PR merge commits - last occurrence)
+    branchMatch?.[1] ||  // Then branch name
+    packageMatch?.[1] || // Finally package.json (fallback)
+    '0'
 
   // Generate smart test instructions based on commit message
   const testInstructions: string[] = []

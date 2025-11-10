@@ -46,6 +46,8 @@ interface CrateVisualizerProps {
     crate?: string
     cap?: string
   }
+  tutorialHighlightNames?: string[]
+  tutorialCallouts?: { boxName: string; label: string }[]
 }
 
 // Represents a selected plane with its position and normal vector
@@ -430,12 +432,12 @@ function ScenePMIOverlays({
 }
 
 function CameraResetter({
-  boxes,
+  visibleBoxes,
   resetTrigger,
   controlsRef,
   onTargetChange
 }: {
-  boxes: NXBox[];
+  visibleBoxes: NXBox[];
   resetTrigger: number;
   controlsRef: MutableRefObject<OrbitControlsImpl | null>;
   onTargetChange: (target: [number, number, number]) => void;
@@ -443,13 +445,13 @@ function CameraResetter({
   const { camera, size } = useThree()
 
   useEffect(() => {
-    if (resetTrigger === 0 || boxes.length === 0) return
+    if (resetTrigger === 0 || visibleBoxes.length === 0) return
 
     const scale = 0.1
     const min = new THREE.Vector3(Infinity, Infinity, Infinity)
     const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity)
 
-    boxes.forEach(box => {
+    visibleBoxes.forEach(box => {
       const xValues = [box.point1.x, box.point2.x]
       const yValues = [box.point1.y, box.point2.y]
       const zValues = [box.point1.z, box.point2.z]
@@ -504,7 +506,7 @@ function CameraResetter({
     }
 
     onTargetChange([center.x, center.y, center.z])
-  }, [boxes, resetTrigger, camera, size, controlsRef, onTargetChange])
+  }, [visibleBoxes, resetTrigger, camera, size, controlsRef, onTargetChange])
 
   return null
 }
@@ -562,7 +564,8 @@ function NXBoxMesh({
   setHoveredBox,
   onHide,
   selectedPlanes,
-  onPlaneClick
+  onPlaneClick,
+  highlighted = false
 }: {
   box: NXBox;
   hoveredBox: string | null;
@@ -570,6 +573,7 @@ function NXBoxMesh({
   onHide: (boxName: string) => void;
   selectedPlanes: SelectedPlane[];
   onPlaneClick: (plane: SelectedPlane) => void;
+  highlighted?: boolean;
 }) {
   const isHovered = hoveredBox === box.name
   // Calculate center and size from two diagonal points
@@ -684,9 +688,11 @@ function NXBoxMesh({
         }}
       >
         <meshStandardMaterial
-          color={box.color || '#F4E4BC'}
+          color={highlighted ? '#fde68a' : (box.color || '#F4E4BC')}
           opacity={1}
           transparent={false}
+          emissive={highlighted ? new THREE.Color('#f59e0b') : new THREE.Color('#000000')}
+          emissiveIntensity={highlighted ? 0.2 : 0}
         />
         <Edges
           color='#1f2937'
@@ -714,7 +720,7 @@ function NXBoxMesh({
   )
 }
 
-export default function CrateVisualizer({ boxes, showGrid = true, showLabels = true, generator, showMarkings = true, visibility, onToggleVisibility, onToggleMarkings, pmiVisibility, onTogglePmi, partNumbers }: CrateVisualizerProps) {
+export default function CrateVisualizer({ boxes, showGrid = true, showLabels = true, generator, showMarkings = true, visibility, onToggleVisibility, onToggleMarkings, pmiVisibility, onTogglePmi, partNumbers, tutorialHighlightNames = [], tutorialCallouts = [] }: CrateVisualizerProps) {
   const [hiddenComponents, setHiddenComponents] = useState<Set<string>>(new Set())
   const [hoveredBox, setHoveredBox] = useState<string | null>(null)
   const [showHiddenList, setShowHiddenList] = useState(false)
@@ -725,24 +731,29 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
   const [controlTarget, setControlTarget] = useState<[number, number, number]>([0, 3, 0])
   const controlsRef = useRef<OrbitControlsImpl | null>(null)
   const highlightColors = ['#00FF00', '#008CFF']
+  const tutorialHighlightSet = useMemo(() => new Set(tutorialHighlightNames || []), [tutorialHighlightNames])
 
-  const componentVisibility: ComponentVisibility = visibility ?? {
-    skids: true,
-    floorboards: true,
-    frontPanel: true,
-    backPanel: true,
-    leftPanel: true,
-    rightPanel: true,
-    topPanel: true,
-    cleats: true,
-  }
+  const componentVisibility: ComponentVisibility = useMemo(
+    () =>
+      visibility ?? {
+        skids: true,
+        floorboards: true,
+        frontPanel: true,
+        backPanel: true,
+        leftPanel: true,
+        rightPanel: true,
+        topPanel: true,
+        cleats: true,
+      },
+    [visibility],
+  )
 
   const pmiState: PmiVisibilityState = pmiVisibility ?? {
     totalDimensions: true,
     skids: false,
     cleats: false,
     floor: false,
-    datumPlanes: true,
+    datumPlanes: false,
   }
 
   const derivedPartNumbers = {
@@ -1045,7 +1056,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
       >
         <Suspense fallback={null}>
           <CameraResetter
-            boxes={visibleBoxes}
+            visibleBoxes={visibleBoxes}
             resetTrigger={resetCameraTrigger}
             controlsRef={controlsRef}
             onTargetChange={setControlTarget}
@@ -1142,7 +1153,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                 />
               )
             } else {
-              // Default rendering for other box types
+              // Default rendering for other box types with tutorial highlights
               return (
                 <NXBoxMesh
                   key={`${box.name}-${index}`}
@@ -1152,6 +1163,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                   onHide={handleHideComponent}
                   selectedPlanes={selectedPlanes}
                   onPlaneClick={handlePlaneClick}
+                  highlighted={tutorialHighlightSet.has(box.name)}
                 />
               )
             }
@@ -1182,6 +1194,30 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
               pmiState={pmiState}
             />
           )}
+
+          {/* Tutorial callouts */}
+          {tutorialCallouts.map((c, idx) => {
+            const box = visibleBoxes.find(b => b.name === c.boxName)
+            if (!box) return null
+            const center = {
+              x: (box.point1.x + box.point2.x) / 2,
+              y: (box.point1.y + box.point2.y) / 2,
+              z: (box.point1.z + box.point2.z) / 2,
+            }
+            const scale = 0.1
+            return (
+              <Html
+                key={`callout-${c.boxName}-${idx}`}
+                position={[center.x * scale, (center.z * scale) + 0.8, -center.y * scale]}
+                center
+                distanceFactor={10}
+              >
+                <div className="bg-amber-50 border border-amber-300 text-amber-900 text-xs rounded px-2 py-1 shadow">
+                  {c.label}
+                </div>
+              </Html>
+            )
+          })}
 
           {/* Render measurement line between parallel planes */}
           {selectedPlanes.length === 2 && measurementDistance !== null && (
@@ -1328,17 +1364,6 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
         )}
       </div>
 
-      {/* PMI controls moved to right-side control panel - Hidden on mobile */}
-      <div className="hidden lg:block absolute top-2 left-2 w-64 max-w-xs pointer-events-auto">
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 space-y-2">
-          <div className="text-[11px] text-gray-600 dark:text-gray-400 space-y-1">
-            <div>Base: {derivedPartNumbers.base}</div>
-            <div>Crate: {derivedPartNumbers.crate}</div>
-            <div>Cap: {derivedPartNumbers.cap}</div>
-          </div>
-        </div>
-      </div>
-
       {selectedPlanes.length > 0 && (
         <div className="hidden lg:block absolute bottom-20 left-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg p-3">
           <div className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
@@ -1380,6 +1405,4 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
     </div>
   )
 }
-
-
 

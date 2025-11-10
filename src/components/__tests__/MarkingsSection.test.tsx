@@ -27,7 +27,7 @@ describe('MarkingsSection', () => {
       appliedMaterialsLogo: false,
       fragileStencil: true,
       handlingSymbols: true,
-      autocrateText: true
+      autocrateText: false
     }
   }
 
@@ -39,16 +39,16 @@ describe('MarkingsSection', () => {
 
     expect(screen.getByText('Markings & Decals')).toBeInTheDocument()
     expect(screen.getByText(/Crate Height:/)).toBeInTheDocument()
+    expect(screen.getByText(/Total Markings: 8/)).toBeInTheDocument()
     expect(screen.getByText(/Fragile \(4\)/)).toBeInTheDocument()
     expect(screen.getByText(/Handling \(4\)/)).toBeInTheDocument()
-    expect(screen.getByText(/AUTOCRATE \(4\)/)).toBeInTheDocument()
 
     // Initial effect fires once with default markings
     expect(onMarkingsChange).toHaveBeenCalledWith({
       appliedMaterialsLogo: false,
       fragileStencil: true,
       handlingSymbols: true,
-      autocrateText: true
+      autocrateText: false
     })
 
     // Toggle the fragile marking off
@@ -60,7 +60,7 @@ describe('MarkingsSection', () => {
         appliedMaterialsLogo: false,
         fragileStencil: false,
         handlingSymbols: true,
-        autocrateText: true
+        autocrateText: false
       })
     })
 

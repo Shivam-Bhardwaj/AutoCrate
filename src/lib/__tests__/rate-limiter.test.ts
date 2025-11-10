@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { rateLimit, authRateLimit, apiRateLimit, heavyRateLimit } from '../rate-limiter'
+import { rateLimit, authRateLimit, apiRateLimit, heavyRateLimit, clearRateLimitStore } from '../rate-limiter'
 
 // Mock handler that returns success
 const mockHandler = jest.fn(async (req: NextRequest) => {
@@ -23,8 +23,7 @@ function createMockRequest(pathname: string = '/api/test', ip: string = '192.168
 describe('rateLimit', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    // Clear rate limit store between tests
-    jest.resetModules()
+    clearRateLimitStore()
   })
 
   it('should allow requests within limit', async () => {

@@ -26,7 +26,7 @@ describe('API /api/nx-export', () => {
 
     const json = await response.json()
     expect(json.status).toBe('success')
-    expect(json.export.content).toMatch(/# NX Expressions/)
+    expect(json.export.content).toMatch(/\/\/ NX Expressions/)
     expect(json.export.expressionCount).toBeGreaterThan(0)
     expect(json.export.units).toBe('mm')
   })

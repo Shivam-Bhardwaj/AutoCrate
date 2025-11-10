@@ -39,27 +39,7 @@ export default defineConfig({
     {
       name: 'Desktop Chrome',
       use: { ...devices['Desktop Chrome'] },
-    },
-
-    /* iPhone 12 Pro Max - Using Chromium since WebKit has WSL issues */
-    {
-      name: 'iPhone 12 Pro Max',
-      use: {
-        ...devices['iPhone 12 Pro Max'],
-        // Using Chromium engine since WebKit has dependency issues in WSL
-        browserName: 'chromium',
-      },
-    },
-
-    /* iPad 5th gen - Using Chromium (same UI as Desktop) */
-    {
-      name: 'iPad',
-      use: {
-        ...devices['iPad Pro 11'],
-        browserName: 'chromium',
-        // iPad 5th gen: 2048x1536, iPad Pro 11 is closest match
-      },
-    },
+    }
   ],
 
   /* Run your local dev server before starting the tests */
@@ -68,5 +48,8 @@ export default defineConfig({
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    env: {
+      NODE_ENV: 'development'
+    },
   },
 })

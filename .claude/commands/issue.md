@@ -1,23 +1,21 @@
-Create a GitHub issue for AutoCrate:
+Auto-solve any GitHub issue - just say the repo and issue number.
 
-1. Ask the user what problem/feature they want to track
-2. Draft a professional issue with:
-   - Clear title
-   - Problem description
-   - Expected behavior (if bug)
-   - Technical approach (if feature)
-   - Acceptance criteria (checklist)
-   - Relevant file paths
-   - Appropriate labels (bug, enhancement, documentation, etc.)
-   - Priority level (critical, high, medium, low)
-   - Component (hardware, ui, build, docs)
+When the user provides an issue number (e.g., "124" or a GitHub issue URL):
 
-3. Show the user the drafted issue
-4. Ask if they want to:
-   - Create it via GitHub CLI (`gh issue create`)
-   - Copy to clipboard for manual creation
-   - Save as a template file
+1. Run the worktree setup script: `./scripts/worktree-issue.sh [issue-number]`
+2. This will:
+   - Create an isolated git worktree in `issues/[number]/`
+   - Fetch issue details from GitHub
+   - Create a branch for the issue
+   - Set up an issue context file
+3. Change directory to the worktree: `cd issues/[number]`
+4. Read the `.issue-context.md` file to understand the issue
+5. Analyze the issue and create an implementation plan
+6. Implement the fix or feature
+7. Run tests and verify the changes
+8. Commit with proper message format
+9. Push the branch and create a PR
 
-Format the issue using proper GitHub markdown with sections, checkboxes, and code blocks where appropriate.
+This allows multiple LLMs (Claude Code, Codex, etc.) to work on different issues simultaneously without conflicts.
 
-Reference any related issues or PRs if applicable.
+If the worktree already exists, just cd into it and continue working.

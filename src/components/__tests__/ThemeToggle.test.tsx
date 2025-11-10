@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { ThemeToggle } from '../ThemeToggle'
 import { ThemeProvider, useTheme } from '../ThemeProvider'
 
@@ -62,23 +62,33 @@ describe('ThemeToggle', () => {
     expect(mockToggleTheme).toHaveBeenCalledTimes(1)
   })
 
-  it('should not render icons before mount', () => {
+  it('renders the appropriate theme icon after mount', () => {
     mockUseTheme.mockReturnValue({
       theme: 'light',
       toggleTheme: mockToggleTheme,
       setTheme: jest.fn(),
     })
 
-    // Simulate pre-mount state by preventing useEffect
     const { container } = render(<ThemeToggle />)
 
-    // Before mount completes, should show placeholder
-    const placeholder = container.querySelector('.bg-gray-300')
-    expect(placeholder).toBeTruthy()
+    // After mount completes, should render the sun icon and no placeholder
+    expect(container.querySelector('svg')).toBeTruthy()
+    expect(container.querySelector('.bg-gray-300')).toBeNull()
   })
 })
 
 describe('ThemeToggle Integration', () => {
+  const actualThemeModule = jest.requireActual('../ThemeProvider')
+
+  beforeAll(() => {
+    mockUseTheme.mockReset()
+    mockUseTheme.mockImplementation(actualThemeModule.useTheme)
+  })
+
+  afterAll(() => {
+    mockUseTheme.mockReset()
+  })
+
   it('should work with ThemeProvider', () => {
     render(
       <ThemeProvider>
@@ -94,7 +104,9 @@ describe('ThemeToggle Integration', () => {
     expect(['true', 'false']).toContain(ariaPressed)
   })
 
-  it('should toggle theme on click', () => {
+  it('should toggle theme on click', async () => {
+    window.localStorage.clear()
+
     render(
       <ThemeProvider>
         <ThemeToggle />
@@ -104,10 +116,19 @@ describe('ThemeToggle Integration', () => {
     const button = screen.getByRole('button')
     const initialAriaPressed = button.getAttribute('aria-pressed')
 
+    // Wait for ThemeProvider effects to apply initial theme
+    await waitFor(() => {
+      expect(document.documentElement.style.colorScheme).toBeTruthy()
+    })
+
     fireEvent.click(button)
 
-    // After click, aria-pressed should change
-    const newAriaPressed = button.getAttribute('aria-pressed')
-    expect(newAriaPressed).not.toBe(initialAriaPressed)
+    // After click, aria-pressed should change to reflect new theme
+    await waitFor(() => {
+      expect(window.localStorage.getItem('autocrate-theme')).toBe(initialAriaPressed === 'true' ? 'light' : 'dark')
+    })
+
+    const updatedButton = screen.getByRole('button')
+    expect(updatedButton.getAttribute('aria-label')).toBe('Switch to light mode')
   })
 })

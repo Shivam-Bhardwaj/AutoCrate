@@ -62,7 +62,8 @@ describe('NXGenerator', () => {
     )
 
     const expressions = generator.getExpressions()
-    expect(expressions.get('skid_width')).toBeCloseTo(3.5) // 3x4 lumber has actual width of 3.5"
+    expect(expressions.get('skid_width')).toBeCloseTo(2.5) // 3x4 lumber oriented as 3.5" tall x 2.5" wide
+    expect(expressions.get('skid_height')).toBeCloseTo(3.5) // 3.5" height for forklift clearance
     expect(expressions.get('skid_max_spacing')).toBeGreaterThan(0)
 
     const skidCount = expressions.get('skid_count') || 0
@@ -97,8 +98,39 @@ describe('NXGenerator', () => {
     expect(instances.filter(instance => instance.active).length).toBe(klimpLayout.totalKlimps)
 
     const exported = generator.exportNXExpressions()
-    expect(exported).toContain('# KLIMP FASTENER INSTRUCTIONS')
+    expect(exported).toContain('// --- KLIMP FASTENER GUIDANCE ---')
     expect(exported).toContain('pattern_spacing')
+  })
+
+  it('positions side panels so that interior width matches requested dimensions', () => {
+    const config = buildConfig({
+      product: { ...baseConfig.product, width: 50, length: 50, height: 50 },
+      clearances: { side: 0, end: 0, top: 0 }
+    })
+
+    const generator = new NXGenerator(config)
+    const expressions = generator.getExpressions()
+    const expectedInternalWidth = expressions.get('internal_width') || 0
+
+    const panels = generator
+      .getBoxes()
+      .filter(box => !box.suppressed && box.type === 'plywood' && (box.panelName === 'LEFT_END_PANEL' || box.panelName === 'RIGHT_END_PANEL'))
+
+    const leftPanels = panels.filter(box => box.panelName === 'LEFT_END_PANEL')
+    const rightPanels = panels.filter(box => box.panelName === 'RIGHT_END_PANEL')
+
+    expect(leftPanels.length).toBeGreaterThan(0)
+    expect(rightPanels.length).toBeGreaterThan(0)
+
+    const leftInnerFace = Math.max(
+      ...leftPanels.map(box => Math.max(box.point1.x, box.point2.x))
+    )
+    const rightInnerFace = Math.min(
+      ...rightPanels.map(box => Math.min(box.point1.x, box.point2.x))
+    )
+
+    const measuredWidth = Number((rightInnerFace - leftInnerFace).toFixed(4))
+    expect(measuredWidth).toBeCloseTo(expectedInternalWidth, 3)
   })
 
   it('lays out floorboards from widest to narrowest with a single custom infill when needed', () => {
@@ -406,8 +438,8 @@ describe('NXGenerator', () => {
         const nextCenter = lagScrews[i + 1].point1.y + (lagScrews[i + 1].point2.y - lagScrews[i + 1].point1.y) / 2
         const spacing = nextCenter - currentCenter
 
-        expect(spacing).toBeGreaterThanOrEqual(18) // Algorithm min
-        expect(spacing).toBeLessThanOrEqual(26) // Allow tolerance for optimization
+        expect(spacing).toBeGreaterThanOrEqual(16)
+        expect(spacing).toBeLessThanOrEqual(24.01)
       }
     })
 
@@ -453,17 +485,91 @@ describe('NXGenerator', () => {
 
       const lagScrews = boxes
         .filter(b => b.panelName === 'LEFT_END_PANEL' && b.name.includes('_LAG_') && b.name.includes('_SHAFT'))
+        .sort((a, b) => a.point1.y - b.point1.y)
 
-      // Should still generate lag screws (fallback logic)
-      expect(lagScrews.length).toBeGreaterThan(0)
+      expect(lagScrews.length).toBe(2)
+
+      const span = lagScrews[1].point1.y + (lagScrews[1].point2.y - lagScrews[1].point1.y) / 2 -
+        (lagScrews[0].point1.y + (lagScrews[0].point2.y - lagScrews[0].point1.y) / 2)
+
+      expect(span).toBeGreaterThanOrEqual(16)
+      expect(span).toBeLessThanOrEqual(24)
+    })
+
+    it('should not overpack lag screws on narrow panels when spacing is 18 inches', () => {
+      const config = buildConfig({
+        product: { length: 20, width: 20, height: 20, weight: 500 },
+        materials: {
+          ...baseConfig.materials,
+          skidSize: '3x3'
+        },
+        hardware: { lagScrewSpacing: 18 }
+      })
+
+      const generator = new NXGenerator(config)
+      const boxes = generator.getBoxes()
+
+      const lagScrews = boxes
+        .filter(b => b.panelName === 'LEFT_END_PANEL' && b.name.includes('_LAG_') && b.name.includes('_SHAFT'))
+        .sort((a, b) => a.point1.y - b.point1.y)
+
+      expect(lagScrews.length).toBe(2)
+
+      const span = lagScrews[1].point1.y + (lagScrews[1].point2.y - lagScrews[1].point1.y) / 2 -
+        (lagScrews[0].point1.y + (lagScrews[0].point2.y - lagScrews[0].point1.y) / 2)
+
+      expect(span).toBeGreaterThanOrEqual(16)
+      expect(span).toBeLessThanOrEqual(24)
+    })
+
+    it('should not create middle lag when span is less than configured spacing (issue #133)', () => {
+      const config = buildConfig({
+        product: { length: 20, width: 20, height: 20, weight: 500 },
+        materials: {
+          ...baseConfig.materials,
+          skidSize: '3x3'
+        },
+        hardware: { lagScrewSpacing: 24 }
+      })
+
+      const generator = new NXGenerator(config)
+      const boxes = generator.getBoxes()
+      const cleatLayouts = generator.getPanelCleatLayouts()
+
+      const leftCleatLayout = cleatLayouts.find(l => l.panelName === 'LEFT_END_PANEL')
+      expect(leftCleatLayout).toBeDefined()
+
+      const leftVerticalCleats = leftCleatLayout!.cleats
+        .filter(c => c.orientation === 'vertical')
+        .sort((a, b) => a.x - b.x)
+
+      const lagScrews = boxes
+        .filter(b => b.panelName === 'LEFT_END_PANEL' && b.name.includes('_LAG_') && b.name.includes('_SHAFT'))
+        .sort((a, b) => a.point1.y - b.point1.y)
+
+      // Calculate span between first and last cleat centers
+      const expressions = generator.getExpressions()
+      const panelThickness = expressions.get('panel_thickness') || 0
+      const panelOriginY = panelThickness
+
+      const firstCleatCenterY = panelOriginY + leftVerticalCleats[0].x + leftVerticalCleats[0].width / 2
+      const lastCleatCenterY =
+        panelOriginY +
+        leftVerticalCleats[leftVerticalCleats.length - 1].x +
+        leftVerticalCleats[leftVerticalCleats.length - 1].width / 2
+      const span = lastCleatCenterY - firstCleatCenterY
+
+      if (span < 24) {
+        expect(lagScrews.length).toBe(2)
+      }
     })
   })
 
   it('generateNXExpressions wrapper returns a populated expression bundle', () => {
     const bundle = generateNXExpressions({ length: 48, width: 40, height: 20 }, 2000)
 
-    expect(bundle).toContain('# NX Expressions for AutoCrate')
-    expect(bundle).toContain('product_length=48.000')
-    expect(bundle).toContain('skid_count=')
+    expect(bundle).toContain('// NX Expressions - AutoCrate')
+    expect(bundle).toContain('[Inch]product_length = 48.000')
+    expect(bundle).toContain('skid_count = ')
   })
 })

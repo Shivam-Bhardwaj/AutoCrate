@@ -188,8 +188,8 @@ AUTOCRATE CRATE ASSEMBLY (#1)
 **Component Naming Convention** (snake_case with nominal dimensions):
 - Skids: `skid_HxW` (e.g., `skid_4x4`, `skid_6x6`)
 - Floorboards: `floorboard_HxW` (e.g., `floorboard_2x6`)
-- Plywood: `PANELNAME_ply` (e.g., `front_panel_ply`)
-- Cleats: `PANELNAME_cleat_N` (e.g., `front_panel_cleat_1`)
+- Plywood: `{PANEL}_PLY_{N}` (e.g., `FRONT_PANEL_PLY_1`)
+- Cleats: `{PANEL}_CLEAT_{N}` (e.g., `FRONT_PANEL_CLEAT_1`)
 
 **Dependencies**: None (pure function)
 

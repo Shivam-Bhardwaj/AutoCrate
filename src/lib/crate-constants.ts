@@ -98,7 +98,7 @@ export const LUMBER_DIMENSIONS = {
   '2x10': { height: 1.5, width: 9.25 },
   '2x12': { height: 1.5, width: 11.25 },
   '3x3': { height: 2.5, width: 2.5 },
-  '3x4': { height: 2.5, width: 3.5 },
+  '3x4': { height: 3.5, width: 2.5 }, // Oriented for 3.5" forklift clearance
   '4x4': { height: 3.5, width: 3.5 },
   '4x6': { height: 3.5, width: 5.5 },
   '6x6': { height: 5.5, width: 5.5 },
@@ -157,7 +157,7 @@ export const FASTENER_STANDARDS = {
   /** Klimp fastener spacing */
   KLIMP: {
     /** Minimum spacing between edge klimps (inches) */
-    EDGE_MIN_SPACING: 18,
+    EDGE_MIN_SPACING: 16,
     /** Maximum spacing between edge klimps (inches) */
     EDGE_MAX_SPACING: 24,
   },
@@ -195,7 +195,7 @@ export const PANEL_STOP_STANDARDS = {
   /** Positioning specifications */
   POSITIONING: {
     /** Inset from panel edge (inches) - clearance from front panel */
-    edgeInset: 0.625, // 5/8 inch clearance, near touching front panel
+    edgeInset: 0.0625, // 1/16 inch clearance from cleated panel (1.0625" total from origin)
     /** Length calculation method: half of smallest cleated panel edge dimension */
     lengthFactor: 0.5,
   },
@@ -418,9 +418,9 @@ export const UI_CONSTANTS = {
   },
   /** Default product dimensions for new projects (inches) */
   DEFAULT_PRODUCT: {
-    length: 135,
-    width: 135,
-    height: 135,
+    length: 120,
+    width: 120,
+    height: 120,
     weight: 10000,
   },
 } as const
@@ -436,16 +436,16 @@ export const VALIDATION_RULES = {
   /** Product dimension constraints (inches) */
   DIMENSIONS: {
     MIN_LENGTH: 12,
-    MAX_LENGTH: 240,
+    MAX_LENGTH: 130,
     MIN_WIDTH: 12,
-    MAX_WIDTH: 180,
+    MAX_WIDTH: 130,
     MIN_HEIGHT: 12,
-    MAX_HEIGHT: 144,
+    MAX_HEIGHT: 130,
   },
   /** Weight constraints (pounds) */
   WEIGHT: {
     MIN: 50,
-    MAX: 50000,
+    MAX: 60000,
   },
   /** Clearance constraints (inches) */
   CLEARANCES: {

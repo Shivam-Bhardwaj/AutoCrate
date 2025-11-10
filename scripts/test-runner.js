@@ -178,6 +178,7 @@ class TestRunner {
 
     // Create a test to validate STEP file generation
     const testCode = `
+      process.env.TS_NODE_COMPILER_OPTIONS = JSON.stringify({ module: 'commonjs', moduleResolution: 'node' })
       require('ts-node/register/transpile-only')
       const { StepGenerator } = require('./src/lib/step-generator')
 
@@ -347,4 +348,3 @@ runner.run().catch(error => {
   console.error('Unexpected error:', error)
   process.exit(1)
 })
-
