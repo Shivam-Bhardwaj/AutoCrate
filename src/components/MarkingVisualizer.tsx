@@ -79,11 +79,17 @@ export function MarkingVisualizer({ boxes, generator, useBoundingBox = true }: M
         z: maxZ - minZ,
       }
 
-      // Small offset from panel surface (in scaled units) to prevent z-fighting
-      const surfaceOffset = 0.01  // Increased to prevent aliasing
+      // Different offsets for different markings to prevent z-fighting and overlap
+      // Fragile marking offset (closer to surface)
+      const fragileSurfaceOffset = 0.01
+      // Handling marking offset (slightly further from surface to avoid overlap)
+      const handlingSurfaceOffset = 0.02
 
       // Position offset from edges (inches in real dimensions)
       const edgeOffset = MARKING_STANDARDS.POSITIONING.EDGE_OFFSET
+      
+      // Additional separation to prevent overlap between fragile and handling markings
+      const markingSeparation = 4  // Minimum distance between markings (inches)
 
       if (panelType === 'FRONT_PANEL') {
         // Front panel faces -Y direction
@@ -94,7 +100,7 @@ export function MarkingVisualizer({ boxes, generator, useBoundingBox = true }: M
             position: new THREE.Vector3(
               center.x * scale,
               center.z * scale,
-              -(center.y - size.y/2) * scale - surfaceOffset
+              -(center.y - size.y/2) * scale - fragileSurfaceOffset
             ),
             size: [fragileDims.width * scale, fragileDims.height * scale],
             text: 'FRAGILE',
@@ -106,11 +112,22 @@ export function MarkingVisualizer({ boxes, generator, useBoundingBox = true }: M
         }
 
         if (handlingDims) {
+          // Position handling marking at top-right corner, ensuring it doesn't overlap with fragile
+          // Check if fragile marking would overlap - if so, move handling marking further
+          const fragileHalfWidth = fragileDims ? fragileDims.width / 2 : 0
+          const handlingHalfWidth = handlingDims.width / 2
+          const minXForHandling = center.x + fragileHalfWidth + handlingHalfWidth + markingSeparation
+          const maxXForPanel = center.x + size.x / 2
+          const handlingX = Math.min(
+            center.x + size.x/2 - handlingDims.width/2 - edgeOffset,
+            Math.max(minXForHandling, maxXForPanel - handlingDims.width/2 - edgeOffset)
+          )
+          
           markingList.push({
             position: new THREE.Vector3(
-              (center.x + size.x/2 - handlingDims.width/2 - edgeOffset) * scale,
+              handlingX * scale,
               (center.z + size.z/2 - handlingDims.height/2 - edgeOffset) * scale,
-              -(center.y - size.y/2) * scale - surfaceOffset
+              -(center.y - size.y/2) * scale - handlingSurfaceOffset
             ),
             size: [handlingDims.width * scale, handlingDims.height * scale],
             text: '↑\nGLASS\nUMBRELLA',
@@ -127,7 +144,7 @@ export function MarkingVisualizer({ boxes, generator, useBoundingBox = true }: M
             position: new THREE.Vector3(
               center.x * scale,
               center.z * scale,
-              -(center.y + size.y/2) * scale + surfaceOffset
+              -(center.y + size.y/2) * scale + fragileSurfaceOffset
             ),
             size: [fragileDims.width * scale, fragileDims.height * scale],
             text: 'FRAGILE',
@@ -139,11 +156,21 @@ export function MarkingVisualizer({ boxes, generator, useBoundingBox = true }: M
         }
 
         if (handlingDims) {
+          // Position handling marking at top-left corner, ensuring it doesn't overlap with fragile
+          const fragileHalfWidth = fragileDims ? fragileDims.width / 2 : 0
+          const handlingHalfWidth = handlingDims.width / 2
+          const maxXForHandling = center.x - fragileHalfWidth - handlingHalfWidth - markingSeparation
+          const minXForPanel = center.x - size.x / 2
+          const handlingX = Math.max(
+            center.x - size.x/2 + handlingDims.width/2 + edgeOffset,
+            Math.min(maxXForHandling, minXForPanel + handlingDims.width/2 + edgeOffset)
+          )
+          
           markingList.push({
             position: new THREE.Vector3(
-              (center.x - size.x/2 + handlingDims.width/2 + edgeOffset) * scale,
+              handlingX * scale,
               (center.z + size.z/2 - handlingDims.height/2 - edgeOffset) * scale,
-              -(center.y + size.y/2) * scale + surfaceOffset
+              -(center.y + size.y/2) * scale + handlingSurfaceOffset
             ),
             size: [handlingDims.width * scale, handlingDims.height * scale],
             text: '↑\nGLASS\nUMBRELLA',
@@ -159,7 +186,7 @@ export function MarkingVisualizer({ boxes, generator, useBoundingBox = true }: M
         if (fragileDims) {
           markingList.push({
             position: new THREE.Vector3(
-              (center.x - size.x/2) * scale - surfaceOffset,
+              (center.x - size.x/2) * scale - fragileSurfaceOffset,
               center.z * scale,
               -center.y * scale
             ),
@@ -173,10 +200,20 @@ export function MarkingVisualizer({ boxes, generator, useBoundingBox = true }: M
         }
 
         if (handlingDims) {
+          // Position handling marking at top, ensuring vertical separation from fragile
+          const fragileHalfHeight = fragileDims ? fragileDims.height / 2 : 0
+          const handlingHalfHeight = handlingDims.height / 2
+          const minZForHandling = center.z + fragileHalfHeight + handlingHalfHeight + markingSeparation
+          const maxZForPanel = center.z + size.z / 2
+          const handlingZ = Math.min(
+            center.z + size.z/2 - handlingDims.height/2 - edgeOffset,
+            Math.max(minZForHandling, maxZForPanel - handlingDims.height/2 - edgeOffset)
+          )
+          
           markingList.push({
             position: new THREE.Vector3(
-              (center.x - size.x/2) * scale - surfaceOffset,
-              (center.z + size.z/2 - handlingDims.height/2 - edgeOffset) * scale,
+              (center.x - size.x/2) * scale - handlingSurfaceOffset,
+              handlingZ * scale,
               -(center.y + size.y/2 - handlingDims.width/2 - edgeOffset) * scale
             ),
             size: [handlingDims.width * scale, handlingDims.height * scale],
@@ -193,7 +230,7 @@ export function MarkingVisualizer({ boxes, generator, useBoundingBox = true }: M
         if (fragileDims) {
           markingList.push({
             position: new THREE.Vector3(
-              (center.x + size.x/2) * scale + surfaceOffset,
+              (center.x + size.x/2) * scale + fragileSurfaceOffset,
               center.z * scale,
               -center.y * scale
             ),
@@ -207,10 +244,20 @@ export function MarkingVisualizer({ boxes, generator, useBoundingBox = true }: M
         }
 
         if (handlingDims) {
+          // Position handling marking at top, ensuring vertical separation from fragile
+          const fragileHalfHeight = fragileDims ? fragileDims.height / 2 : 0
+          const handlingHalfHeight = handlingDims.height / 2
+          const minZForHandling = center.z + fragileHalfHeight + handlingHalfHeight + markingSeparation
+          const maxZForPanel = center.z + size.z / 2
+          const handlingZ = Math.min(
+            center.z + size.z/2 - handlingDims.height/2 - edgeOffset,
+            Math.max(minZForHandling, maxZForPanel - handlingDims.height/2 - edgeOffset)
+          )
+          
           markingList.push({
             position: new THREE.Vector3(
-              (center.x + size.x/2) * scale + surfaceOffset,
-              (center.z + size.z/2 - handlingDims.height/2 - edgeOffset) * scale,
+              (center.x + size.x/2) * scale + handlingSurfaceOffset,
+              handlingZ * scale,
               -(center.y - size.y/2 + handlingDims.width/2 + edgeOffset) * scale
             ),
             size: [handlingDims.width * scale, handlingDims.height * scale],
