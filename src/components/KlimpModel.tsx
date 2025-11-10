@@ -8,6 +8,7 @@ import { KlimpBoundingBox, useStepDimensions } from './StepBoundingBox'
 import { OrientationDetector } from '@/lib/orientation-detector'
 import { StepFileViewer } from './StepFileViewer'
 import { Klimp3D } from './HardwareModel3D'
+import { nxToThreeJS, nxCenter } from '@/lib/coordinate-transform'
 
 interface KlimpModelProps {
   box: NXBox
@@ -23,12 +24,8 @@ export function KlimpModel({ box, scale = 0.1, onError, useBoundingBox = false, 
   const groupRef = useRef<Group>(null)
   const [useBox, setUseBox] = useState(useBoundingBox && !useStepFile)
 
-  // Calculate center from box data
-  const center = {
-    x: (box.point1.x + box.point2.x) / 2,
-    y: (box.point1.y + box.point2.y) / 2,
-    z: (box.point1.z + box.point2.z) / 2,
-  }
+  // Calculate center from box data using utility function
+  const center = nxCenter(box.point1, box.point2)
 
   // Determine edge type from metadata
   const getEdge = (): 'top' | 'left' | 'right' => {
@@ -59,11 +56,12 @@ export function KlimpModel({ box, scale = 0.1, onError, useBoundingBox = false, 
   // Use actual STEP file geometry if requested
   if (useStepFile && !useBoundingBox) {
     const rotation = getRotation()
+    const position = nxToThreeJS(center)
 
     return (
       <StepFileViewer
         stepFileUrl="/step-files/klimp-4.stp"
-        position={[center.x, center.y, center.z]}
+        position={position}
         rotation={rotation}
         scale={scale}
         color="#8b7355"
@@ -137,11 +135,12 @@ export function KlimpModel({ box, scale = 0.1, onError, useBoundingBox = false, 
     }, [scene])
 
     const rotation = getRotation()
+    const position = nxToThreeJS(center)
 
     return (
       <group
         ref={groupRef}
-        position={[center.x * scale, center.z * scale, -center.y * scale]}
+        position={position}
         rotation={rotation}
         scale={[scale, scale, scale]}
       />
@@ -165,11 +164,7 @@ try {
 export function KlimpSymbolic({ box, scale = 0.1 }: { box: NXBox; scale?: number }) {
   const stepDims = useStepDimensions('KLIMP_#4.stp')
 
-  const center = {
-    x: (box.point1.x + box.point2.x) / 2,
-    y: (box.point1.y + box.point2.y) / 2,
-    z: (box.point1.z + box.point2.z) / 2,
-  }
+  const center = nxCenter(box.point1, box.point2)
 
   // Use actual STEP dimensions if available, otherwise fall back to box dimensions
   const size = stepDims ? {
@@ -183,9 +178,10 @@ export function KlimpSymbolic({ box, scale = 0.1 }: { box: NXBox; scale?: number
   }
 
   const color = stepDims?.color || box.color
+  const position = nxToThreeJS(center)
 
   return (
-    <mesh position={[center.x * scale, center.z * scale, -center.y * scale]}>
+    <mesh position={position}>
       <boxGeometry args={[size.x * scale, size.z * scale, size.y * scale]} />
       <meshStandardMaterial
         color={color}

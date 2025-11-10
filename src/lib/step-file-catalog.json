@@ -125,7 +125,7 @@
         "z": 1.001
       }
     },
-    "color": "#1a1a1a"
+    "color": "#FFA500"
   },
   "STENCIL - CG.stp": {
     "name": "STENCIL - CG",
@@ -157,7 +157,7 @@
         "z": 0.01
       }
     },
-    "color": "#1a1a1a"
+    "color": "#FFA500"
   },
   "STENCIL - DO NOT STACK.stp": {
     "name": "STENCIL - DO NOT STACK",
@@ -189,7 +189,7 @@
         "z": 0.01
       }
     },
-    "color": "#1a1a1a"
+    "color": "#FFA500"
   },
   "STENCIL - FRAGILE.stp": {
     "name": "STENCIL - FRAGILE",
@@ -221,7 +221,7 @@
         "z": 0.015
       }
     },
-    "color": "#1a1a1a"
+    "color": "#FF0000"
   },
   "STENCIL - HORIZONTAL HANDLING.stp": {
     "name": "STENCIL - HORIZONTAL HANDLING",
@@ -253,7 +253,7 @@
         "z": 0.0133
       }
     },
-    "color": "#1a1a1a"
+    "color": "#FFA500"
   },
   "STENCIL - VERTICAL HANDLING.stp": {
     "name": "STENCIL - VERTICAL HANDLING",
@@ -285,6 +285,6 @@
         "z": 0.0133
       }
     },
-    "color": "#1a1a1a"
+    "color": "#FFA500"
   }
 }

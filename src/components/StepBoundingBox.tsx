@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import stepCatalog from '@/lib/step-file-catalog.json'
+import { nxToThreeJS } from '@/lib/coordinate-transform'
 
 export interface StepBoundingBoxProps {
   stepFileName: string
@@ -41,16 +42,12 @@ export function StepBoundingBox({
     z: boundingBox.dimensions.depth,
   }
 
-  // Convert NX coordinates to Three.js coordinates
-  // NX: X=width, Y=length/depth, Z=height
-  // Three.js: X=width, Y=height, Z=-depth
+  // Convert NX coordinates to Three.js coordinates using utility
+  const position3D = nxToThreeJS({ x: position[0], y: position[1], z: position[2] })
+
   return (
     <mesh
-      position={[
-        position[0] * scale,
-        position[2] * scale,
-        -position[1] * scale
-      ]}
+      position={position3D}
       rotation={rotation}
     >
       <boxGeometry args={[

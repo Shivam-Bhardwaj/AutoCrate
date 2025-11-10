@@ -65,21 +65,22 @@ export class OrientationDetector {
         // Top edge: klimp stands vertically, bridging top panel to front panel
         // Longer side (4.92") vertical along Z axis
         // Shorter side (3.92") horizontal along Y axis
+        // No rotation needed - default orientation
         rotation = { x: 0, y: 0, z: 0 }
         offset = { x: 0, y: klimp.dimensions.width / 2, z: -klimp.dimensions.length / 2 }
         break
 
       case 'left':
-        // Left edge: klimp rotated 90° around Z axis
-        // Bridges left panel to front panel
-        rotation = { x: 0, y: Math.PI / 2, z: Math.PI / 2 }
+        // Left edge: klimp rotated 90° around Z axis to bridge left panel to front panel
+        // The L-shape needs to be rotated so the longer leg connects to left panel
+        rotation = { x: 0, y: 0, z: Math.PI / 2 }
         offset = { x: -klimp.dimensions.width / 2, y: 0, z: -klimp.dimensions.length / 2 }
         break
 
       case 'right':
-        // Right edge: klimp rotated -90° around Z axis
-        // Bridges right panel to front panel
-        rotation = { x: 0, y: -Math.PI / 2, z: -Math.PI / 2 }
+        // Right edge: klimp rotated -90° around Z axis to bridge right panel to front panel
+        // The L-shape needs to be rotated so the longer leg connects to right panel
+        rotation = { x: 0, y: 0, z: -Math.PI / 2 }
         offset = { x: klimp.dimensions.width / 2, y: 0, z: -klimp.dimensions.length / 2 }
         break
 
