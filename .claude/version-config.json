@@ -1,11 +1,11 @@
 {
-  "version": "13.3.1",
+  "version": "13.4.0",
   "versionScheme": {
     "overall": 13,
-    "current": 3,
-    "change": 1
+    "current": 4,
+    "change": 0
   },
-  "lastUpdate": "2025-10-31T02:43:28.830Z",
+  "lastUpdate": "2025-11-10T06:44:45.141Z",
   "tiNumber": "TI-123",
   "maintainer": "shivam@designviz.com",
   "rules": {

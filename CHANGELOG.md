@@ -7,7 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [13.4.0] - 2025-10-21
+
+### Added
+
+#### STEP File Integration
+- **STEP File Parser** - Extracts bounding box dimensions from ISO-10303-21 files
+- **Intelligent Orientation Detection** - Calculates correct rotations based on component geometry and placement
+- **Dark Bounding Box Visualization** - Clean, simple boxes using actual dimensions
+- **9 Components Parsed** - 1 klimp, 6 stencils, 2 lag screws
+- **OpenCascade.js Integration** - Industrial-grade CAD kernel for parsing and displaying actual STEP file geometry
+- **GLB Model Support** - Infrastructure for loading actual 3D models (GLB format) with automatic fallback to bounding boxes
+- **Hardware Components** - Complete 3D rendering for lag screws, washers, and stencils
+
+### Changed
+- **Hardware Rendering** - Replaced placeholder boxes with actual 3D hardware models
+- **Component Visualization** - Combined hardware rendering with tutorial highlight features
+
 ### Fixed
+
+#### Tutorial Overlay
 
 #### Tutorial Overlay
 
