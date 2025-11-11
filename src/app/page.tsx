@@ -561,11 +561,11 @@ export default function Home() {
 
 
   return (
-    <main className="h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 overflow-hidden flex flex-col transition-colors duration-300">
+    <main id="main-content" className="h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 overflow-hidden flex flex-col transition-colors duration-300" role="main">
       {/* Compact change tracker */}
       <ChangeTracker />
       {/* Compact Header */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none px-4 py-1.5 flex-shrink-0 transition-colors duration-300">
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none px-4 py-1.5 flex-shrink-0 transition-colors duration-300" role="banner">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div>
@@ -579,38 +579,50 @@ export default function Home() {
           <div className="hidden lg:flex items-center gap-2">
             <ThemeToggle />
             {tutorialActive && (
-              <select
-                value={tutorialMode}
-                onChange={(e) => { setTutorialMode(e.target.value as 'parts' | 'assemblies'); setTutorialStepIndex(0) }}
-                className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                title="Tutorial Mode"
-              >
-                <option value="parts">Parts Tutorial</option>
-                <option value="assemblies">Assembly Tutorial</option>
-              </select>
+              <>
+                <label htmlFor="tutorial-mode-select" className="sr-only">
+                  Tutorial Mode
+                </label>
+                <select
+                  id="tutorial-mode-select"
+                  value={tutorialMode}
+                  onChange={(e) => { setTutorialMode(e.target.value as 'parts' | 'assemblies'); setTutorialStepIndex(0) }}
+                  className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  title="Tutorial Mode"
+                  aria-label="Select tutorial mode"
+                >
+                  <option value="parts">Parts Tutorial</option>
+                  <option value="assemblies">Assembly Tutorial</option>
+                </select>
+              </>
             )}
             <button
               onClick={() => { setTutorialActive(prev => !prev); setTutorialStepIndex(0) }}
-              className={`px-3 py-1 text-sm rounded transition-colors ${tutorialActive ? 'bg-amber-600 text-white hover:bg-amber-700' : 'bg-amber-100 text-amber-900 hover:bg-amber-200'}`}
+              className={`px-3 py-1 text-sm rounded transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 ${tutorialActive ? 'bg-amber-600 text-white hover:bg-amber-700' : 'bg-amber-100 text-amber-900 hover:bg-amber-200'}`}
               title="Toggle Tutorial Mode"
+              aria-label={tutorialActive ? 'Disable tutorial mode' : 'Enable tutorial mode'}
+              aria-pressed={tutorialActive}
             >
               {tutorialActive ? 'Tutorial: On' : 'Start Tutorial'}
             </button>
             <button
               onClick={downloadExpressions}
-              className="bg-blue-600 text-white px-3 py-1 text-sm rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
+              className="bg-blue-600 text-white px-3 py-1 text-sm rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              aria-label="Export NX expressions file"
             >
               Export NX
             </button>
             <button
               onClick={downloadBOM}
-              className="bg-green-600 text-white px-3 py-1 text-sm rounded hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors"
+              className="bg-green-600 text-white px-3 py-1 text-sm rounded hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              aria-label="Export Bill of Materials"
             >
               Export BOM
             </button>
             <button
               onClick={downloadStepFile}
-              className="bg-purple-600 text-white px-3 py-1 text-sm rounded hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 transition-colors"
+              className="bg-purple-600 text-white px-3 py-1 text-sm rounded hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              aria-label="Download STEP file"
             >
               Download STEP
             </button>
@@ -634,32 +646,41 @@ export default function Home() {
             <div className="relative" ref={mobileMenuRef}>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-1.5 rounded text-gray-600 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 transition-colors"
-                aria-label="Menu"
+                className="p-1.5 rounded text-gray-600 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                aria-label="Open menu"
+                aria-expanded={mobileMenuOpen}
+                aria-haspopup="true"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
 
               {/* Mobile dropdown menu */}
               {mobileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                <div 
+                  className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50"
+                  role="menu"
+                  aria-label="Mobile menu"
+                >
                   <button
                     onClick={() => { downloadExpressions(); setMobileMenuOpen(false); }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
+                    role="menuitem"
                   >
                     Export NX
                   </button>
                   <button
                     onClick={() => { downloadBOM(); setMobileMenuOpen(false); }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
+                    role="menuitem"
                   >
                     Export BOM
                   </button>
                   <button
                     onClick={() => { downloadStepFile(); setMobileMenuOpen(false); }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
+                    role="menuitem"
                   >
                     Download STEP
                   </button>
@@ -701,7 +722,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Main Content Grid */}
       <div className="flex-1 flex flex-col lg:flex-row gap-2 p-2 min-h-0 overflow-hidden relative">
@@ -718,31 +739,37 @@ export default function Home() {
             <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-2">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Part Numbers</h3>
               <div className="mt-1 space-y-2">
-                <label className="flex flex-col gap-1">
+                <label htmlFor="part-number-base" className="flex flex-col gap-1">
                   <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Base</span>
                   <input
+                    id="part-number-base"
                     value={partNumbers.base}
                     onChange={(e) => setPartNumbers(prev => ({ ...prev, base: e.target.value }))}
-                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
                     placeholder={PART_NUMBER_STANDARDS.PLACEHOLDER}
+                    aria-label="Base part number"
                   />
                 </label>
-                <label className="flex flex-col gap-1">
+                <label htmlFor="part-number-crate" className="flex flex-col gap-1">
                   <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Crate</span>
                   <input
+                    id="part-number-crate"
                     value={partNumbers.crate}
                     onChange={(e) => setPartNumbers(prev => ({ ...prev, crate: e.target.value }))}
-                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
                     placeholder={PART_NUMBER_STANDARDS.PLACEHOLDER}
+                    aria-label="Crate part number"
                   />
                 </label>
-                <label className="flex flex-col gap-1">
+                <label htmlFor="part-number-cap" className="flex flex-col gap-1">
                   <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Cap</span>
                   <input
+                    id="part-number-cap"
                     value={partNumbers.cap}
                     onChange={(e) => setPartNumbers(prev => ({ ...prev, cap: e.target.value }))}
-                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
                     placeholder={PART_NUMBER_STANDARDS.PLACEHOLDER}
+                    aria-label="Cap part number"
                   />
                 </label>
               </div>
@@ -752,18 +779,24 @@ export default function Home() {
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">Product Dimensions</h3>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1.5">
-                  <label className="flex flex-col gap-0.5">
+                  <label htmlFor="input-length" className="flex flex-col gap-0.5">
                     <span className="text-xs text-gray-600 dark:text-gray-400">Length (Y)"</span>
                     <input
+                      id="input-length"
                       data-testid="input-length"
                       type="text"
                       value={inputValues.length}
                       onChange={(e) => handleInputChange('length', e.target.value)}
                       onBlur={() => handleInputBlur('length')}
-                      className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                      aria-label="Product length in inches"
                     />
                   </label>
+                  <label htmlFor="slider-length" className="sr-only">
+                    Length slider
+                  </label>
                   <input
+                    id="slider-length"
                     data-testid="slider-length"
                     type="range"
                     min={PRODUCT_SLIDER_CONFIG.length.min}
@@ -776,23 +809,32 @@ export default function Home() {
                         handleProductSliderChange('length', numericValue)
                       }
                     }}
-                    className="w-full cursor-pointer accent-blue-600"
+                    className="w-full cursor-pointer accent-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
                     aria-label="Length in inches"
+                    aria-valuemin={PRODUCT_SLIDER_CONFIG.length.min}
+                    aria-valuemax={PRODUCT_SLIDER_CONFIG.length.max}
+                    aria-valuenow={getSliderValue('length')}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="flex flex-col gap-0.5">
+                  <label htmlFor="input-width" className="flex flex-col gap-0.5">
                     <span className="text-xs text-gray-600 dark:text-gray-400">Width (X)"</span>
                     <input
+                      id="input-width"
                       data-testid="input-width"
                       type="text"
                       value={inputValues.width}
                       onChange={(e) => handleInputChange('width', e.target.value)}
                       onBlur={() => handleInputBlur('width')}
-                      className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                      aria-label="Product width in inches"
                     />
                   </label>
+                  <label htmlFor="slider-width" className="sr-only">
+                    Width slider
+                  </label>
                   <input
+                    id="slider-width"
                     data-testid="slider-width"
                     type="range"
                     min={PRODUCT_SLIDER_CONFIG.width.min}
@@ -805,23 +847,32 @@ export default function Home() {
                         handleProductSliderChange('width', numericValue)
                       }
                     }}
-                    className="w-full cursor-pointer accent-blue-600"
+                    className="w-full cursor-pointer accent-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
                     aria-label="Width in inches"
+                    aria-valuemin={PRODUCT_SLIDER_CONFIG.width.min}
+                    aria-valuemax={PRODUCT_SLIDER_CONFIG.width.max}
+                    aria-valuenow={getSliderValue('width')}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="flex flex-col gap-0.5">
+                  <label htmlFor="input-height" className="flex flex-col gap-0.5">
                     <span className="text-xs text-gray-600 dark:text-gray-400">Height (Z)"</span>
                     <input
+                      id="input-height"
                       data-testid="input-height"
                       type="text"
                       value={inputValues.height}
                       onChange={(e) => handleInputChange('height', e.target.value)}
                       onBlur={() => handleInputBlur('height')}
-                      className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                      aria-label="Product height in inches"
                     />
                   </label>
+                  <label htmlFor="slider-height" className="sr-only">
+                    Height slider
+                  </label>
                   <input
+                    id="slider-height"
                     data-testid="slider-height"
                     type="range"
                     min={PRODUCT_SLIDER_CONFIG.height.min}
@@ -834,23 +885,32 @@ export default function Home() {
                         handleProductSliderChange('height', numericValue)
                       }
                     }}
-                    className="w-full cursor-pointer accent-blue-600"
+                    className="w-full cursor-pointer accent-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
                     aria-label="Height in inches"
+                    aria-valuemin={PRODUCT_SLIDER_CONFIG.height.min}
+                    aria-valuemax={PRODUCT_SLIDER_CONFIG.height.max}
+                    aria-valuenow={getSliderValue('height')}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="flex flex-col gap-0.5">
+                  <label htmlFor="input-weight" className="flex flex-col gap-0.5">
                     <span className="text-xs text-gray-600 dark:text-gray-400">Weight (lb)</span>
                     <input
+                      id="input-weight"
                       data-testid="input-weight"
                       type="text"
                       value={inputValues.weight}
                       onChange={(e) => handleInputChange('weight', e.target.value)}
                       onBlur={() => handleInputBlur('weight')}
-                      className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                      aria-label="Product weight in pounds"
                     />
                   </label>
+                  <label htmlFor="slider-weight" className="sr-only">
+                    Weight slider
+                  </label>
                   <input
+                    id="slider-weight"
                     data-testid="slider-weight"
                     type="range"
                     min={PRODUCT_SLIDER_CONFIG.weight.min}
@@ -863,8 +923,11 @@ export default function Home() {
                         handleProductSliderChange('weight', numericValue)
                       }
                     }}
-                    className="w-full cursor-pointer accent-blue-600"
+                    className="w-full cursor-pointer accent-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
                     aria-label="Weight in pounds"
+                    aria-valuemin={PRODUCT_SLIDER_CONFIG.weight.min}
+                    aria-valuemax={PRODUCT_SLIDER_CONFIG.weight.max}
+                    aria-valuenow={getSliderValue('weight')}
                   />
                 </div>
               </div>

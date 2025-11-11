@@ -34,17 +34,17 @@ const formatCleatTypes = (types: string[]) =>
 
 export function LumberCutList({ cutList }: LumberCutListProps) {
   return (
-    <div className="space-y-4 md:space-y-6 text-sm">
+    <div className="space-y-4 md:space-y-6 text-sm" role="region" aria-label="Lumber cut list">
       <section>
         <h2 className="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 md:mb-3">Skids</h2>
         <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-          <table className="w-full text-sm min-w-[500px]">
+          <table className="w-full text-sm min-w-[500px]" role="table" aria-label="Skids cut list">
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Material</th>
-                <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Cut Length</th>
-                <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Qty</th>
-                <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Notes</th>
+                <th scope="col" className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Material</th>
+                <th scope="col" className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Cut Length</th>
+                <th scope="col" className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Qty</th>
+                <th scope="col" className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Notes</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
@@ -64,13 +64,13 @@ export function LumberCutList({ cutList }: LumberCutListProps) {
       <section>
         <h2 className="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-2 md:mb-3">Floorboards</h2>
         <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-          <table className="w-full text-sm min-w-[500px]">
+          <table className="w-full text-sm min-w-[500px]" role="table" aria-label="Floorboards cut list">
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Material</th>
-                <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Cut Length</th>
-                <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Qty</th>
-                <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Notes</th>
+                <th scope="col" className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Material</th>
+                <th scope="col" className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Cut Length</th>
+                <th scope="col" className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Qty</th>
+                <th scope="col" className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Notes</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
@@ -101,13 +101,13 @@ export function LumberCutList({ cutList }: LumberCutListProps) {
               <div className="bg-gray-50 dark:bg-gray-800 px-2 md:px-3 py-2 text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
                 {formatPanelName(panel.panel)}
               </div>
-              <table className="w-full text-sm min-w-[500px]">
+              <table className="w-full text-sm min-w-[500px]" role="table" aria-label={`Cleats for ${formatPanelName(panel.panel)}`}>
                 <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
-                    <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Orientation</th>
-                    <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Cut Length</th>
-                    <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Qty</th>
-                    <th className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Cleat Type</th>
+                    <th scope="col" className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Orientation</th>
+                    <th scope="col" className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Cut Length</th>
+                    <th scope="col" className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Qty</th>
+                    <th scope="col" className="px-2 md:px-3 py-2 text-left text-[10px] md:text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Cleat Type</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">

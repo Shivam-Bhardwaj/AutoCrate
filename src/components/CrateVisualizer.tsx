@@ -706,7 +706,7 @@ function NXBoxMesh({
           distanceFactor={10}
           occlude={false}
         >
-          <div className="bg-gray-900 text-white text-sm rounded-lg p-3 shadow-lg pointer-events-none">
+          <div className="bg-gray-900 text-white text-sm rounded-lg p-3 shadow-lg pointer-events-none" role="tooltip" aria-label={`Component information: ${box.name}`}>
             <div className="font-semibold text-center mb-1">{box.name}</div>
             <div className="text-center mb-1">{dimensions}</div>
             <div className="text-center text-gray-300">{getMaterialType(box.type)}</div>
@@ -1045,7 +1045,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
   }, [])
 
   return (
-    <div className="w-full h-full bg-gray-50 dark:bg-gray-100 rounded-lg relative">
+    <div className="w-full h-full bg-gray-50 dark:bg-gray-100 rounded-lg relative" role="region" aria-label="3D crate visualization">
       <Canvas
         camera={{
           position: [15, 10, 15],
@@ -1053,6 +1053,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
           near: UI_CONSTANTS.CAMERA.NEAR_PLANE,
           far: UI_CONSTANTS.CAMERA.FAR_PLANE
         }}
+        aria-label="Interactive 3D crate model"
       >
         <Suspense fallback={null}>
           <CameraResetter
@@ -1258,29 +1259,32 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
       </Canvas>
 
       {/* Overlay Panels - Hidden on mobile */}
-      <div className="hidden lg:flex absolute top-2 right-2 w-64 flex-col gap-2 pointer-events-auto">
+      <div className="hidden lg:flex absolute top-2 right-2 w-64 flex-col gap-2 pointer-events-auto" role="complementary" aria-label="Visualization controls">
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Visibility</h3>
             <button
               onClick={handleResetView}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-xs text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded"
+              aria-label="Reset camera view and show all components"
             >
               Reset view
             </button>
           </div>
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1" role="group" aria-label="Component visibility toggles">
             {(Object.keys(componentVisibility) as (keyof ComponentVisibility)[]).map(key => {
               const isEnabled = componentVisibility[key]
               return (
                 <button
                   key={key}
                   onClick={() => onToggleVisibility?.(key)}
-                  className={`px-2 py-1.5 text-xs rounded border transition-colors ${
+                  className={`px-2 py-1.5 text-xs rounded border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
                     isEnabled
                       ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
                       : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:border-blue-400 dark:hover:bg-gray-700'
                   }`}
+                  aria-label={`${isEnabled ? 'Hide' : 'Show'} ${visibilityLabels[key]}`}
+                  aria-pressed={isEnabled}
                 >
                   {visibilityLabels[key]}
                 </button>
@@ -1290,11 +1294,13 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
           <div className="mt-2 flex flex-wrap gap-1">
             <button
               onClick={() => onToggleMarkings?.()}
-              className={`px-2 py-1.5 text-xs rounded border transition-colors ${
+              className={`px-2 py-1.5 text-xs rounded border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
                 showMarkings
                   ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
                   : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:border-blue-400 dark:hover:bg-gray-700'
               }`}
+              aria-label={showMarkings ? 'Hide markings' : 'Show markings'}
+              aria-pressed={showMarkings}
             >
               {showMarkings ? 'Markings On' : 'Markings Off'}
             </button>
@@ -1304,18 +1310,20 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
         {/* PMI Visibility Controls */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">PMI Visibility</h3>
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1" role="group" aria-label="PMI visibility toggles">
             {(Object.keys(pmiLabels) as (keyof PmiVisibilityState)[]).map(layer => {
               const active = pmiState[layer]
               return (
                 <button
                   key={layer}
                   onClick={() => onTogglePmi?.(layer)}
-                  className={`px-2 py-1.5 text-xs rounded border transition-colors ${
+                  className={`px-2 py-1.5 text-xs rounded border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
                     active
                       ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
                       : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:border-blue-400 dark:hover:bg-gray-700'
                   }`}
+                  aria-label={`${active ? 'Hide' : 'Show'} ${pmiLabels[layer]}`}
+                  aria-pressed={active}
                 >
                   {pmiLabels[layer]}
                 </button>
@@ -1332,20 +1340,23 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
               </h3>
               <button
                 onClick={() => setShowHiddenList(!showHiddenList)}
-                className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-xs text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded"
+                aria-label={showHiddenList ? 'Hide hidden components list' : 'Show hidden components list'}
+                aria-expanded={showHiddenList}
               >
                 {showHiddenList ? 'Hide' : 'Show'}
               </button>
             </div>
             {showHiddenList && (
               <>
-                <div className="max-h-40 overflow-y-auto space-y-1 text-xs">
+                <div className="max-h-40 overflow-y-auto space-y-1 text-xs" role="list" aria-label="Hidden components">
                   {Array.from(hiddenComponents).map(name => (
-                    <div key={name} className="flex justify-between items-center">
+                    <div key={name} className="flex justify-between items-center" role="listitem">
                       <span className="text-gray-600 dark:text-gray-400 truncate mr-2">{name}</span>
                       <button
                         onClick={() => handleShowComponent(name)}
-                        className="text-blue-600 dark:text-blue-400 hover:underline"
+                        className="text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded"
+                        aria-label={`Show ${name}`}
                       >
                         Show
                       </button>
@@ -1354,7 +1365,8 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                 </div>
                 <button
                   onClick={handleShowAll}
-                  className="mt-2 w-full text-xs bg-blue-600 text-white rounded px-2 py-1 hover:bg-blue-700"
+                  className="mt-2 w-full text-xs bg-blue-600 text-white rounded px-2 py-1 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                  aria-label="Show all hidden components"
                 >
                   Show All
                 </button>
@@ -1365,7 +1377,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
       </div>
 
       {selectedPlanes.length > 0 && (
-        <div className="hidden lg:block absolute bottom-20 left-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg p-3">
+        <div className="hidden lg:block absolute bottom-20 left-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg p-3" role="status" aria-live="polite" aria-atomic="true">
           <div className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
             Measurement Mode
           </div>
@@ -1377,7 +1389,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
             ))}
             <div className="pt-1 border-t border-gray-300 dark:border-gray-700">
               {selectionError && (
-                <span className="font-semibold text-red-600 dark:text-red-400">
+                <span className="font-semibold text-red-600 dark:text-red-400" role="alert">
                   {selectionError}
                 </span>
               )}
@@ -1391,7 +1403,8 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
           </div>
           <button
             onClick={clearSelections}
-            className="mt-2 text-xs bg-red-600 text-white rounded px-2 py-1 hover:bg-red-700"
+            className="mt-2 text-xs bg-red-600 text-white rounded px-2 py-1 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
+            aria-label="Clear measurement selection"
           >
             Clear Selection
           </button>
@@ -1399,7 +1412,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
       )}
 
       {/* Instructions - Hidden on mobile */}
-      <div className="hidden lg:block absolute bottom-2 left-2 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded px-2 py-1">
+      <div className="hidden lg:block absolute bottom-2 left-2 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded px-2 py-1" role="note" aria-label="Keyboard shortcuts">
         Click faces to measure • Right-click to hide component • Esc to reset view
       </div>
     </div>

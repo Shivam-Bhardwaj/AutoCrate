@@ -78,8 +78,8 @@ describe('Home Page', () => {
     await user.click(await screen.findByTestId('toggle-piece'))
 
     const createObjectURL = jest.spyOn(global.URL, 'createObjectURL')
-    await user.click(screen.getByRole('button', { name: 'Export NX' }))
-    await user.click(screen.getByRole('button', { name: 'Download STEP' }))
+    await user.click(screen.getByRole('button', { name: 'Export NX expressions file' }))
+    await user.click(screen.getByRole('button', { name: 'Download STEP file' }))
     expect(createObjectURL).toHaveBeenCalledTimes(2)
     createObjectURL.mockRestore()
   })
