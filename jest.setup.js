@@ -127,7 +127,6 @@ jest.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
     return mockGeometry
   })
 }))
-}))
 
 // Mock window.URL.createObjectURL
 global.URL.createObjectURL = jest.fn(() => 'blob:mock-url')
