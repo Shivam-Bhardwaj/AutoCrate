@@ -25,7 +25,34 @@ interface NXExpressionsRequest {
 
 async function postHandler(request: NextRequest) {
   try {
-    const body: NXExpressionsRequest = await request.json();
+    // Handle both JSON and form data
+    let body: NXExpressionsRequest;
+    const contentType = request.headers.get('content-type') || '';
+    
+    if (contentType.includes('application/json')) {
+      body = await request.json();
+    } else if (contentType.includes('application/x-www-form-urlencoded')) {
+      const formData = await request.formData();
+      const dataField = formData.get('data');
+      if (typeof dataField === 'string') {
+        body = JSON.parse(dataField);
+      } else {
+        throw new Error('Invalid form data');
+      }
+    } else {
+      // Try JSON first, fallback to form data
+      try {
+        body = await request.json();
+      } catch {
+        const formData = await request.formData();
+        const dataField = formData.get('data');
+        if (typeof dataField === 'string') {
+          body = JSON.parse(dataField);
+        } else {
+          throw new Error('Invalid request format');
+        }
+      }
+    }
 
     // Create generator with the provided config
     const config = {

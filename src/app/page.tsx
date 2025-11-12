@@ -439,37 +439,32 @@ export default function Home() {
 
   const downloadExpressions = async () => {
     // Use server-side endpoint to avoid Windows Zone.Identifier properties
+    // Create a form and submit it to trigger direct download from server
+    // This avoids blob URLs which Windows marks with Zone.Identifier
     try {
-      const response = await fetch('/api/nx-expressions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          product: config.product,
-          clearances: config.clearances,
-          partNumbers: partNumbers
-        })
+      const form = document.createElement('form')
+      form.method = 'POST'
+      form.action = '/api/nx-expressions'
+      form.style.display = 'none'
+      
+      // Add product data
+      const productInput = document.createElement('input')
+      productInput.type = 'hidden'
+      productInput.name = 'data'
+      productInput.value = JSON.stringify({
+        product: config.product,
+        clearances: config.clearances,
+        partNumbers: partNumbers
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to generate expressions')
-      }
-
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      // Use timestamp-based filename (server sets proper Content-Disposition)
-      a.download = `crate_expressions_${Date.now()}.exp`
-      a.style.display = 'none'
-      document.body.appendChild(a)
-      a.click()
-      // Clean up after a short delay to ensure download starts
+      form.appendChild(productInput)
+      
+      document.body.appendChild(form)
+      form.submit()
+      
+      // Remove form after a short delay
       setTimeout(() => {
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
-      }, 100)
+        document.body.removeChild(form)
+      }, 1000)
     } catch (error) {
       console.error('Failed to download expressions:', error)
       // Fallback to client-side generation if API fails
