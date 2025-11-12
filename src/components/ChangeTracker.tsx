@@ -175,12 +175,23 @@ export function ChangeTracker() {
   })
 
   if (metadata.lastCommit) {
+    // Create GitHub commit URL
+    const repoUrl = 'https://github.com/Shivam-Bhardwaj/AutoCrate'
+    const commitHash = metadata.fullCommitHash || metadata.lastCommit
+    const commitUrl = `${repoUrl}/commit/${commitHash}`
+    
     headerSegments.push({
       id: 'commit',
       node: (
-        <span className="text-gray-500 dark:text-gray-400 flex-shrink-0 font-mono">
+        <a
+          href={commitUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 flex-shrink-0 font-mono underline decoration-dotted underline-offset-2 transition-colors"
+          title={metadata.fullCommitHash ? `Full hash: ${metadata.fullCommitHash}` : `Commit: ${metadata.lastCommit}`}
+        >
           {metadata.lastCommit}
-        </span>
+        </a>
       )
     })
   }
