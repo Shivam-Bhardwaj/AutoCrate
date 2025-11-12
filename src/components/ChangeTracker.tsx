@@ -138,24 +138,25 @@ export function ChangeTracker() {
 
   const headerSegments: Array<{ id: string; node: JSX.Element }> = []
   
-  // Add title if available
-  if (changeInfo?.title) {
+  // Add title if available (from changeInfo or fallback to lastChange)
+  const title = changeInfo?.title || metadata.lastChange?.split('\n')[0]?.replace(/^(feat|fix|chore|docs|test|refactor|style|perf):\s*/i, '')?.trim() || ''
+  if (title) {
     headerSegments.push({
       id: 'title',
       node: (
         <span className="font-medium text-gray-900 dark:text-gray-100 flex-shrink-0">
-          {changeInfo.title}
+          {title}
         </span>
       )
     })
   }
   
-  // Add version
+  // Add version (always present)
   headerSegments.push({
     id: 'version',
     node: (
       <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">
-        v{metadata.version}
+        v{metadata.version || '1.0.0'}
       </span>
     )
   })
