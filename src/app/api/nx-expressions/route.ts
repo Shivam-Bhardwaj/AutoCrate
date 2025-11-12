@@ -54,6 +54,8 @@ async function postHandler(request: NextRequest) {
     const filename = `crate_expressions_${timestamp}.exp`;
 
     // Return file with proper headers to avoid Windows Zone.Identifier
+    // Using proper Content-Disposition with attachment forces download
+    // and helps prevent Windows from adding security properties
     return new NextResponse(expressions, {
       headers: {
         'Content-Type': 'text/plain;charset=utf-8',
@@ -63,7 +65,9 @@ async function postHandler(request: NextRequest) {
         'Expires': '0',
         // These headers help prevent Windows from adding Zone.Identifier
         'X-Content-Type-Options': 'nosniff',
-        'Content-Transfer-Encoding': 'binary'
+        'Content-Transfer-Encoding': 'binary',
+        // Expose Content-Disposition for CORS if needed
+        'Access-Control-Expose-Headers': 'Content-Disposition'
       }
     });
   } catch (error) {
