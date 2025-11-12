@@ -417,8 +417,14 @@ export default function Home() {
     const a = document.createElement('a')
     a.href = url
     a.download = `crate_expressions_${Date.now()}.exp`
+    a.style.display = 'none'
+    document.body.appendChild(a)
     a.click()
-    URL.revokeObjectURL(url)
+    // Clean up after a short delay to ensure download starts
+    setTimeout(() => {
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }, 100)
   }
 
   const downloadBOM = () => {
