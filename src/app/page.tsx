@@ -412,7 +412,7 @@ export default function Home() {
       ''
     ].join('\n')
     const expressions = `${header}${generator.exportNXExpressions()}`
-    const blob = new Blob([expressions], { type: 'text/plain' })
+    const blob = new Blob([expressions], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
