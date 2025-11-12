@@ -113,6 +113,11 @@ jest.mock('@react-three/drei', () => ({
   useGLTF: mockedUseGLTF
 }))
 
+// Mock Three.js BufferGeometryUtils ES module
+jest.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
+  mergeGeometries: jest.fn((geometries) => geometries?.[0] || null)
+}))
+
 // Mock window.URL.createObjectURL
 global.URL.createObjectURL = jest.fn(() => 'blob:mock-url')
 global.URL.revokeObjectURL = jest.fn()
