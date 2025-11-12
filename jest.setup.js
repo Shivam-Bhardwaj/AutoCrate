@@ -115,7 +115,21 @@ jest.mock('@react-three/drei', () => ({
 
 // Mock Three.js BufferGeometryUtils ES module
 jest.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
+<<<<<<< HEAD
   mergeGeometries: jest.fn((geometries) => geometries?.[0] || null)
+=======
+  mergeGeometries: jest.fn((geometries) => {
+    // Return a mock geometry that mimics THREE.BufferGeometry
+    const mockGeometry = {
+      attributes: {},
+      rotateZ: jest.fn(),
+      center: jest.fn(),
+      translate: jest.fn(),
+      dispose: jest.fn()
+    }
+    return mockGeometry
+  })
+>>>>>>> origin/main
 }))
 
 // Mock window.URL.createObjectURL
