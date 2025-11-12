@@ -113,11 +113,16 @@ describe('Tutorial schema (browserless)', () => {
       'floorboard_width',
       'floorboard_length',
       'floorboard_thickness',
+      'floorboard_1',
     ]))
 
     const activeFloorCount = boxes.filter(box => box.type === 'floor' && !box.suppressed).length
     const x1Expressions = expressions.filter(expr => expr.endsWith('_X1'))
     expect(x1Expressions.length).toBe(activeFloorCount)
+
+    const totalFloorboards = boxes.filter(box => box.type === 'floor').length
+    const partNameExpressions = expressions.filter(expr => /^floorboard_\d+$/.test(expr))
+    expect(partNameExpressions.length).toBe(totalFloorboards)
 
     const firstBoardName = boxes.find(box => box.type === 'floor')?.name
     if (firstBoardName) {

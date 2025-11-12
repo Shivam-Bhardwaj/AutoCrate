@@ -150,6 +150,9 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
     }
 
     const coordinateSuffixes = ['X1', 'Y1', 'Z1', 'X2', 'Y2', 'Z2']
+    floorboards.forEach(board => {
+      pushUnique(board.name.toLowerCase())
+    })
     activeFloorboards.forEach(board => {
       for (const suffix of coordinateSuffixes) {
         pushUnique(`${board.name}_${suffix}`)
