@@ -416,7 +416,7 @@ export default function Home() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `crate_expressions_${Date.now()}.txt`
+    a.download = `crate_expressions_${Date.now()}.exp`
     a.click()
     URL.revokeObjectURL(url)
   }
