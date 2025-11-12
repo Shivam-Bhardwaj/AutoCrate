@@ -404,14 +404,41 @@ export default function Home() {
     }
   }
 
-  const downloadExpressions = () => {
+  const getExpressionsContent = (): string => {
     const header = [
       `# Base Part Number: ${partNumbers.base}`,
       `# Crate Part Number: ${partNumbers.crate}`,
       `# Cap Part Number: ${partNumbers.cap}`,
       ''
     ].join('\n')
-    const expressions = `${header}${generator.exportNXExpressions()}`
+    return `${header}${generator.exportNXExpressions()}`
+  }
+
+  const copyExpressionsToClipboard = async () => {
+    try {
+      const content = getExpressionsContent()
+      await navigator.clipboard.writeText(content)
+    } catch (err) {
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement('textarea')
+      textArea.value = getExpressionsContent()
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      try {
+        document.execCommand('copy')
+      } catch (fallbackErr) {
+        console.error('Failed to copy expressions:', fallbackErr)
+      }
+      document.body.removeChild(textArea)
+    }
+  }
+
+  const downloadExpressions = () => {
+    const expressions = getExpressionsContent()
     const blob = new Blob([expressions], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
