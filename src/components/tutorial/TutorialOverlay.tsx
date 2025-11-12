@@ -125,7 +125,7 @@ export default function TutorialOverlay({
 
   return (
     <div className="absolute bottom-3 left-3 w-[360px] max-w-[calc(100vw-24px)] z-50 pointer-events-auto">
-      <div className="bg-white/95 dark:bg-gray-900/95 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 max-h-[min(60vh,440px)] flex flex-col overflow-hidden">
+      <div className="bg-white/95 dark:bg-gray-900/95 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 max-h-[min(60vh,440px)] flex flex-col overflow-hidden min-w-0">
         {/* Header - always visible */}
         <div className="flex items-center justify-between mb-1 flex-shrink-0">
           <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -140,7 +140,7 @@ export default function TutorialOverlay({
         </div>
 
         {/* Scrollable content area */}
-        <div className="flex-1 min-h-0 overflow-y-auto pr-1 -mr-1">
+        <div className="flex-1 min-h-0 overflow-y-auto pr-1 pb-2">
           <div className="text-xs text-gray-700 dark:text-gray-300 mb-3">
             {step.description}
           </div>
@@ -213,7 +213,7 @@ export default function TutorialOverlay({
           )}
 
           {step.tips && step.tips.length > 0 && (
-            <ul className="list-disc pl-4 text-[11px] text-gray-700 dark:text-gray-300 space-y-0.5 mb-2">
+            <ul className="list-disc pl-4 text-[11px] text-gray-700 dark:text-gray-300 space-y-0.5 mb-4">
               {step.tips.map((tip, i) => (
                 <li key={i} className="leading-relaxed">{tip}</li>
               ))}
