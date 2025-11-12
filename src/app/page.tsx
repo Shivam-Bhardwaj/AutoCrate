@@ -625,8 +625,6 @@ export default function Home() {
 
   return (
     <main id="main-content" className="h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 overflow-hidden flex flex-col transition-colors duration-300" role="main">
-      {/* Compact change tracker */}
-      <ChangeTracker />
       {/* Compact Header */}
       <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none px-4 py-1.5 flex-shrink-0 transition-colors duration-300" role="banner">
         <div className="flex items-center justify-between">

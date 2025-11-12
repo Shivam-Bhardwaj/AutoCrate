@@ -2,6 +2,8 @@
 
 This repository supports parallel development by multiple LLMs (Claude Code, OpenAI Codex, etc.) using git worktrees. Each issue gets its own isolated workspace.
 
+> **⚠️ Important**: If you're using Cursor and working on multiple projects, see [CURSOR_WORKTREE_ISSUE.md](./CURSOR_WORKTREE_ISSUE.md) for information about worktree location conflicts.
+
 ## Quick Start
 
 ### From SSH Session
