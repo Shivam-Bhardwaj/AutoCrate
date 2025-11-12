@@ -142,9 +142,9 @@ export default function TutorialOverlay({
         </div>
 
         {groupedExpressions.length > 0 && (
-          <div className="mb-4 flex flex-col flex-shrink-0">
-            <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">Expressions</div>
-            <div className="space-y-1.5 overflow-y-auto pr-1 max-h-[200px] pb-2">
+          <div className="mb-3 flex flex-col flex-shrink-0">
+            <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Expressions</div>
+            <div className="space-y-1.5 overflow-y-auto pr-1 max-h-[200px] pb-2 min-h-0">
               {groupedExpressions.map(group => {
                 const isExpanded = expandedGroupId === group.id
                 const isGeneral = group.id === 'general'
@@ -167,7 +167,7 @@ export default function TutorialOverlay({
                         className={
                           isGeneral
                             ? 'px-2 pb-2 flex flex-col gap-1'
-                            : 'px-2 pb-2 grid grid-cols-1 sm:grid-cols-2 gap-1'
+                            : 'px-2 pb-2 grid grid-cols-1 sm:grid-cols-2 gap-1 items-stretch'
                         }
                       >
                         {group.items.map(item => (
@@ -176,15 +176,15 @@ export default function TutorialOverlay({
                             onClick={() => handleCopy(item.full)}
                             aria-label={item.full}
                             title={`Copy ${item.full}`}
-                            className="px-2 py-1 text-[10px] rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors text-left"
+                            className="px-2 py-1.5 text-[10px] rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors text-left h-full flex flex-col justify-start"
                           >
-                            <span className="block font-medium">{item.label}</span>
+                            <span className="block font-medium leading-tight">{item.label}</span>
                             {typeof item.value === 'number' && (
-                              <span className="block text-[9px] text-gray-600 dark:text-gray-300">
+                              <span className="block text-[9px] text-gray-600 dark:text-gray-300 leading-tight mt-0.5">
                                 = {formatValue(item.value)}
                               </span>
                             )}
-                            <span className="block text-[8px] text-gray-500 dark:text-gray-400 mt-0.5">
+                            <span className="block text-[8px] text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
                               {item.full}
                             </span>
                           </button>
@@ -195,9 +195,9 @@ export default function TutorialOverlay({
                 )
               })}
             </div>
-            <div className="text-[9px] text-gray-500 dark:text-gray-400 mt-2">Click to copy an expression name.</div>
+            <div className="text-[9px] text-gray-500 dark:text-gray-400 mt-2 leading-tight">Click to copy an expression name.</div>
             <div
-              className={`transition-opacity duration-150 text-[9px] mt-1 px-2 py-1 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-200 ${
+              className={`transition-opacity duration-150 text-[9px] mt-1.5 px-2 py-1 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-200 leading-tight ${
                 copiedExpression ? 'opacity-100' : 'opacity-0 pointer-events-none'
               }`}
               aria-live="polite"
@@ -209,9 +209,9 @@ export default function TutorialOverlay({
         )}
 
         {step.tips && step.tips.length > 0 && (
-          <ul className="list-disc pl-4 text-[11px] text-gray-700 dark:text-gray-300 space-y-0.5 mb-1 mt-4 flex-shrink-0">
+          <ul className="list-disc pl-4 text-[11px] text-gray-700 dark:text-gray-300 space-y-0.5 mb-2 mt-4 flex-shrink-0">
             {step.tips.map((tip, i) => (
-              <li key={i}>{tip}</li>
+              <li key={i} className="leading-relaxed">{tip}</li>
             ))}
           </ul>
         )}
