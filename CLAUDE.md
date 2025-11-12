@@ -148,7 +148,6 @@ npm run security:scan    # Scan for secrets in commits (pre-commit hook)
 - `MarkingsSection.tsx` - Markings configuration interface
 - `ScenarioSelector.tsx` - Pre-configured test scenarios
 - `ThemeToggle.tsx` / `ThemeProvider.tsx` - Dark/light mode
-- `ChangeTracker.tsx` - Track changes with GitHub issue linking
 - `VisualChecklist.tsx` - Development workflow checklist
 
 ### API Routes (`src/app/api/`)
