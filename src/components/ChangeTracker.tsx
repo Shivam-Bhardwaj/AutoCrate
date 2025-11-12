@@ -131,29 +131,34 @@ export function ChangeTracker() {
       })
   }, [])
 
-  if (!metadata || !changeInfo) return null
+  if (!metadata) return null
 
   const contributor = metadata.updatedBy?.split('@')[0] ?? 'unknown'
   const formattedTimestamp = metadata.timestamp ? new Date(metadata.timestamp).toLocaleString() : null
 
-  const headerSegments: Array<{ id: string; node: JSX.Element }> = [
-    {
+  const headerSegments: Array<{ id: string; node: JSX.Element }> = []
+  
+  // Add title if available
+  if (changeInfo?.title) {
+    headerSegments.push({
       id: 'title',
       node: (
         <span className="font-medium text-gray-900 dark:text-gray-100 flex-shrink-0">
           {changeInfo.title}
         </span>
       )
-    },
-    {
-      id: 'version',
-      node: (
-        <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">
-          v{metadata.version}
-        </span>
-      )
-    }
-  ]
+    })
+  }
+  
+  // Add version
+  headerSegments.push({
+    id: 'version',
+    node: (
+      <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">
+        v{metadata.version}
+      </span>
+    )
+  })
 
   if (metadata.lastCommit) {
     headerSegments.push({
@@ -185,6 +190,9 @@ export function ChangeTracker() {
       )
     })
   }
+
+  // Don't render if no segments
+  if (headerSegments.length === 0) return null
 
   return (
     <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-all duration-300" role="banner" aria-label="Change tracker">
