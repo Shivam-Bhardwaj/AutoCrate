@@ -98,6 +98,51 @@ describe('Tutorial schema (browserless)', () => {
     expect(cleatStep?.expressionValues?.[cleatThicknessKey!]).toBeGreaterThan(0)
   })
 
+  it('lists individual floorboard expressions with values for copy/paste', () => {
+    const gen = makeGenerator()
+    const boxes = gen.getBoxes()
+    const steps = buildFullTutorial(gen, boxes)
+
+    const floorStep = steps.find(s => s.id === 'floorboards')
+    expect(floorStep).toBeTruthy()
+    const expressions = floorStep?.expressions ?? []
+    expect(expressions.length).toBeGreaterThan(0)
+    expect(expressions).not.toContain('FLOORBOARD_n_X1..Z2')
+    expect(expressions).toEqual(expect.arrayContaining([
+      'floorboard_count',
+      'floorboard_width',
+      'floorboard_length',
+      'floorboard_thickness',
+    ]))
+
+    const activeFloorCount = boxes.filter(box => box.type === 'floor' && !box.suppressed).length
+    const x1Expressions = expressions.filter(expr => expr.endsWith('_X1'))
+    expect(x1Expressions.length).toBe(activeFloorCount)
+
+    const firstBoardName = boxes.find(box => box.type === 'floor')?.name
+    if (firstBoardName) {
+      expect(expressions).toEqual(expect.arrayContaining([
+        `${firstBoardName}_X1`,
+        `${firstBoardName}_Y1`,
+        `${firstBoardName}_Z1`,
+        `${firstBoardName}_X2`,
+        `${firstBoardName}_Y2`,
+        `${firstBoardName}_Z2`,
+        `${firstBoardName}_SUPPRESSED`,
+      ]))
+      expect(floorStep?.expressionValues?.[`${firstBoardName}_X1`]).not.toBeUndefined()
+      expect(floorStep?.expressionValues?.[`${firstBoardName}_SUPPRESSED`]).toBeDefined()
+    }
+
+    const suppressedExpressions = expressions.filter(expr => expr.endsWith('_SUPPRESSED'))
+    expect(suppressedExpressions.length).toBeGreaterThan(0)
+    const suppressedValues = suppressedExpressions
+      .map(expr => floorStep?.expressionValues?.[expr])
+      .filter((value): value is number => typeof value === 'number')
+    expect(suppressedValues.length).toBeGreaterThan(0)
+    expect(suppressedValues.some(value => value === 1 || value === 0)).toBe(true)
+  })
+
   describe('classifyBoxForAssembly', () => {
     it('classifies skid boxes correctly', () => {
       const box: NXBox = {

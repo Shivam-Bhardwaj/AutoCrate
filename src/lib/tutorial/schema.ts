@@ -139,24 +139,44 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
     }
   }
 
-  const hasFloors = boxes.some(b => b.type === 'floor')
-  if (hasFloors) {
-    steps.push({
+  const floorboards = boxes.filter(b => b.type === 'floor')
+  if (floorboards.length > 0) {
+    const activeFloorboards = floorboards.filter(b => !b.suppressed)
+    const floorboardExpressions: string[] = []
+    const pushUnique = (expr: string) => {
+      if (!floorboardExpressions.includes(expr)) {
+        floorboardExpressions.push(expr)
+      }
+    }
+
+    const coordinateSuffixes = ['X1', 'Y1', 'Z1', 'X2', 'Y2', 'Z2']
+    activeFloorboards.forEach(board => {
+      for (const suffix of coordinateSuffixes) {
+        pushUnique(`${board.name}_${suffix}`)
+      }
+      pushUnique(`${board.name}_SUPPRESSED`)
+    })
+
+    floorboards
+      .filter(board => board.suppressed)
+      .forEach(board => {
+        pushUnique(`${board.name}_SUPPRESSED`)
+      })
+
+    ;['floorboard_count', 'floorboard_width', 'floorboard_length', 'floorboard_thickness', 'floorboard_gap'].forEach(pushUnique)
+
+    const step: TutorialStep = {
       id: 'floorboards',
       title: 'Create Floorboards (Opposite Corners)',
       description: 'Create Blocks for each FLOORBOARD_n using opposite corners (two points). Suppress any marked as suppressed in the export.',
       target: { types: ['floor'] },
-      expressions: [
-        'FLOORBOARD_n_X1..Z2',
-        'floorboard_count',
-        'floorboard_width',
-        'floorboard_thickness',
-      ],
+      expressions: floorboardExpressions,
       tips: [
         'Floorboards run along X and sit on skids (Z = skid_height).',
         'Use the naming pattern FLOORBOARD_1, FLOORBOARD_2, ... for expressions (X1,Y1,Z1 / X2,Y2,Z2).'
       ],
-    })
+    }
+    steps.push(step)
   }
 
   const panelMap: Record<string, { title: string }> = {
