@@ -59,7 +59,7 @@ async function postHandler(request: NextRequest) {
       product: body.product,
       clearances: body.clearances,
       materials: {
-        skidSize: body.product.weight > 2000 ? '4x4' : '3x3',
+        skidSize: (body.product.weight > 2000 ? '4x4' : '3x3') as '3x3' | '4x4',
         plywoodThickness: 0.25,
         panelThickness: 1.0,
         cleatSize: '1x4' as const
