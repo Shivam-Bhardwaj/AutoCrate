@@ -124,9 +124,10 @@ export default function TutorialOverlay({
   if (!active || !step) return null
 
   return (
-    <div className="absolute bottom-3 left-3 w-[360px] max-w-[calc(100vw-24px)] z-50 pointer-events-auto">
-      <div className="bg-white/95 dark:bg-gray-900/95 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 max-h-[min(60vh,440px)] flex flex-col">
-        <div className="flex items-center justify-between mb-1">
+    <div className="absolute top-3 left-3 bottom-3 w-[360px] max-w-[calc(100vw-24px)] z-50 pointer-events-auto">
+      <div className="bg-white/95 dark:bg-gray-900/95 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 h-full max-h-[min(60vh,440px)] flex flex-col overflow-hidden min-w-0">
+        {/* Header - always visible */}
+        <div className="flex items-center justify-between mb-1 flex-shrink-0">
           <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
             Tutorial: {step.title}
           </div>
@@ -137,100 +138,105 @@ export default function TutorialOverlay({
             Close
           </button>
         </div>
-        <div className="text-xs text-gray-700 dark:text-gray-300 mb-2">
-          {step.description}
+
+        {/* Scrollable content area */}
+        <div className="flex-1 min-h-0 overflow-y-auto pr-1 pb-2">
+          <div className="text-xs text-gray-700 dark:text-gray-300 mb-3">
+            {step.description}
+          </div>
+
+          {groupedExpressions.length > 0 && (
+            <div className="mb-4 flex flex-col">
+              <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Expressions</div>
+              <div className="space-y-1.5 pb-2">
+                {groupedExpressions.map(group => {
+                  const isExpanded = expandedGroupId === group.id
+                  const isGeneral = group.id === 'general'
+                  return (
+                    <div key={group.id} className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/40">
+                      <button
+                        type="button"
+                        onClick={() => setExpandedGroupId(prev => (prev === group.id ? null : group.id))}
+                        className="w-full flex items-center justify-between px-3 py-2 text-left transition-colors hover:bg-gray-100/70 dark:hover:bg-gray-800/70"
+                      >
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
+                          {group.title}
+                        </span>
+                        <span className="text-[12px] text-gray-500 dark:text-gray-400">
+                          {isExpanded ? '−' : '+'}
+                        </span>
+                      </button>
+                      {isExpanded && (
+                        <div
+                          className={
+                            isGeneral
+                              ? 'px-2 pb-2 flex flex-col gap-1'
+                              : 'px-2 pb-2 grid grid-cols-1 sm:grid-cols-2 gap-1 items-stretch'
+                          }
+                        >
+                          {group.items.map(item => (
+                            <button
+                              key={item.full}
+                              onClick={() => handleCopy(item.full)}
+                              aria-label={item.full}
+                              title={`Copy ${item.full}`}
+                              className="px-2 py-1.5 text-[10px] rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors text-left h-full flex flex-col justify-start"
+                            >
+                              <span className="block font-medium leading-tight">{item.label}</span>
+                              {typeof item.value === 'number' && (
+                                <span className="block text-[9px] text-gray-600 dark:text-gray-300 leading-tight mt-0.5">
+                                  = {formatValue(item.value)}
+                                </span>
+                              )}
+                              <span className="block text-[8px] text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
+                                {item.full}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="text-[9px] text-gray-500 dark:text-gray-400 mt-2 leading-tight">Click to copy an expression name.</div>
+              <div
+                className={`transition-opacity duration-150 text-[9px] mt-1.5 px-2 py-1 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-200 leading-tight ${
+                  copiedExpression ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+                aria-live="polite"
+                role="status"
+              >
+                {copiedExpression ? `Copied ${copiedExpression} to clipboard.` : 'Copied to clipboard.'}
+              </div>
+            </div>
+          )}
+
+          {step.tips && step.tips.length > 0 && (
+            <ul className="list-disc pl-4 text-[11px] text-gray-700 dark:text-gray-300 space-y-0.5 mb-4">
+              {step.tips.map((tip, i) => (
+                <li key={i} className="leading-relaxed">{tip}</li>
+              ))}
+            </ul>
+          )}
         </div>
 
-        {groupedExpressions.length > 0 && (
-          <div className="mb-4 flex flex-col flex-shrink-0">
-            <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">Expressions</div>
-            <div className="space-y-1.5 overflow-y-auto pr-1 max-h-[200px] pb-2">
-              {groupedExpressions.map(group => {
-                const isExpanded = expandedGroupId === group.id
-                const isGeneral = group.id === 'general'
-                return (
-                  <div key={group.id} className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/40">
-                    <button
-                      type="button"
-                      onClick={() => setExpandedGroupId(prev => (prev === group.id ? null : group.id))}
-                      className="w-full flex items-center justify-between px-3 py-2 text-left transition-colors hover:bg-gray-100/70 dark:hover:bg-gray-800/70"
-                    >
-                      <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
-                        {group.title}
-                      </span>
-                      <span className="text-[12px] text-gray-500 dark:text-gray-400">
-                        {isExpanded ? '−' : '+'}
-                      </span>
-                    </button>
-                    {isExpanded && (
-                      <div
-                        className={
-                          isGeneral
-                            ? 'px-2 pb-2 flex flex-col gap-1'
-                            : 'px-2 pb-2 grid grid-cols-1 sm:grid-cols-2 gap-1'
-                        }
-                      >
-                        {group.items.map(item => (
-                          <button
-                            key={item.full}
-                            onClick={() => handleCopy(item.full)}
-                            aria-label={item.full}
-                            title={`Copy ${item.full}`}
-                            className="px-2 py-1 text-[10px] rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors text-left"
-                          >
-                            <span className="block font-medium">{item.label}</span>
-                            {typeof item.value === 'number' && (
-                              <span className="block text-[9px] text-gray-600 dark:text-gray-300">
-                                = {formatValue(item.value)}
-                              </span>
-                            )}
-                            <span className="block text-[8px] text-gray-500 dark:text-gray-400 mt-0.5">
-                              {item.full}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-            <div className="text-[9px] text-gray-500 dark:text-gray-400 mt-2">Click to copy an expression name.</div>
-            <div
-              className={`transition-opacity duration-150 text-[9px] mt-1 px-2 py-1 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-200 ${
-                copiedExpression ? 'opacity-100' : 'opacity-0 pointer-events-none'
-              }`}
-              aria-live="polite"
-              role="status"
-            >
-              {copiedExpression ? `Copied ${copiedExpression} to clipboard.` : 'Copied to clipboard.'}
-            </div>
-          </div>
-        )}
-
-        {step.tips && step.tips.length > 0 && (
-          <ul className="list-disc pl-4 text-[11px] text-gray-700 dark:text-gray-300 space-y-0.5 mb-1 mt-4 flex-shrink-0">
-            {step.tips.map((tip, i) => (
-              <li key={i}>{tip}</li>
-            ))}
-          </ul>
-        )}
-
-        <div className="mt-2 flex items-center justify-between">
+        {/* Navigation - always visible at bottom */}
+        <div className="mt-2 flex items-center justify-between flex-shrink-0 pt-2 border-t border-gray-200 dark:border-gray-700">
           <div className="text-[11px] text-gray-500 dark:text-gray-400">
             Step {stepIndex + 1} of {steps.length}
           </div>
           <div className="flex gap-1">
             <button
               onClick={onPrev}
-              className="px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={stepIndex === 0}
             >
               Prev
             </button>
             <button
               onClick={onNext}
-              className="px-2 py-1 text-xs rounded border border-blue-600 text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:border-gray-300"
+              className="px-2 py-1 text-xs rounded border border-blue-600 text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:border-gray-300 disabled:cursor-not-allowed disabled:text-gray-500"
               disabled={stepIndex >= steps.length - 1}
             >
               Next
