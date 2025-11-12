@@ -85,11 +85,18 @@ export default function TutorialOverlay({
       const isDerived = expr.includes('=') || expr.includes('..')
       let groupId = 'general'
       let label = expr
+
       if (!isDerived) {
-        const idx = expr.lastIndexOf('_')
-        if (idx > 0) {
-          groupId = expr.slice(0, idx)
-          label = expr.slice(idx + 1).replace(/_/g, ' ')
+        const floorboardNameMatch = expr.match(/^floorboard_(\d+)$/i)
+        if (floorboardNameMatch) {
+          groupId = `FLOORBOARD_${floorboardNameMatch[1]}`
+          label = expr.toLowerCase()
+        } else {
+          const idx = expr.lastIndexOf('_')
+          if (idx > 0) {
+            groupId = expr.slice(0, idx)
+            label = expr.slice(idx + 1).replace(/_/g, ' ')
+          }
         }
       }
 
@@ -180,9 +187,20 @@ export default function TutorialOverlay({
                               onClick={() => handleCopy(item.full)}
                               aria-label={item.full}
                               title={`Copy ${item.full}`}
-                              className="px-2 py-1.5 text-[10px] rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors text-left h-full flex flex-col justify-start"
+                              className={`px-2 py-1.5 text-[10px] rounded border bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors text-left h-full flex flex-col justify-start relative ${
+                                copiedExpression === item.full
+                                  ? 'border-emerald-500 dark:border-emerald-400 shadow-inner bg-emerald-50/70 dark:bg-emerald-900/40'
+                                  : 'border-gray-300 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-gray-800'
+                              }`}
                             >
-                              <span className="block font-medium leading-tight">{item.label}</span>
+                              <span className="block font-medium leading-tight pr-8">
+                                {item.label}
+                              </span>
+                              {copiedExpression === item.full && (
+                                <span className="absolute top-1 right-1 text-[8px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+                                  Copied
+                                </span>
+                              )}
                               {typeof item.value === 'number' && (
                                 <span className="block text-[9px] text-gray-600 dark:text-gray-300 leading-tight mt-0.5">
                                   = {formatValue(item.value)}
