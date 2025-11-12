@@ -1663,7 +1663,8 @@ export class NXGenerator {
     const inferUnit = (key: string): string | null => {
       const lower = key.toLowerCase()
       if (lower.includes('weight')) return '[lbm]'
-      if (lower.includes('angle') || lower.includes('_rot')) return '[Deg]'
+      // Rotation/angle values have no unit prefix in NX
+      if (lower.includes('angle') || lower.includes('_rot')) return null
       if (lower.includes('feet') || lower.includes('foot')) return '[Ft]'
       if (lower.endsWith('_x') || lower.endsWith('_y') || lower.endsWith('_z')) return '[Inch]'
       const inchIndicators = [
@@ -1696,7 +1697,9 @@ export class NXGenerator {
 
     const formatExpression = (key: string, value: number): string => {
       const unit = inferUnit(key)
-      const numericString = unit === '[Deg]' ? value.toFixed(1) : formatValue(value)
+      const lower = key.toLowerCase()
+      // Rotation values use 1 decimal place, no unit
+      const numericString = (lower.includes('angle') || lower.includes('_rot')) ? value.toFixed(1) : formatValue(value)
       return `${unit ? `${unit}` : ''}${key} = ${numericString}`
     }
 
