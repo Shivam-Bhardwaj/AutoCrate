@@ -133,7 +133,6 @@ export function ChangeTracker() {
 
   if (!metadata) return null
 
-  const contributor = metadata.updatedBy?.split('@')[0] ?? 'unknown'
   const formattedTimestamp = metadata.timestamp ? new Date(metadata.timestamp).toLocaleString() : null
 
   const headerSegments: Array<{ id: string; node: JSX.Element }> = []
@@ -171,15 +170,6 @@ export function ChangeTracker() {
       )
     })
   }
-
-  headerSegments.push({
-    id: 'contributor',
-    node: (
-      <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">
-        by {contributor}
-      </span>
-    )
-  })
 
   if (formattedTimestamp) {
     headerSegments.push({
