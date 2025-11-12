@@ -111,7 +111,7 @@ describe('ChangeTracker', () => {
     render(<ChangeTracker />)
 
     await waitFor(() => {
-      expect(screen.getByText('Issue #N/A')).toBeInTheDocument()
+      expect(screen.queryByText(/Issue #/)).not.toBeInTheDocument()
       expect(screen.queryByRole('link', { name: /Issue/ })).not.toBeInTheDocument()
     })
   })
@@ -124,10 +124,10 @@ describe('ChangeTracker', () => {
     render(<ChangeTracker />)
 
     await waitFor(() => {
-      const link = screen.getByText(/Issue #83/).closest('a')
-      expect(link).toHaveAttribute('href', 'https://github.com/Shivam-Bhardwaj/AutoCrate/issues/83')
-      expect(link).toHaveAttribute('target', '_blank')
-      expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+      const issueLink = screen.getByRole('link', { name: /Issue #83/ })
+      expect(issueLink).toHaveAttribute('href', 'https://github.com/Shivam-Bhardwaj/AutoCrate/issues/83')
+      expect(issueLink).toHaveAttribute('target', '_blank')
+      expect(issueLink).toHaveAttribute('rel', 'noopener noreferrer')
     })
   })
 

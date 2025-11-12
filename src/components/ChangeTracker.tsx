@@ -141,12 +141,18 @@ export function ChangeTracker() {
   // Add issue number if available (first, as a prominent badge)
   const issueNumber = changeInfo?.issueNumber || deriveIssueNumber(metadata)
   if (issueNumber && issueNumber !== '0') {
+    const issueUrl = `https://github.com/Shivam-Bhardwaj/AutoCrate/issues/${issueNumber}`
     headerSegments.push({
       id: 'issue',
       node: (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 flex-shrink-0">
+        <a
+          href={issueUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800 flex-shrink-0 transition-colors"
+        >
           Issue #{issueNumber}
-        </span>
+        </a>
       )
     })
   }
