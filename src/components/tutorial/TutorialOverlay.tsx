@@ -85,11 +85,18 @@ export default function TutorialOverlay({
       const isDerived = expr.includes('=') || expr.includes('..')
       let groupId = 'general'
       let label = expr
+
       if (!isDerived) {
-        const idx = expr.lastIndexOf('_')
-        if (idx > 0) {
-          groupId = expr.slice(0, idx)
-          label = expr.slice(idx + 1).replace(/_/g, ' ')
+        const floorboardNameMatch = expr.match(/^floorboard_(\d+)$/i)
+        if (floorboardNameMatch) {
+          groupId = `FLOORBOARD_${floorboardNameMatch[1]}`
+          label = expr.toLowerCase()
+        } else {
+          const idx = expr.lastIndexOf('_')
+          if (idx > 0) {
+            groupId = expr.slice(0, idx)
+            label = expr.slice(idx + 1).replace(/_/g, ' ')
+          }
         }
       }
 

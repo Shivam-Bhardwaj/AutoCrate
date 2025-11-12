@@ -126,6 +126,7 @@ describe('Tutorial schema (browserless)', () => {
 
     const firstBoardName = boxes.find(box => box.type === 'floor')?.name
     if (firstBoardName) {
+      const firstBoardLower = firstBoardName.toLowerCase()
       expect(expressions).toEqual(expect.arrayContaining([
         `${firstBoardName}_X1`,
         `${firstBoardName}_Y1`,
@@ -134,9 +135,16 @@ describe('Tutorial schema (browserless)', () => {
         `${firstBoardName}_Y2`,
         `${firstBoardName}_Z2`,
         `${firstBoardName}_SUPPRESSED`,
+        firstBoardLower,
       ]))
       expect(floorStep?.expressionValues?.[`${firstBoardName}_X1`]).not.toBeUndefined()
       expect(floorStep?.expressionValues?.[`${firstBoardName}_SUPPRESSED`]).toBeDefined()
+
+      const nameIndex = expressions.indexOf(firstBoardLower)
+      const x1Index = expressions.indexOf(`${firstBoardName}_X1`)
+      expect(nameIndex).toBeGreaterThan(-1)
+      expect(x1Index).toBeGreaterThan(-1)
+      expect(nameIndex).toBeLessThan(x1Index)
     }
 
     const suppressedExpressions = expressions.filter(expr => expr.endsWith('_SUPPRESSED'))
