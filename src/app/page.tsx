@@ -437,21 +437,56 @@ export default function Home() {
     }
   }
 
-  const downloadExpressions = () => {
-    const expressions = getExpressionsContent()
-    const blob = new Blob([expressions], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `crate_expressions_${Date.now()}.exp`
-    a.style.display = 'none'
-    document.body.appendChild(a)
-    a.click()
-    // Clean up after a short delay to ensure download starts
-    setTimeout(() => {
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-    }, 100)
+  const downloadExpressions = async () => {
+    // Use server-side endpoint to avoid Windows Zone.Identifier properties
+    try {
+      const response = await fetch('/api/nx-expressions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          product: config.product,
+          clearances: config.clearances,
+          partNumbers: partNumbers
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to generate expressions')
+      }
+
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      // Use timestamp-based filename (server sets proper Content-Disposition)
+      a.download = `crate_expressions_${Date.now()}.exp`
+      a.style.display = 'none'
+      document.body.appendChild(a)
+      a.click()
+      // Clean up after a short delay to ensure download starts
+      setTimeout(() => {
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }, 100)
+    } catch (error) {
+      console.error('Failed to download expressions:', error)
+      // Fallback to client-side generation if API fails
+      const expressions = getExpressionsContent()
+      const blob = new Blob([expressions], { type: 'text/plain;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `crate_expressions_${Date.now()}.exp`
+      a.style.display = 'none'
+      document.body.appendChild(a)
+      a.click()
+      setTimeout(() => {
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }, 100)
+    }
   }
 
   const downloadBOM = () => {
