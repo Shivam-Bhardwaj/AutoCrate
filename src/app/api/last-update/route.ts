@@ -7,7 +7,8 @@ export interface ProjectMetadata {
   tiNumber: string  // Deprecated - kept for backwards compatibility
   issueNumber: string  // Current issue being worked on
   branch: string
-  lastCommit: string
+  lastCommit: string  // Short commit hash
+  fullCommitHash?: string  // Full commit hash for linking
   lastChange: string
   timestamp: string
   updatedBy: string
@@ -46,6 +47,7 @@ export async function GET() {
     process.env.VERCEL_GIT_COMMIT_AUTHOR_EMAIL
 
   const branch = vercelBranch || safeExec('git rev-parse --abbrev-ref HEAD') || 'unknown'
+  const fullCommitHash = vercelSha || safeExec('git log -1 --format=%H') || 'unknown'
   const lastCommit =
     (vercelSha && vercelSha.substring(0, 7)) || safeExec('git log -1 --format=%h') || 'unknown'
   const lastChange = vercelMessage || safeExec('git log -1 --format=%s') || 'Git metadata unavailable'
@@ -98,6 +100,7 @@ export async function GET() {
     issueNumber,  // The actual issue number
     branch,
     lastCommit,
+    fullCommitHash: fullCommitHash !== 'unknown' ? fullCommitHash : undefined,
     lastChange,
     timestamp,
     updatedBy,

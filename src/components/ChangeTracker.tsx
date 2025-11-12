@@ -138,6 +138,19 @@ export function ChangeTracker() {
 
   const headerSegments: Array<{ id: string; node: JSX.Element }> = []
   
+  // Add issue number if available (first, as a prominent badge)
+  const issueNumber = changeInfo?.issueNumber || deriveIssueNumber(metadata)
+  if (issueNumber && issueNumber !== '0') {
+    headerSegments.push({
+      id: 'issue',
+      node: (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 flex-shrink-0">
+          Issue #{issueNumber}
+        </span>
+      )
+    })
+  }
+  
   // Add title if available (from changeInfo or fallback to lastChange)
   const title = changeInfo?.title || metadata.lastChange?.split('\n')[0]?.replace(/^(feat|fix|chore|docs|test|refactor|style|perf):\s*/i, '')?.trim() || ''
   if (title) {
@@ -162,12 +175,23 @@ export function ChangeTracker() {
   })
 
   if (metadata.lastCommit) {
+    // Create GitHub commit URL
+    const repoUrl = 'https://github.com/Shivam-Bhardwaj/AutoCrate'
+    const commitHash = metadata.fullCommitHash || metadata.lastCommit
+    const commitUrl = `${repoUrl}/commit/${commitHash}`
+    
     headerSegments.push({
       id: 'commit',
       node: (
-        <span className="text-gray-500 dark:text-gray-400 flex-shrink-0 font-mono">
+        <a
+          href={commitUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 flex-shrink-0 font-mono underline decoration-dotted underline-offset-2 transition-colors"
+          title={metadata.fullCommitHash ? `Full hash: ${metadata.fullCommitHash}` : `Commit: ${metadata.lastCommit}`}
+        >
           {metadata.lastCommit}
-        </span>
+        </a>
       )
     })
   }
