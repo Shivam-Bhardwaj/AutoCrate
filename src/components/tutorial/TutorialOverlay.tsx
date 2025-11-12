@@ -125,7 +125,7 @@ export default function TutorialOverlay({
 
   return (
     <div className="absolute bottom-3 left-3 w-[360px] max-w-[calc(100vw-24px)] z-50 pointer-events-auto">
-      <div className="bg-white/95 dark:bg-gray-900/95 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 max-h-[min(60vh,440px)] flex flex-col">
+      <div className="bg-white/95 dark:bg-gray-900/95 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 max-h-[min(60vh,440px)] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between mb-1">
           <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
             Tutorial: {step.title}
@@ -216,21 +216,21 @@ export default function TutorialOverlay({
           </ul>
         )}
 
-        <div className="mt-2 flex items-center justify-between">
+        <div className="mt-2 flex items-center justify-between flex-shrink-0">
           <div className="text-[11px] text-gray-500 dark:text-gray-400">
             Step {stepIndex + 1} of {steps.length}
           </div>
-          <div className="flex gap-1">
+          <div className="flex gap-1 relative z-10">
             <button
               onClick={onPrev}
-              className="px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:cursor-not-allowed relative z-10"
               disabled={stepIndex === 0}
             >
               Prev
             </button>
             <button
               onClick={onNext}
-              className="px-2 py-1 text-xs rounded border border-blue-600 text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:border-gray-300"
+              className="px-2 py-1 text-xs rounded border border-blue-600 text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:border-gray-300 disabled:cursor-not-allowed disabled:text-gray-500 relative z-10"
               disabled={stepIndex >= steps.length - 1}
             >
               Next
