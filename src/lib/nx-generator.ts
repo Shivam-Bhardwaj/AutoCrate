@@ -1858,7 +1858,7 @@ export class NXGenerator {
         }
 
         if (box.type === 'plywood') {
-          push(formatBoolean(`${box.name}_SUPPRESSED`, !!box.suppressed))
+          push(formatBoolean(`${box.name}_SUPPRESSED`, !box.suppressed)) // NX: 0=suppressed, 1=not suppressed
           push(formatExpression(`${box.name}_X1`, box.point1.x))
           push(formatExpression(`${box.name}_Y1`, box.point1.y))
           push(formatExpression(`${box.name}_Z1`, box.point1.z))
@@ -1874,7 +1874,7 @@ export class NXGenerator {
           const plywoodThickness = this.expressions.get('plywood_thickness') ?? PLYWOOD_STANDARDS.DEFAULT_THICKNESS
           push(formatExpression(`${box.name}_THICKNESS`, plywoodThickness))
         } else if (box.type === 'cleat') {
-          push(formatBoolean(`${box.name}_SUPPRESSED`, !!box.suppressed))
+          push(formatBoolean(`${box.name}_SUPPRESSED`, !box.suppressed)) // NX: 0=suppressed, 1=not suppressed
           push(formatExpression(`${box.name}_X1`, box.point1.x))
           push(formatExpression(`${box.name}_Y1`, box.point1.y))
           push(formatExpression(`${box.name}_Z1`, box.point1.z))
@@ -1905,7 +1905,7 @@ export class NXGenerator {
             push(formatComment('Inactive Klimp instance for this configuration.'))
           }
         } else {
-          push(formatBoolean(`${box.name}_SUPPRESSED`, !!box.suppressed))
+          push(formatBoolean(`${box.name}_SUPPRESSED`, !box.suppressed)) // NX: 0=suppressed, 1=not suppressed
           push(formatExpression(`${box.name}_X1`, box.point1.x))
           push(formatExpression(`${box.name}_Y1`, box.point1.y))
           push(formatExpression(`${box.name}_Z1`, box.point1.z))

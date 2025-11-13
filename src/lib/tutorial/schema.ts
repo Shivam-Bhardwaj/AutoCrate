@@ -92,7 +92,7 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
     if (typeof direct === 'number') return direct
 
     const suffixHandlers: Array<[string, (box: NXBox) => number | undefined]> = [
-      ['_SUPPRESSED', box => (box.suppressed ? 1 : 0)],
+      ['_SUPPRESSED', box => (box.suppressed ? 0 : 1)], // NX: 0=suppressed, 1=not suppressed
       ['_X1', box => box.point1.x],
       ['_Y1', box => box.point1.y],
       ['_Z1', box => box.point1.z],
@@ -126,7 +126,7 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
         if (!box) {
           // For floorboards and other boxes, use placeholder cube
           if (baseName.startsWith('FLOORBOARD_') || baseName.includes('_PLY_')) {
-            if (suffix === '_SUPPRESSED') return 1 // Missing boxes are suppressed
+            if (suffix === '_SUPPRESSED') return 0 // Missing boxes are suppressed (NX: 0=suppressed, 1=not suppressed)
             if (suffix === '_X1' || suffix === '_Y1' || suffix === '_Z1') return -PLACEHOLDER_CUBE_SIZE / 2
             if (suffix === '_X2' || suffix === '_Y2' || suffix === '_Z2') return PLACEHOLDER_CUBE_SIZE / 2
             if (suffix === '_X' || suffix === '_Y' || suffix === '_Z') return -PLACEHOLDER_CUBE_SIZE / 2
