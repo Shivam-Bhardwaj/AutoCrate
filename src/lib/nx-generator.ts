@@ -1911,6 +1911,12 @@ export class NXGenerator {
           push(formatExpression(`${box.name}_X2`, box.point2.x))
           push(formatExpression(`${box.name}_Y2`, box.point2.y))
           push(formatExpression(`${box.name}_Z2`, box.point2.z))
+          push(formatExpression(`${box.name}_X`, box.point1.x))
+          push(formatExpression(`${box.name}_Y`, box.point1.y))
+          push(formatExpression(`${box.name}_Z`, box.point1.z))
+          push(formatExpression(`${box.name}_WIDTH`, Math.abs(box.point2.x - box.point1.x)))
+          push(formatExpression(`${box.name}_LENGTH`, Math.abs(box.point2.y - box.point1.y)))
+          push(formatExpression(`${box.name}_HEIGHT`, Math.abs(box.point2.z - box.point1.z)))
         }
       }
     }
