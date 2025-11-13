@@ -74,6 +74,7 @@ export interface Point3D {
 }
 
 const PLACEHOLDER_CUBE_SIZE = 10
+const MIN_DIMENSION = 0.1 // Minimum dimension value for NX compatibility (prevents zero dimensions)
 const PLACEHOLDER_CUBE: Readonly<{ point1: Point3D; point2: Point3D }> = Object.freeze({
   point1: { x: 0, y: 0, z: 0 },
   point2: {
@@ -1867,9 +1868,9 @@ export class NXGenerator {
           push(formatExpression(`${box.name}_X`, box.point1.x))
           push(formatExpression(`${box.name}_Y`, box.point1.y))
           push(formatExpression(`${box.name}_Z`, box.point1.z))
-          push(formatExpression(`${box.name}_WIDTH`, Math.abs(box.point2.x - box.point1.x)))
-          push(formatExpression(`${box.name}_LENGTH`, Math.abs(box.point2.y - box.point1.y)))
-          push(formatExpression(`${box.name}_HEIGHT`, Math.abs(box.point2.z - box.point1.z)))
+          push(formatExpression(`${box.name}_WIDTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.x - box.point1.x))))
+          push(formatExpression(`${box.name}_LENGTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.y - box.point1.y))))
+          push(formatExpression(`${box.name}_HEIGHT`, Math.max(MIN_DIMENSION, Math.abs(box.point2.z - box.point1.z))))
           const plywoodThickness = this.expressions.get('plywood_thickness') ?? PLYWOOD_STANDARDS.DEFAULT_THICKNESS
           push(formatExpression(`${box.name}_THICKNESS`, plywoodThickness))
         } else if (box.type === 'cleat') {
@@ -1883,9 +1884,9 @@ export class NXGenerator {
           push(formatExpression(`${box.name}_X`, box.point1.x))
           push(formatExpression(`${box.name}_Y`, box.point1.y))
           push(formatExpression(`${box.name}_Z`, box.point1.z))
-          push(formatExpression(`${box.name}_WIDTH`, Math.abs(box.point2.x - box.point1.x)))
-          push(formatExpression(`${box.name}_LENGTH`, Math.abs(box.point2.y - box.point1.y)))
-          push(formatExpression(`${box.name}_HEIGHT`, Math.abs(box.point2.z - box.point1.z)))
+          push(formatExpression(`${box.name}_WIDTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.x - box.point1.x))))
+          push(formatExpression(`${box.name}_LENGTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.y - box.point1.y))))
+          push(formatExpression(`${box.name}_HEIGHT`, Math.max(MIN_DIMENSION, Math.abs(box.point2.z - box.point1.z))))
           push(formatExpression(`${box.name}_THICKNESS`, 0.75))
         } else if (box.type === 'klimp') {
           const instanceIndex = parseInt(box.name.split('_').pop() || '0', 10) - 1
@@ -1914,9 +1915,9 @@ export class NXGenerator {
           push(formatExpression(`${box.name}_X`, box.point1.x))
           push(formatExpression(`${box.name}_Y`, box.point1.y))
           push(formatExpression(`${box.name}_Z`, box.point1.z))
-          push(formatExpression(`${box.name}_WIDTH`, Math.abs(box.point2.x - box.point1.x)))
-          push(formatExpression(`${box.name}_LENGTH`, Math.abs(box.point2.y - box.point1.y)))
-          push(formatExpression(`${box.name}_HEIGHT`, Math.abs(box.point2.z - box.point1.z)))
+          push(formatExpression(`${box.name}_WIDTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.x - box.point1.x))))
+          push(formatExpression(`${box.name}_LENGTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.y - box.point1.y))))
+          push(formatExpression(`${box.name}_HEIGHT`, Math.max(MIN_DIMENSION, Math.abs(box.point2.z - box.point1.z))))
         }
       }
     }
