@@ -81,6 +81,10 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
   const boxesByName = new Map<string, NXBox>()
   boxes.forEach(box => boxesByName.set(box.name, box))
 
+  // Placeholder values for missing components (non-zero for NX compatibility)
+  const PLACEHOLDER_CUBE_SIZE = 10
+  const MIN_DIMENSION = 0.1
+  
   const resolveExpressionValue = (expr: string): number | undefined => {
     if (expr.includes('..')) return undefined
     const key = expr.includes('=') ? expr.split('=')[0] : expr
@@ -98,9 +102,9 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
       ['_X', box => box.point1.x],
       ['_Y', box => box.point1.y],
       ['_Z', box => box.point1.z],
-      ['_WIDTH', box => Math.abs(box.point2.x - box.point1.x)],
-      ['_LENGTH', box => Math.abs(box.point2.y - box.point1.y)],
-      ['_HEIGHT', box => Math.abs(box.point2.z - box.point1.z)],
+      ['_WIDTH', box => Math.max(MIN_DIMENSION, Math.abs(box.point2.x - box.point1.x))],
+      ['_LENGTH', box => Math.max(MIN_DIMENSION, Math.abs(box.point2.y - box.point1.y))],
+      ['_HEIGHT', box => Math.max(MIN_DIMENSION, Math.abs(box.point2.z - box.point1.z))],
       ['_THICKNESS', box => {
         const zSpan = Math.abs(box.point2.z - box.point1.z)
         if (zSpan > 0) return zSpan
@@ -109,7 +113,7 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
         const ySpan = Math.abs(box.point2.y - box.point1.y)
         if (ySpan > 0 && ySpan <= 1.5) return ySpan
         const globalThickness = exprMap.get('plywood_thickness')
-        return typeof globalThickness === 'number' ? globalThickness : undefined
+        return typeof globalThickness === 'number' ? globalThickness : MIN_DIMENSION
       }],
     ]
 
@@ -117,8 +121,30 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
       if (key.endsWith(suffix)) {
         const baseName = key.slice(0, -suffix.length)
         const box = boxesByName.get(baseName)
-        if (!box) return undefined
-        return getter(box)
+        
+        // If box doesn't exist, return placeholder values for missing components
+        if (!box) {
+          // For floorboards and other boxes, use placeholder cube
+          if (baseName.startsWith('FLOORBOARD_') || baseName.includes('_PLY_')) {
+            if (suffix === '_SUPPRESSED') return 1 // Missing boxes are suppressed
+            if (suffix === '_X1' || suffix === '_Y1' || suffix === '_Z1') return -PLACEHOLDER_CUBE_SIZE / 2
+            if (suffix === '_X2' || suffix === '_Y2' || suffix === '_Z2') return PLACEHOLDER_CUBE_SIZE / 2
+            if (suffix === '_X' || suffix === '_Y' || suffix === '_Z') return -PLACEHOLDER_CUBE_SIZE / 2
+            if (suffix === '_WIDTH' || suffix === '_LENGTH' || suffix === '_HEIGHT') return PLACEHOLDER_CUBE_SIZE
+            if (suffix === '_THICKNESS') {
+              const globalThickness = exprMap.get('plywood_thickness')
+              return typeof globalThickness === 'number' ? globalThickness : MIN_DIMENSION
+            }
+          }
+          return undefined
+        }
+        
+        const value = getter(box)
+        // Ensure dimensions are never zero
+        if ((suffix === '_WIDTH' || suffix === '_LENGTH' || suffix === '_HEIGHT') && value !== undefined) {
+          return Math.max(MIN_DIMENSION, value)
+        }
+        return value
       }
     }
 
@@ -140,47 +166,44 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
   }
 
   const floorboards = boxes.filter(b => b.type === 'floor')
-  if (floorboards.length > 0) {
-    const activeFloorboards = floorboards.filter(b => !b.suppressed)
-    const floorboardExpressions: string[] = []
-    const pushUnique = (expr: string) => {
-      if (!floorboardExpressions.includes(expr)) {
-        floorboardExpressions.push(expr)
-      }
+  const floorboardsByName = new Map<string, NXBox>()
+  floorboards.forEach(b => floorboardsByName.set(b.name, b))
+  
+  // Always generate expressions for ALL floorboards (1-40) regardless of crate size
+  const floorboardExpressions: string[] = []
+  const pushUnique = (expr: string) => {
+    if (!floorboardExpressions.includes(expr)) {
+      floorboardExpressions.push(expr)
     }
-
-    const coordinateSuffixes = ['X1', 'Y1', 'Z1', 'X2', 'Y2', 'Z2']
-    floorboards.forEach(board => {
-      pushUnique(board.name.toLowerCase())
-    })
-    activeFloorboards.forEach(board => {
-      for (const suffix of coordinateSuffixes) {
-        pushUnique(`${board.name}_${suffix}`)
-      }
-      pushUnique(`${board.name}_SUPPRESSED`)
-    })
-
-    floorboards
-      .filter(board => board.suppressed)
-      .forEach(board => {
-        pushUnique(`${board.name}_SUPPRESSED`)
-      })
-
-    ;['floorboard_count', 'floorboard_width', 'floorboard_length', 'floorboard_thickness', 'floorboard_gap'].forEach(pushUnique)
-
-    const step: TutorialStep = {
-      id: 'floorboards',
-      title: 'Create Floorboards (Opposite Corners)',
-      description: 'Create Blocks for each FLOORBOARD_n using opposite corners (two points). Suppress any marked as suppressed in the export.',
-      target: { types: ['floor'] },
-      expressions: floorboardExpressions,
-      tips: [
-        'Floorboards run along X and sit on skids (Z = skid_height).',
-        'Use the naming pattern FLOORBOARD_1, FLOORBOARD_2, ... for expressions (X1,Y1,Z1 / X2,Y2,Z2).'
-      ],
-    }
-    steps.push(step)
   }
+
+  const coordinateSuffixes = ['X1', 'Y1', 'Z1', 'X2', 'Y2', 'Z2']
+  
+  // Always include all 40 floorboards with all parameters
+  for (let i = 1; i <= 40; i++) {
+    const boardName = `FLOORBOARD_${i}`
+    pushUnique(boardName.toLowerCase())
+    pushUnique(`${boardName}_SUPPRESSED`)
+    for (const suffix of coordinateSuffixes) {
+      pushUnique(`${boardName}_${suffix}`)
+    }
+  }
+
+  ;['floorboard_count', 'floorboard_width', 'floorboard_length', 'floorboard_thickness', 'floorboard_gap'].forEach(pushUnique)
+
+  const step: TutorialStep = {
+    id: 'floorboards',
+    title: 'Create Floorboards (Opposite Corners)',
+    description: 'Create Blocks for each FLOORBOARD_n using opposite corners (two points). Suppress any marked as suppressed in the export.',
+    target: { types: ['floor'] },
+    expressions: floorboardExpressions,
+    tips: [
+      'Floorboards run along X and sit on skids (Z = skid_height).',
+      'Use the naming pattern FLOORBOARD_1, FLOORBOARD_2, ... for expressions (X1,Y1,Z1 / X2,Y2,Z2).'
+    ],
+  }
+  attachExpressionValues(step)
+  steps.push(step)
 
   const panelMap: Record<string, { title: string }> = {
     FRONT_PANEL: { title: 'Front Panel (Plywood Pieces)' },
@@ -190,25 +213,40 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
     TOP_PANEL: { title: 'Top Panel (Plywood Pieces)' },
   }
 
+  // Always generate expressions for all panels with all 6 plywood pieces each
+  const panelNames = ['FRONT_PANEL', 'BACK_PANEL', 'LEFT_END_PANEL', 'RIGHT_END_PANEL', 'TOP_PANEL']
   const plywoodByPanel = new Map<string, NXBox[]>()
-  boxes.filter(b => b.type === 'plywood' && !b.suppressed).forEach(b => {
+  boxes.filter(b => b.type === 'plywood').forEach(b => {
     const key = b.panelName || 'UNKNOWN_PANEL'
     const arr = plywoodByPanel.get(key) || []
     arr.push(b)
     plywoodByPanel.set(key, arr)
   })
-  for (const [panel, arr] of plywoodByPanel.entries()) {
+  
+  for (const panel of panelNames) {
     const meta = panelMap[panel] || { title: `${panel} (Plywood Pieces)` }
-    const plywoodSuffixes = ['X', 'Y', 'Z', 'WIDTH', 'LENGTH', 'HEIGHT', 'THICKNESS']
-    const plywoodExpressions = Array.from(new Set(
-      arr.flatMap(box => plywoodSuffixes.map(suffix => `${box.name}_${suffix}`))
-    ))
-    const thicknessLabel = arr[0] ? `${arr[0].name}_THICKNESS` : 'PLY_THICKNESS'
+    const plywoodSuffixes = ['SUPPRESSED', 'X1', 'Y1', 'Z1', 'X2', 'Y2', 'Z2', 'X', 'Y', 'Z', 'WIDTH', 'LENGTH', 'HEIGHT', 'THICKNESS']
+    const plywoodExpressions: string[] = []
+    const pushUnique = (expr: string) => {
+      if (!plywoodExpressions.includes(expr)) {
+        plywoodExpressions.push(expr)
+      }
+    }
+    
+    // Always include all 6 pieces per panel
+    for (let i = 1; i <= 6; i++) {
+      const pieceName = `${panel}_PLY_${i}`
+      for (const suffix of plywoodSuffixes) {
+        pushUnique(`${pieceName}_${suffix}`)
+      }
+    }
+    
+    const thicknessLabel = `${panel}_PLY_1_THICKNESS`
     const step: TutorialStep = {
       id: `plywood-${panel.toLowerCase()}`,
       title: meta.title,
       description: 'For each piece, create a Block by base corner and extents bound to expressions (7 parameters). Suppress any piece marked as suppressed.',
-      target: { boxNames: arr.map(b => b.name) },
+      target: { boxNames: Array.from({ length: 6 }, (_, i) => `${panel}_PLY_${i + 1}`) },
       expressions: plywoodExpressions,
       tips: [
         `Use ${thicknessLabel} for plywood thickness (typically 0.250).`,

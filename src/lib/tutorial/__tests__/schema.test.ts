@@ -116,13 +116,12 @@ describe('Tutorial schema (browserless)', () => {
       'floorboard_1',
     ]))
 
-    const activeFloorCount = boxes.filter(box => box.type === 'floor' && !box.suppressed).length
+    // Tutorial now always includes all 40 floorboards regardless of crate size
     const x1Expressions = expressions.filter(expr => expr.endsWith('_X1'))
-    expect(x1Expressions.length).toBe(activeFloorCount)
+    expect(x1Expressions.length).toBe(40) // Always 40 floorboards
 
-    const totalFloorboards = boxes.filter(box => box.type === 'floor').length
     const partNameExpressions = expressions.filter(expr => /^floorboard_\d+$/.test(expr))
-    expect(partNameExpressions.length).toBe(totalFloorboards)
+    expect(partNameExpressions.length).toBe(40) // Always 40 floorboards
 
     const firstBoardName = boxes.find(box => box.type === 'floor')?.name
     if (firstBoardName) {
