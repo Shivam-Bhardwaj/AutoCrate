@@ -73,6 +73,17 @@ export interface Point3D {
   z: number
 }
 
+const PLACEHOLDER_CUBE_SIZE = 10
+const MIN_DIMENSION = 0.1 // Minimum dimension value for NX compatibility (prevents zero dimensions)
+const PLACEHOLDER_CUBE: Readonly<{ point1: Point3D; point2: Point3D }> = Object.freeze({
+  point1: { x: 0, y: 0, z: 0 },
+  point2: {
+    x: PLACEHOLDER_CUBE_SIZE,
+    y: PLACEHOLDER_CUBE_SIZE,
+    z: PLACEHOLDER_CUBE_SIZE,
+  },
+})
+
 export interface NXBox {
   name: string
   point1: Point3D
@@ -159,6 +170,25 @@ export class NXGenerator {
 
   constructor(private config: CrateConfig) {
     this.calculate()
+  }
+
+  private createPlaceholderCube(origin?: Point3D): { point1: Point3D; point2: Point3D } {
+    if (!origin) {
+      return {
+        point1: { ...PLACEHOLDER_CUBE.point1 },
+        point2: { ...PLACEHOLDER_CUBE.point2 },
+      }
+    }
+
+    const { x, y, z } = origin
+    return {
+      point1: { x, y, z },
+      point2: {
+        x: x + PLACEHOLDER_CUBE_SIZE,
+        y: y + PLACEHOLDER_CUBE_SIZE,
+        z: z + PLACEHOLDER_CUBE_SIZE,
+      },
+    }
   }
 
   private getSkidDimensions() {
@@ -767,10 +797,15 @@ export class NXGenerator {
 
     // Create remaining suppressed floorboard placeholders up to 40 total
     for (let i = floorboardLayout.length; i < 40; i++) {
+      const placeholder = this.createPlaceholderCube({
+        x: -PLACEHOLDER_CUBE_SIZE / 2,
+        y: -PLACEHOLDER_CUBE_SIZE / 2,
+        z: skidDims.height,
+      })
       this.boxes.push({
         name: `FLOORBOARD_${i + 1}`,
-        point1: { x: 0, y: 0, z: skidDims.height },
-        point2: { x: 0, y: 0, z: skidDims.height },
+        point1: placeholder.point1,
+        point2: placeholder.point2,
         color: '#D4C4A0',
         type: 'floor',
         suppressed: true,
@@ -908,10 +943,15 @@ export class NXGenerator {
 
       // Fill remaining slots with suppressed placeholders
       while (pieceIndex < 6) {
+        const placeholder = this.createPlaceholderCube({
+          x: panelOriginX,
+          y: panelOriginY,
+          z: panelOriginZ,
+        })
         this.boxes.push({
           name: `${layout.panelName}_PLY_${pieceIndex + 1}`,
-          point1: { x: 0, y: 0, z: 0 },
-          point2: { x: 0, y: 0, z: 0 },
+          point1: placeholder.point1,
+          point2: placeholder.point2,
           color: '#D4C4A0',
           type: 'plywood',
           plywoodPieceIndex: pieceIndex,
@@ -1818,7 +1858,7 @@ export class NXGenerator {
         }
 
         if (box.type === 'plywood') {
-          push(formatBoolean(`${box.name}_SUPPRESSED`, !!box.suppressed))
+          push(formatBoolean(`${box.name}_SUPPRESSED`, !box.suppressed)) // NX: 0=suppressed, 1=not suppressed
           push(formatExpression(`${box.name}_X1`, box.point1.x))
           push(formatExpression(`${box.name}_Y1`, box.point1.y))
           push(formatExpression(`${box.name}_Z1`, box.point1.z))
@@ -1828,13 +1868,13 @@ export class NXGenerator {
           push(formatExpression(`${box.name}_X`, box.point1.x))
           push(formatExpression(`${box.name}_Y`, box.point1.y))
           push(formatExpression(`${box.name}_Z`, box.point1.z))
-          push(formatExpression(`${box.name}_WIDTH`, Math.abs(box.point2.x - box.point1.x)))
-          push(formatExpression(`${box.name}_LENGTH`, Math.abs(box.point2.y - box.point1.y)))
-          push(formatExpression(`${box.name}_HEIGHT`, Math.abs(box.point2.z - box.point1.z)))
+          push(formatExpression(`${box.name}_WIDTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.x - box.point1.x))))
+          push(formatExpression(`${box.name}_LENGTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.y - box.point1.y))))
+          push(formatExpression(`${box.name}_HEIGHT`, Math.max(MIN_DIMENSION, Math.abs(box.point2.z - box.point1.z))))
           const plywoodThickness = this.expressions.get('plywood_thickness') ?? PLYWOOD_STANDARDS.DEFAULT_THICKNESS
           push(formatExpression(`${box.name}_THICKNESS`, plywoodThickness))
         } else if (box.type === 'cleat') {
-          push(formatBoolean(`${box.name}_SUPPRESSED`, !!box.suppressed))
+          push(formatBoolean(`${box.name}_SUPPRESSED`, !box.suppressed)) // NX: 0=suppressed, 1=not suppressed
           push(formatExpression(`${box.name}_X1`, box.point1.x))
           push(formatExpression(`${box.name}_Y1`, box.point1.y))
           push(formatExpression(`${box.name}_Z1`, box.point1.z))
@@ -1844,9 +1884,9 @@ export class NXGenerator {
           push(formatExpression(`${box.name}_X`, box.point1.x))
           push(formatExpression(`${box.name}_Y`, box.point1.y))
           push(formatExpression(`${box.name}_Z`, box.point1.z))
-          push(formatExpression(`${box.name}_WIDTH`, Math.abs(box.point2.x - box.point1.x)))
-          push(formatExpression(`${box.name}_LENGTH`, Math.abs(box.point2.y - box.point1.y)))
-          push(formatExpression(`${box.name}_HEIGHT`, Math.abs(box.point2.z - box.point1.z)))
+          push(formatExpression(`${box.name}_WIDTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.x - box.point1.x))))
+          push(formatExpression(`${box.name}_LENGTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.y - box.point1.y))))
+          push(formatExpression(`${box.name}_HEIGHT`, Math.max(MIN_DIMENSION, Math.abs(box.point2.z - box.point1.z))))
           push(formatExpression(`${box.name}_THICKNESS`, 0.75))
         } else if (box.type === 'klimp') {
           const instanceIndex = parseInt(box.name.split('_').pop() || '0', 10) - 1
@@ -1865,13 +1905,19 @@ export class NXGenerator {
             push(formatComment('Inactive Klimp instance for this configuration.'))
           }
         } else {
-          push(formatBoolean(`${box.name}_SUPPRESSED`, !!box.suppressed))
+          push(formatBoolean(`${box.name}_SUPPRESSED`, !box.suppressed)) // NX: 0=suppressed, 1=not suppressed
           push(formatExpression(`${box.name}_X1`, box.point1.x))
           push(formatExpression(`${box.name}_Y1`, box.point1.y))
           push(formatExpression(`${box.name}_Z1`, box.point1.z))
           push(formatExpression(`${box.name}_X2`, box.point2.x))
           push(formatExpression(`${box.name}_Y2`, box.point2.y))
           push(formatExpression(`${box.name}_Z2`, box.point2.z))
+          push(formatExpression(`${box.name}_X`, box.point1.x))
+          push(formatExpression(`${box.name}_Y`, box.point1.y))
+          push(formatExpression(`${box.name}_Z`, box.point1.z))
+          push(formatExpression(`${box.name}_WIDTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.x - box.point1.x))))
+          push(formatExpression(`${box.name}_LENGTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.y - box.point1.y))))
+          push(formatExpression(`${box.name}_HEIGHT`, Math.max(MIN_DIMENSION, Math.abs(box.point2.z - box.point1.z))))
         }
       }
     }
