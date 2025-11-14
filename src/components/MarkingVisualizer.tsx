@@ -118,9 +118,9 @@ export function MarkingVisualizer({ boxes, generator, useBoundingBox = true }: M
           const handlingHalfWidth = handlingDims.width / 2
           const minXForHandling = center.x + fragileHalfWidth + handlingHalfWidth + markingSeparation
           const maxXForPanel = center.x + size.x / 2
-          const handlingX = Math.min(
-            center.x + size.x/2 - handlingDims.width/2 - edgeOffset,
-            Math.max(minXForHandling, maxXForPanel - handlingDims.width/2 - edgeOffset)
+          const handlingX = Math.max(
+            minXForHandling,
+            Math.min(center.x + size.x/2 - handlingDims.width/2 - edgeOffset, maxXForPanel - handlingDims.width/2 - edgeOffset)
           )
           
           markingList.push({
@@ -161,9 +161,9 @@ export function MarkingVisualizer({ boxes, generator, useBoundingBox = true }: M
           const handlingHalfWidth = handlingDims.width / 2
           const maxXForHandling = center.x - fragileHalfWidth - handlingHalfWidth - markingSeparation
           const minXForPanel = center.x - size.x / 2
-          const handlingX = Math.max(
-            center.x - size.x/2 + handlingDims.width/2 + edgeOffset,
-            Math.min(maxXForHandling, minXForPanel + handlingDims.width/2 + edgeOffset)
+          const handlingX = Math.min(
+            maxXForHandling,
+            Math.max(center.x - size.x/2 + handlingDims.width/2 + edgeOffset, minXForPanel + handlingDims.width/2 + edgeOffset)
           )
           
           markingList.push({
@@ -205,9 +205,9 @@ export function MarkingVisualizer({ boxes, generator, useBoundingBox = true }: M
           const handlingHalfHeight = handlingDims.height / 2
           const minZForHandling = center.z + fragileHalfHeight + handlingHalfHeight + markingSeparation
           const maxZForPanel = center.z + size.z / 2
-          const handlingZ = Math.min(
-            center.z + size.z/2 - handlingDims.height/2 - edgeOffset,
-            Math.max(minZForHandling, maxZForPanel - handlingDims.height/2 - edgeOffset)
+          const handlingZ = Math.max(
+            minZForHandling,
+            Math.min(center.z + size.z/2 - handlingDims.height/2 - edgeOffset, maxZForPanel - handlingDims.height/2 - edgeOffset)
           )
           
           markingList.push({
@@ -249,9 +249,9 @@ export function MarkingVisualizer({ boxes, generator, useBoundingBox = true }: M
           const handlingHalfHeight = handlingDims.height / 2
           const minZForHandling = center.z + fragileHalfHeight + handlingHalfHeight + markingSeparation
           const maxZForPanel = center.z + size.z / 2
-          const handlingZ = Math.min(
-            center.z + size.z/2 - handlingDims.height/2 - edgeOffset,
-            Math.max(minZForHandling, maxZForPanel - handlingDims.height/2 - edgeOffset)
+          const handlingZ = Math.max(
+            minZForHandling,
+            Math.min(center.z + size.z/2 - handlingDims.height/2 - edgeOffset, maxZForPanel - handlingDims.height/2 - edgeOffset)
           )
           
           markingList.push({

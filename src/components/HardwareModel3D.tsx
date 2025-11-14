@@ -138,11 +138,13 @@ export function LagScrew3D({
 
   const opacity = hasHoveredPart && !isHoveredPart ? 0.2 : 1
 
+  // Position is already transformed from NX to Three.js coordinates (includes scaling)
+  // Only apply geometry scale, not position scaling
   return (
     <mesh
       geometry={geometry}
       material={material}
-      position={position.map(p => p * scale) as [number, number, number]}
+      position={position}
       rotation={rotation}
       scale={scale}
       castShadow
@@ -183,11 +185,13 @@ export function Washer3D({
 
   const opacity = hasHoveredPart && !isHoveredPart ? 0.2 : 1
 
+  // Position is already transformed from NX to Three.js coordinates (includes scaling)
+  // Only apply geometry scale, not position scaling
   return (
     <mesh
       geometry={geometry}
       material={material}
-      position={position.map(p => p * scale) as [number, number, number]}
+      position={position}
       rotation={rotation}
       scale={scale}
       castShadow

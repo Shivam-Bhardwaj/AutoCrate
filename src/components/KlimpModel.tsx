@@ -168,7 +168,7 @@ export function KlimpModel({
   } catch (error) {
     // If GLB model doesn't exist or fails to load, fall back to VisualKlimp
     console.warn('GLB model failed to load, falling back to VisualKlimp')
-    return <VisualKlimp box={box} scale={scale} />
+    return <VisualKlimp box={box} scale={scale} isHoveredPart={isHoveredPart} hasHoveredPart={hasHoveredPart} />
   }
 }
 

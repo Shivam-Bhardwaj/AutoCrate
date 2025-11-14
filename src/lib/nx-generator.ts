@@ -1230,9 +1230,8 @@ export class NXGenerator {
     const bottomCleat = cleatLayout.cleats.find(c => c.orientation === 'horizontal' && c.position === 'bottom')
     const bottomCleatThickness = bottomCleat?.thickness ?? 0.75
     const groundClearance = this.getSidePanelGroundClearance()
-    const targetSkidMidHeight = skidHeight / 2
-    const cleatCenterZ = groundClearance + bottomCleatThickness / 2
-    const centerZ = Math.max(cleatCenterZ, targetSkidMidHeight)
+    // Position lag screws flush with the top surface of the bottom cleat (not centered in thickness)
+    const centerZ = groundClearance + bottomCleatThickness
 
     rowPositions.forEach((centerY, index) => {
       const baseName = `${cleatLayout.panelName}_LAG_${index + 1}`
@@ -1301,12 +1300,17 @@ export class NXGenerator {
     const shankRadius = geometry.shankDiameter / 2
 
     const axisTag = isFrontPanel ? '+Y' : '-Y'
-    const axisDirection = axisTag === '+Y' ? 1 : -1
+    // Front panel screws point inward (positive Y), back panel screws point inward (negative Y)
+    const axisDirection = isFrontPanel ? 1 : -1
     const orientation = isFrontPanel ? '+Y inward' : '-Y inward'
 
     const panelThickness = this.expressions.get('panel_thickness') || geometry.headHeight
+    // Outside face: front panel is at panelOriginY (negative), back panel is at panelOriginY + panelThickness (positive)
     const outsideFaceY = isFrontPanel ? panelOriginY : panelOriginY + panelThickness
 
+    // Head extends outward from panel face, shank extends inward
+    // Front panel: head at outsideFaceY - headHeight (more negative), shank extends to outsideFaceY + shankLength (less negative, inward)
+    // Back panel: head at outsideFaceY + headHeight (more positive), shank extends to outsideFaceY - shankLength (less positive, inward)
     const headOuterY = outsideFaceY - axisDirection * geometry.headHeight
     const shankInnerY = outsideFaceY + axisDirection * geometry.shankLength
     const headMinY = Math.min(headOuterY, outsideFaceY)

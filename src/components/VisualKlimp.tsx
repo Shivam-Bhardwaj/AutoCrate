@@ -79,4 +79,3 @@ export function VisualKlimp({ box, scale = 0.1, isHoveredPart = false, hasHovere
     </group>
   )
 }
-
