@@ -240,10 +240,10 @@ export class StepGenerator {
   private getPanelAssemblyName(panelName: string): string {
     const mapping: Record<string, string> = {
       TOP_PANEL: 'TOP_PANEL_ASSEMBLY',
-      FRONT_PANEL: 'FRONT_PANEL_ASSEMBLY',
-      BACK_PANEL: 'BACK_PANEL_ASSEMBLY',
-      LEFT_END_PANEL: 'LEFT_PANEL_ASSEMBLY',
-      RIGHT_END_PANEL: 'RIGHT_PANEL_ASSEMBLY'
+      FRONT_PANEL: 'FRONT_END_PANEL_ASSEMBLY',
+      BACK_PANEL: 'BACK_END_PANEL_ASSEMBLY',
+      LEFT_END_PANEL: 'LEFT_SIDE_PANEL_ASSEMBLY',
+      RIGHT_END_PANEL: 'RIGHT_SIDE_PANEL_ASSEMBLY'
     }
     if (mapping[panelName]) {
       return mapping[panelName]

@@ -495,10 +495,10 @@ export function classifyBoxForAssembly(box: NXBox): AssemblyClassification {
   if (panelName) {
     const panelAssemblyMap: Record<string, string> = {
       TOP_PANEL: 'TOP_PANEL_ASSEMBLY',
-      FRONT_PANEL: 'FRONT_PANEL_ASSEMBLY',
-      BACK_PANEL: 'BACK_PANEL_ASSEMBLY',
-      LEFT_END_PANEL: 'LEFT_PANEL_ASSEMBLY',
-      RIGHT_END_PANEL: 'RIGHT_PANEL_ASSEMBLY'
+      FRONT_PANEL: 'FRONT_END_PANEL_ASSEMBLY',
+      BACK_PANEL: 'BACK_END_PANEL_ASSEMBLY',
+      LEFT_END_PANEL: 'LEFT_SIDE_PANEL_ASSEMBLY',
+      RIGHT_END_PANEL: 'RIGHT_SIDE_PANEL_ASSEMBLY'
     }
     const subName = panelAssemblyMap[panelName] || `${panelName}_ASSEMBLY`
     return {

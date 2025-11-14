@@ -183,12 +183,12 @@ AUTOCRATE CRATE ASSEMBLY (#1)
 │   └── FLOORBOARD_ASSEMBLY (#4)
 │       └── floorboard_2x6_1, floorboard_2x6_2, ...
 ├── CRATE_CAP (#5)
-│   ├── FRONT_PANEL_ASSEMBLY (#6)
+│   ├── FRONT_END_PANEL_ASSEMBLY (#6)
 │   │   ├── front_panel_ply (#7)
 │   │   └── front_panel_cleat_1, cleat_2, ... (#8-#N)
-│   ├── BACK_PANEL_ASSEMBLY
-│   ├── LEFT_PANEL_ASSEMBLY
-│   ├── RIGHT_PANEL_ASSEMBLY
+│   ├── BACK_END_PANEL_ASSEMBLY
+│   ├── LEFT_SIDE_PANEL_ASSEMBLY
+│   ├── RIGHT_SIDE_PANEL_ASSEMBLY
 │   └── TOP_PANEL_ASSEMBLY
 ├── STENCILS (#M)
 │   └── marking_decals

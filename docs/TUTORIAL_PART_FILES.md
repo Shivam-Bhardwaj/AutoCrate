@@ -31,28 +31,28 @@ Top-level assembly containing all cap components.
 
 **Sub-Assemblies:**
 
-##### FRONT_PANEL_ASSEMBLY
+##### FRONT_END_PANEL_ASSEMBLY
 
 - Contains all front panel components
 - Individual parts:
   - front_end_panel_ply_1 through front_end_panel_ply_6
   - front_end_panel cleats (all cleats for front panel)
 
-##### BACK_PANEL_ASSEMBLY
+##### BACK_END_PANEL_ASSEMBLY
 
 - Contains all back panel components
 - Individual parts:
   - back_end_panel_ply_1 through back_end_panel_ply_6
   - back_end_panel cleats (all cleats for back panel)
 
-##### LEFT_PANEL_ASSEMBLY
+##### LEFT_SIDE_PANEL_ASSEMBLY
 
 - Contains all left end panel components
 - Individual parts:
   - left_side_panel_ply_1 through left_side_panel_ply_6
   - left_side_panel cleats (all cleats for left end panel)
 
-##### RIGHT_PANEL_ASSEMBLY
+##### RIGHT_SIDE_PANEL_ASSEMBLY
 
 - Contains all right end panel components
 - Individual parts:

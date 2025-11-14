@@ -144,16 +144,16 @@ export default function TutorialOverlay({
 
       // CRATE_CAP panel assemblies
       if (name.startsWith('front_end_panel_') || name.startsWith('front_panel_')) {
-        return ensureGroup('crate_cap_front', 'CRATE_CAP • FRONT_PANEL_ASSEMBLY')
+        return ensureGroup('crate_cap_front', 'CRATE_CAP • FRONT_END_PANEL_ASSEMBLY')
       }
       if (name.startsWith('back_end_panel_') || name.startsWith('back_panel_')) {
-        return ensureGroup('crate_cap_back', 'CRATE_CAP • BACK_PANEL_ASSEMBLY')
+        return ensureGroup('crate_cap_back', 'CRATE_CAP • BACK_END_PANEL_ASSEMBLY')
       }
       if (name.startsWith('left_side_panel_') || name.startsWith('left_panel_')) {
-        return ensureGroup('crate_cap_left', 'CRATE_CAP • LEFT_PANEL_ASSEMBLY')
+        return ensureGroup('crate_cap_left', 'CRATE_CAP • LEFT_SIDE_PANEL_ASSEMBLY')
       }
       if (name.startsWith('right_side_panel_') || name.startsWith('right_panel_')) {
-        return ensureGroup('crate_cap_right', 'CRATE_CAP • RIGHT_PANEL_ASSEMBLY')
+        return ensureGroup('crate_cap_right', 'CRATE_CAP • RIGHT_SIDE_PANEL_ASSEMBLY')
       }
       if (name.startsWith('top_panel_')) {
         return ensureGroup('crate_cap_top', 'CRATE_CAP • TOP_PANEL_ASSEMBLY')

@@ -185,10 +185,10 @@ AUTOCRATE CRATE ASSEMBLY
 │   ├── SKID_ASSEMBLY (4x4, 6x6, 8x8)
 │   └── FLOORBOARD_ASSEMBLY (2x6, 2x8, etc.)
 ├── CRATE_CAP
-│   ├── FRONT_PANEL_ASSEMBLY (plywood + cleats)
-│   ├── BACK_PANEL_ASSEMBLY
-│   ├── LEFT_PANEL_ASSEMBLY
-│   ├── RIGHT_PANEL_ASSEMBLY
+│   ├── FRONT_END_PANEL_ASSEMBLY (plywood + cleats)
+│   ├── BACK_END_PANEL_ASSEMBLY
+│   ├── LEFT_SIDE_PANEL_ASSEMBLY
+│   ├── RIGHT_SIDE_PANEL_ASSEMBLY
 │   └── TOP_PANEL_ASSEMBLY
 ├── STENCILS (markings/decals)
 └── FASTENERS (klimps, lag screws, nuts, bolts)
