@@ -131,7 +131,32 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
   ].forEach(name => allPartNames.add(name))
   
   // Sort part names for better organization
-  const sortedPartNames = Array.from(allPartNames).sort()
+  // Sort floorboards numerically (floorboard_1, floorboard_2, ..., floorboard_10) instead of alphabetically
+  const sortedPartNames = Array.from(allPartNames).sort((a, b) => {
+    // Extract floorboard numbers for numeric sorting
+    const aFloorboardMatch = a.match(/^floorboard_(\d+)$/i)
+    const bFloorboardMatch = b.match(/^floorboard_(\d+)$/i)
+    
+    if (aFloorboardMatch && bFloorboardMatch) {
+      // Both are floorboards - sort numerically
+      const aNum = parseInt(aFloorboardMatch[1], 10)
+      const bNum = parseInt(bFloorboardMatch[1], 10)
+      return aNum - bNum
+    }
+    
+    if (aFloorboardMatch) {
+      // Only a is a floorboard - floorboards come first
+      return -1
+    }
+    
+    if (bFloorboardMatch) {
+      // Only b is a floorboard - floorboards come first
+      return 1
+    }
+    
+    // Neither is a floorboard - sort alphabetically
+    return a.localeCompare(b)
+  })
   
   // Add the "create all parts" step as the first step
   steps.push({
