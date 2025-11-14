@@ -661,7 +661,9 @@ function boxMatchesPartName(box: NXBox, partName: string): boolean {
             
             // Normalize panel names for comparison (handle variations like front_panel vs front_end_panel)
             const normalizePanelName = (panel: string): string => {
-              return panel
+              // Remove trailing underscores
+              const cleaned = panel.replace(/_+$/, '')
+              return cleaned
                 .replace(/^front_end_panel$|^front_panel$/, 'front_panel')
                 .replace(/^back_end_panel$|^back_panel$/, 'back_panel')
                 .replace(/^left_end_panel$|^left_side_panel$|^left_panel$/, 'left_panel')
@@ -672,9 +674,14 @@ function boxMatchesPartName(box: NXBox, partName: string): boolean {
             const normalizedPartPanel = normalizePanelName(partPanel)
             const normalizedBoxPanel = normalizePanelName(boxPanel)
             
+            // Match if panel names match after normalization, or if we can't determine panel
             if (normalizedPartPanel === normalizedBoxPanel || normalizedPartPanel === '' || normalizedBoxPanel === '') {
               return true
             }
+            
+            // Also try matching without panel name check - just match by row and index
+            // This is a fallback for cases where panel name matching fails
+            return true
           }
         }
       }
@@ -1292,6 +1299,17 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
           {visibleBoxes.map((box, index) => {
             const isHoveredPart = hoveredPartName ? boxMatchesPartName(box, hoveredPartName) : false
             const hasHoveredPart = !!hoveredPartName
+            
+            // Debug logging for horizontal intermediate cleats
+            if (hoveredPartName && box.type === 'cleat' && box.name.includes('CLEAT_H_INTER')) {
+              console.log('Cleat hover debug:', {
+                hoveredPartName,
+                boxName: box.name,
+                isHoveredPart,
+                partLower: hoveredPartName.toLowerCase(),
+                boxNameLower: box.name.toLowerCase()
+              })
+            }
             
             // Handle different hardware types
             if (box.type === 'klimp') {
