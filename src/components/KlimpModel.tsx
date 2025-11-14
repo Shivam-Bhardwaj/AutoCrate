@@ -19,6 +19,8 @@ interface KlimpModelProps {
   useStepFile?: boolean  // New prop to use actual STEP file geometry
   use3DModel?: boolean  // Use hardcoded 3D model
   useVisualModel?: boolean  // Use simplified visual model (default: true)
+  isHoveredPart?: boolean
+  hasHoveredPart?: boolean
 }
 
 // Component to load and display actual Klimp 3D model or bounding box
@@ -30,7 +32,9 @@ export function KlimpModel({
   useBoundingBox = false, 
   useStepFile = false, 
   use3DModel = false,
-  useVisualModel = true  // Default to visual model for reliability
+  useVisualModel = true,  // Default to visual model for reliability
+  isHoveredPart = false,
+  hasHoveredPart = false
 }: KlimpModelProps) {
   const groupRef = useRef<Group>(null)
   const [useBox, setUseBox] = useState(useBoundingBox && !useStepFile)
@@ -61,12 +65,12 @@ export function KlimpModel({
 
   // Default: Use VisualKlimp (simplified, guaranteed to render)
   if (useVisualModel && !use3DModel && !useStepFile && !useBox) {
-    return <VisualKlimp box={box} scale={scale} />
+    return <VisualKlimp box={box} scale={scale} isHoveredPart={isHoveredPart} hasHoveredPart={hasHoveredPart} />
   }
 
   // Use hardcoded 3D model if explicitly requested
   if (use3DModel) {
-    return <Klimp3D box={box} scale={scale} />
+    return <Klimp3D box={box} scale={scale} isHoveredPart={isHoveredPart} hasHoveredPart={hasHoveredPart} />
   }
 
   // Use actual STEP file geometry if requested
@@ -164,7 +168,7 @@ export function KlimpModel({
   } catch (error) {
     // If GLB model doesn't exist or fails to load, fall back to VisualKlimp
     console.warn('GLB model failed to load, falling back to VisualKlimp')
-    return <VisualKlimp box={box} scale={scale} />
+    return <VisualKlimp box={box} scale={scale} isHoveredPart={isHoveredPart} hasHoveredPart={hasHoveredPart} />
   }
 }
 

@@ -31,6 +31,7 @@ point2: { x: width, y: length, z: height } // Opposite corner
 ```
 
 **Why?**
+
 - Simplifies CAD generation (Siemens NX parametric modeling)
 - Makes 3D visualization straightforward
 - Enables easy dimension calculations
@@ -72,6 +73,7 @@ point2: { x: width, y: length, z: height } // Opposite corner
 ### Technology Stack
 
 **Frontend**:
+
 - Next.js 14 (App Router) - React framework
 - React 18 - UI library
 - TypeScript 5 - Type safety
@@ -80,16 +82,19 @@ point2: { x: width, y: length, z: height } // Opposite corner
 - Three.js 0.160 - 3D graphics
 
 **State Management**:
+
 - React hooks (component-level state)
 - Zustand 4 (global theme state)
 - 500ms debouncing for inputs
 
 **Testing**:
+
 - Jest 30 - Unit testing
 - React Testing Library 16 - Component testing
 - Playwright 1.55 - E2E testing
 
 **Development**:
+
 - Husky 9 - Git hooks
 - lint-staged 16 - Pre-commit linting
 - ESLint 8 - Code linting
@@ -104,6 +109,7 @@ point2: { x: width, y: length, z: height } // Opposite corner
 **Purpose**: Orchestrates entire crate generation process
 
 **Key Responsibilities**:
+
 - Parametric crate design calculations
 - NX CAD expression generation
 - Bill of Materials (BOM) creation
@@ -111,6 +117,7 @@ point2: { x: width, y: length, z: height } // Opposite corner
 - Component geometry definition
 
 **Key Types**:
+
 ```typescript
 interface CrateConfig {
   product: ProductDimensions;
@@ -135,6 +142,7 @@ interface NXBox {
 ```
 
 **Key Methods**:
+
 - `getBoxes()` → NXBox[] (for 3D visualization)
 - `getExpressions()` → Map<string, number> (for calculations)
 - `exportNXExpressions()` → string (for CAD import)
@@ -142,6 +150,7 @@ interface NXBox {
 - `generateCutList()` → LumberCutList
 
 **Dependencies**:
+
 - plywood-splicing.ts
 - cleat-calculator.ts
 - klimp-calculator.ts
@@ -157,6 +166,7 @@ interface NXBox {
 **Purpose**: Export crate model to ISO 10303-21 STEP format (AP242)
 
 **Key Responsibilities**:
+
 - ISO 10303-21 AP242 compliant export
 - Hierarchical assembly structure
 - B-Rep geometry definitions
@@ -164,6 +174,7 @@ interface NXBox {
 - Unit conversion (inches → millimeters)
 
 **Assembly Hierarchy**:
+
 ```
 AUTOCRATE CRATE ASSEMBLY (#1)
 ├── SHIPPING_BASE (#2)
@@ -172,20 +183,21 @@ AUTOCRATE CRATE ASSEMBLY (#1)
 │   └── FLOORBOARD_ASSEMBLY (#4)
 │       └── floorboard_2x6_1, floorboard_2x6_2, ...
 ├── CRATE_CAP (#5)
-│   ├── FRONT_PANEL_ASSEMBLY (#6)
+│   ├── FRONT_END_PANEL_ASSEMBLY (#6)
 │   │   ├── front_panel_ply (#7)
 │   │   └── front_panel_cleat_1, cleat_2, ... (#8-#N)
-│   ├── BACK_PANEL_ASSEMBLY
-│   ├── LEFT_PANEL_ASSEMBLY
-│   ├── RIGHT_PANEL_ASSEMBLY
+│   ├── BACK_END_PANEL_ASSEMBLY
+│   ├── LEFT_SIDE_PANEL_ASSEMBLY
+│   ├── RIGHT_SIDE_PANEL_ASSEMBLY
 │   └── TOP_PANEL_ASSEMBLY
-├── KLIMP_FASTENERS (#N+1)
-│   └── klimp_1, klimp_2, ...
-└── STENCILS (#M)
-    └── marking_decals
+├── STENCILS (#M)
+│   └── marking_decals
+└── FASTENERS (#N+1)
+    └── klimps, lag screws, nuts, bolts
 ```
 
 **Component Naming Convention** (snake_case with nominal dimensions):
+
 - Skids: `skid_HxW` (e.g., `skid_4x4`, `skid_6x6`)
 - Floorboards: `floorboard_HxW` (e.g., `floorboard_2x6`)
 - Plywood: `{PANEL}_PLY_{N}` (e.g., `FRONT_PANEL_PLY_1`)
@@ -202,6 +214,7 @@ AUTOCRATE CRATE ASSEMBLY (#1)
 **Purpose**: Optimize plywood panel layouts on 48x96" sheets
 
 **Algorithm**:
+
 1. Analyze panel dimensions (width × height)
 2. Try different orientations (portrait/landscape)
 3. Minimize waste through intelligent splicing
@@ -209,6 +222,7 @@ AUTOCRATE CRATE ASSEMBLY (#1)
 5. Handle both top/bottom and side panels
 
 **Key Types**:
+
 ```typescript
 interface PanelSpliceLayout {
   panelName: string;
@@ -227,6 +241,7 @@ interface PlywoodPiece {
 ```
 
 **Optimization Strategy**:
+
 - Prefer single-piece panels when possible
 - Use 2-piece vertical splits for tall panels
 - Use 3-piece layouts for very large panels
@@ -243,17 +258,20 @@ interface PlywoodPiece {
 **Purpose**: Calculate klimp fastener placement positions
 
 **Klimp Fastener System**:
+
 - L-shaped metal fasteners securing front panel to adjacent panels
 - Corner klimps for reinforcement at top corners
 - Side klimps symmetrically placed on left/right edges
 
 **Placement Rules**:
+
 - 18"-24" spacing between klimps
 - Avoid cleat interference zones (+/- 2.5" from cleats)
 - Symmetric placement for structural balance
 - Minimum 2 klimps per edge (corner + mid)
 
 **Key Types**:
+
 ```typescript
 interface KlimpLayout {
   cornerKlimps: KlimpPosition[];
@@ -265,7 +283,7 @@ interface KlimpPosition {
   x: number;
   y: number;
   z: number;
-  orientation: 'left' | 'right';
+  orientation: "left" | "right";
 }
 ```
 
@@ -280,18 +298,21 @@ interface KlimpPosition {
 **Purpose**: Calculate cleat positioning for panel reinforcement
 
 **Cleat System**:
+
 - Vertical/horizontal wooden cleats reinforce plywood panels
 - Positioning based on panel height
 - Symmetric placement on left/right panels
 - Prevents panel sagging during transport
 
 **Placement Rules**:
+
 - Panel height < 48": 2 cleats (top/bottom)
 - Panel height 48"-72": 3 cleats (top/mid/bottom)
 - Panel height > 72": 4+ cleats (evenly spaced)
 - Cleats positioned to avoid klimp interference
 
 **Key Types**:
+
 ```typescript
 interface PanelCleatLayout {
   panelName: string;
@@ -302,7 +323,7 @@ interface PanelCleatLayout {
 interface Cleat {
   position: { x; y; z };
   dimensions: { length; width; height };
-  orientation: 'horizontal' | 'vertical';
+  orientation: "horizontal" | "vertical";
 }
 ```
 
@@ -317,6 +338,7 @@ interface Cleat {
 **Purpose**: React Three Fiber 3D rendering
 
 **Key Responsibilities**:
+
 - Real-time 3D mesh generation from NXBox[]
 - Component visibility filtering
 - Material definitions (colors, opacity)
@@ -327,6 +349,7 @@ interface Cleat {
 **Critical Patterns**:
 
 **1. Coordinate Conversion**:
+
 ```typescript
 // NX CAD → Three.js Scene
 const scale = 0.1;  // inches to scene units
@@ -339,6 +362,7 @@ position: [x * scale, z * scale, -y * scale]
 ```
 
 **2. PMI Reactivity** (CRITICAL):
+
 ```typescript
 // MUST have key prop for reactivity
 <ScenePMIOverlays
@@ -352,15 +376,17 @@ position: [x * scale, z * scale, -y * scale]
 Without the key prop, PMI will show stale dimensions!
 
 **3. Visibility Filtering**:
+
 ```typescript
-const visibleBoxes = boxes.filter(box => {
-  if (box.type === 'skid') return displayOptions.visibility.skids;
-  if (box.type === 'panel') return displayOptions.visibility[box.panelName];
+const visibleBoxes = boxes.filter((box) => {
+  if (box.type === "skid") return displayOptions.visibility.skids;
+  if (box.type === "panel") return displayOptions.visibility[box.panelName];
   // ...
 });
 ```
 
 **Performance Optimizations**:
+
 - useMemo for expensive calculations
 - Visibility filtering reduces mesh count
 - Debounced config updates (500ms)
@@ -377,6 +403,7 @@ const visibleBoxes = boxes.filter(box => {
 **Purpose**: Root UI component, state management hub
 
 **Key Responsibilities**:
+
 - Central state management (config, visibility, PMI)
 - Input handling with debouncing
 - Generator lifecycle management
@@ -384,6 +411,7 @@ const visibleBoxes = boxes.filter(box => {
 - User interactions
 
 **State Architecture**:
+
 ```typescript
 // Immediate UI state (no delay)
 const [inputValues, setInputValues] = useState<InputValues>({});
@@ -410,10 +438,11 @@ const [pmiVisibility, setPmiVisibility] = useState<PMIVisibility>({
 ```
 
 **Debouncing Pattern** (Critical for performance):
+
 ```typescript
 const handleInputChange = (field: string, value: string) => {
   // Update UI immediately
-  setInputValues(prev => ({ ...prev, [field]: value }));
+  setInputValues((prev) => ({ ...prev, [field]: value }));
 
   // Clear previous timeout
   if (debounceTimeoutRef.current[field]) {
@@ -423,7 +452,7 @@ const handleInputChange = (field: string, value: string) => {
   // Delayed config update
   debounceTimeoutRef.current[field] = setTimeout(() => {
     const numValue = parseFloat(value);
-    setConfig(prev => ({ ...prev, [field]: numValue }));
+    setConfig((prev) => ({ ...prev, [field]: numValue }));
   }, 500);
 };
 
@@ -431,7 +460,7 @@ const handleInputBlur = (field: string) => {
   // Immediate update on blur (user stopped typing)
   const value = inputValues[field];
   const numValue = parseFloat(value);
-  setConfig(prev => ({ ...prev, [field]: numValue }));
+  setConfig((prev) => ({ ...prev, [field]: numValue }));
 
   // Clear timeout
   if (debounceTimeoutRef.current[field]) {
@@ -441,6 +470,7 @@ const handleInputBlur = (field: string) => {
 ```
 
 **Why debouncing?**
+
 - Prevents expensive re-renders while typing
 - Generator creation is expensive (hundreds of calculations)
 - 500ms feels responsive, prevents thrashing
@@ -458,14 +488,14 @@ const handleInputBlur = (field: string) => {
 
 **Available Routes**:
 
-| Route | Purpose | Method |
-|-------|---------|--------|
-| `/api/calculate-crate` | Crate calculations & BOM | POST |
-| `/api/cleat-placement` | Cleat positioning algorithms | POST |
-| `/api/last-update` | Project update banner info | GET |
-| `/api/nx-export` | NX expression file generation | POST |
-| `/api/plywood-optimization` | Plywood splicing calculations | POST |
-| `/api/test-dashboard` | Testing dashboard & metrics | GET |
+| Route                       | Purpose                       | Method |
+| --------------------------- | ----------------------------- | ------ |
+| `/api/calculate-crate`      | Crate calculations & BOM      | POST   |
+| `/api/cleat-placement`      | Cleat positioning algorithms  | POST   |
+| `/api/last-update`          | Project update banner info    | GET    |
+| `/api/nx-export`            | NX expression file generation | POST   |
+| `/api/plywood-optimization` | Plywood splicing calculations | POST   |
+| `/api/test-dashboard`       | Testing dashboard & metrics   | GET    |
 
 **Pattern**: Each route has co-located `route.test.ts` file
 
@@ -557,17 +587,18 @@ const handleInputBlur = (field: string) => {
 
 ```typescript
 if (weight <= 500 && allow3x4Lumber) {
-  return '3x4';
+  return "3x4";
 } else if (weight <= 1000) {
-  return '4x4';
+  return "4x4";
 } else if (weight <= 3000) {
-  return '6x6';
+  return "6x6";
 } else {
-  return '8x8';
+  return "8x8";
 }
 ```
 
 **Why this matters**: Skid size affects:
+
 - Floor height (affects total crate height)
 - Structural integrity
 - Material cost
@@ -583,7 +614,7 @@ const crateLength = productLength + 2 * endClearance;
 const requiredSpan = crateLength - 2 * skidWidth;
 
 // Find smallest lumber that spans the distance
-for (const size of ['2x6', '2x8', '2x10', '2x12']) {
+for (const size of ["2x6", "2x8", "2x10", "2x12"]) {
   const nominalLength = getNominalLength(size);
   if (nominalLength >= requiredSpan) {
     return size;
@@ -591,7 +622,7 @@ for (const size of ['2x6', '2x8', '2x10', '2x12']) {
 }
 
 // Fallback to largest available
-return '2x12';
+return "2x12";
 ```
 
 ### 3. Klimp Placement Algorithm
@@ -642,7 +673,7 @@ if (panelHeight > 96) {
   const piece2Height = panelHeight - 96 + overlapZone;
   return [
     { width: panelWidth, height: piece1Height, sheetNumber: 1 },
-    { width: panelWidth, height: piece2Height, sheetNumber: 1 }
+    { width: panelWidth, height: piece2Height, sheetNumber: 1 },
   ];
 }
 
@@ -697,12 +728,12 @@ Scale: 0.1 × (NX coordinates)
 
 ```typescript
 // NX CAD → Three.js Scene
-function nxToThreeJS(nxPoint: {x; y; z}): [number, number, number] {
+function nxToThreeJS(nxPoint: { x; y; z }): [number, number, number] {
   const scale = 0.1;
   return [
-    nxPoint.x * scale,      // X → X
-    nxPoint.z * scale,      // Z → Y
-    -nxPoint.y * scale      // Y → -Z (NEGATIVE!)
+    nxPoint.x * scale, // X → X
+    nxPoint.z * scale, // Z → Y
+    -nxPoint.y * scale, // Y → -Z (NEGATIVE!)
   ];
 }
 ```
@@ -716,10 +747,11 @@ function nxToThreeJS(nxPoint: {x; y; z}): [number, number, number] {
 ### 1. The Scale Factor (DO NOT CHANGE)
 
 ```typescript
-const scale = 0.1;  // Everywhere in the codebase
+const scale = 0.1; // Everywhere in the codebase
 ```
 
 This converts NX inches to Three.js scene units. Changing it breaks:
+
 - 3D visualization proportions
 - Camera positioning
 - PMI measurements
@@ -761,8 +793,8 @@ handleInputChange(field, value) {
 ```typescript
 // EVERYWHERE: Define geometry with two points
 interface NXBox {
-  point1: { x: 0, y: 0, z: 0 };           // Origin
-  point2: { x: width, y: length, z: height };  // Opposite corner
+  point1: { x: 0; y: 0; z: 0 }; // Origin
+  point2: { x: width; y: length; z: height }; // Opposite corner
 }
 
 // Calculate dimensions
@@ -774,7 +806,7 @@ const height = box.point2.z - box.point1.z;
 const center = {
   x: (box.point1.x + box.point2.x) / 2,
   y: (box.point1.y + box.point2.y) / 2,
-  z: (box.point1.z + box.point2.z) / 2
+  z: (box.point1.z + box.point2.z) / 2,
 };
 ```
 
@@ -785,31 +817,36 @@ const center = {
 ### Techniques Used
 
 **1. Debouncing** (500ms for inputs)
+
 - Prevents expensive re-renders while typing
 - Immediate blur handling for better UX
 
 **2. useMemo Hooks**
+
 ```typescript
 const totalDimensions = useMemo(() => calculateDimensions(), [boxes, config]);
 const sceneBounds = useMemo(() => calculateBounds(), [boxes]);
 ```
 
 **3. Visibility Filtering**
+
 ```typescript
 // Only render visible components
-const visibleBoxes = boxes.filter(box => displayOptions.visibility[box.type]);
+const visibleBoxes = boxes.filter((box) => displayOptions.visibility[box.type]);
 ```
 
 **4. Component Lazy Loading**
+
 ```typescript
 // Load heavy 3D components only when needed
-const CrateVisualizer = lazy(() => import('./CrateVisualizer'));
+const CrateVisualizer = lazy(() => import("./CrateVisualizer"));
 ```
 
 **5. Efficient State Updates**
+
 ```typescript
 // Batch updates together
-setConfig(prev => ({
+setConfig((prev) => ({
   ...prev,
   product: { ...prev.product, width: newWidth },
   // Multiple fields at once
@@ -818,13 +855,13 @@ setConfig(prev => ({
 
 ### Performance Benchmarks
 
-| Operation | Time | Notes |
-|-----------|------|-------|
-| Generator creation | ~200ms | For complex crate |
-| 3D render (initial) | ~100ms | 50-100 meshes |
-| 3D render (update) | ~50ms | Reuse geometries |
-| STEP export | ~150ms | Large assembly |
-| Input debounce | 500ms | Configurable |
+| Operation           | Time   | Notes             |
+| ------------------- | ------ | ----------------- |
+| Generator creation  | ~200ms | For complex crate |
+| 3D render (initial) | ~100ms | 50-100 meshes     |
+| 3D render (update)  | ~50ms  | Reuse geometries  |
+| STEP export         | ~150ms | Large assembly    |
+| Input debounce      | 500ms  | Configurable      |
 
 ---
 
@@ -855,16 +892,16 @@ StepGenerator (step-generator.ts)
 
 ### Parallel Work Safety Matrix
 
-| Module A → Module B | Safe to Work Simultaneously? |
-|---------------------|------------------------------|
-| Different API routes | ✅ Yes |
-| Different calculators | ✅ Yes |
-| Calculator + UI component | ✅ Yes |
-| Different UI components | ✅ Yes (if no shared state) |
-| nx-generator + step-generator | ⚠️ Coordinate |
-| page.tsx + any component | ⚠️ Coordinate |
-| Any module + tests | ✅ Yes |
-| Any module + docs | ✅ Yes |
+| Module A → Module B           | Safe to Work Simultaneously? |
+| ----------------------------- | ---------------------------- |
+| Different API routes          | ✅ Yes                       |
+| Different calculators         | ✅ Yes                       |
+| Calculator + UI component     | ✅ Yes                       |
+| Different UI components       | ✅ Yes (if no shared state)  |
+| nx-generator + step-generator | ⚠️ Coordinate                |
+| page.tsx + any component      | ⚠️ Coordinate                |
+| Any module + tests            | ✅ Yes                       |
+| Any module + docs             | ✅ Yes                       |
 
 ---
 

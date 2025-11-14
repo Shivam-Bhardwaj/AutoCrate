@@ -48,6 +48,7 @@ interface CrateVisualizerProps {
   }
   tutorialHighlightNames?: string[]
   tutorialCallouts?: { boxName: string; label: string }[]
+  hoveredPartName?: string | null
 }
 
 // Represents a selected plane with its position and normal vector
@@ -557,6 +558,177 @@ function HighlightedFace({ plane, color }: { plane: SelectedPlane; color: string
   )
 }
 
+// Function to check if a box matches a part name
+function boxMatchesPartName(box: NXBox, partName: string): boolean {
+  const partLower = partName.toLowerCase()
+  const boxNameLower = box.name.toLowerCase()
+  
+  // Direct name match
+  if (boxNameLower === partLower) {
+    return true
+  }
+  
+  // Match floorboard_N pattern - must be exact match to avoid matching floorboard_1 to floorboard_10, etc.
+  if (partLower.startsWith('floorboard_')) {
+    const match = partLower.match(/floorboard_(\d+)/)
+    if (match) {
+      const index = parseInt(match[1], 10)
+      // Exact match: box name must be exactly "FLOORBOARD_N" (case-insensitive)
+      // This prevents floorboard_1 from matching FLOORBOARD_10, FLOORBOARD_11, etc.
+      const expectedName = `floorboard_${index}`
+      if (box.type === 'floor' && boxNameLower === expectedName) {
+        return true
+      }
+    }
+  }
+  
+  // Match panel plywood pieces (e.g., front_end_panel_ply_1)
+  const plyMatch = partLower.match(/(front_end_panel|back_end_panel|left_side_panel|right_side_panel|top_panel)_ply_(\d+)/)
+  if (plyMatch) {
+    const panelName = plyMatch[1]
+    const pieceIndex = parseInt(plyMatch[2], 10) - 1 // Convert to 0-indexed
+    
+    // Map part name panel to box panelName
+    const panelNameMap: Record<string, string> = {
+      'front_end_panel': 'FRONT_PANEL',
+      'back_end_panel': 'BACK_PANEL',
+      'left_side_panel': 'LEFT_END_PANEL',
+      'right_side_panel': 'RIGHT_END_PANEL',
+      'top_panel': 'TOP_PANEL'
+    }
+    
+    const expectedPanelName = panelNameMap[panelName]
+    if (box.type === 'plywood' && box.panelName === expectedPanelName && box.plywoodPieceIndex === pieceIndex) {
+      return true
+    }
+  }
+  
+  // Match cleats - require exact name match since cleats have unique IDs
+  if (partLower.includes('cleat') && box.type === 'cleat') {
+    // For cleats, we need exact name matching since each cleat has a unique ID
+    // The part name from tutorial should match the box.name exactly
+    // Normalize both names for comparison (handle variations in naming)
+    const normalizeCleatName = (name: string): string => {
+      // Convert to lowercase, replace underscores/hyphens consistently, remove extra whitespace
+      return name.toLowerCase().replace(/[-_]/g, '_').replace(/\s+/g, '_').trim()
+    }
+    
+    const normalizedPart = normalizeCleatName(partLower)
+    const normalizedBox = normalizeCleatName(boxNameLower)
+    
+    // Exact match after normalization - this is the primary check
+    if (normalizedPart === normalizedBox) {
+      return true
+    }
+    
+    // If part name is just "cleat" (too generic), don't match anything
+    if (normalizedPart === 'cleat') {
+      return false
+    }
+    
+    // Special handling for horizontal intermediate cleats (CLEAT_H_INTER)
+    // These have IDs like FRONT_PANEL_CLEAT_H_INTER_0_0
+    // Match by extracting the cleat identifier suffix (everything from "cleat" onwards)
+    if (normalizedPart.includes('h_inter') && normalizedBox.includes('h_inter')) {
+      // Try to match the full cleat identifier pattern: cleat_h_inter_X_Y
+      // Extract the numeric identifiers
+      const partMatch = normalizedPart.match(/cleat_h_inter_(\d+)_(\d+)/)
+      const boxMatch = normalizedBox.match(/cleat_h_inter_(\d+)_(\d+)/)
+      
+      if (partMatch && boxMatch) {
+        const partRow = partMatch[1]
+        const partIndex = partMatch[2]
+        const boxRow = boxMatch[1]
+        const boxIndex = boxMatch[2]
+        
+        // Match if row and index match - this is the primary check for horizontal intermediate cleats
+        if (partRow === boxRow && partIndex === boxIndex) {
+          // Find the position of "cleat" in both strings to extract panel names
+          const partCleatIndex = normalizedPart.indexOf('cleat')
+          const boxCleatIndex = normalizedBox.indexOf('cleat')
+          
+          if (partCleatIndex >= 0 && boxCleatIndex >= 0) {
+            // Extract panel name before "cleat"
+            const partPanel = normalizedPart.substring(0, partCleatIndex).trim().replace(/_+$/, '')
+            const boxPanel = normalizedBox.substring(0, boxCleatIndex).trim().replace(/_+$/, '')
+            
+            // Normalize panel names for comparison (handle variations like front_panel vs front_end_panel)
+            const normalizePanelName = (panel: string): string => {
+              if (!panel) return ''
+              return panel
+                .replace(/^front_end_panel$|^front_panel$/, 'front_panel')
+                .replace(/^back_end_panel$|^back_panel$/, 'back_panel')
+                .replace(/^left_end_panel$|^left_side_panel$|^left_panel$/, 'left_panel')
+                .replace(/^right_end_panel$|^right_side_panel$|^right_panel$/, 'right_panel')
+                .replace(/^top_panel$/, 'top_panel')
+            }
+            
+            const normalizedPartPanel = normalizePanelName(partPanel)
+            const normalizedBoxPanel = normalizePanelName(boxPanel)
+            
+            // Match if panel names match after normalization, or if panel names are empty
+            if (normalizedPartPanel === normalizedBoxPanel || (!normalizedPartPanel && !normalizedBoxPanel)) {
+              return true
+            }
+          } else {
+            // If we can't find "cleat" in the name, still match by row and index
+            return true
+          }
+        }
+      }
+      
+      // Fallback: try matching by suffix if pattern matching fails
+      const partCleatIndex = normalizedPart.indexOf('cleat')
+      const boxCleatIndex = normalizedBox.indexOf('cleat')
+      
+      if (partCleatIndex >= 0 && boxCleatIndex >= 0) {
+        // Extract suffix starting from "cleat" to the end
+        const partSuffix = normalizedPart.substring(partCleatIndex)
+        const boxSuffix = normalizedBox.substring(boxCleatIndex)
+        
+        // Match if suffixes are identical (handles cases where panel names might differ)
+        if (partSuffix === boxSuffix && partSuffix.includes('h_inter')) {
+          return true
+        }
+      }
+    }
+    
+    // For cleat names, we need to match the full identifier
+    // Check if normalized part name ends with a cleat identifier pattern
+    // and matches the box name exactly (not substring)
+    // This prevents matching "front_panel_cleat" to all front panel cleats
+    return false
+  }
+  
+  // Match skid
+  if (partLower === 'skid' && box.type === 'skid') {
+    return true
+  }
+  
+  // Match decals/stencils
+  if ((partLower.includes('decal') || partLower.includes('stencil')) && 
+      (box.metadata?.toLowerCase().includes('decal') || box.metadata?.toLowerCase().includes('stencil'))) {
+    // Try to match specific decal names
+    if (partLower.includes('fragile') && box.metadata?.toLowerCase().includes('fragile')) return true
+    if (partLower.includes('handling') && box.metadata?.toLowerCase().includes('handling')) return true
+    if (partLower.includes('autocrate') && box.metadata?.toLowerCase().includes('autocrate')) return true
+    if (partLower.includes('do_not_stack') && box.metadata?.toLowerCase().includes('do not stack')) return true
+    if (partLower.includes('cg') && box.metadata?.toLowerCase().includes('cg')) return true
+    if (partLower.includes('applied_impact') && box.metadata?.toLowerCase().includes('applied impact')) return true
+  }
+  
+  // Match fasteners
+  if ((partLower.includes('klimp') || partLower.includes('screw') || partLower.includes('bolt') || partLower.includes('nut') || partLower.includes('fastener')) &&
+      (box.type === 'klimp' || box.type === 'hardware' || box.metadata?.toLowerCase().includes('fastener'))) {
+    // Try to match specific fastener names
+    if (partLower.includes('klimp') && box.type === 'klimp') return true
+    if (partLower.includes('lag_screw') && box.name?.toLowerCase().includes('lag')) return true
+    if (partLower.includes('nut') && box.name?.toLowerCase().includes('nut')) return true
+  }
+  
+  return false
+}
+
 // Component to render a single box from NX two-point definition
 function NXBoxMesh({
   box,
@@ -565,7 +737,9 @@ function NXBoxMesh({
   onHide,
   selectedPlanes,
   onPlaneClick,
-  highlighted = false
+  highlighted = false,
+  isHoveredPart = false,
+  hasHoveredPart = false
 }: {
   box: NXBox;
   hoveredBox: string | null;
@@ -574,6 +748,8 @@ function NXBoxMesh({
   selectedPlanes: SelectedPlane[];
   onPlaneClick: (plane: SelectedPlane) => void;
   highlighted?: boolean;
+  isHoveredPart?: boolean;
+  hasHoveredPart?: boolean;
 }) {
   const isHovered = hoveredBox === box.name
   // Calculate center and size from two diagonal points
@@ -688,11 +864,23 @@ function NXBoxMesh({
         }}
       >
         <meshStandardMaterial
-          color={highlighted ? '#fde68a' : (box.color || '#F4E4BC')}
-          opacity={1}
-          transparent={false}
-          emissive={highlighted ? new THREE.Color('#f59e0b') : new THREE.Color('#000000')}
-          emissiveIntensity={highlighted ? 0.2 : 0}
+          color={
+            isHoveredPart 
+              ? '#60a5fa' // Bright blue for hovered part
+              : highlighted 
+                ? '#fde68a' 
+                : (box.color || '#F4E4BC')
+          }
+          opacity={hasHoveredPart && !isHoveredPart ? 0.2 : 1}
+          transparent={hasHoveredPart && !isHoveredPart}
+          emissive={
+            isHoveredPart 
+              ? new THREE.Color('#3b82f6') // Blue glow for hovered part
+              : highlighted 
+                ? new THREE.Color('#f59e0b') 
+                : new THREE.Color('#000000')
+          }
+          emissiveIntensity={isHoveredPart ? 0.4 : (highlighted ? 0.2 : 0)}
         />
         <Edges
           color='#1f2937'
@@ -706,7 +894,7 @@ function NXBoxMesh({
           distanceFactor={10}
           occlude={false}
         >
-          <div className="bg-gray-900 text-white text-sm rounded-lg p-3 shadow-lg pointer-events-none">
+          <div className="bg-gray-900 text-white text-sm rounded-lg p-3 shadow-lg pointer-events-none" role="tooltip" aria-label={`Component information: ${box.name}`}>
             <div className="font-semibold text-center mb-1">{box.name}</div>
             <div className="text-center mb-1">{dimensions}</div>
             <div className="text-center text-gray-300">{getMaterialType(box.type)}</div>
@@ -720,7 +908,7 @@ function NXBoxMesh({
   )
 }
 
-export default function CrateVisualizer({ boxes, showGrid = true, showLabels = true, generator, showMarkings = true, visibility, onToggleVisibility, onToggleMarkings, pmiVisibility, onTogglePmi, partNumbers, tutorialHighlightNames = [], tutorialCallouts = [] }: CrateVisualizerProps) {
+export default function CrateVisualizer({ boxes, showGrid = true, showLabels = true, generator, showMarkings = true, visibility, onToggleVisibility, onToggleMarkings, pmiVisibility, onTogglePmi, partNumbers, tutorialHighlightNames = [], tutorialCallouts = [], hoveredPartName = null }: CrateVisualizerProps) {
   const [hiddenComponents, setHiddenComponents] = useState<Set<string>>(new Set())
   const [hoveredBox, setHoveredBox] = useState<string | null>(null)
   const [showHiddenList, setShowHiddenList] = useState(false)
@@ -893,7 +1081,16 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
     }
 
     return boxes
-      .filter(box => !box.suppressed && !hiddenComponents.has(box.name) && isComponentVisible(box))
+      .filter(box => {
+        // Hide lag screws, klimps, and decals from view
+        if (box.type === 'klimp') return false
+        if (box.type === 'hardware' && (box.name?.toLowerCase().includes('lag') || box.name?.toLowerCase().includes('screw'))) return false
+        const metadataLower = (box.metadata || '').toLowerCase()
+        if (metadataLower.includes('decal') || metadataLower.includes('stencil')) return false
+        
+        // Apply other filters
+        return !box.suppressed && !hiddenComponents.has(box.name) && isComponentVisible(box)
+      })
       .sort((a, b) => {
         const priority: { [key: string]: number } = {
           'skid': 1,
@@ -1045,7 +1242,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
   }, [])
 
   return (
-    <div className="w-full h-full bg-gray-50 dark:bg-gray-100 rounded-lg relative">
+    <div className="w-full h-full bg-gray-50 dark:bg-gray-100 rounded-lg relative" role="region" aria-label="3D crate visualization">
       <Canvas
         camera={{
           position: [15, 10, 15],
@@ -1053,6 +1250,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
           near: UI_CONSTANTS.CAMERA.NEAR_PLANE,
           far: UI_CONSTANTS.CAMERA.FAR_PLANE
         }}
+        aria-label="Interactive 3D crate model"
       >
         <Suspense fallback={null}>
           <CameraResetter
@@ -1114,12 +1312,28 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
 
           {/* Render visible boxes only (filter out suppressed and hidden) */}
           {visibleBoxes.map((box, index) => {
+            const isHoveredPart = hoveredPartName ? boxMatchesPartName(box, hoveredPartName) : false
+            const hasHoveredPart = !!hoveredPartName
+            
+            // Debug logging for horizontal intermediate cleats
+            if (hoveredPartName && box.type === 'cleat' && box.name.includes('CLEAT_H_INTER')) {
+              console.log('Cleat hover debug:', {
+                hoveredPartName,
+                boxName: box.name,
+                isHoveredPart,
+                partLower: hoveredPartName.toLowerCase(),
+                boxNameLower: box.name.toLowerCase()
+              })
+            }
+            
             // Handle different hardware types
             if (box.type === 'klimp') {
               return (
                 <KlimpModel
                   key={`${box.name}-${index}`}
                   box={box}
+                  isHoveredPart={isHoveredPart}
+                  hasHoveredPart={hasHoveredPart}
                 />
               )
             } else if (box.type === 'hardware' && (box.name?.toLowerCase().includes('lag') || box.name?.toLowerCase().includes('screw'))) {
@@ -1130,13 +1344,16 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                 z: (box.point1.z + box.point2.z) / 2,
               }
               return (
-                <LagScrew3D
-                  key={`${box.name}-${index}`}
-                  position={[center.x, center.y, center.z]}
-                  rotation={[Math.PI / 2, 0, 0]}
-                  scale={0.1}
-                  length={2.5}
-                />
+                <group key={`${box.name}-${index}`}>
+                  <LagScrew3D
+                    position={[center.x, center.y, center.z]}
+                    rotation={[Math.PI / 2, 0, 0]}
+                    scale={0.1}
+                    length={2.5}
+                    isHoveredPart={isHoveredPart}
+                    hasHoveredPart={hasHoveredPart}
+                  />
+                </group>
               )
             } else if (box.type === 'hardware' && box.name?.toLowerCase().includes('washer')) {
               // Render washer at box position
@@ -1146,11 +1363,14 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                 z: (box.point1.z + box.point2.z) / 2,
               }
               return (
-                <Washer3D
-                  key={`${box.name}-${index}`}
-                  position={[center.x, center.y, center.z]}
-                  scale={0.1}
-                />
+                <group key={`${box.name}-${index}`}>
+                  <Washer3D
+                    position={[center.x, center.y, center.z]}
+                    scale={0.1}
+                    isHoveredPart={isHoveredPart}
+                    hasHoveredPart={hasHoveredPart}
+                  />
+                </group>
               )
             } else {
               // Default rendering for other box types with tutorial highlights
@@ -1164,6 +1384,8 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                   selectedPlanes={selectedPlanes}
                   onPlaneClick={handlePlaneClick}
                   highlighted={tutorialHighlightSet.has(box.name)}
+                  isHoveredPart={isHoveredPart}
+                  hasHoveredPart={hasHoveredPart}
                 />
               )
             }
@@ -1258,29 +1480,32 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
       </Canvas>
 
       {/* Overlay Panels - Hidden on mobile */}
-      <div className="hidden lg:flex absolute top-2 right-2 w-64 flex-col gap-2 pointer-events-auto">
+      <div className="hidden lg:flex absolute top-2 right-2 w-64 flex-col gap-2 pointer-events-auto" role="complementary" aria-label="Visualization controls">
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Visibility</h3>
             <button
               onClick={handleResetView}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-xs text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded"
+              aria-label="Reset camera view and show all components"
             >
               Reset view
             </button>
           </div>
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1" role="group" aria-label="Component visibility toggles">
             {(Object.keys(componentVisibility) as (keyof ComponentVisibility)[]).map(key => {
               const isEnabled = componentVisibility[key]
               return (
                 <button
                   key={key}
                   onClick={() => onToggleVisibility?.(key)}
-                  className={`px-2 py-1.5 text-xs rounded border transition-colors ${
+                  className={`px-2 py-1.5 text-xs rounded border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
                     isEnabled
                       ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
                       : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:border-blue-400 dark:hover:bg-gray-700'
                   }`}
+                  aria-label={`${isEnabled ? 'Hide' : 'Show'} ${visibilityLabels[key]}`}
+                  aria-pressed={isEnabled}
                 >
                   {visibilityLabels[key]}
                 </button>
@@ -1290,11 +1515,13 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
           <div className="mt-2 flex flex-wrap gap-1">
             <button
               onClick={() => onToggleMarkings?.()}
-              className={`px-2 py-1.5 text-xs rounded border transition-colors ${
+              className={`px-2 py-1.5 text-xs rounded border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
                 showMarkings
                   ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
                   : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:border-blue-400 dark:hover:bg-gray-700'
               }`}
+              aria-label={showMarkings ? 'Hide markings' : 'Show markings'}
+              aria-pressed={showMarkings}
             >
               {showMarkings ? 'Markings On' : 'Markings Off'}
             </button>
@@ -1304,23 +1531,28 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
         {/* PMI Visibility Controls */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">PMI Visibility</h3>
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1" role="group" aria-label="PMI visibility toggles">
             {(Object.keys(pmiLabels) as (keyof PmiVisibilityState)[]).map(layer => {
               const active = pmiState[layer]
               return (
                 <button
                   key={layer}
                   onClick={() => onTogglePmi?.(layer)}
-                  className={`px-2 py-1.5 text-xs rounded border transition-colors ${
+                  className={`px-2 py-1.5 text-xs rounded border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
                     active
                       ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
                       : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:border-blue-400 dark:hover:bg-gray-700'
                   }`}
+                  aria-label={`${active ? 'Hide' : 'Show'} ${pmiLabels[layer]}`}
+                  aria-pressed={active}
                 >
                   {pmiLabels[layer]}
                 </button>
               )
             })}
+          </div>
+          <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-[10px] text-gray-500 dark:text-gray-400" role="note" aria-label="Interaction hints">
+            Click faces to measure • Right-click to hide component • Esc to reset view
           </div>
         </div>
 
@@ -1332,20 +1564,23 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
               </h3>
               <button
                 onClick={() => setShowHiddenList(!showHiddenList)}
-                className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-xs text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded"
+                aria-label={showHiddenList ? 'Hide hidden components list' : 'Show hidden components list'}
+                aria-expanded={showHiddenList}
               >
                 {showHiddenList ? 'Hide' : 'Show'}
               </button>
             </div>
             {showHiddenList && (
               <>
-                <div className="max-h-40 overflow-y-auto space-y-1 text-xs">
+                <div className="max-h-40 overflow-y-auto space-y-1 text-xs" role="list" aria-label="Hidden components">
                   {Array.from(hiddenComponents).map(name => (
-                    <div key={name} className="flex justify-between items-center">
+                    <div key={name} className="flex justify-between items-center" role="listitem">
                       <span className="text-gray-600 dark:text-gray-400 truncate mr-2">{name}</span>
                       <button
                         onClick={() => handleShowComponent(name)}
-                        className="text-blue-600 dark:text-blue-400 hover:underline"
+                        className="text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded"
+                        aria-label={`Show ${name}`}
                       >
                         Show
                       </button>
@@ -1354,7 +1589,8 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                 </div>
                 <button
                   onClick={handleShowAll}
-                  className="mt-2 w-full text-xs bg-blue-600 text-white rounded px-2 py-1 hover:bg-blue-700"
+                  className="mt-2 w-full text-xs bg-blue-600 text-white rounded px-2 py-1 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                  aria-label="Show all hidden components"
                 >
                   Show All
                 </button>
@@ -1365,7 +1601,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
       </div>
 
       {selectedPlanes.length > 0 && (
-        <div className="hidden lg:block absolute bottom-20 left-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg p-3">
+        <div className="hidden lg:block absolute bottom-20 left-2 bg-white dark:bg-gray-900 rounded-lg shadow-lg p-3" role="status" aria-live="polite" aria-atomic="true">
           <div className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
             Measurement Mode
           </div>
@@ -1377,7 +1613,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
             ))}
             <div className="pt-1 border-t border-gray-300 dark:border-gray-700">
               {selectionError && (
-                <span className="font-semibold text-red-600 dark:text-red-400">
+                <span className="font-semibold text-red-600 dark:text-red-400" role="alert">
                   {selectionError}
                 </span>
               )}
@@ -1391,17 +1627,14 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
           </div>
           <button
             onClick={clearSelections}
-            className="mt-2 text-xs bg-red-600 text-white rounded px-2 py-1 hover:bg-red-700"
+            className="mt-2 text-xs bg-red-600 text-white rounded px-2 py-1 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
+            aria-label="Clear measurement selection"
           >
             Clear Selection
           </button>
         </div>
       )}
 
-      {/* Instructions - Hidden on mobile */}
-      <div className="hidden lg:block absolute bottom-2 left-2 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded px-2 py-1">
-        Click faces to measure • Right-click to hide component • Esc to reset view
-      </div>
     </div>
   )
 }

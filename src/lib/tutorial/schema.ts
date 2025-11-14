@@ -14,6 +14,7 @@ export type TutorialStep = {
   expressions?: string[]
   expressionValues?: Record<string, number>
   tips?: string[]
+  partNames?: string[] // For listing all part names to create
 }
 
 export function buildBasicTutorial(generator: NXGenerator, boxes: NXBox[]): TutorialStep[] {
@@ -75,12 +76,112 @@ export function buildBasicTutorial(generator: NXGenerator, boxes: NXBox[]): Tuto
 
 // Extended builder: floorboards, panels (plywood 7-params), cleats, hardware guidance
 export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): TutorialStep[] {
+  const steps: TutorialStep[] = []
+  
+  // Step 0: List all part names that need to be created
+  const allPartNames = new Set<string>()
+  
+  // Always include skid
+  allPartNames.add('skid')
+  
+  // Always include all floorboards (1-40) - some may be suppressed but all need part files
+  for (let i = 1; i <= 40; i++) {
+    allPartNames.add(`floorboard_${i}`)
+  }
+  
+  // Always include all plywood pieces (1-6 for each panel) - some may be suppressed but all need part files
+  const allPanelNames = ['FRONT_PANEL', 'BACK_PANEL', 'LEFT_END_PANEL', 'RIGHT_END_PANEL', 'TOP_PANEL']
+  const panelNameMap: Record<string, string> = {
+    'FRONT_PANEL': 'front_end_panel',
+    'BACK_PANEL': 'back_end_panel',
+    'LEFT_END_PANEL': 'left_side_panel',
+    'RIGHT_END_PANEL': 'right_side_panel',
+    'TOP_PANEL': 'top_panel'
+  }
+  for (const panel of allPanelNames) {
+    const panelSnake = panelNameMap[panel] || panel.toLowerCase()
+    for (let i = 1; i <= 6; i++) {
+      allPartNames.add(`${panelSnake}_ply_${i}`)
+    }
+  }
+  
+  // Collect cleat names from boxes (cleats are dynamic, so only include ones that exist)
+  boxes.forEach(box => {
+    if (box.type === 'cleat') {
+      const name = box.name.toLowerCase()
+      allPartNames.add(name)
+    }
+  })
+
+  // DECALS: fixed template decal part files
+  ;[
+    'fragile_decal',
+    'handling_decal',
+    'autocrate_decal',
+    'do_not_stack_decal',
+    'cg_decal',
+    'applied_impact_a_decal',
+  ].forEach(name => allPartNames.add(name))
+
+  // FASTENERS: fixed template hardware part files
+  ;[
+    'klimp_fastener',
+    'lag_screw_0_38x3_00',
+    'lag_screw_0_38x3_00_nut',
+  ].forEach(name => allPartNames.add(name))
+  
+  // Sort part names for better organization
+  // Sort floorboards numerically (floorboard_1, floorboard_2, ..., floorboard_10) instead of alphabetically
+  const sortedPartNames = Array.from(allPartNames).sort((a, b) => {
+    // Extract floorboard numbers for numeric sorting
+    const aFloorboardMatch = a.match(/^floorboard_(\d+)$/i)
+    const bFloorboardMatch = b.match(/^floorboard_(\d+)$/i)
+    
+    if (aFloorboardMatch && bFloorboardMatch) {
+      // Both are floorboards - sort numerically
+      const aNum = parseInt(aFloorboardMatch[1], 10)
+      const bNum = parseInt(bFloorboardMatch[1], 10)
+      return aNum - bNum
+    }
+    
+    if (aFloorboardMatch) {
+      // Only a is a floorboard - floorboards come first
+      return -1
+    }
+    
+    if (bFloorboardMatch) {
+      // Only b is a floorboard - floorboards come first
+      return 1
+    }
+    
+    // Neither is a floorboard - sort alphabetically
+    return a.localeCompare(b)
+  })
+  
+  // Add the "create all parts" step as the first step
+  steps.push({
+    id: 'create-all-parts',
+    title: 'Create All Part Files',
+    description: 'Before starting the template generator, create all the part files listed below. Click on any part name to copy it to your clipboard, then paste it when creating a new part file in NX.',
+    partNames: sortedPartNames,
+    tips: [
+      'Create these part files first before proceeding with the template generator steps.',
+      'Click any part name to copy it to your clipboard.',
+      'Use File → New → Part in NX to create each part file.',
+      'Part names are lowercase (e.g., floorboard_1, front_end_panel_ply_1).',
+    ],
+  })
+  
   const base = buildBasicTutorial(generator, boxes)
-  const steps: TutorialStep[] = [...base]
+  steps.push(...base)
   const exprMap = generator.getExpressions()
   const boxesByName = new Map<string, NXBox>()
   boxes.forEach(box => boxesByName.set(box.name, box))
 
+  // Placeholder values for missing components (non-zero for NX compatibility)
+  const PLACEHOLDER_CUBE_SIZE = 10
+  const MIN_DIMENSION = 0.1
+  
   const resolveExpressionValue = (expr: string): number | undefined => {
     if (expr.includes('..')) return undefined
     const key = expr.includes('=') ? expr.split('=')[0] : expr
@@ -88,7 +189,7 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
     if (typeof direct === 'number') return direct
 
     const suffixHandlers: Array<[string, (box: NXBox) => number | undefined]> = [
-      ['_SUPPRESSED', box => (box.suppressed ? 1 : 0)],
+      ['_SUPPRESSED', box => (box.suppressed ? 0 : 1)], // NX: 0=suppressed, 1=not suppressed
       ['_X1', box => box.point1.x],
       ['_Y1', box => box.point1.y],
       ['_Z1', box => box.point1.z],
@@ -98,9 +199,9 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
       ['_X', box => box.point1.x],
       ['_Y', box => box.point1.y],
       ['_Z', box => box.point1.z],
-      ['_WIDTH', box => Math.abs(box.point2.x - box.point1.x)],
-      ['_LENGTH', box => Math.abs(box.point2.y - box.point1.y)],
-      ['_HEIGHT', box => Math.abs(box.point2.z - box.point1.z)],
+      ['_WIDTH', box => Math.max(MIN_DIMENSION, Math.abs(box.point2.x - box.point1.x))],
+      ['_LENGTH', box => Math.max(MIN_DIMENSION, Math.abs(box.point2.y - box.point1.y))],
+      ['_HEIGHT', box => Math.max(MIN_DIMENSION, Math.abs(box.point2.z - box.point1.z))],
       ['_THICKNESS', box => {
         const zSpan = Math.abs(box.point2.z - box.point1.z)
         if (zSpan > 0) return zSpan
@@ -109,7 +210,7 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
         const ySpan = Math.abs(box.point2.y - box.point1.y)
         if (ySpan > 0 && ySpan <= 1.5) return ySpan
         const globalThickness = exprMap.get('plywood_thickness')
-        return typeof globalThickness === 'number' ? globalThickness : undefined
+        return typeof globalThickness === 'number' ? globalThickness : MIN_DIMENSION
       }],
     ]
 
@@ -117,8 +218,30 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
       if (key.endsWith(suffix)) {
         const baseName = key.slice(0, -suffix.length)
         const box = boxesByName.get(baseName)
-        if (!box) return undefined
-        return getter(box)
+        
+        // If box doesn't exist, return placeholder values for missing components
+        if (!box) {
+          // For floorboards and other boxes, use placeholder cube
+          if (baseName.startsWith('FLOORBOARD_') || baseName.includes('_PLY_')) {
+            if (suffix === '_SUPPRESSED') return 0 // Missing boxes are suppressed (NX: 0=suppressed, 1=not suppressed)
+            if (suffix === '_X1' || suffix === '_Y1' || suffix === '_Z1') return -PLACEHOLDER_CUBE_SIZE / 2
+            if (suffix === '_X2' || suffix === '_Y2' || suffix === '_Z2') return PLACEHOLDER_CUBE_SIZE / 2
+            if (suffix === '_X' || suffix === '_Y' || suffix === '_Z') return -PLACEHOLDER_CUBE_SIZE / 2
+            if (suffix === '_WIDTH' || suffix === '_LENGTH' || suffix === '_HEIGHT') return PLACEHOLDER_CUBE_SIZE
+            if (suffix === '_THICKNESS') {
+              const globalThickness = exprMap.get('plywood_thickness')
+              return typeof globalThickness === 'number' ? globalThickness : MIN_DIMENSION
+            }
+          }
+          return undefined
+        }
+        
+        const value = getter(box)
+        // Ensure dimensions are never zero
+        if ((suffix === '_WIDTH' || suffix === '_LENGTH' || suffix === '_HEIGHT') && value !== undefined) {
+          return Math.max(MIN_DIMENSION, value)
+        }
+        return value
       }
     }
 
@@ -139,25 +262,45 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
     }
   }
 
-  const hasFloors = boxes.some(b => b.type === 'floor')
-  if (hasFloors) {
-    steps.push({
-      id: 'floorboards',
-      title: 'Create Floorboards (Opposite Corners)',
-      description: 'Create Blocks for each FLOORBOARD_n using opposite corners (two points). Suppress any marked as suppressed in the export.',
-      target: { types: ['floor'] },
-      expressions: [
-        'FLOORBOARD_n_X1..Z2',
-        'floorboard_count',
-        'floorboard_width',
-        'floorboard_thickness',
-      ],
-      tips: [
-        'Floorboards run along X and sit on skids (Z = skid_height).',
-        'Use the naming pattern FLOORBOARD_1, FLOORBOARD_2, ... for expressions (X1,Y1,Z1 / X2,Y2,Z2).'
-      ],
-    })
+  const floorboards = boxes.filter(b => b.type === 'floor')
+  const floorboardsByName = new Map<string, NXBox>()
+  floorboards.forEach(b => floorboardsByName.set(b.name, b))
+  
+  // Always generate expressions for ALL floorboards (1-40) regardless of crate size
+  const floorboardExpressions: string[] = []
+  const pushUnique = (expr: string) => {
+    if (!floorboardExpressions.includes(expr)) {
+      floorboardExpressions.push(expr)
+    }
   }
+
+  const coordinateSuffixes = ['X1', 'Y1', 'Z1', 'X2', 'Y2', 'Z2']
+  
+  // Always include all 40 floorboards with all parameters
+  for (let i = 1; i <= 40; i++) {
+    const boardName = `FLOORBOARD_${i}`
+    pushUnique(boardName.toLowerCase())
+    pushUnique(`${boardName}_SUPPRESSED`)
+    for (const suffix of coordinateSuffixes) {
+      pushUnique(`${boardName}_${suffix}`)
+    }
+  }
+
+  ;['floorboard_count', 'floorboard_width', 'floorboard_length', 'floorboard_thickness', 'floorboard_gap'].forEach(pushUnique)
+
+  const step: TutorialStep = {
+    id: 'floorboards',
+    title: 'Create Floorboards (Opposite Corners)',
+    description: 'Create Blocks for each FLOORBOARD_n using opposite corners (two points). Suppress any marked as suppressed in the export.',
+    target: { types: ['floor'] },
+    expressions: floorboardExpressions,
+    tips: [
+      'Floorboards run along X and sit on skids (Z = skid_height).',
+      'Use the naming pattern FLOORBOARD_1, FLOORBOARD_2, ... for expressions (X1,Y1,Z1 / X2,Y2,Z2).'
+    ],
+  }
+  attachExpressionValues(step)
+  steps.push(step)
 
   const panelMap: Record<string, { title: string }> = {
     FRONT_PANEL: { title: 'Front Panel (Plywood Pieces)' },
@@ -167,25 +310,40 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
     TOP_PANEL: { title: 'Top Panel (Plywood Pieces)' },
   }
 
+  // Always generate expressions for all panels with all 6 plywood pieces each
+  const panelNames = ['FRONT_PANEL', 'BACK_PANEL', 'LEFT_END_PANEL', 'RIGHT_END_PANEL', 'TOP_PANEL']
   const plywoodByPanel = new Map<string, NXBox[]>()
-  boxes.filter(b => b.type === 'plywood' && !b.suppressed).forEach(b => {
+  boxes.filter(b => b.type === 'plywood').forEach(b => {
     const key = b.panelName || 'UNKNOWN_PANEL'
     const arr = plywoodByPanel.get(key) || []
     arr.push(b)
     plywoodByPanel.set(key, arr)
   })
-  for (const [panel, arr] of plywoodByPanel.entries()) {
+  
+  for (const panel of panelNames) {
     const meta = panelMap[panel] || { title: `${panel} (Plywood Pieces)` }
-    const plywoodSuffixes = ['X', 'Y', 'Z', 'WIDTH', 'LENGTH', 'HEIGHT', 'THICKNESS']
-    const plywoodExpressions = Array.from(new Set(
-      arr.flatMap(box => plywoodSuffixes.map(suffix => `${box.name}_${suffix}`))
-    ))
-    const thicknessLabel = arr[0] ? `${arr[0].name}_THICKNESS` : 'PLY_THICKNESS'
+    const plywoodSuffixes = ['SUPPRESSED', 'X1', 'Y1', 'Z1', 'X2', 'Y2', 'Z2', 'X', 'Y', 'Z', 'WIDTH', 'LENGTH', 'HEIGHT', 'THICKNESS']
+    const plywoodExpressions: string[] = []
+    const pushUnique = (expr: string) => {
+      if (!plywoodExpressions.includes(expr)) {
+        plywoodExpressions.push(expr)
+      }
+    }
+    
+    // Always include all 6 pieces per panel
+    for (let i = 1; i <= 6; i++) {
+      const pieceName = `${panel}_PLY_${i}`
+      for (const suffix of plywoodSuffixes) {
+        pushUnique(`${pieceName}_${suffix}`)
+      }
+    }
+    
+    const thicknessLabel = `${panel}_PLY_1_THICKNESS`
     const step: TutorialStep = {
       id: `plywood-${panel.toLowerCase()}`,
       title: meta.title,
       description: 'For each piece, create a Block by base corner and extents bound to expressions (7 parameters). Suppress any piece marked as suppressed.',
-      target: { boxNames: arr.map(b => b.name) },
+      target: { boxNames: Array.from({ length: 6 }, (_, i) => `${panel}_PLY_${i + 1}`) },
       expressions: plywoodExpressions,
       tips: [
         `Use ${thicknessLabel} for plywood thickness (typically 0.250).`,
@@ -336,6 +494,7 @@ export function classifyBoxForAssembly(box: NXBox): AssemblyClassification {
   const panelName = box.panelName ?? ''
   const metadata = (box.metadata || '').toLowerCase()
 
+  // SHIPPING_BASE assemblies
   if (type === 'skid') {
     return {
       topKey: 'SHIPPING_BASE',
@@ -354,13 +513,15 @@ export function classifyBoxForAssembly(box: NXBox): AssemblyClassification {
     }
   }
 
+  // FASTENERS top-level assembly: all nuts/bolts/klimps and hardware
   if (type === 'klimp' || metadata.includes('fastener')) {
     return {
-      topKey: 'KLIMP_FASTENERS',
-      topName: 'KLIMP_FASTENERS'
+      topKey: 'FASTENERS',
+      topName: 'FASTENERS'
     }
   }
 
+  // STENCILS top-level assembly: markings/decals
   if (metadata.includes('stencil') || metadata.includes('decal')) {
     return {
       topKey: 'STENCILS',
@@ -374,10 +535,10 @@ export function classifyBoxForAssembly(box: NXBox): AssemblyClassification {
   if (panelName) {
     const panelAssemblyMap: Record<string, string> = {
       TOP_PANEL: 'TOP_PANEL_ASSEMBLY',
-      FRONT_PANEL: 'FRONT_PANEL_ASSEMBLY',
-      BACK_PANEL: 'BACK_PANEL_ASSEMBLY',
-      LEFT_END_PANEL: 'LEFT_PANEL_ASSEMBLY',
-      RIGHT_END_PANEL: 'RIGHT_PANEL_ASSEMBLY'
+      FRONT_PANEL: 'FRONT_END_PANEL_ASSEMBLY',
+      BACK_PANEL: 'BACK_END_PANEL_ASSEMBLY',
+      LEFT_END_PANEL: 'LEFT_SIDE_PANEL_ASSEMBLY',
+      RIGHT_END_PANEL: 'RIGHT_SIDE_PANEL_ASSEMBLY'
     }
     const subName = panelAssemblyMap[panelName] || `${panelName}_ASSEMBLY`
     return {
@@ -390,9 +551,7 @@ export function classifyBoxForAssembly(box: NXBox): AssemblyClassification {
 
   return {
     topKey,
-    topName,
-    subKey: `${topKey}::CAP_MISC_ASSEMBLY`,
-    subName: 'CAP_MISC_ASSEMBLY'
+    topName
   }
 }
 

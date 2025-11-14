@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 AutoCrate is a parametric shipping crate design tool that generates:
+
 - **3D Visualizations** using Three.js/React Three Fiber
 - **NX CAD Expressions** for parametric CAD import (.exp files)
 - **STEP Files** (ISO 10303-21 AP242) with BREP solids and PMI
@@ -15,6 +16,7 @@ The application takes product dimensions (length, width, height, weight) and gen
 ## Development Commands
 
 ### Core Development
+
 ```bash
 npm run dev              # Start dev server at http://localhost:3000
 npm run build            # Production build
@@ -24,6 +26,7 @@ npm run type-check       # TypeScript type checking without emitting files
 ```
 
 ### Testing
+
 ```bash
 npm test                 # Run all unit tests (Jest)
 npm run test:watch       # Run tests in watch mode
@@ -36,6 +39,7 @@ npm run test:all:e2e     # Run all tests including e2e
 ```
 
 ### Single Test Execution
+
 ```bash
 # Run a specific unit test file
 npm test -- src/lib/__tests__/nx-generator.test.ts
@@ -48,6 +52,7 @@ npm run test:e2e -- tests/e2e/crate-visualization.spec.ts
 ```
 
 ### Version Management & Deployment
+
 ```bash
 npm run version:patch    # Bump patch version (x.y.Z)
 npm run version:minor    # Bump minor version (x.Y.0)
@@ -63,6 +68,7 @@ npm run deploy:major     # Major version bump + deploy
 ```
 
 ### Security
+
 ```bash
 npm run security:scan    # Scan for secrets in commits (pre-commit hook)
 ```
@@ -70,6 +76,7 @@ npm run security:scan    # Scan for secrets in commits (pre-commit hook)
 ## Architecture
 
 ### Coordinate System
+
 - **Origin**: Center of crate at floor level (Z=0)
 - **X-axis**: Width (left/right) - crate is symmetric about X=0
 - **Y-axis**: Length (front/back) - front panel at negative Y
@@ -87,6 +94,7 @@ npm run security:scan    # Scan for secrets in commits (pre-commit hook)
 ### Key Libraries (`src/lib/`)
 
 **Central Configuration:**
+
 - `crate-constants.ts` - Single source of truth for all constants, standards, dimensions
   - Material standards (plywood, lumber)
   - Structural requirements (skids, cleats, fasteners)
@@ -95,6 +103,7 @@ npm run security:scan    # Scan for secrets in commits (pre-commit hook)
   - UI constants
 
 **Core Generators:**
+
 - `nx-generator.ts` - Main calculation engine (90KB+)
   - Generates NX parametric expressions
   - Calculates all component dimensions and positions
@@ -108,6 +117,7 @@ npm run security:scan    # Scan for secrets in commits (pre-commit hook)
   - PMI (Product Manufacturing Information)
 
 **Structural Calculators:**
+
 - `cleat-calculator.ts` - Panel reinforcement cleats
   - Perimeter, intermediate, and splice cleats
   - Different rules for front/back vs side panels
@@ -128,6 +138,7 @@ npm run security:scan    # Scan for secrets in commits (pre-commit hook)
   - Minimizes material waste
 
 **Integration:**
+
 - `klimp-step-integration.ts` - Klimp 3D model integration (GLB format)
 - `lag-step-integration.ts` - Lag screw STEP file integration
 - `input-validation.ts` - User input validation with detailed error messages
@@ -136,24 +147,27 @@ npm run security:scan    # Scan for secrets in commits (pre-commit hook)
 ### Component Structure (`src/components/`)
 
 **3D Visualization:**
+
 - `CrateVisualizer.tsx` - Main Three.js visualization component
 - `KlimpModel.tsx` - Klimp fastener 3D models
 - `MarkingVisualizer.tsx` - Stencils and markings visualization
 - `ErrorBoundary.tsx` - Error handling for visualization
 
 **UI Components:**
+
 - `PlywoodPieceSelector.tsx` - Plywood sheet selection interface
 - `PlywoodSpliceVisualization.tsx` - Visual splice representation
 - `LumberCutList.tsx` - Cut list display
 - `MarkingsSection.tsx` - Markings configuration interface
 - `ScenarioSelector.tsx` - Pre-configured test scenarios
 - `ThemeToggle.tsx` / `ThemeProvider.tsx` - Dark/light mode
-- `ChangeTracker.tsx` - Track changes with GitHub issue linking
+- `ChangeTracker.tsx` - Track changes with version, commit, contributor, timestamp (issue badge removed)
 - `VisualChecklist.tsx` - Development workflow checklist
 
 ### API Routes (`src/app/api/`)
 
 All API routes are Edge Runtime compatible:
+
 - `calculate-crate/route.ts` - Main crate calculation endpoint
 - `nx-export/route.ts` - NX expression file generation
 - `plywood-optimization/route.ts` - Plywood layout optimization
@@ -165,11 +179,13 @@ All API routes are Edge Runtime compatible:
 ### Test Structure
 
 **Unit Tests:**
+
 - Located in `__tests__/` subdirectories next to source files
 - Run with Jest in jsdom environment
 - Coverage configured but thresholds set to 0 (no enforcement)
 
 **E2E Tests:**
+
 - Located in `tests/e2e/`
 - Run with Playwright
 - Test user workflows and visual rendering
@@ -185,6 +201,7 @@ All API routes are Edge Runtime compatible:
 ### Custom Slash Commands
 
 AutoCrate includes 12+ custom slash commands in `.claude/commands/`:
+
 - `/test` - Run complete test suite
 - `/build` - Production build verification
 - `/deploy` - Version bump and deploy
@@ -203,22 +220,27 @@ See `.claude/commands/*.md` for details on each command.
 ## Important Patterns & Conventions
 
 ### Constants Management
+
 - **ALL** hardcoded values must be in `crate-constants.ts`
 - Import constants rather than using magic numbers
 - Use exported utility functions for common calculations
 - Constants organized by category with clear JSDoc comments
 
 ### Assembly Hierarchy (STEP Export)
+
 The STEP generator creates a 4-level assembly structure:
+
 1. **Root**: AUTOCRATE CRATE ASSEMBLY
-2. **Top-level assemblies**: SHIPPING_BASE, CRATE_CAP, KLIMP_FASTENERS, STENCILS
+2. **Top-level assemblies**: SHIPPING_BASE, CRATE_CAP, STENCILS, FASTENERS
 3. **Sub-assemblies**: SKID_ASSEMBLY, FLOORBOARD_ASSEMBLY, panel assemblies
 4. **Parts**: Individual components with geometry
 
 Parts are grouped by geometry - identical components share one definition with multiple placements.
 
 ### Structural Calculation Order
+
 When modifying calculations in `nx-generator.ts`:
+
 1. Base dimensions (skids, floorboard, ground clearance)
 2. Panel dimensions (calculate all 5 panels)
 3. Plywood layout and splicing
@@ -229,14 +251,18 @@ When modifying calculations in `nx-generator.ts`:
 8. Markings and stencils
 
 ### Edge Runtime Compatibility
+
 Middleware and API routes must be Edge Runtime compatible:
+
 - No Node.js-specific APIs (fs, path, crypto.subtle exceptions)
 - Use Web Crypto API instead of Node crypto
 - Keep dependencies minimal
 - Test with `next build` to verify
 
 ### Lint-Staged Pre-commit Hooks
+
 Pre-commit runs on staged files:
+
 - TypeScript type checking via `scripts/run-tsc.js`
 - Jest tests for related files (with `--findRelatedTests`)
 - Prettier for JSON/MD/YAML files
@@ -244,12 +270,14 @@ Pre-commit runs on staged files:
 ## Common Development Tasks
 
 ### Adding a New Lumber Size
+
 1. Add to `LUMBER_DIMENSIONS` in `crate-constants.ts`
 2. Update `LUMBER_CATEGORIES` if it's for a specific use (skid, floorboard, cleat)
 3. Update UI if the size should appear in selectors
 4. Add tests for new size calculations
 
 ### Modifying Structural Calculations
+
 1. Check if constant should be in `crate-constants.ts`
 2. Update main calculation in `nx-generator.ts`
 3. Update corresponding calculator file if it exists (`cleat-calculator.ts`, etc.)
@@ -258,11 +286,13 @@ Pre-commit runs on staged files:
 6. Test with multiple scenarios using `ScenarioSelector`
 
 ### Adding a New Scenario Preset
+
 1. Add to `SCENARIO_PRESETS` array in `page.tsx`
 2. Include: id, name, description, product dimensions, clearances, allow3x4, lumberSizes, note
 3. Test scenario loads correctly and generates valid output
 
 ### Debugging 3D Visualization Issues
+
 1. Check browser console for Three.js errors
 2. Verify box coordinates are in inches (not mm)
 3. Check `CrateVisualizer.tsx` scale factor (0.1 for scene units)
@@ -270,6 +300,7 @@ Pre-commit runs on staged files:
 5. Inspect NXBox data structure in component props
 
 ### Working with Git
+
 - Main branch: `main`
 - Commit messages: Follow conventional commits style
 - Pre-commit hooks: Will run type check and related tests automatically
@@ -325,33 +356,40 @@ This creates an isolated worktree in `issues/124/` on branch `sbl-124`.
 ### Workflow Steps
 
 1. **Create GitHub Issue** (if not already created)
+
    ```bash
    gh issue create --title "Issue Title" --body "Issue description with acceptance criteria"
    ```
+
    - Capture the issue number from the output
    - Include clear acceptance criteria
    - Add appropriate labels if available
 
 2. **Create Branch and Make Changes**
+
    ```bash
    git checkout -b fix/issue-description
    # or
    git checkout -b feature/issue-description
    ```
+
    - Make all necessary code changes
    - Test thoroughly: `npm test`, `npm run build`
    - Fix any linting errors: `npm run lint`
    - Commit changes with descriptive messages
 
 3. **Push Branch**
+
    ```bash
    git push -u origin fix/issue-description
    ```
 
 4. **Create Pull Request**
+
    ```bash
    gh pr create --title "PR Title" --body "Description. Closes #<ISSUE_NUMBER>" --base main
    ```
+
    - Link PR to issue using `Closes #<ISSUE_NUMBER>`
    - Include summary of changes
    - List files changed
@@ -396,6 +434,7 @@ gh issue view 161  # Verify issue exists
 ```
 
 This workflow ensures:
+
 - All work is tracked in issues
 - Changes are reviewed via PRs
 - Issues auto-close when PRs are merged

@@ -131,43 +131,73 @@ export function ChangeTracker() {
       })
   }, [])
 
-  if (!metadata || !changeInfo) return null
+  if (!metadata) return null
 
-  const issueNumber = changeInfo.issueNumber
-  const hasIssueLink = issueNumber !== '0'
-  const issueLabel = hasIssueLink ? `Issue #${issueNumber}` : 'Issue #N/A'
-  const issueHref = hasIssueLink
-    ? `https://github.com/Shivam-Bhardwaj/AutoCrate/issues/${issueNumber}`
-    : undefined
   const contributor = metadata.updatedBy?.split('@')[0] ?? 'unknown'
   const formattedTimestamp = metadata.timestamp ? new Date(metadata.timestamp).toLocaleString() : null
 
-  const headerSegments: Array<{ id: string; node: JSX.Element }> = [
-    {
+  const headerSegments: Array<{ id: string; node: JSX.Element }> = []
+  
+  // Add issue number if available (first, as a prominent badge)
+  const issueNumber = changeInfo?.issueNumber || deriveIssueNumber(metadata)
+  if (issueNumber && issueNumber !== '0') {
+    const issueUrl = `https://github.com/Shivam-Bhardwaj/AutoCrate/issues/${issueNumber}`
+    headerSegments.push({
+      id: 'issue',
+      node: (
+        <a
+          href={issueUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800 flex-shrink-0 transition-colors"
+        >
+          Issue #{issueNumber}
+        </a>
+      )
+    })
+  }
+  
+  // Add title if available (from changeInfo or fallback to lastChange)
+  const title = changeInfo?.title || metadata.lastChange?.split('\n')[0]?.replace(/^(feat|fix|chore|docs|test|refactor|style|perf):\s*/i, '')?.trim() || ''
+  if (title) {
+    headerSegments.push({
       id: 'title',
       node: (
         <span className="font-medium text-gray-900 dark:text-gray-100 flex-shrink-0">
-          {changeInfo.title}
+          {title}
         </span>
       )
-    },
-    {
-      id: 'version',
-      node: (
-        <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">
-          v{metadata.version}
-        </span>
-      )
-    }
-  ]
+    })
+  }
+  
+  // Add version (always present)
+  headerSegments.push({
+    id: 'version',
+    node: (
+      <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">
+        v{metadata.version || '1.0.0'}
+      </span>
+    )
+  })
 
   if (metadata.lastCommit) {
+    // Create GitHub commit URL
+    const repoUrl = 'https://github.com/Shivam-Bhardwaj/AutoCrate'
+    const commitHash = metadata.fullCommitHash || metadata.lastCommit
+    const commitUrl = `${repoUrl}/commit/${commitHash}`
+    
     headerSegments.push({
       id: 'commit',
       node: (
-        <span className="text-gray-500 dark:text-gray-400 flex-shrink-0 font-mono">
+        <a
+          href={commitUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 flex-shrink-0 font-mono underline decoration-dotted underline-offset-2 transition-colors"
+          title={metadata.fullCommitHash ? `Full hash: ${metadata.fullCommitHash}` : `Commit: ${metadata.lastCommit}`}
+        >
           {metadata.lastCommit}
-        </span>
+        </a>
       )
     })
   }
@@ -192,31 +222,20 @@ export function ChangeTracker() {
     })
   }
 
+  // Don't render if no segments
+  if (headerSegments.length === 0) return null
+
   return (
-    <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-all duration-300">
+    <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-all duration-300" role="banner" aria-label="Change tracker">
       <div className="px-3 py-1.5">
         <div className="flex items-center gap-2 text-xs sm:text-sm whitespace-nowrap overflow-x-auto">
-          {/* Issue badge */}
-          {hasIssueLink ? (
-            <a
-              href={issueHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 flex-shrink-0"
-            >
-              <span className="font-mono">{issueLabel}</span>
-            </a>
-          ) : (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full flex-shrink-0">
-              <span className="font-mono">{issueLabel}</span>
-            </span>
-          )}
-
-          {headerSegments.map(segment => (
+          {headerSegments.map((segment, index) => (
             <Fragment key={segment.id}>
-              <span className="text-gray-400 dark:text-gray-600 flex-shrink-0" aria-hidden="true">
-                •
-              </span>
+              {index > 0 && (
+                <span className="text-gray-400 dark:text-gray-600 flex-shrink-0" aria-hidden="true">
+                  •
+                </span>
+              )}
               {segment.node}
             </Fragment>
           ))}

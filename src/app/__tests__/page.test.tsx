@@ -77,10 +77,18 @@ describe('Home Page', () => {
     await user.click(screen.getByRole('button', { name: 'Plywood Pieces' }))
     await user.click(await screen.findByTestId('toggle-piece'))
 
+    // Mock form submission for NX expressions download (now uses form submission)
+    const formSubmitSpy = jest.spyOn(HTMLFormElement.prototype, 'submit').mockImplementation(() => {})
     const createObjectURL = jest.spyOn(global.URL, 'createObjectURL')
-    await user.click(screen.getByRole('button', { name: 'Export NX' }))
-    await user.click(screen.getByRole('button', { name: 'Download STEP' }))
-    expect(createObjectURL).toHaveBeenCalledTimes(2)
+    
+    await user.click(screen.getByRole('button', { name: 'Export NX expressions file' }))
+    await user.click(screen.getByRole('button', { name: 'Download STEP file' }))
+    
+    // NX expressions now uses form submission, STEP still uses blob
+    expect(formSubmitSpy).toHaveBeenCalledTimes(1)
+    expect(createObjectURL).toHaveBeenCalledTimes(1)
+    
+    formSubmitSpy.mockRestore()
     createObjectURL.mockRestore()
   })
 

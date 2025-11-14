@@ -88,7 +88,7 @@ test.describe('AutoCrate NX Generator', () => {
     const downloadPromise = page.waitForEvent('download')
     await page.getByRole('button', { name: 'Export NX' }).click()
     const download = await downloadPromise
-    await expect(download.suggestedFilename()).toMatch(/crate_expressions.*\.txt/)
+    await expect(download.suggestedFilename()).toMatch(/crate_expressions.*\.exp/)
   })
 
   test('downloads STEP file on desktop', async ({ page }, testInfo) => {

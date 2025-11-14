@@ -66,7 +66,7 @@ describe('TutorialOverlay', () => {
       />
     )
 
-    expect(screen.getByText('Tutorial: Datum setup')).toBeInTheDocument()
+    expect(screen.getByText('Template Generator: Datum setup')).toBeInTheDocument()
     expect(screen.getByText('Set origin and datum planes.')).toBeInTheDocument()
 
     expect(screen.getByRole('button', { name: 'Prev' })).toBeDisabled()
