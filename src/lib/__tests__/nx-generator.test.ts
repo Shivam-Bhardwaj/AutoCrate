@@ -289,8 +289,8 @@ describe('NXGenerator', () => {
 
     const sideGroundClearance = expressions.get('side_panel_ground_clearance') || 0.25
     const cleatThickness = 0.75
-    const skidMidHeight = (expressions.get('skid_height') || 0) / 2
-    const sideExpectedZ = Math.max(sideGroundClearance + cleatThickness / 2, skidMidHeight)
+    // Side panel lag screws are positioned in the middle of the bottom cleat, not on the skid
+    const sideExpectedZ = sideGroundClearance + cleatThickness / 2
     const floorExpectedZ = (expressions.get('skid_height') || 0) + ((expressions.get('floorboard_thickness') || 0) / 2)
 
     const panelsToCheck = ['FRONT_PANEL', 'BACK_PANEL', 'LEFT_END_PANEL', 'RIGHT_END_PANEL']

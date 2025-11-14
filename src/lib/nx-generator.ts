@@ -1230,9 +1230,8 @@ export class NXGenerator {
     const bottomCleat = cleatLayout.cleats.find(c => c.orientation === 'horizontal' && c.position === 'bottom')
     const bottomCleatThickness = bottomCleat?.thickness ?? 0.75
     const groundClearance = this.getSidePanelGroundClearance()
-    const targetSkidMidHeight = skidHeight / 2
-    const cleatCenterZ = groundClearance + bottomCleatThickness / 2
-    const centerZ = Math.max(cleatCenterZ, targetSkidMidHeight)
+    // Position lag screws in the middle of the bottom cleat, not on the skid
+    const centerZ = groundClearance + bottomCleatThickness / 2
 
     rowPositions.forEach((centerY, index) => {
       const baseName = `${cleatLayout.panelName}_LAG_${index + 1}`
