@@ -188,7 +188,6 @@ export default function Home() {
   // Tutorial state
   const [tutorialActive, setTutorialActive] = useState(false)
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0)
-  const [tutorialMode, setTutorialMode] = useState<'parts' | 'assemblies'>('parts')
   const [activeTab, setActiveTab] = useState<'visualization' | 'expressions' | 'bom' | 'plywood' | 'lumber'>('visualization')
   const [activeScenarioId, setActiveScenarioId] = useState<string | null>('default')
   // Initialize all plywood pieces as visible by default
@@ -208,28 +207,22 @@ export default function Home() {
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const lumberCutList = useMemo(() => generator.generateCutList(), [generator])
   const tutorialSteps = useMemo(() => {
-    if (tutorialMode === 'assemblies') {
-      return buildAssemblyTutorial(generator, generator.getBoxes())
-    }
     return buildFullTutorial(generator, generator.getBoxes())
-  }, [generator, tutorialMode])
+  }, [generator])
   useEffect(() => {
     if (tutorialStepIndex > tutorialSteps.length - 1) {
       setTutorialStepIndex(Math.max(0, tutorialSteps.length - 1))
     }
   }, [tutorialSteps, tutorialStepIndex])
 
-  // Auto-enable tutorial via ?tutorial=1 or ?tutorial=assemblies
+  // Auto-enable tutorial via ?tutorial=1
   useEffect(() => {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(window.location.search)
     const tutorialParam = params.get('tutorial')
-    if (tutorialParam === '1' || tutorialParam === 'assemblies') {
+    if (tutorialParam === '1') {
       setTutorialActive(true)
       setTutorialStepIndex(0)
-      if (tutorialParam === 'assemblies') {
-        setTutorialMode('assemblies')
-      }
     }
   }, [])
 
@@ -640,24 +633,6 @@ export default function Home() {
           {/* Desktop actions */}
           <div className="hidden lg:flex items-center gap-2">
             <ThemeToggle />
-            {tutorialActive && (
-              <>
-                <label htmlFor="tutorial-mode-select" className="sr-only">
-                  Tutorial Mode
-                </label>
-                <select
-                  id="tutorial-mode-select"
-                  value={tutorialMode}
-                  onChange={(e) => { setTutorialMode(e.target.value as 'parts' | 'assemblies'); setTutorialStepIndex(0) }}
-                  className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                  title="Tutorial Mode"
-                  aria-label="Select tutorial mode"
-                >
-                  <option value="parts">Parts Tutorial</option>
-                  <option value="assemblies">Assembly Tutorial</option>
-                </select>
-              </>
-            )}
             <button
               onClick={() => { setTutorialActive(prev => !prev); setTutorialStepIndex(0) }}
               className={`px-3 py-1 text-sm rounded transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 ${tutorialActive ? 'bg-amber-600 text-white hover:bg-amber-700' : 'bg-amber-100 text-amber-900 hover:bg-amber-200'}`}
@@ -760,19 +735,6 @@ export default function Home() {
                   >
                     Docs
                   </a>
-                  {tutorialActive && (
-                    <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-2">
-                      <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Tutorial Mode</label>
-                      <select
-                        value={tutorialMode}
-                        onChange={(e) => { setTutorialMode(e.target.value as 'parts' | 'assemblies'); setTutorialStepIndex(0); setMobileMenuOpen(false); }}
-                        className="w-full px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                      >
-                        <option value="parts">Parts Tutorial</option>
-                        <option value="assemblies">Assembly Tutorial</option>
-                      </select>
-                    </div>
-                  )}
                   <button
                     onClick={() => { setTutorialActive(prev => !prev); setTutorialStepIndex(0); setMobileMenuOpen(false); }}
                     className={`w-full text-left px-4 py-2 text-sm ${tutorialActive ? 'bg-amber-600 text-white hover:bg-amber-700' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
