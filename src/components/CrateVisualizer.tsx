@@ -607,8 +607,8 @@ function boxMatchesPartName(box: NXBox, partName: string): boolean {
     // The part name from tutorial should match the box.name exactly
     // Normalize both names for comparison (handle variations in naming)
     const normalizeCleatName = (name: string): string => {
-      // Convert to lowercase and replace underscores/hyphens consistently
-      return name.toLowerCase().replace(/[-_]/g, '_').trim()
+      // Convert to lowercase, replace underscores/hyphens consistently, remove extra whitespace
+      return name.toLowerCase().replace(/[-_]/g, '_').replace(/\s+/g, '_').trim()
     }
     
     const normalizedPart = normalizeCleatName(partLower)
@@ -622,6 +622,21 @@ function boxMatchesPartName(box: NXBox, partName: string): boolean {
     // If part name is just "cleat" (too generic), don't match anything
     if (normalizedPart === 'cleat') {
       return false
+    }
+    
+    // Special handling for horizontal intermediate cleats (CLEAT_H_INTER)
+    // These have IDs like FRONT_PANEL_CLEAT_H_INTER_0_0
+    // The exact match above should work, but if there are any subtle differences,
+    // try matching by extracting the cleat identifier suffix
+    if (normalizedPart.includes('h_inter') && normalizedBox.includes('h_inter')) {
+      // Extract the suffix starting from "cleat_h_inter" to the end
+      // This handles cases where panel names might differ slightly
+      const partSuffix = normalizedPart.substring(normalizedPart.indexOf('cleat'))
+      const boxSuffix = normalizedBox.substring(normalizedBox.indexOf('cleat'))
+      
+      if (partSuffix === boxSuffix && partSuffix.length > 10) {
+        return true
+      }
     }
     
     // For cleat names, we need to match the full identifier
