@@ -132,8 +132,8 @@ export default function TutorialOverlay({
   if (!active || !step) return null
 
   return (
-    <div className="absolute top-3 left-3 bottom-3 w-[360px] max-w-[calc(100vw-24px)] z-50 pointer-events-auto">
-      <div className="bg-white/95 dark:bg-gray-900/95 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 h-full max-h-[min(60vh,440px)] flex flex-col overflow-hidden min-w-0">
+    <div className="absolute top-3 left-3 bottom-2 w-[360px] max-w-[calc(100vw-24px)] z-50 pointer-events-auto">
+      <div className="bg-white/95 dark:bg-gray-900/95 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 h-full max-h-[min(85vh,800px)] flex flex-col overflow-hidden min-w-0">
         {/* Header - always visible */}
         <div className="flex items-center justify-between mb-1 flex-shrink-0">
           <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
