@@ -115,7 +115,7 @@ export function Klimp3D({
 export function LagScrew3D({
   position = [0, 0, 0],
   rotation = [0, 0, 0],
-  scale = 1,
+  scale = 0.1,
   length = 3.0,
   isHoveredPart = false,
   hasHoveredPart = false
@@ -163,7 +163,7 @@ export function LagScrew3D({
 export function Washer3D({
   position = [0, 0, 0],
   rotation = [0, 0, 0],
-  scale = 1,
+  scale = 0.1,
   isHoveredPart = false,
   hasHoveredPart = false
 }: Hardware3DProps) {

@@ -1344,7 +1344,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                   <LagScrew3D
                     position={position}
                     rotation={[Math.PI / 2, 0, 0]}
-                    scale={1}
+                    scale={0.1}
                     length={2.5}
                     isHoveredPart={isHoveredPart}
                     hasHoveredPart={hasHoveredPart}
@@ -1359,7 +1359,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                 <group key={`${box.name}-${index}`}>
                   <Washer3D
                     position={position}
-                    scale={1}
+                    scale={0.1}
                     isHoveredPart={isHoveredPart}
                     hasHoveredPart={hasHoveredPart}
                   />
