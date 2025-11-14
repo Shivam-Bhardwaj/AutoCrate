@@ -158,24 +158,24 @@ export default function TutorialOverlay({
               <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Part Names</div>
               <div className="space-y-1.5 pb-2">
                 <div className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/40">
-                  <div className="px-2 pb-2 grid grid-cols-1 sm:grid-cols-2 gap-1 items-stretch max-h-[300px] overflow-y-auto">
+                  <div className="px-2 pb-2 flex flex-col gap-1.5 max-h-[500px] overflow-y-auto">
                     {step.partNames.map(partName => (
                       <button
                         key={partName}
                         onClick={() => handleCopy(partName)}
                         aria-label={partName}
                         title={`Copy ${partName}`}
-                        className={`px-2 py-1.5 text-[10px] rounded border bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors text-left h-full flex items-center justify-between relative ${
+                        className={`px-3 py-2 text-xs rounded border bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors text-left w-full flex items-center justify-between relative ${
                           copiedExpression === partName
                             ? 'border-emerald-500 dark:border-emerald-400 shadow-inner bg-emerald-50/70 dark:bg-emerald-900/40'
                             : 'border-gray-300 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-gray-800'
                         }`}
                       >
-                        <span className="block font-medium leading-tight pr-8 truncate">
+                        <span className="block font-medium leading-tight pr-12 break-all">
                           {partName}
                         </span>
                         {copiedExpression === partName && (
-                          <span className="absolute top-1 right-1 text-[8px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300 whitespace-nowrap">
+                          <span className="absolute top-2 right-2 text-[9px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300 whitespace-nowrap">
                             Copied
                           </span>
                         )}
