@@ -157,7 +157,7 @@ export default function TutorialOverlay({
             <div className="mb-2 flex flex-col">
               <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">Part Names</div>
               <div className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/40">
-                <div className="px-2 py-1 flex flex-col gap-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+                <div className="px-2 py-1 flex flex-col gap-1">
                   {step.partNames.map(partName => (
                     <button
                       key={partName}
