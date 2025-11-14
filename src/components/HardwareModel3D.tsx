@@ -115,7 +115,7 @@ export function Klimp3D({
 export function LagScrew3D({
   position = [0, 0, 0],
   rotation = [0, 0, 0],
-  scale = 0.1,
+  scale = 1,
   length = 3.0,
   isHoveredPart = false,
   hasHoveredPart = false
@@ -138,11 +138,13 @@ export function LagScrew3D({
 
   const opacity = hasHoveredPart && !isHoveredPart ? 0.2 : 1
 
+  // Position is already transformed from NX to Three.js coordinates (includes scaling)
+  // Only apply geometry scale, not position scaling
   return (
     <mesh
       geometry={geometry}
       material={material}
-      position={position.map(p => p * scale) as [number, number, number]}
+      position={position}
       rotation={rotation}
       scale={scale}
       castShadow
@@ -161,7 +163,7 @@ export function LagScrew3D({
 export function Washer3D({
   position = [0, 0, 0],
   rotation = [0, 0, 0],
-  scale = 0.1,
+  scale = 1,
   isHoveredPart = false,
   hasHoveredPart = false
 }: Hardware3DProps) {
@@ -183,11 +185,13 @@ export function Washer3D({
 
   const opacity = hasHoveredPart && !isHoveredPart ? 0.2 : 1
 
+  // Position is already transformed from NX to Three.js coordinates (includes scaling)
+  // Only apply geometry scale, not position scaling
   return (
     <mesh
       geometry={geometry}
       material={material}
-      position={position.map(p => p * scale) as [number, number, number]}
+      position={position}
       rotation={rotation}
       scale={scale}
       castShadow

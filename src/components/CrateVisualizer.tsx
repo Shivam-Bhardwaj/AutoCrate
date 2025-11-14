@@ -10,6 +10,7 @@ import { MarkingVisualizer } from './MarkingVisualizer'
 import { UI_CONSTANTS } from '@/lib/crate-constants'
 import { KlimpModel } from './KlimpModel'
 import { LagScrew3D, Washer3D } from './HardwareModel3D'
+import { nxToThreeJS, nxCenter } from '@/lib/coordinate-transform'
 
 type ComponentVisibility = {
   skids: boolean
@@ -1335,18 +1336,15 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                 />
               )
             } else if (box.type === 'hardware' && (box.name?.toLowerCase().includes('lag') || box.name?.toLowerCase().includes('screw'))) {
-              // Render lag screw at box position
-              const center = {
-                x: (box.point1.x + box.point2.x) / 2,
-                y: (box.point1.y + box.point2.y) / 2,
-                z: (box.point1.z + box.point2.z) / 2,
-              }
+              // Render lag screw at box position using proper coordinate transformation
+              const center = nxCenter(box.point1, box.point2)
+              const position = nxToThreeJS(center)
               return (
                 <group key={`${box.name}-${index}`}>
                   <LagScrew3D
-                    position={[center.x, center.y, center.z]}
+                    position={position}
                     rotation={[Math.PI / 2, 0, 0]}
-                    scale={0.1}
+                    scale={1}
                     length={2.5}
                     isHoveredPart={isHoveredPart}
                     hasHoveredPart={hasHoveredPart}
@@ -1354,17 +1352,14 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                 </group>
               )
             } else if (box.type === 'hardware' && box.name?.toLowerCase().includes('washer')) {
-              // Render washer at box position
-              const center = {
-                x: (box.point1.x + box.point2.x) / 2,
-                y: (box.point1.y + box.point2.y) / 2,
-                z: (box.point1.z + box.point2.z) / 2,
-              }
+              // Render washer at box position using proper coordinate transformation
+              const center = nxCenter(box.point1, box.point2)
+              const position = nxToThreeJS(center)
               return (
                 <group key={`${box.name}-${index}`}>
                   <Washer3D
-                    position={[center.x, center.y, center.z]}
-                    scale={0.1}
+                    position={position}
+                    scale={1}
                     isHoveredPart={isHoveredPart}
                     hasHoveredPart={hasHoveredPart}
                   />
