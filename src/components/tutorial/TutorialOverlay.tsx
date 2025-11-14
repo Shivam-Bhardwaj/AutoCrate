@@ -112,51 +112,72 @@ export default function TutorialOverlay({
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null)
   const [partNamesExpanded, setPartNamesExpanded] = useState<boolean>(true)
   const [expandedPartGroupId, setExpandedPartGroupId] = useState<string | null>(null)
+  const [expandedChildGroupIds, setExpandedChildGroupIds] = useState<Set<string>>(new Set())
 
   type PartNameGroup = {
     id: string
     title: string
     items: string[]
+    children?: PartNameGroup[]
   }
 
   const partNameGroups: PartNameGroup[] = useMemo(() => {
     if (!step || !step.partNames || step.partNames.length === 0) return []
 
-    const groups = new Map<string, PartNameGroup>()
+    const topLevelGroups = new Map<string, PartNameGroup>()
+    const childGroups = new Map<string, PartNameGroup>()
 
-    const ensureGroup = (id: string, title: string) => {
-      if (!groups.has(id)) {
-        groups.set(id, { id, title, items: [] })
+    const ensureTopLevelGroup = (id: string, title: string) => {
+      if (!topLevelGroups.has(id)) {
+        topLevelGroups.set(id, { id, title, items: [], children: [] })
+      } else if (title && !topLevelGroups.get(id)!.title) {
+        // Update title if it was empty and we have a title now
+        topLevelGroups.get(id)!.title = title
       }
-      return groups.get(id)!
+      return topLevelGroups.get(id)!
     }
 
-    const getGroupForPart = (nameRaw: string): PartNameGroup | null => {
+    const ensureChildGroup = (parentId: string, childId: string, childTitle: string) => {
+      const key = `${parentId}::${childId}`
+      if (!childGroups.has(key)) {
+        const child = { id: childId, title: childTitle, items: [] }
+        childGroups.set(key, child)
+        const parent = ensureTopLevelGroup(parentId, '')
+        if (!parent.children) parent.children = []
+        parent.children.push(child)
+      }
+      return childGroups.get(key)!
+    }
+
+    const getGroupForPart = (nameRaw: string): { parentId: string; childId?: string; childTitle?: string } | null => {
       const name = nameRaw.toLowerCase()
 
-      // SHIPPING_BASE_ASSEMBLY (all skid and floorboard parts)
-      if (name === 'skid' || /^floorboard_\d+$/i.test(name)) {
-        return ensureGroup('shipping_base', 'SHIPPING_BASE_ASSEMBLY')
+      // SHIPPING_BASE_ASSEMBLY with nested sub-assemblies
+      if (name === 'skid') {
+        return { parentId: 'shipping_base', childId: 'skid_assembly', childTitle: 'SKID_ASSEMBLY' }
+      }
+      if (/^floorboard_\d+$/i.test(name)) {
+        return { parentId: 'shipping_base', childId: 'floorboard_assembly', childTitle: 'FLOORBOARD_ASSEMBLY' }
       }
 
-      // CRATE_CAP_ASSEMBLY (all panel parts: plywood + cleats)
-      if (
-        name.startsWith('front_end_panel_') ||
-        name.startsWith('front_panel_') ||
-        name.startsWith('back_end_panel_') ||
-        name.startsWith('back_panel_') ||
-        name.startsWith('left_end_panel_') ||
-        name.startsWith('left_side_panel_') ||
-        name.startsWith('left_panel_') ||
-        name.startsWith('right_end_panel_') ||
-        name.startsWith('right_side_panel_') ||
-        name.startsWith('right_panel_') ||
-        name.startsWith('top_panel_')
-      ) {
-        return ensureGroup('crate_cap', 'CRATE_CAP_ASSEMBLY')
+      // CRATE_CAP_ASSEMBLY with nested panel assemblies
+      if (name.startsWith('front_end_panel_') || name.startsWith('front_panel_')) {
+        return { parentId: 'crate_cap', childId: 'front_end_panel_assembly', childTitle: 'FRONT_END_PANEL_ASSEMBLY' }
+      }
+      if (name.startsWith('back_end_panel_') || name.startsWith('back_panel_')) {
+        return { parentId: 'crate_cap', childId: 'back_end_panel_assembly', childTitle: 'BACK_END_PANEL_ASSEMBLY' }
+      }
+      if (name.startsWith('left_end_panel_') || name.startsWith('left_side_panel_') || name.startsWith('left_panel_')) {
+        return { parentId: 'crate_cap', childId: 'left_side_panel_assembly', childTitle: 'LEFT_SIDE_PANEL_ASSEMBLY' }
+      }
+      if (name.startsWith('right_end_panel_') || name.startsWith('right_side_panel_') || name.startsWith('right_panel_')) {
+        return { parentId: 'crate_cap', childId: 'right_side_panel_assembly', childTitle: 'RIGHT_SIDE_PANEL_ASSEMBLY' }
+      }
+      if (name.startsWith('top_panel_')) {
+        return { parentId: 'crate_cap', childId: 'top_panel_assembly', childTitle: 'TOP_PANEL_ASSEMBLY' }
       }
 
-      // FASTENERS (klimps, screws, nuts, bolts, washers)
+      // FASTENERS (no nesting)
       if (
         name.includes('klimp') ||
         name.includes('screw') ||
@@ -165,35 +186,53 @@ export default function TutorialOverlay({
         name.includes('washer') ||
         name.includes('fastener')
       ) {
-        return ensureGroup('fasteners', 'FASTENERS')
+        return { parentId: 'fasteners' }
       }
 
-      // DECALS (stencils/markings)
+      // DECALS (no nesting)
       if (name.includes('decal') || name.includes('stencil')) {
-        return ensureGroup('decals', 'DECALS')
+        return { parentId: 'decals' }
       }
 
       // If we get here, the part name doesn't match any known pattern
-      // This shouldn't happen in a well-formed template - log warning and skip
       console.warn(`Unmatched part name in tutorial: ${nameRaw}`)
-      return null // Return null to skip this part
+      return null
     }
 
+    // Set top-level group titles
+    ensureTopLevelGroup('shipping_base', 'SHIPPING_BASE_ASSEMBLY')
+    ensureTopLevelGroup('crate_cap', 'CRATE_CAP_ASSEMBLY')
+    ensureTopLevelGroup('fasteners', 'FASTENERS')
+    ensureTopLevelGroup('decals', 'DECALS')
+
     step.partNames.forEach(partName => {
-      const group = getGroupForPart(partName)
-      if (group) {
-        group.items.push(partName)
+      const groupInfo = getGroupForPart(partName)
+      if (groupInfo) {
+        if (groupInfo.childId && groupInfo.childTitle) {
+          // Ensure parent group exists first (title will be set below)
+          ensureTopLevelGroup(groupInfo.parentId, '')
+          // Add to child group
+          const childGroup = ensureChildGroup(groupInfo.parentId, groupInfo.childId, groupInfo.childTitle)
+          childGroup.items.push(partName)
+        } else {
+          // Add directly to top-level group (title will be set below)
+          const topGroup = ensureTopLevelGroup(groupInfo.parentId, '')
+          topGroup.items.push(partName)
+        }
       }
     })
 
-    // Return only groups that have items, sorted in the correct order:
+    // Return only top-level groups that have items or children with items, sorted in the correct order:
     // 1. SHIPPING_BASE_ASSEMBLY, 2. CRATE_CAP_ASSEMBLY, 3. FASTENERS, 4. DECALS
     const order = ['shipping_base', 'crate_cap', 'fasteners', 'decals']
-    const groupArray = Array.from(groups.values()).filter(group => group.items.length > 0)
+    const groupArray = Array.from(topLevelGroups.values()).filter(group => {
+      const hasItems = group.items.length > 0
+      const hasChildrenWithItems = group.children?.some(child => child.items.length > 0) ?? false
+      return hasItems || hasChildrenWithItems
+    })
     return groupArray.sort((a, b) => {
       const aIndex = order.indexOf(a.id)
       const bIndex = order.indexOf(b.id)
-      // If both are in order, sort by order; otherwise put ordered items first
       if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
       if (aIndex !== -1) return -1
       if (bIndex !== -1) return 1
@@ -210,6 +249,7 @@ export default function TutorialOverlay({
     // Reset part names dropdown and default expanded group when step changes or overlay toggles
     setPartNamesExpanded(true)
     setExpandedPartGroupId(partNameGroups[0]?.id ?? null)
+    setExpandedChildGroupIds(new Set())
   }, [active, stepIndex, partNameGroups])
 
   useEffect(() => {
@@ -265,6 +305,7 @@ export default function TutorialOverlay({
                   <div className="px-2 pb-2 flex flex-col gap-1 overflow-y-auto flex-1">
                     {partNameGroups.map(group => {
                       const isExpanded = expandedPartGroupId === group.id
+                      const hasChildren = group.children && group.children.length > 0
                       return (
                         <div
                           key={group.id}
@@ -286,7 +327,68 @@ export default function TutorialOverlay({
                           </button>
                           {isExpanded && (
                             <div className="px-2 pb-2 flex flex-col gap-1">
-                              {group.items.map(partName => (
+                              {/* Render child groups if they exist */}
+                              {hasChildren && group.children!.map(childGroup => {
+                                const childId = `${group.id}::${childGroup.id}`
+                                const isChildExpanded = expandedChildGroupIds.has(childId)
+                                return (
+                                  <div
+                                    key={childGroup.id}
+                                    className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/30 ml-2"
+                                  >
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setExpandedChildGroupIds(prev => {
+                                          const next = new Set(prev)
+                                          if (isChildExpanded) {
+                                            next.delete(childId)
+                                          } else {
+                                            next.add(childId)
+                                          }
+                                          return next
+                                        })
+                                      }}
+                                      className="w-full flex items-center justify-between px-3 py-1.5 text-left transition-colors hover:bg-gray-100/70 dark:hover:bg-gray-800/70"
+                                    >
+                                      <span className="text-[9px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
+                                        {childGroup.title}
+                                      </span>
+                                      <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                                        {isChildExpanded ? '−' : '+'}
+                                      </span>
+                                    </button>
+                                    {isChildExpanded && (
+                                      <div className="px-2 pb-2 flex flex-col gap-1">
+                                        {childGroup.items.map(partName => (
+                                          <button
+                                            key={partName}
+                                            onClick={() => handleCopy(partName)}
+                                            aria-label={partName}
+                                            title={`Copy ${partName}`}
+                                            className={`px-3 py-1.5 text-xs rounded border bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors text-left w-full flex items-center justify-between relative flex-shrink-0 ${
+                                              copiedExpression === partName
+                                                ? 'border-emerald-500 dark:border-emerald-400 shadow-inner bg-emerald-50/70 dark:bg-emerald-900/40'
+                                                : 'border-gray-300 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-gray-800'
+                                            }`}
+                                          >
+                                            <span className="block font-medium leading-tight pr-12 break-all">
+                                              {partName}
+                                            </span>
+                                            {copiedExpression === partName && (
+                                              <span className="absolute top-1.5 right-2 text-[9px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300 whitespace-nowrap">
+                                                Copied
+                                              </span>
+                                            )}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                )
+                              })}
+                              {/* Render direct items if no children or if there are direct items */}
+                              {(!hasChildren || group.items.length > 0) && group.items.map(partName => (
                                 <button
                                   key={partName}
                                   onClick={() => handleCopy(partName)}
