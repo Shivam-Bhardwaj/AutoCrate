@@ -626,16 +626,57 @@ function boxMatchesPartName(box: NXBox, partName: string): boolean {
     
     // Special handling for horizontal intermediate cleats (CLEAT_H_INTER)
     // These have IDs like FRONT_PANEL_CLEAT_H_INTER_0_0
-    // The exact match above should work, but if there are any subtle differences,
-    // try matching by extracting the cleat identifier suffix
+    // Match by extracting the cleat identifier suffix (everything from "cleat" onwards)
     if (normalizedPart.includes('h_inter') && normalizedBox.includes('h_inter')) {
-      // Extract the suffix starting from "cleat_h_inter" to the end
-      // This handles cases where panel names might differ slightly
-      const partSuffix = normalizedPart.substring(normalizedPart.indexOf('cleat'))
-      const boxSuffix = normalizedBox.substring(normalizedBox.indexOf('cleat'))
+      // Find the position of "cleat" in both strings
+      const partCleatIndex = normalizedPart.indexOf('cleat')
+      const boxCleatIndex = normalizedBox.indexOf('cleat')
       
-      if (partSuffix === boxSuffix && partSuffix.length > 10) {
-        return true
+      if (partCleatIndex >= 0 && boxCleatIndex >= 0) {
+        // Extract suffix starting from "cleat" to the end
+        const partSuffix = normalizedPart.substring(partCleatIndex)
+        const boxSuffix = normalizedBox.substring(boxCleatIndex)
+        
+        // Match if suffixes are identical (handles cases where panel names might differ)
+        if (partSuffix === boxSuffix && partSuffix.includes('h_inter')) {
+          return true
+        }
+        
+        // Also try matching the full cleat identifier pattern: cleat_h_inter_X_Y
+        // Extract the numeric identifiers
+        const partMatch = normalizedPart.match(/cleat_h_inter_(\d+)_(\d+)/)
+        const boxMatch = normalizedBox.match(/cleat_h_inter_(\d+)_(\d+)/)
+        
+        if (partMatch && boxMatch) {
+          const partRow = partMatch[1]
+          const partIndex = partMatch[2]
+          const boxRow = boxMatch[1]
+          const boxIndex = boxMatch[2]
+          
+          // Match if row and index match
+          if (partRow === boxRow && partIndex === boxIndex) {
+            // Also check that panel names match (extract panel name before "cleat")
+            const partPanel = normalizedPart.substring(0, partCleatIndex).trim()
+            const boxPanel = normalizedBox.substring(0, boxCleatIndex).trim()
+            
+            // Normalize panel names for comparison (handle variations like front_panel vs front_end_panel)
+            const normalizePanelName = (panel: string): string => {
+              return panel
+                .replace(/^front_end_panel$|^front_panel$/, 'front_panel')
+                .replace(/^back_end_panel$|^back_panel$/, 'back_panel')
+                .replace(/^left_end_panel$|^left_side_panel$|^left_panel$/, 'left_panel')
+                .replace(/^right_end_panel$|^right_side_panel$|^right_panel$/, 'right_panel')
+                .replace(/^top_panel$/, 'top_panel')
+            }
+            
+            const normalizedPartPanel = normalizePanelName(partPanel)
+            const normalizedBoxPanel = normalizePanelName(boxPanel)
+            
+            if (normalizedPartPanel === normalizedBoxPanel || normalizedPartPanel === '' || normalizedBoxPanel === '') {
+              return true
+            }
+          }
+        }
       }
     }
     
