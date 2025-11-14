@@ -3,7 +3,7 @@ import { KlimpModel, KlimpSymbolic } from '../KlimpModel'
 import { NXBox } from '@/lib/nx-generator'
 import { Canvas } from '@react-three/fiber'
 
-// Mock useGLTF
+// Mock useGLTF and Edges
 jest.mock('@react-three/drei', () => {
   const useGLTF = jest.fn(() => ({
     scene: {
@@ -15,7 +15,10 @@ jest.mock('@react-three/drei', () => {
 
   ;(useGLTF as unknown as { preload: jest.Mock }).preload = jest.fn()
 
-  return { useGLTF }
+  // Mock Edges component used by VisualKlimp
+  const Edges = jest.fn(() => null)
+
+  return { useGLTF, Edges }
 })
 
 const mockKlimpBox: NXBox = {
