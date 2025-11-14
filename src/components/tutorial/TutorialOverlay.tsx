@@ -18,6 +18,7 @@ export type TutorialOverlayProps = {
   onPrev: () => void
   onNext: () => void
   onCopy?: (text: string) => void
+  onPartHover?: (partName: string | null) => void
 }
 
 export default function TutorialOverlay({
@@ -28,6 +29,7 @@ export default function TutorialOverlay({
   onPrev,
   onNext,
   onCopy,
+  onPartHover,
 }: TutorialOverlayProps) {
   const [copiedExpression, setCopiedExpression] = useState<string | null>(null)
   const clearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -364,6 +366,8 @@ export default function TutorialOverlay({
                                           <button
                                             key={partName}
                                             onClick={() => handleCopy(partName)}
+                                            onMouseEnter={() => onPartHover?.(partName)}
+                                            onMouseLeave={() => onPartHover?.(null)}
                                             aria-label={partName}
                                             title={`Copy ${partName}`}
                                             className={`px-3 py-1.5 text-xs rounded border bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors text-left w-full flex items-center justify-between relative flex-shrink-0 ${
@@ -392,6 +396,8 @@ export default function TutorialOverlay({
                                 <button
                                   key={partName}
                                   onClick={() => handleCopy(partName)}
+                                  onMouseEnter={() => onPartHover?.(partName)}
+                                  onMouseLeave={() => onPartHover?.(null)}
                                   aria-label={partName}
                                   title={`Copy ${partName}`}
                                   className={`px-3 py-1.5 text-xs rounded border bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors text-left w-full flex items-center justify-between relative flex-shrink-0 ${
