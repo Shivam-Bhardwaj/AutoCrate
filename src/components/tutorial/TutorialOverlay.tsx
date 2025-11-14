@@ -134,12 +134,12 @@ export default function TutorialOverlay({
     const getGroupForPart = (nameRaw: string): PartNameGroup | null => {
       const name = nameRaw.toLowerCase()
 
-      // SHIPPING_BASE assembly (all skid and floorboard parts)
+      // SHIPPING_BASE_ASSEMBLY (all skid and floorboard parts)
       if (name === 'skid' || /^floorboard_\d+$/i.test(name)) {
-        return ensureGroup('shipping_base', 'SHIPPING_BASE')
+        return ensureGroup('shipping_base', 'SHIPPING_BASE_ASSEMBLY')
       }
 
-      // CRATE_CAP assembly (all panel parts: plywood + cleats)
+      // CRATE_CAP_ASSEMBLY (all panel parts: plywood + cleats)
       if (
         name.startsWith('front_end_panel_') ||
         name.startsWith('front_panel_') ||
@@ -153,7 +153,7 @@ export default function TutorialOverlay({
         name.startsWith('right_panel_') ||
         name.startsWith('top_panel_')
       ) {
-        return ensureGroup('crate_cap', 'CRATE_CAP')
+        return ensureGroup('crate_cap', 'CRATE_CAP_ASSEMBLY')
       }
 
       // FASTENERS (klimps, screws, nuts, bolts, washers)
@@ -187,7 +187,7 @@ export default function TutorialOverlay({
     })
 
     // Return only groups that have items, sorted in the correct order:
-    // 1. SHIPPING_BASE, 2. CRATE_CAP, 3. FASTENERS, 4. DECALS
+    // 1. SHIPPING_BASE_ASSEMBLY, 2. CRATE_CAP_ASSEMBLY, 3. FASTENERS, 4. DECALS
     const order = ['shipping_base', 'crate_cap', 'fasteners', 'decals']
     const groupArray = Array.from(groups.values()).filter(group => group.items.length > 0)
     return groupArray.sort((a, b) => {
