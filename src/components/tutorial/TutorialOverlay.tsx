@@ -110,6 +110,7 @@ export default function TutorialOverlay({
   }, [step])
 
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null)
+  const [partNamesExpanded, setPartNamesExpanded] = useState<boolean>(true)
 
   useEffect(() => {
     if (clearTimerRef.current) {
@@ -117,6 +118,8 @@ export default function TutorialOverlay({
       clearTimerRef.current = null
     }
     setCopiedExpression(null)
+    // Reset part names dropdown when step changes or overlay toggles
+    setPartNamesExpanded(true)
   }, [active, stepIndex])
 
   useEffect(() => {
@@ -155,34 +158,49 @@ export default function TutorialOverlay({
 
           {step.partNames && step.partNames.length > 0 && (
             <div className="mb-2 flex flex-col flex-1 min-h-0 flex-shrink">
-              <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1 flex-shrink-0">Part Names</div>
-              <div className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/40 flex-1 min-h-0 flex flex-col">
-                <div className="px-2 py-1 flex flex-col gap-1 overflow-y-auto flex-1">
-                  {step.partNames.map(partName => (
-                    <button
-                      key={partName}
-                      onClick={() => handleCopy(partName)}
-                      aria-label={partName}
-                      title={`Copy ${partName}`}
-                      className={`px-3 py-1.5 text-xs rounded border bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors text-left w-full flex items-center justify-between relative flex-shrink-0 ${
-                        copiedExpression === partName
-                          ? 'border-emerald-500 dark:border-emerald-400 shadow-inner bg-emerald-50/70 dark:bg-emerald-900/40'
-                          : 'border-gray-300 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-gray-800'
-                      }`}
-                    >
-                      <span className="block font-medium leading-tight pr-12 break-all">
-                        {partName}
-                      </span>
-                      {copiedExpression === partName && (
-                        <span className="absolute top-1.5 right-2 text-[9px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300 whitespace-nowrap">
-                          Copied
+              <div className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/40 flex flex-col flex-1 min-h-0">
+                <button
+                  type="button"
+                  onClick={() => setPartNamesExpanded(prev => !prev)}
+                  className="w-full flex items-center justify-between px-3 py-2 text-left transition-colors hover:bg-gray-100/70 dark:hover:bg-gray-800/70 flex-shrink-0"
+                >
+                  <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">
+                    Part Names
+                  </span>
+                  <span className="text-[12px] text-gray-500 dark:text-gray-400">
+                    {partNamesExpanded ? '−' : '+'}
+                  </span>
+                </button>
+                {partNamesExpanded && (
+                  <div className="px-2 pb-2 flex flex-col gap-1 overflow-y-auto flex-1">
+                    {step.partNames.map(partName => (
+                      <button
+                        key={partName}
+                        onClick={() => handleCopy(partName)}
+                        aria-label={partName}
+                        title={`Copy ${partName}`}
+                        className={`px-3 py-1.5 text-xs rounded border bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors text-left w-full flex items-center justify-between relative flex-shrink-0 ${
+                          copiedExpression === partName
+                            ? 'border-emerald-500 dark:border-emerald-400 shadow-inner bg-emerald-50/70 dark:bg-emerald-900/40'
+                            : 'border-gray-300 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-gray-800'
+                        }`}
+                      >
+                        <span className="block font-medium leading-tight pr-12 break-all">
+                          {partName}
                         </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
+                        {copiedExpression === partName && (
+                          <span className="absolute top-1.5 right-2 text-[9px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300 whitespace-nowrap">
+                            Copied
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="text-[9px] text-gray-500 dark:text-gray-400 mt-1 leading-tight flex-shrink-0">Click any part name to copy it to your clipboard.</div>
+              <div className="text-[9px] text-gray-500 dark:text-gray-400 mt-1 leading-tight flex-shrink-0">
+                Click any part name to copy it to your clipboard.
+              </div>
               <div
                 className={`transition-opacity duration-150 text-[9px] mt-1 px-2 py-1 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-200 leading-tight flex-shrink-0 ${
                   copiedExpression ? 'opacity-100' : 'opacity-0 pointer-events-none'
