@@ -1081,7 +1081,16 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
     }
 
     return boxes
-      .filter(box => !box.suppressed && !hiddenComponents.has(box.name) && isComponentVisible(box))
+      .filter(box => {
+        // Hide lag screws, klimps, and decals from view
+        if (box.type === 'klimp') return false
+        if (box.type === 'hardware' && (box.name?.toLowerCase().includes('lag') || box.name?.toLowerCase().includes('screw'))) return false
+        const metadataLower = (box.metadata || '').toLowerCase()
+        if (metadataLower.includes('decal') || metadataLower.includes('stencil')) return false
+        
+        // Apply other filters
+        return !box.suppressed && !hiddenComponents.has(box.name) && isComponentVisible(box)
+      })
       .sort((a, b) => {
         const priority: { [key: string]: number } = {
           'skid': 1,
