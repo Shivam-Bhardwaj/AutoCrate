@@ -601,34 +601,34 @@ function boxMatchesPartName(box: NXBox, partName: string): boolean {
     }
   }
   
-  // Match cleats (e.g., front_end_panel_cleat_...)
+  // Match cleats - require exact name match since cleats have unique IDs
   if (partLower.includes('cleat') && box.type === 'cleat') {
-    // Check if panel names match
-    const panelMatch = partLower.match(/(front_end_panel|back_end_panel|left_side_panel|right_side_panel|top_panel|front_panel|back_panel|left_end_panel|right_end_panel|left_panel|right_panel)_cleat/)
-    if (panelMatch) {
-      const panelName = panelMatch[1]
-      const panelNameMap: Record<string, string> = {
-        'front_end_panel': 'FRONT_PANEL',
-        'front_panel': 'FRONT_PANEL',
-        'back_end_panel': 'BACK_PANEL',
-        'back_panel': 'BACK_PANEL',
-        'left_side_panel': 'LEFT_END_PANEL',
-        'left_end_panel': 'LEFT_END_PANEL',
-        'left_panel': 'LEFT_END_PANEL',
-        'right_side_panel': 'RIGHT_END_PANEL',
-        'right_end_panel': 'RIGHT_END_PANEL',
-        'right_panel': 'RIGHT_END_PANEL',
-        'top_panel': 'TOP_PANEL'
-      }
-      const expectedPanelName = panelNameMap[panelName]
-      if (box.panelName === expectedPanelName) {
-        return true
-      }
+    // For cleats, we need exact name matching since each cleat has a unique ID
+    // The part name from tutorial should match the box.name exactly
+    // Normalize both names for comparison (handle variations in naming)
+    const normalizeCleatName = (name: string): string => {
+      // Convert to lowercase and replace underscores/hyphens consistently
+      return name.toLowerCase().replace(/[-_]/g, '_').trim()
     }
-    // Also check direct name match for cleats
-    if (boxNameLower.includes(partLower) || partLower.includes(boxNameLower)) {
+    
+    const normalizedPart = normalizeCleatName(partLower)
+    const normalizedBox = normalizeCleatName(boxNameLower)
+    
+    // Exact match after normalization - this is the primary check
+    if (normalizedPart === normalizedBox) {
       return true
     }
+    
+    // If part name is just "cleat" (too generic), don't match anything
+    if (normalizedPart === 'cleat') {
+      return false
+    }
+    
+    // For cleat names, we need to match the full identifier
+    // Check if normalized part name ends with a cleat identifier pattern
+    // and matches the box name exactly (not substring)
+    // This prevents matching "front_panel_cleat" to all front panel cleats
+    return false
   }
   
   // Match skid
