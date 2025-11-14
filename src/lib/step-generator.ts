@@ -240,10 +240,10 @@ export class StepGenerator {
   private getPanelAssemblyName(panelName: string): string {
     const mapping: Record<string, string> = {
       TOP_PANEL: 'TOP_PANEL_ASSEMBLY',
-      FRONT_PANEL: 'FRONT_PANEL_ASSEMBLY',
-      BACK_PANEL: 'BACK_PANEL_ASSEMBLY',
-      LEFT_END_PANEL: 'LEFT_PANEL_ASSEMBLY',
-      RIGHT_END_PANEL: 'RIGHT_PANEL_ASSEMBLY'
+      FRONT_PANEL: 'FRONT_END_PANEL_ASSEMBLY',
+      BACK_PANEL: 'BACK_END_PANEL_ASSEMBLY',
+      LEFT_END_PANEL: 'LEFT_SIDE_PANEL_ASSEMBLY',
+      RIGHT_END_PANEL: 'RIGHT_SIDE_PANEL_ASSEMBLY'
     }
     if (mapping[panelName]) {
       return mapping[panelName]
@@ -324,6 +324,7 @@ export class StepGenerator {
     const panelName = box.panelName ?? ''
     const metadata = (box.metadata || '').toLowerCase()
 
+    // SHIPPING_BASE assemblies
     if (type === 'skid') {
       return {
         topKey: 'SHIPPING_BASE',
@@ -342,13 +343,15 @@ export class StepGenerator {
       }
     }
 
-    if (type === 'klimp' || metadata.includes('fastener')) {
+    // FASTENERS top-level assembly: all nuts/bolts/klimps and hardware
+    if (type === 'klimp' || metadata.includes('fastener') || type === 'hardware') {
       return {
-        topKey: 'KLIMP_FASTENERS',
-        topName: 'KLIMP_FASTENERS'
+        topKey: 'FASTENERS',
+        topName: 'FASTENERS'
       }
     }
 
+    // STENCILS top-level assembly: markings/decals
     if (metadata.includes('stencil') || metadata.includes('decal')) {
       return {
         topKey: 'STENCILS',
@@ -356,6 +359,7 @@ export class StepGenerator {
       }
     }
 
+    // CRATE_CAP assemblies (panels)
     const topKey = 'CRATE_CAP'
     const topName = 'CRATE_CAP'
 
@@ -369,11 +373,10 @@ export class StepGenerator {
       }
     }
 
+    // Boxes without a panelName live directly under CRATE_CAP with no misc subassembly
     return {
       topKey,
-      topName,
-      subKey: `${topKey}::CAP_MISC_ASSEMBLY`,
-      subName: 'CAP_MISC_ASSEMBLY'
+      topName
     }
   }
 
@@ -800,7 +803,7 @@ export class StepGenerator {
     // Ensure required top-level assemblies exist even if they currently have no parts
     this.ensureTopLevelAssembly(topGroups, 'SHIPPING_BASE', 'SHIPPING_BASE')
     this.ensureTopLevelAssembly(topGroups, 'CRATE_CAP', 'CRATE_CAP')
-    this.ensureTopLevelAssembly(topGroups, 'KLIMP_FASTENERS', 'KLIMP_FASTENERS')
+    this.ensureTopLevelAssembly(topGroups, 'FASTENERS', 'FASTENERS')
     this.ensureTopLevelAssembly(topGroups, 'STENCILS', 'STENCILS')
 
     const topGroupList = Array.from(topGroups.values())

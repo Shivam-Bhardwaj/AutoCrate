@@ -48,6 +48,7 @@ interface CrateVisualizerProps {
   }
   tutorialHighlightNames?: string[]
   tutorialCallouts?: { boxName: string; label: string }[]
+  hoveredPartName?: string | null
 }
 
 // Represents a selected plane with its position and normal vector
@@ -557,6 +558,108 @@ function HighlightedFace({ plane, color }: { plane: SelectedPlane; color: string
   )
 }
 
+// Function to check if a box matches a part name
+function boxMatchesPartName(box: NXBox, partName: string): boolean {
+  const partLower = partName.toLowerCase()
+  const boxNameLower = box.name.toLowerCase()
+  
+  // Direct name match
+  if (boxNameLower === partLower) {
+    return true
+  }
+  
+  // Match floorboard_N pattern
+  if (partLower.startsWith('floorboard_')) {
+    const match = partLower.match(/floorboard_(\d+)/)
+    if (match) {
+      const index = parseInt(match[1], 10)
+      // Check if box name contains the floorboard index
+      if (box.type === 'floor' && (boxNameLower.includes(`floorboard_${index}`) || boxNameLower.includes(`floorboard${index}`))) {
+        return true
+      }
+    }
+  }
+  
+  // Match panel plywood pieces (e.g., front_end_panel_ply_1)
+  const plyMatch = partLower.match(/(front_end_panel|back_end_panel|left_side_panel|right_side_panel|top_panel)_ply_(\d+)/)
+  if (plyMatch) {
+    const panelName = plyMatch[1]
+    const pieceIndex = parseInt(plyMatch[2], 10) - 1 // Convert to 0-indexed
+    
+    // Map part name panel to box panelName
+    const panelNameMap: Record<string, string> = {
+      'front_end_panel': 'FRONT_PANEL',
+      'back_end_panel': 'BACK_PANEL',
+      'left_side_panel': 'LEFT_END_PANEL',
+      'right_side_panel': 'RIGHT_END_PANEL',
+      'top_panel': 'TOP_PANEL'
+    }
+    
+    const expectedPanelName = panelNameMap[panelName]
+    if (box.type === 'plywood' && box.panelName === expectedPanelName && box.plywoodPieceIndex === pieceIndex) {
+      return true
+    }
+  }
+  
+  // Match cleats (e.g., front_end_panel_cleat_...)
+  if (partLower.includes('cleat') && box.type === 'cleat') {
+    // Check if panel names match
+    const panelMatch = partLower.match(/(front_end_panel|back_end_panel|left_side_panel|right_side_panel|top_panel|front_panel|back_panel|left_end_panel|right_end_panel|left_panel|right_panel)_cleat/)
+    if (panelMatch) {
+      const panelName = panelMatch[1]
+      const panelNameMap: Record<string, string> = {
+        'front_end_panel': 'FRONT_PANEL',
+        'front_panel': 'FRONT_PANEL',
+        'back_end_panel': 'BACK_PANEL',
+        'back_panel': 'BACK_PANEL',
+        'left_side_panel': 'LEFT_END_PANEL',
+        'left_end_panel': 'LEFT_END_PANEL',
+        'left_panel': 'LEFT_END_PANEL',
+        'right_side_panel': 'RIGHT_END_PANEL',
+        'right_end_panel': 'RIGHT_END_PANEL',
+        'right_panel': 'RIGHT_END_PANEL',
+        'top_panel': 'TOP_PANEL'
+      }
+      const expectedPanelName = panelNameMap[panelName]
+      if (box.panelName === expectedPanelName) {
+        return true
+      }
+    }
+    // Also check direct name match for cleats
+    if (boxNameLower.includes(partLower) || partLower.includes(boxNameLower)) {
+      return true
+    }
+  }
+  
+  // Match skid
+  if (partLower === 'skid' && box.type === 'skid') {
+    return true
+  }
+  
+  // Match decals/stencils
+  if ((partLower.includes('decal') || partLower.includes('stencil')) && 
+      (box.metadata?.toLowerCase().includes('decal') || box.metadata?.toLowerCase().includes('stencil'))) {
+    // Try to match specific decal names
+    if (partLower.includes('fragile') && box.metadata?.toLowerCase().includes('fragile')) return true
+    if (partLower.includes('handling') && box.metadata?.toLowerCase().includes('handling')) return true
+    if (partLower.includes('autocrate') && box.metadata?.toLowerCase().includes('autocrate')) return true
+    if (partLower.includes('do_not_stack') && box.metadata?.toLowerCase().includes('do not stack')) return true
+    if (partLower.includes('cg') && box.metadata?.toLowerCase().includes('cg')) return true
+    if (partLower.includes('applied_impact') && box.metadata?.toLowerCase().includes('applied impact')) return true
+  }
+  
+  // Match fasteners
+  if ((partLower.includes('klimp') || partLower.includes('screw') || partLower.includes('bolt') || partLower.includes('nut') || partLower.includes('fastener')) &&
+      (box.type === 'klimp' || box.type === 'hardware' || box.metadata?.toLowerCase().includes('fastener'))) {
+    // Try to match specific fastener names
+    if (partLower.includes('klimp') && box.type === 'klimp') return true
+    if (partLower.includes('lag_screw') && box.name?.toLowerCase().includes('lag')) return true
+    if (partLower.includes('nut') && box.name?.toLowerCase().includes('nut')) return true
+  }
+  
+  return false
+}
+
 // Component to render a single box from NX two-point definition
 function NXBoxMesh({
   box,
@@ -565,7 +668,9 @@ function NXBoxMesh({
   onHide,
   selectedPlanes,
   onPlaneClick,
-  highlighted = false
+  highlighted = false,
+  isHoveredPart = false,
+  hasHoveredPart = false
 }: {
   box: NXBox;
   hoveredBox: string | null;
@@ -574,6 +679,8 @@ function NXBoxMesh({
   selectedPlanes: SelectedPlane[];
   onPlaneClick: (plane: SelectedPlane) => void;
   highlighted?: boolean;
+  isHoveredPart?: boolean;
+  hasHoveredPart?: boolean;
 }) {
   const isHovered = hoveredBox === box.name
   // Calculate center and size from two diagonal points
@@ -689,8 +796,8 @@ function NXBoxMesh({
       >
         <meshStandardMaterial
           color={highlighted ? '#fde68a' : (box.color || '#F4E4BC')}
-          opacity={1}
-          transparent={false}
+          opacity={hasHoveredPart && !isHoveredPart ? 0.2 : 1}
+          transparent={hasHoveredPart && !isHoveredPart}
           emissive={highlighted ? new THREE.Color('#f59e0b') : new THREE.Color('#000000')}
           emissiveIntensity={highlighted ? 0.2 : 0}
         />
@@ -720,7 +827,7 @@ function NXBoxMesh({
   )
 }
 
-export default function CrateVisualizer({ boxes, showGrid = true, showLabels = true, generator, showMarkings = true, visibility, onToggleVisibility, onToggleMarkings, pmiVisibility, onTogglePmi, partNumbers, tutorialHighlightNames = [], tutorialCallouts = [] }: CrateVisualizerProps) {
+export default function CrateVisualizer({ boxes, showGrid = true, showLabels = true, generator, showMarkings = true, visibility, onToggleVisibility, onToggleMarkings, pmiVisibility, onTogglePmi, partNumbers, tutorialHighlightNames = [], tutorialCallouts = [], hoveredPartName = null }: CrateVisualizerProps) {
   const [hiddenComponents, setHiddenComponents] = useState<Set<string>>(new Set())
   const [hoveredBox, setHoveredBox] = useState<string | null>(null)
   const [showHiddenList, setShowHiddenList] = useState(false)
@@ -1155,6 +1262,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
               )
             } else {
               // Default rendering for other box types with tutorial highlights
+              const isHoveredPart = hoveredPartName ? boxMatchesPartName(box, hoveredPartName) : false
               return (
                 <NXBoxMesh
                   key={`${box.name}-${index}`}
@@ -1165,6 +1273,8 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                   selectedPlanes={selectedPlanes}
                   onPlaneClick={handlePlaneClick}
                   highlighted={tutorialHighlightSet.has(box.name)}
+                  isHoveredPart={isHoveredPart}
+                  hasHoveredPart={!!hoveredPartName}
                 />
               )
             }

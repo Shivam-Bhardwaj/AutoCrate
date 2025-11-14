@@ -189,7 +189,7 @@ describe('Tutorial schema (browserless)', () => {
         metadata: 'fastener',
       }
       const classification = classifyBoxForAssembly(box)
-      expect(classification.topName).toBe('KLIMP_FASTENERS')
+      expect(classification.topName).toBe('FASTENERS')
       expect(classification.subName).toBeUndefined()
     })
 
@@ -216,10 +216,10 @@ describe('Tutorial schema (browserless)', () => {
       }
       const classification = classifyBoxForAssembly(box)
       expect(classification.topName).toBe('CRATE_CAP')
-      expect(classification.subName).toBe('FRONT_PANEL_ASSEMBLY')
+      expect(classification.subName).toBe('FRONT_END_PANEL_ASSEMBLY')
     })
 
-    it('classifies boxes without panelName as CAP_MISC_ASSEMBLY', () => {
+    it('classifies boxes without panelName as CRATE_CAP without subassembly', () => {
       const box: NXBox = {
         name: 'MISC_BOX',
         type: undefined, // Boxes without specific type
@@ -228,16 +228,16 @@ describe('Tutorial schema (browserless)', () => {
       }
       const classification = classifyBoxForAssembly(box)
       expect(classification.topName).toBe('CRATE_CAP')
-      expect(classification.subName).toBe('CAP_MISC_ASSEMBLY')
+      expect(classification.subName).toBeUndefined()
     })
 
     it('handles all panel types correctly', () => {
       const panelTypes = ['FRONT_PANEL', 'BACK_PANEL', 'LEFT_END_PANEL', 'RIGHT_END_PANEL', 'TOP_PANEL']
       const expectedAssemblies = [
-        'FRONT_PANEL_ASSEMBLY',
-        'BACK_PANEL_ASSEMBLY',
-        'LEFT_PANEL_ASSEMBLY',
-        'RIGHT_PANEL_ASSEMBLY',
+        'FRONT_END_PANEL_ASSEMBLY',
+        'BACK_END_PANEL_ASSEMBLY',
+        'LEFT_SIDE_PANEL_ASSEMBLY',
+        'RIGHT_SIDE_PANEL_ASSEMBLY',
         'TOP_PANEL_ASSEMBLY',
       ]
 
@@ -336,7 +336,7 @@ describe('Tutorial schema (browserless)', () => {
         title: 'Test Assembly',
         description: 'Test',
         target: {
-          assemblyNames: ['FRONT_PANEL_ASSEMBLY'],
+          assemblyNames: ['FRONT_END_PANEL_ASSEMBLY'],
         },
       }
       const targets = getStepHighlightTargets(step, boxes)
@@ -386,7 +386,7 @@ describe('Tutorial schema (browserless)', () => {
         title: 'Test Assembly Callout',
         description: 'Test',
         target: {
-          assemblyNames: ['FRONT_PANEL_ASSEMBLY'],
+          assemblyNames: ['FRONT_END_PANEL_ASSEMBLY'],
           boxNames: [],
         },
       }

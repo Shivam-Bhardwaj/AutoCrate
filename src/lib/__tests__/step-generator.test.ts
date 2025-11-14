@@ -52,16 +52,14 @@ describe('StepGenerator (AP242)', () => {
     expect(output).toContain("SHAPE_REPRESENTATION('AUTOCRATE CRATE ASSEMBLY'")
     expect(output).toContain("SHAPE_REPRESENTATION('SHIPPING_BASE'")
     expect(output).toContain("SHAPE_REPRESENTATION('CRATE_CAP'")
-    expect(output).toContain("SHAPE_REPRESENTATION('KLIMP_FASTENERS'")
+    expect(output).toContain("SHAPE_REPRESENTATION('FASTENERS'")
     expect(output).toContain("SHAPE_REPRESENTATION('STENCILS'")
     expect(output).toContain("SHAPE_REPRESENTATION('SKID_ASSEMBLY'")
-    expect(output).toContain("SHAPE_REPRESENTATION('CAP_MISC_ASSEMBLY'")
     expect(output).toMatch(/NEXT_ASSEMBLY_USAGE_OCCURRENCE\('[^']+','SHIPPING_BASE'/)
     expect(output).toMatch(/NEXT_ASSEMBLY_USAGE_OCCURRENCE\('[^']+','SKID_ASSEMBLY'/)
     expect(output).toMatch(/NEXT_ASSEMBLY_USAGE_OCCURRENCE\('[^']+','CRATE_CAP'/)
-    expect(output).toMatch(/NEXT_ASSEMBLY_USAGE_OCCURRENCE\('[^']+','KLIMP_FASTENERS'/)
+    expect(output).toMatch(/NEXT_ASSEMBLY_USAGE_OCCURRENCE\('[^']+','FASTENERS'/)
     expect(output).toMatch(/NEXT_ASSEMBLY_USAGE_OCCURRENCE\('[^']+','STENCILS'/)
-    expect(output).toMatch(/NEXT_ASSEMBLY_USAGE_OCCURRENCE\('[^']+','CAP_MISC_ASSEMBLY'/)
   })
 
   it('converts inches to millimetres for coordinates', () => {

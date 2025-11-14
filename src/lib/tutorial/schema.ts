@@ -112,8 +112,23 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
       allPartNames.add(name)
     }
   })
-  
-  // Note: klimp and hardware are imported from STEP files, not created as parts
+
+  // DECALS: fixed template decal part files
+  ;[
+    'fragile_decal',
+    'handling_decal',
+    'autocrate_decal',
+    'do_not_stack_decal',
+    'cg_decal',
+    'applied_impact_a_decal',
+  ].forEach(name => allPartNames.add(name))
+
+  // FASTENERS: fixed template hardware part files
+  ;[
+    'klimp_fastener',
+    'lag_screw_0_38x3_00',
+    'lag_screw_0_38x3_00_nut',
+  ].forEach(name => allPartNames.add(name))
   
   // Sort part names for better organization
   const sortedPartNames = Array.from(allPartNames).sort()
@@ -454,6 +469,7 @@ export function classifyBoxForAssembly(box: NXBox): AssemblyClassification {
   const panelName = box.panelName ?? ''
   const metadata = (box.metadata || '').toLowerCase()
 
+  // SHIPPING_BASE assemblies
   if (type === 'skid') {
     return {
       topKey: 'SHIPPING_BASE',
@@ -472,13 +488,15 @@ export function classifyBoxForAssembly(box: NXBox): AssemblyClassification {
     }
   }
 
+  // FASTENERS top-level assembly: all nuts/bolts/klimps and hardware
   if (type === 'klimp' || metadata.includes('fastener')) {
     return {
-      topKey: 'KLIMP_FASTENERS',
-      topName: 'KLIMP_FASTENERS'
+      topKey: 'FASTENERS',
+      topName: 'FASTENERS'
     }
   }
 
+  // STENCILS top-level assembly: markings/decals
   if (metadata.includes('stencil') || metadata.includes('decal')) {
     return {
       topKey: 'STENCILS',
@@ -492,10 +510,10 @@ export function classifyBoxForAssembly(box: NXBox): AssemblyClassification {
   if (panelName) {
     const panelAssemblyMap: Record<string, string> = {
       TOP_PANEL: 'TOP_PANEL_ASSEMBLY',
-      FRONT_PANEL: 'FRONT_PANEL_ASSEMBLY',
-      BACK_PANEL: 'BACK_PANEL_ASSEMBLY',
-      LEFT_END_PANEL: 'LEFT_PANEL_ASSEMBLY',
-      RIGHT_END_PANEL: 'RIGHT_PANEL_ASSEMBLY'
+      FRONT_PANEL: 'FRONT_END_PANEL_ASSEMBLY',
+      BACK_PANEL: 'BACK_END_PANEL_ASSEMBLY',
+      LEFT_END_PANEL: 'LEFT_SIDE_PANEL_ASSEMBLY',
+      RIGHT_END_PANEL: 'RIGHT_SIDE_PANEL_ASSEMBLY'
     }
     const subName = panelAssemblyMap[panelName] || `${panelName}_ASSEMBLY`
     return {
@@ -508,9 +526,7 @@ export function classifyBoxForAssembly(box: NXBox): AssemblyClassification {
 
   return {
     topKey,
-    topName,
-    subKey: `${topKey}::CAP_MISC_ASSEMBLY`,
-    subName: 'CAP_MISC_ASSEMBLY'
+    topName
   }
 }
 
