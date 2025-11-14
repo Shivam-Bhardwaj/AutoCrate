@@ -454,6 +454,7 @@ export function classifyBoxForAssembly(box: NXBox): AssemblyClassification {
   const panelName = box.panelName ?? ''
   const metadata = (box.metadata || '').toLowerCase()
 
+  // SHIPPING_BASE assemblies
   if (type === 'skid') {
     return {
       topKey: 'SHIPPING_BASE',
@@ -472,13 +473,15 @@ export function classifyBoxForAssembly(box: NXBox): AssemblyClassification {
     }
   }
 
+  // FASTENERS top-level assembly: all nuts/bolts/klimps and hardware
   if (type === 'klimp' || metadata.includes('fastener')) {
     return {
-      topKey: 'KLIMP_FASTENERS',
-      topName: 'KLIMP_FASTENERS'
+      topKey: 'FASTENERS',
+      topName: 'FASTENERS'
     }
   }
 
+  // STENCILS top-level assembly: markings/decals
   if (metadata.includes('stencil') || metadata.includes('decal')) {
     return {
       topKey: 'STENCILS',
@@ -508,9 +511,7 @@ export function classifyBoxForAssembly(box: NXBox): AssemblyClassification {
 
   return {
     topKey,
-    topName,
-    subKey: `${topKey}::CAP_MISC_ASSEMBLY`,
-    subName: 'CAP_MISC_ASSEMBLY'
+    topName
   }
 }
 

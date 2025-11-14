@@ -29,13 +29,16 @@ cat PROJECT_STATUS.md | head -20
 ## 📋 PROJECT ESSENTIALS
 
 ### What is AutoCrate?
+
 A Next.js 14 application for designing shipping crates with:
+
 - **3D visualization** using React Three Fiber
 - **NX CAD expression** generation for parametric modeling
 - **STEP file export** (ISO 10303-21 AP242 compliant)
 - **Two-point diagonal construction** method (origin + dimensions)
 
 ### Core Technology Stack
+
 - **Framework**: Next.js 14 (App Router)
 - **UI**: React 18 + TypeScript 5 + Tailwind CSS
 - **3D**: Three.js + React Three Fiber + Drei
@@ -43,6 +46,7 @@ A Next.js 14 application for designing shipping crates with:
 - **Development**: Husky 9 (git hooks) + lint-staged
 
 ### Key Coordinates & Conventions
+
 ```
 Origin: (0,0,0) at center of crate floor
 X-axis: Width (left/right)
@@ -56,6 +60,7 @@ Units: Inches (converted to mm for STEP export)
 ## 🎯 DEVELOPMENT WORKFLOW
 
 ### Issue-Driven Development (Primary)
+
 ```bash
 # Standard flow
 gh issue list                    # See open issues
@@ -70,12 +75,14 @@ gh pr create                     # Auto-creates PR
 ```
 
 ### Branch Naming Convention
+
 - Features: `feature/issue-N-description` or `feature/description`
 - Bugs: `fix/issue-N-description` or `fix/description`
 - Refactors: `refactor/description`
 - Docs: `docs/description`
 
 ### Commit Message Format
+
 ```
 type: Brief description (max 50 chars)
 
@@ -91,46 +98,52 @@ Closes #<issue-number>
 ## 📁 CRITICAL FILE LOCATIONS
 
 ### Primary Configuration
-| File | Purpose | When to Read |
-|------|---------|--------------|
-| `src/lib/nx-generator.ts` | NX CAD generation, type definitions | Working with dimensions/geometry |
-| `src/lib/step-generator.ts` | STEP file export | Working with CAD export |
+
+| File                         | Purpose                              | When to Read                     |
+| ---------------------------- | ------------------------------------ | -------------------------------- |
+| `src/lib/nx-generator.ts`    | NX CAD generation, type definitions  | Working with dimensions/geometry |
+| `src/lib/step-generator.ts`  | STEP file export                     | Working with CAD export          |
 | `src/lib/crate-constants.ts` | Hardcoded dimensions, material specs | Changing lumber sizes, materials |
-| `src/app/page.tsx` | Main UI, state management | UI changes, component visibility |
+| `src/app/page.tsx`           | Main UI, state management            | UI changes, component visibility |
 
 ### 3D Visualization
-| File | Purpose |
-|------|---------|
-| `src/components/CrateVisualizer.tsx` | Main 3D component (R3F) |
-| `src/components/KlimpModel.tsx` | Klimp fastener 3D models |
-| `src/components/MarkingVisualizer.tsx` | Panel markings/stencils |
+
+| File                                   | Purpose                  |
+| -------------------------------------- | ------------------------ |
+| `src/components/CrateVisualizer.tsx`   | Main 3D component (R3F)  |
+| `src/components/KlimpModel.tsx`        | Klimp fastener 3D models |
+| `src/components/MarkingVisualizer.tsx` | Panel markings/stencils  |
 
 ### Hardware & Calculations
-| File | Purpose |
-|------|---------|
+
+| File                          | Purpose                            |
+| ----------------------------- | ---------------------------------- |
 | `src/lib/klimp-calculator.ts` | Klimp fastener placement algorithm |
-| `src/lib/cleat-calculator.ts` | Cleat positioning logic |
-| `src/lib/plywood-splicing.ts` | Plywood sheet optimization |
+| `src/lib/cleat-calculator.ts` | Cleat positioning logic            |
+| `src/lib/plywood-splicing.ts` | Plywood sheet optimization         |
 
 ### Testing
-| Location | Contents |
-|----------|----------|
-| `src/lib/__tests__/` | Core library unit tests |
-| `src/components/__tests__/` | Component unit tests |
-| `src/app/api/*/route.test.ts` | API route tests |
-| `tests/e2e/` | Playwright E2E tests |
+
+| Location                      | Contents                |
+| ----------------------------- | ----------------------- |
+| `src/lib/__tests__/`          | Core library unit tests |
+| `src/components/__tests__/`   | Component unit tests    |
+| `src/app/api/*/route.test.ts` | API route tests         |
+| `tests/e2e/`                  | Playwright E2E tests    |
 
 ---
 
 ## 🧪 TESTING REQUIREMENTS
 
 ### Pre-Commit Checklist (Automated via Husky)
+
 - ✅ TypeScript type checking on changed files
 - ✅ Jest tests for related modules
 - ✅ Prettier formatting (JSON/MD/YAML)
 - ✅ ESLint validation
 
 ### Manual Testing Commands
+
 ```bash
 npm test                    # All Jest tests
 npm run test:coverage       # Coverage report
@@ -140,6 +153,7 @@ npm run type-check         # TypeScript validation
 ```
 
 ### Coverage Targets (Current Goals)
+
 - **src/lib/**: 85%+ coverage
 - **src/components/**: 75%+ coverage
 - **All modules**: Must have test files
@@ -149,19 +163,22 @@ npm run type-check         # TypeScript validation
 ## 🏗️ ARCHITECTURE PATTERNS
 
 ### State Management
+
 - Component-level React state (hooks)
 - Zustand for global theme state
 - 500ms debounced inputs for real-time updates
 
 ### Coordinate System (Two-Point Construction)
+
 ```typescript
-Point1: (0, 0, 0)              // Origin
-Point2: (width, length, height) // Far corner
+Point1: (0, 0, 0); // Origin
+Point2: (width, length, height); // Far corner
 
 // All geometry derives from these two points
 ```
 
 ### STEP Assembly Hierarchy
+
 ```
 AUTOCRATE CRATE ASSEMBLY
 ├── SHIPPING_BASE
@@ -173,17 +190,20 @@ AUTOCRATE CRATE ASSEMBLY
 │   ├── LEFT_PANEL_ASSEMBLY
 │   ├── RIGHT_PANEL_ASSEMBLY
 │   └── TOP_PANEL_ASSEMBLY
-├── KLIMP_FASTENERS (L-shaped hardware)
-└── STENCILS (markings/decals)
+├── STENCILS (markings/decals)
+└── FASTENERS (klimps, lag screws, nuts, bolts)
 ```
 
 ### Hardware Placement Rules
+
 **Klimp Fasteners**:
+
 - 18"-24" spacing between klimps
 - Corner klimps at top panel edges
 - Avoid cleat interference zones (+/- 2.5" from cleats)
 
 **Cleats**:
+
 - Based on panel height (taller panels = more cleats)
 - Symmetric placement on left/right panels
 - Vertical spacing prevents sagging
@@ -193,6 +213,7 @@ AUTOCRATE CRATE ASSEMBLY
 ## 🔍 COMMON TASKS
 
 ### Add New Lumber Size
+
 1. Update types in `src/lib/nx-generator.ts`
 2. Modify skid/floorboard selection logic
 3. Update 3D visualization meshes
@@ -200,6 +221,7 @@ AUTOCRATE CRATE ASSEMBLY
 5. Add unit tests
 
 ### Fix STEP Export Issue
+
 1. Read `src/lib/__tests__/step-generator.test.ts` first
 2. Check assembly hierarchy in `step-generator.ts`
 3. Verify coordinate transformations (inches → mm)
@@ -207,12 +229,14 @@ AUTOCRATE CRATE ASSEMBLY
 5. Validate with CAD software if possible
 
 ### Modify 3D Visualization
+
 1. Edit `src/components/CrateVisualizer.tsx`
 2. Update material definitions (colors, opacity)
 3. Adjust camera/lighting if needed
 4. Test with different scenarios (`ScenarioSelector`)
 
 ### Add New Hardware Type
+
 1. Create calculator: `src/lib/new-hardware-calculator.ts`
 2. Create STEP integration: `src/lib/new-hardware-step-integration.ts`
 3. Create 3D model: `src/components/NewHardwareModel.tsx`
@@ -224,18 +248,21 @@ AUTOCRATE CRATE ASSEMBLY
 ## 📚 EXTENDED DOCUMENTATION
 
 ### Deep Dives (read when needed)
+
 - **ARCHITECTURE.md** - Complete technical architecture (800 lines)
 - **TESTING_GUIDE.md** - Comprehensive testing strategy (400 lines)
 - **AGENT_GUIDE.md** - Agent specialization matrix (600 lines)
 - **CONTRIBUTING.md** - Development workflows & deployment (300 lines)
 
 ### Quick References
+
 - **QUICK_REFERENCE.md** - Command cheatsheet (100 lines)
 - **MODULES.md** - Module boundaries for parallel work
 - **PROJECT_STATUS.md** - Active work tracking
 - **WORK_LOG.md** - Session history
 
 ### Archives (rarely needed)
+
 - `docs/archive/` - Platform-specific setup guides (RPI5, mobile, etc.)
 
 ---
@@ -243,12 +270,14 @@ AUTOCRATE CRATE ASSEMBLY
 ## ⚡ TOKEN EFFICIENCY TIPS
 
 ### Smart File Reading
+
 1. **Always check** PROJECT_STATUS.md first (shows what's active)
 2. **Use Grep** before reading full files
 3. **Read tests first** when fixing bugs (shows expected behavior)
 4. **Avoid redundant reads** - context persists in session
 
 ### Context Loading Strategy
+
 ```
 Bug fix workflow:
 1. Read issue description (GitHub)
@@ -266,6 +295,7 @@ Total: 40K-100K tokens (vs 150K+ unoptimized)
 ```
 
 ### Agent Specialization (Future)
+
 - Geometry/CAD agent: Loads STEP/NX docs only
 - UI agent: Loads component files + theme
 - Testing agent: Loads test files + coverage
@@ -276,6 +306,7 @@ Total: 40K-100K tokens (vs 150K+ unoptimized)
 ## 🚨 CRITICAL REMINDERS
 
 ### Always Do This ✅
+
 - Read PROJECT_DNA.md if available (saves 30+ minutes)
 - Run `npm test` before committing
 - Run `npm run build` before pushing
@@ -284,6 +315,7 @@ Total: 40K-100K tokens (vs 150K+ unoptimized)
 - Update version on user-facing changes
 
 ### Never Do This ❌
+
 - Don't commit without tests passing
 - Don't create new files unnecessarily (edit existing)
 - Don't use line number references in docs (they go stale)
@@ -292,6 +324,7 @@ Total: 40K-100K tokens (vs 150K+ unoptimized)
 - Don't force push to main/master
 
 ### Emergency Recovery
+
 ```bash
 # Stash conflicts
 git stash
@@ -310,6 +343,7 @@ npm test
 ## 🎯 SESSION CHECKLIST
 
 Before you start coding:
+
 - [ ] Read this file (START_HERE.md)
 - [ ] Check git branch (`git branch --show-current`)
 - [ ] Review PROJECT_STATUS.md for active work
@@ -317,6 +351,7 @@ Before you start coding:
 - [ ] Plan your approach (update todo list if complex)
 
 Before you commit:
+
 - [ ] Run `npm test` (all tests pass)
 - [ ] Run `npm run build` (build succeeds)
 - [ ] Run `npm run type-check` (no TS errors)
@@ -324,6 +359,7 @@ Before you commit:
 - [ ] Write clear commit message
 
 Before you push:
+
 - [ ] Verify branch name follows convention
 - [ ] Ensure tests are included for changes
 - [ ] Check commit message format

@@ -189,7 +189,7 @@ describe('Tutorial schema (browserless)', () => {
         metadata: 'fastener',
       }
       const classification = classifyBoxForAssembly(box)
-      expect(classification.topName).toBe('KLIMP_FASTENERS')
+      expect(classification.topName).toBe('FASTENERS')
       expect(classification.subName).toBeUndefined()
     })
 
@@ -219,7 +219,7 @@ describe('Tutorial schema (browserless)', () => {
       expect(classification.subName).toBe('FRONT_PANEL_ASSEMBLY')
     })
 
-    it('classifies boxes without panelName as CAP_MISC_ASSEMBLY', () => {
+    it('classifies boxes without panelName as CRATE_CAP without subassembly', () => {
       const box: NXBox = {
         name: 'MISC_BOX',
         type: undefined, // Boxes without specific type
@@ -228,7 +228,7 @@ describe('Tutorial schema (browserless)', () => {
       }
       const classification = classifyBoxForAssembly(box)
       expect(classification.topName).toBe('CRATE_CAP')
-      expect(classification.subName).toBe('CAP_MISC_ASSEMBLY')
+      expect(classification.subName).toBeUndefined()
     })
 
     it('handles all panel types correctly', () => {
