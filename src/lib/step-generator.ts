@@ -264,9 +264,20 @@ export class StepGenerator {
   private componentBaseName(box: NXBox): string {
     const panelSnake = box.panelName ? this.toSnakeCase(box.panelName) : ''
     const metadata = (box.metadata || '').toLowerCase()
+    const nameLower = (box.name || '').toLowerCase()
 
     if (metadata.includes('stencil') || metadata.includes('decal')) {
       return 'stencil'
+    }
+
+    // Detect lag screws - check metadata or name for lag screw indicators
+    if (metadata.includes('lag screw') || (nameLower.includes('lag') && (nameLower.includes('head') || nameLower.includes('shaft')))) {
+      return 'lag_screw_0_38x3_00'
+    }
+
+    // Detect lag screw nuts if they exist
+    if (metadata.includes('lag') && metadata.includes('nut')) {
+      return 'lag_screw_0_38x3_00_nut'
     }
 
     if (metadata.includes('fastener')) {
