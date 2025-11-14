@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import * as THREE from 'three'
+import { Edges } from '@react-three/drei'
 import { NXBox } from '@/lib/nx-generator'
 import { nxToThreeJS, nxCenter } from '@/lib/coordinate-transform'
 import { createSimpleKlimpGeometry, VISUAL_MATERIALS } from '@/lib/visual-geometries'
@@ -66,10 +67,13 @@ export function VisualKlimp({ box, scale = 0.1, isHoveredPart = false, hasHovere
           receiveShadow
         >
           {/* Add edge highlighting for better visibility */}
-          <lineSegments>
-            <edgesGeometry args={[geometry]} />
-            <lineBasicMaterial color="#000000" linewidth={1} opacity={opacity} transparent={opacity < 1} />
-          </lineSegments>
+          {opacity > 0 && (
+            <Edges
+              geometry={geometry}
+              color="#000000"
+              lineWidth={1}
+            />
+          )}
         </mesh>
       ))}
     </group>

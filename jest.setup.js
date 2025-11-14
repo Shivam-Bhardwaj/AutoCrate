@@ -107,7 +107,7 @@ jest.mock('@react-three/drei', () => ({
   Grid: () => null,
   Text: ({ children }) => <span data-testid="drei-text">{children}</span>,
   Html: ({ children }) => <span>{children}</span>,
-  Edges: () => null,
+  Edges: () => <div data-testid="drei-edges" />,
   Plane: ({ children }) => <div data-testid="drei-plane">{children}</div>,
   Clone: () => null,
   useGLTF: mockedUseGLTF

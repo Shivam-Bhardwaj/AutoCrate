@@ -1,6 +1,6 @@
 'use client'
 
-import { Text, Plane, Box } from '@react-three/drei'
+import { Text, Plane, Box, Edges } from '@react-three/drei'
 import { NXBox, NXGenerator, MarkingDimensions } from '@/lib/nx-generator'
 import { MARKING_STANDARDS } from '@/lib/crate-constants'
 import { StencilBoundingBox, useStepDimensions } from './StepBoundingBox'
@@ -355,10 +355,11 @@ export function MarkingVisualizer({ boxes, generator, useBoundingBox = true }: M
           </Plane>
 
           {/* Border frame */}
-          <lineSegments>
-            <edgesGeometry args={[new THREE.PlaneGeometry(...marking.size)]} />
-            <lineBasicMaterial color={marking.color} linewidth={2} />
-          </lineSegments>
+          <Edges
+            geometry={new THREE.PlaneGeometry(...marking.size)}
+            color={marking.color}
+            lineWidth={2}
+          />
 
           {/* Main text */}
           <Text
