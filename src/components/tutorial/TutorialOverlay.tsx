@@ -134,34 +134,26 @@ export default function TutorialOverlay({
     const getGroupForPart = (nameRaw: string): PartNameGroup | null => {
       const name = nameRaw.toLowerCase()
 
-      // SHIPPING_BASE assemblies
-      if (name === 'skid') {
-        return ensureGroup('shipping_base_skid', 'SHIPPING_BASE • SKID_ASSEMBLY')
-      }
-      if (/^floorboard_\d+$/i.test(name)) {
-        return ensureGroup('shipping_base_floorboards', 'SHIPPING_BASE • FLOORBOARD_ASSEMBLY')
+      // SHIPPING_BASE assembly (all skid and floorboard parts)
+      if (name === 'skid' || /^floorboard_\d+$/i.test(name)) {
+        return ensureGroup('shipping_base', 'SHIPPING_BASE')
       }
 
-      // CRATE_CAP panel assemblies (plywood + cleats)
-      if (name.startsWith('front_end_panel_') || name.startsWith('front_panel_')) {
-        return ensureGroup('crate_cap_front', 'CRATE_CAP • FRONT_END_PANEL_ASSEMBLY')
-      }
-      if (name.startsWith('back_end_panel_') || name.startsWith('back_panel_')) {
-        return ensureGroup('crate_cap_back', 'CRATE_CAP • BACK_END_PANEL_ASSEMBLY')
-      }
-      if (name.startsWith('left_end_panel_') || name.startsWith('left_side_panel_') || name.startsWith('left_panel_')) {
-        return ensureGroup('crate_cap_left', 'CRATE_CAP • LEFT_SIDE_PANEL_ASSEMBLY')
-      }
-      if (name.startsWith('right_end_panel_') || name.startsWith('right_side_panel_') || name.startsWith('right_panel_')) {
-        return ensureGroup('crate_cap_right', 'CRATE_CAP • RIGHT_SIDE_PANEL_ASSEMBLY')
-      }
-      if (name.startsWith('top_panel_')) {
-        return ensureGroup('crate_cap_top', 'CRATE_CAP • TOP_PANEL_ASSEMBLY')
-      }
-
-      // DECALS (stencils/markings)
-      if (name.includes('decal') || name.includes('stencil')) {
-        return ensureGroup('decals', 'DECALS')
+      // CRATE_CAP assembly (all panel parts: plywood + cleats)
+      if (
+        name.startsWith('front_end_panel_') ||
+        name.startsWith('front_panel_') ||
+        name.startsWith('back_end_panel_') ||
+        name.startsWith('back_panel_') ||
+        name.startsWith('left_end_panel_') ||
+        name.startsWith('left_side_panel_') ||
+        name.startsWith('left_panel_') ||
+        name.startsWith('right_end_panel_') ||
+        name.startsWith('right_side_panel_') ||
+        name.startsWith('right_panel_') ||
+        name.startsWith('top_panel_')
+      ) {
+        return ensureGroup('crate_cap', 'CRATE_CAP')
       }
 
       // FASTENERS (klimps, screws, nuts, bolts, washers)
@@ -174,6 +166,11 @@ export default function TutorialOverlay({
         name.includes('fastener')
       ) {
         return ensureGroup('fasteners', 'FASTENERS')
+      }
+
+      // DECALS (stencils/markings)
+      if (name.includes('decal') || name.includes('stencil')) {
+        return ensureGroup('decals', 'DECALS')
       }
 
       // If we get here, the part name doesn't match any known pattern
@@ -189,8 +186,19 @@ export default function TutorialOverlay({
       }
     })
 
-    // Return only groups that have items (filter out empty groups)
-    return Array.from(groups.values()).filter(group => group.items.length > 0)
+    // Return only groups that have items, sorted in the correct order:
+    // 1. SHIPPING_BASE, 2. CRATE_CAP, 3. FASTENERS, 4. DECALS
+    const order = ['shipping_base', 'crate_cap', 'fasteners', 'decals']
+    const groupArray = Array.from(groups.values()).filter(group => group.items.length > 0)
+    return groupArray.sort((a, b) => {
+      const aIndex = order.indexOf(a.id)
+      const bIndex = order.indexOf(b.id)
+      // If both are in order, sort by order; otherwise put ordered items first
+      if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+      if (aIndex !== -1) return -1
+      if (bIndex !== -1) return 1
+      return 0
+    })
   }, [step])
 
   useEffect(() => {
