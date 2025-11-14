@@ -112,8 +112,23 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
       allPartNames.add(name)
     }
   })
-  
-  // Note: klimp and hardware are imported from STEP files, not created as parts
+
+  // DECALS: fixed template decal part files
+  ;[
+    'fragile_decal',
+    'handling_decal',
+    'autocrate_decal',
+    'do_not_stack_decal',
+    'cg_decal',
+    'applied_impact_a_decal',
+  ].forEach(name => allPartNames.add(name))
+
+  // FASTENERS: fixed template hardware part files
+  ;[
+    'klimp_fastener',
+    'lag_screw_0_38x3_00',
+    'lag_screw_0_38x3_00_nut',
+  ].forEach(name => allPartNames.add(name))
   
   // Sort part names for better organization
   const sortedPartNames = Array.from(allPartNames).sort()

@@ -142,7 +142,7 @@ export default function TutorialOverlay({
         return ensureGroup('shipping_base_floorboards', 'SHIPPING_BASE • FLOORBOARD_ASSEMBLY')
       }
 
-      // CRATE_CAP panel assemblies
+      // CRATE_CAP panel assemblies (plywood + cleats)
       if (name.startsWith('front_end_panel_') || name.startsWith('front_panel_')) {
         return ensureGroup('crate_cap_front', 'CRATE_CAP • FRONT_END_PANEL_ASSEMBLY')
       }
@@ -157,6 +157,23 @@ export default function TutorialOverlay({
       }
       if (name.startsWith('top_panel_')) {
         return ensureGroup('crate_cap_top', 'CRATE_CAP • TOP_PANEL_ASSEMBLY')
+      }
+
+      // DECALS (stencils/markings)
+      if (name.includes('decal') || name.includes('stencil')) {
+        return ensureGroup('decals', 'DECALS')
+      }
+
+      // FASTENERS (klimps, screws, nuts, bolts, washers)
+      if (
+        name.includes('klimp') ||
+        name.includes('screw') ||
+        name.includes('bolt') ||
+        name.includes('nut') ||
+        name.includes('washer') ||
+        name.includes('fastener')
+      ) {
+        return ensureGroup('fasteners', 'FASTENERS')
       }
 
       // Fallback group for any unexpected parts
