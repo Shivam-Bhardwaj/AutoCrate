@@ -1265,6 +1265,7 @@ export default function Home() {
                       partNumbers={partNumbers}
                       tutorialHighlightNames={tutorialActive && tutorialSteps.length > 0 ? getStepHighlightTargets(tutorialSteps[tutorialStepIndex], generator.getBoxes()) : []}
                       tutorialCallouts={tutorialActive && tutorialSteps.length > 0 ? buildCallouts(tutorialSteps[tutorialStepIndex], generator.getBoxes()).slice(0, 8) : []}
+                      hoveredPartName={hoveredPartName}
                     />
                     <TutorialOverlay
                       active={tutorialActive}
@@ -1274,6 +1275,7 @@ export default function Home() {
                       onPrev={() => setTutorialStepIndex(s => Math.max(0, s - 1))}
                       onNext={() => setTutorialStepIndex(s => Math.min(tutorialSteps.length - 1, s + 1))}
                       onCopy={(text) => navigator.clipboard?.writeText(text)}
+                      onPartHover={setHoveredPartName}
                     />
                     <div className="absolute bottom-3 right-3 bg-gray-900/80 dark:bg-gray-800/80 backdrop-blur-sm text-xs text-gray-300 dark:text-gray-400 px-3 py-1.5 rounded border border-gray-700 dark:border-gray-600 pointer-events-none z-40">
                       Rotate: Left drag | Pan: Right drag | Zoom: Scroll

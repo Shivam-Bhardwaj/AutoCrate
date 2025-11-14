@@ -795,11 +795,23 @@ function NXBoxMesh({
         }}
       >
         <meshStandardMaterial
-          color={highlighted ? '#fde68a' : (box.color || '#F4E4BC')}
+          color={
+            isHoveredPart 
+              ? '#60a5fa' // Bright blue for hovered part
+              : highlighted 
+                ? '#fde68a' 
+                : (box.color || '#F4E4BC')
+          }
           opacity={hasHoveredPart && !isHoveredPart ? 0.2 : 1}
           transparent={hasHoveredPart && !isHoveredPart}
-          emissive={highlighted ? new THREE.Color('#f59e0b') : new THREE.Color('#000000')}
-          emissiveIntensity={highlighted ? 0.2 : 0}
+          emissive={
+            isHoveredPart 
+              ? new THREE.Color('#3b82f6') // Blue glow for hovered part
+              : highlighted 
+                ? new THREE.Color('#f59e0b') 
+                : new THREE.Color('#000000')
+          }
+          emissiveIntensity={isHoveredPart ? 0.4 : (highlighted ? 0.2 : 0)}
         />
         <Edges
           color='#1f2937'
@@ -1222,12 +1234,17 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
 
           {/* Render visible boxes only (filter out suppressed and hidden) */}
           {visibleBoxes.map((box, index) => {
+            const isHoveredPart = hoveredPartName ? boxMatchesPartName(box, hoveredPartName) : false
+            const hasHoveredPart = !!hoveredPartName
+            
             // Handle different hardware types
             if (box.type === 'klimp') {
               return (
                 <KlimpModel
                   key={`${box.name}-${index}`}
                   box={box}
+                  isHoveredPart={isHoveredPart}
+                  hasHoveredPart={hasHoveredPart}
                 />
               )
             } else if (box.type === 'hardware' && (box.name?.toLowerCase().includes('lag') || box.name?.toLowerCase().includes('screw'))) {
@@ -1238,13 +1255,16 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                 z: (box.point1.z + box.point2.z) / 2,
               }
               return (
-                <LagScrew3D
-                  key={`${box.name}-${index}`}
-                  position={[center.x, center.y, center.z]}
-                  rotation={[Math.PI / 2, 0, 0]}
-                  scale={0.1}
-                  length={2.5}
-                />
+                <group key={`${box.name}-${index}`}>
+                  <LagScrew3D
+                    position={[center.x, center.y, center.z]}
+                    rotation={[Math.PI / 2, 0, 0]}
+                    scale={0.1}
+                    length={2.5}
+                    isHoveredPart={isHoveredPart}
+                    hasHoveredPart={hasHoveredPart}
+                  />
+                </group>
               )
             } else if (box.type === 'hardware' && box.name?.toLowerCase().includes('washer')) {
               // Render washer at box position
@@ -1254,15 +1274,17 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                 z: (box.point1.z + box.point2.z) / 2,
               }
               return (
-                <Washer3D
-                  key={`${box.name}-${index}`}
-                  position={[center.x, center.y, center.z]}
-                  scale={0.1}
-                />
+                <group key={`${box.name}-${index}`}>
+                  <Washer3D
+                    position={[center.x, center.y, center.z]}
+                    scale={0.1}
+                    isHoveredPart={isHoveredPart}
+                    hasHoveredPart={hasHoveredPart}
+                  />
+                </group>
               )
             } else {
               // Default rendering for other box types with tutorial highlights
-              const isHoveredPart = hoveredPartName ? boxMatchesPartName(box, hoveredPartName) : false
               return (
                 <NXBoxMesh
                   key={`${box.name}-${index}`}
@@ -1274,7 +1296,7 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
                   onPlaneClick={handlePlaneClick}
                   highlighted={tutorialHighlightSet.has(box.name)}
                   isHoveredPart={isHoveredPart}
-                  hasHoveredPart={!!hoveredPartName}
+                  hasHoveredPart={hasHoveredPart}
                 />
               )
             }

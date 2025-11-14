@@ -18,6 +18,8 @@ interface Hardware3DProps {
   position?: [number, number, number]
   rotation?: [number, number, number]
   scale?: number
+  isHoveredPart?: boolean
+  hasHoveredPart?: boolean
 }
 
 /**
@@ -25,10 +27,14 @@ interface Hardware3DProps {
  */
 export function Klimp3D({
   box,
-  scale = 0.1
+  scale = 0.1,
+  isHoveredPart = false,
+  hasHoveredPart = false
 }: {
   box: NXBox
   scale?: number
+  isHoveredPart?: boolean
+  hasHoveredPart?: boolean
 }) {
   const meshRef = useRef<THREE.Mesh>(null)
 
@@ -63,11 +69,27 @@ export function Klimp3D({
     }
   })
 
+  // Create hovered material
+  const material = useMemo(() => {
+    if (isHoveredPart) {
+      const hoveredMaterial = COMPONENT_MATERIALS.klimp.clone()
+      if (hoveredMaterial instanceof THREE.MeshStandardMaterial) {
+        hoveredMaterial.color.setHex(0x60a5fa) // Bright blue
+        hoveredMaterial.emissive.setHex(0x3b82f6) // Blue glow
+        hoveredMaterial.emissiveIntensity = 0.4
+      }
+      return hoveredMaterial
+    }
+    return COMPONENT_MATERIALS.klimp
+  }, [isHoveredPart])
+
+  const opacity = hasHoveredPart && !isHoveredPart ? 0.2 : 1
+
   return (
     <mesh
       ref={meshRef}
       geometry={geometry}
-      material={COMPONENT_MATERIALS.klimp}
+      material={material}
       position={position}
       rotation={rotation}
       scale={scale}
@@ -77,7 +99,7 @@ export function Klimp3D({
       {/* Add edge highlighting for better visibility */}
       <lineSegments>
         <edgesGeometry args={[geometry]} />
-        <lineBasicMaterial color="#000000" linewidth={1} />
+        <lineBasicMaterial color="#000000" linewidth={1} opacity={opacity} transparent={opacity < 1} />
       </lineSegments>
     </mesh>
   )
@@ -90,14 +112,32 @@ export function LagScrew3D({
   position = [0, 0, 0],
   rotation = [0, 0, 0],
   scale = 0.1,
-  length = 3.0
+  length = 3.0,
+  isHoveredPart = false,
+  hasHoveredPart = false
 }: Hardware3DProps & { length?: number }) {
   const geometry = useMemo(() => createLagScrewGeometry(length), [length])
+
+  // Create hovered material
+  const material = useMemo(() => {
+    if (isHoveredPart) {
+      const hoveredMaterial = COMPONENT_MATERIALS.lagScrew.clone()
+      if (hoveredMaterial instanceof THREE.MeshStandardMaterial) {
+        hoveredMaterial.color.setHex(0x60a5fa) // Bright blue
+        hoveredMaterial.emissive.setHex(0x3b82f6) // Blue glow
+        hoveredMaterial.emissiveIntensity = 0.4
+      }
+      return hoveredMaterial
+    }
+    return COMPONENT_MATERIALS.lagScrew
+  }, [isHoveredPart])
+
+  const opacity = hasHoveredPart && !isHoveredPart ? 0.2 : 1
 
   return (
     <mesh
       geometry={geometry}
-      material={COMPONENT_MATERIALS.lagScrew}
+      material={material}
       position={position.map(p => p * scale) as [number, number, number]}
       rotation={rotation}
       scale={scale}
@@ -105,7 +145,7 @@ export function LagScrew3D({
     >
       <lineSegments>
         <edgesGeometry args={[geometry]} />
-        <lineBasicMaterial color="#000000" linewidth={1} />
+        <lineBasicMaterial color="#000000" linewidth={1} opacity={opacity} transparent={opacity < 1} />
       </lineSegments>
     </mesh>
   )
@@ -117,19 +157,42 @@ export function LagScrew3D({
 export function Washer3D({
   position = [0, 0, 0],
   rotation = [0, 0, 0],
-  scale = 0.1
+  scale = 0.1,
+  isHoveredPart = false,
+  hasHoveredPart = false
 }: Hardware3DProps) {
   const geometry = useMemo(() => createWasherGeometry(), [])
+
+  // Create hovered material
+  const material = useMemo(() => {
+    if (isHoveredPart) {
+      const hoveredMaterial = COMPONENT_MATERIALS.washer.clone()
+      if (hoveredMaterial instanceof THREE.MeshStandardMaterial) {
+        hoveredMaterial.color.setHex(0x60a5fa) // Bright blue
+        hoveredMaterial.emissive.setHex(0x3b82f6) // Blue glow
+        hoveredMaterial.emissiveIntensity = 0.4
+      }
+      return hoveredMaterial
+    }
+    return COMPONENT_MATERIALS.washer
+  }, [isHoveredPart])
+
+  const opacity = hasHoveredPart && !isHoveredPart ? 0.2 : 1
 
   return (
     <mesh
       geometry={geometry}
-      material={COMPONENT_MATERIALS.washer}
+      material={material}
       position={position.map(p => p * scale) as [number, number, number]}
       rotation={rotation}
       scale={scale}
       castShadow
-    />
+    >
+      <lineSegments>
+        <edgesGeometry args={[geometry]} />
+        <lineBasicMaterial color="#000000" linewidth={1} opacity={opacity} transparent={opacity < 1} />
+      </lineSegments>
+    </mesh>
   )
 }
 
