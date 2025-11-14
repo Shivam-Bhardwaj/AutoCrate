@@ -131,7 +131,7 @@ export default function TutorialOverlay({
       return groups.get(id)!
     }
 
-    const getGroupForPart = (nameRaw: string): PartNameGroup => {
+    const getGroupForPart = (nameRaw: string): PartNameGroup | null => {
       const name = nameRaw.toLowerCase()
 
       // SHIPPING_BASE assemblies
@@ -149,10 +149,10 @@ export default function TutorialOverlay({
       if (name.startsWith('back_end_panel_') || name.startsWith('back_panel_')) {
         return ensureGroup('crate_cap_back', 'CRATE_CAP • BACK_END_PANEL_ASSEMBLY')
       }
-      if (name.startsWith('left_side_panel_') || name.startsWith('left_panel_')) {
+      if (name.startsWith('left_end_panel_') || name.startsWith('left_side_panel_') || name.startsWith('left_panel_')) {
         return ensureGroup('crate_cap_left', 'CRATE_CAP • LEFT_SIDE_PANEL_ASSEMBLY')
       }
-      if (name.startsWith('right_side_panel_') || name.startsWith('right_panel_')) {
+      if (name.startsWith('right_end_panel_') || name.startsWith('right_side_panel_') || name.startsWith('right_panel_')) {
         return ensureGroup('crate_cap_right', 'CRATE_CAP • RIGHT_SIDE_PANEL_ASSEMBLY')
       }
       if (name.startsWith('top_panel_')) {
@@ -176,16 +176,21 @@ export default function TutorialOverlay({
         return ensureGroup('fasteners', 'FASTENERS')
       }
 
-      // Fallback group for any unexpected parts
-      return ensureGroup('other_parts', 'OTHER PARTS')
+      // If we get here, the part name doesn't match any known pattern
+      // This shouldn't happen in a well-formed template - log warning and skip
+      console.warn(`Unmatched part name in tutorial: ${nameRaw}`)
+      return null // Return null to skip this part
     }
 
     step.partNames.forEach(partName => {
       const group = getGroupForPart(partName)
-      group.items.push(partName)
+      if (group) {
+        group.items.push(partName)
+      }
     })
 
-    return Array.from(groups.values())
+    // Return only groups that have items (filter out empty groups)
+    return Array.from(groups.values()).filter(group => group.items.length > 0)
   }, [step])
 
   useEffect(() => {
