@@ -41,20 +41,20 @@ Each panel can have up to 6 plywood pieces. All 6 are always defined (some may b
 - **front_end_panel_ply_6**
 
 #### Back Panel
-- **back_panel_ply_1**
-- **back_panel_ply_2**
-- **back_panel_ply_3**
-- **back_panel_ply_4**
-- **back_panel_ply_5**
-- **back_panel_ply_6**
+- **back_end_panel_ply_1**
+- **back_end_panel_ply_2**
+- **back_end_panel_ply_3**
+- **back_end_panel_ply_4**
+- **back_end_panel_ply_5**
+- **back_end_panel_ply_6**
 
 #### Left End Panel
-- **left_end_panel_ply_1**
-- **left_end_panel_ply_2**
-- **left_end_panel_ply_3**
-- **left_end_panel_ply_4**
-- **left_end_panel_ply_5**
-- **left_end_panel_ply_6**
+- **left_side_panel_ply_1**
+- **left_side_panel_ply_2**
+- **left_side_panel_ply_3**
+- **left_side_panel_ply_4**
+- **left_side_panel_ply_5**
+- **left_side_panel_ply_6**
 
 #### Right End Panel
 - **right_side_panel_ply_1**
@@ -122,14 +122,14 @@ Top-level assembly containing all cap components.
 ##### BACK_PANEL_ASSEMBLY
 - Contains all back panel components
 - Individual parts:
-  - back_panel_ply_1 through back_panel_ply_6
-  - back_panel cleats (all cleats for back panel)
+  - back_end_panel_ply_1 through back_end_panel_ply_6
+  - back_end_panel cleats (all cleats for back panel)
 
 ##### LEFT_PANEL_ASSEMBLY
 - Contains all left end panel components
 - Individual parts:
-  - left_end_panel_ply_1 through left_end_panel_ply_6
-  - left_end_panel cleats (all cleats for left end panel)
+  - left_side_panel_ply_1 through left_side_panel_ply_6
+  - left_side_panel cleats (all cleats for left end panel)
 
 ##### RIGHT_PANEL_ASSEMBLY
 - Contains all right end panel components
@@ -209,7 +209,7 @@ Top-level assembly containing the base components.
 
 4. **Dynamic Components**: The exact number of cleats and which floorboards/plywood pieces are active depends on the crate configuration. Always check the tutorial expressions for your specific crate.
 
-5. **Naming Convention**: Individual part file names should be lowercase (e.g., `floorboard_1`, `front_end_panel_ply_1`, `right_side_panel_ply_1`, `skid`, etc.). Assembly file names are uppercase (e.g., `CRATE_CAP`, `SHIPPING_BASE`, `FRONT_PANEL_ASSEMBLY`, etc.).
+5. **Naming Convention**: Individual part file names should be lowercase (e.g., `floorboard_1`, `front_end_panel_ply_1`, `back_end_panel_ply_1`, `left_side_panel_ply_1`, `right_side_panel_ply_1`, `skid`, etc.). Assembly file names are uppercase (e.g., `CRATE_CAP`, `SHIPPING_BASE`, `FRONT_PANEL_ASSEMBLY`, etc.).
 
 ---
 
