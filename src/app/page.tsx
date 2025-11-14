@@ -215,7 +215,7 @@ export default function Home() {
     }
   }, [tutorialSteps, tutorialStepIndex])
 
-  // Auto-enable tutorial via ?tutorial=1
+  // Auto-enable template generator via ?tutorial=1
   useEffect(() => {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(window.location.search)
@@ -636,11 +636,11 @@ export default function Home() {
             <button
               onClick={() => { setTutorialActive(prev => !prev); setTutorialStepIndex(0) }}
               className={`px-3 py-1 text-sm rounded transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 ${tutorialActive ? 'bg-amber-600 text-white hover:bg-amber-700' : 'bg-amber-100 text-amber-900 hover:bg-amber-200'}`}
-              title="Toggle Tutorial Mode"
-              aria-label={tutorialActive ? 'Disable tutorial mode' : 'Enable tutorial mode'}
+              title="Toggle Template Generator"
+              aria-label={tutorialActive ? 'Disable template generator' : 'Enable template generator'}
               aria-pressed={tutorialActive}
             >
-              {tutorialActive ? 'Tutorial: On' : 'Start Tutorial'}
+              {tutorialActive ? 'Template Generator: On' : 'Start Template Generator'}
             </button>
             <button
               onClick={downloadExpressions}
@@ -739,7 +739,7 @@ export default function Home() {
                     onClick={() => { setTutorialActive(prev => !prev); setTutorialStepIndex(0); setMobileMenuOpen(false); }}
                     className={`w-full text-left px-4 py-2 text-sm ${tutorialActive ? 'bg-amber-600 text-white hover:bg-amber-700' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                   >
-                    {tutorialActive ? 'Tutorial: On' : 'Start Tutorial'}
+                    {tutorialActive ? 'Template Generator: On' : 'Start Template Generator'}
                   </button>
                 </div>
               )}

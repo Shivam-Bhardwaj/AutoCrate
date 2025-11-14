@@ -137,7 +137,7 @@ export default function TutorialOverlay({
         {/* Header - always visible */}
         <div className="flex items-center justify-between mb-1 flex-shrink-0">
           <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-            Tutorial: {step.title}
+            Template Generator: {step.title}
           </div>
           <button
             onClick={onClose}

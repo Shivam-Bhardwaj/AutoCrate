@@ -122,10 +122,10 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
   steps.push({
     id: 'create-all-parts',
     title: 'Create All Part Files',
-    description: 'Before starting the tutorial, create all the part files listed below. Click on any part name to copy it to your clipboard, then paste it when creating a new part file in NX.',
+    description: 'Before starting the template generator, create all the part files listed below. Click on any part name to copy it to your clipboard, then paste it when creating a new part file in NX.',
     partNames: sortedPartNames,
     tips: [
-      'Create these part files first before proceeding with the tutorial steps.',
+      'Create these part files first before proceeding with the template generator steps.',
       'Click any part name to copy it to your clipboard.',
       'Use File → New → Part in NX to create each part file.',
       'Part names are lowercase (e.g., floorboard_1, front_end_panel_ply_1).',
