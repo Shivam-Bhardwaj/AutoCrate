@@ -1,104 +1,19 @@
 # Tutorial Part Files List
 
-This document lists all part files that need to be created when following the tutorials in AutoCrate.
+This document lists all part files that need to be created when following the tutorial in AutoCrate.
 
 ## Overview
 
-There are two tutorial modes:
+The tutorial guides you through creating a complete crate model with assemblies that contain individual parts. Assemblies group related components together, and each assembly contains its component parts.
 
-1. **Full Tutorial** (`?tutorial=1`) - Creates individual part files for each component
-2. **Assembly Tutorial** (`?tutorial=assemblies`) - Creates assembly files that group related components
-
----
-
-## Full Tutorial Mode - Individual Part Files
-
-When following the full tutorial, you create one part file per component. The tutorial guides you through creating these in order:
-
-### 1. Base Components
-
-#### SKID
-- **skid** (base skid block, then patterned)
-  - Patterned using `pattern_count` and `pattern_spacing` expressions
-  - Creates multiple skid instances along X direction
-
-#### Floorboards
-- **floorboard_1** through **floorboard_40** (up to 40 floorboards)
-  - Each floorboard is a separate part file
-  - Some may be suppressed based on crate size
-  - Uses expressions: `FLOORBOARD_n_X1/Y1/Z1/X2/Y2/Z2` and `FLOORBOARD_n_SUPPRESSED`
-
-### 2. Panel Plywood Pieces
-
-Each panel can have up to 6 plywood pieces. All 6 are always defined (some may be suppressed):
-
-#### Front Panel
-- **front_end_panel_ply_1**
-- **front_end_panel_ply_2**
-- **front_end_panel_ply_3**
-- **front_end_panel_ply_4**
-- **front_end_panel_ply_5**
-- **front_end_panel_ply_6**
-
-#### Back Panel
-- **back_end_panel_ply_1**
-- **back_end_panel_ply_2**
-- **back_end_panel_ply_3**
-- **back_end_panel_ply_4**
-- **back_end_panel_ply_5**
-- **back_end_panel_ply_6**
-
-#### Left End Panel
-- **left_side_panel_ply_1**
-- **left_side_panel_ply_2**
-- **left_side_panel_ply_3**
-- **left_side_panel_ply_4**
-- **left_side_panel_ply_5**
-- **left_side_panel_ply_6**
-
-#### Right End Panel
-- **right_side_panel_ply_1**
-- **right_side_panel_ply_2**
-- **right_side_panel_ply_3**
-- **right_side_panel_ply_4**
-- **right_side_panel_ply_5**
-- **right_side_panel_ply_6**
-
-#### Top Panel
-- **top_panel_ply_1**
-- **top_panel_ply_2**
-- **top_panel_ply_3**
-- **top_panel_ply_4**
-- **top_panel_ply_5**
-- **top_panel_ply_6**
-
-**Total Plywood Pieces**: Up to 30 pieces (5 panels × 6 pieces each)
-
-### 3. Cleats
-
-Cleats are generated dynamically based on panel layout. Each cleat is a separate part file. Cleat names follow patterns like:
-
-- **{panel}_cleat_{n}** (e.g., `front_end_panel_cleat_1`, `front_end_panel_cleat_2`, etc.)
-- Cleats can be:
-  - Vertical cleats
-  - Horizontal cleats
-  - Splice cleats
-  - Horizontal splice cleats (cleat_h_inter)
-
-**Note**: The exact number of cleats varies by panel size and configuration. Check the tutorial expressions for the specific cleat names for your crate.
-
-### 4. Hardware (Guidance Only)
-
-Hardware parts are imported from STEP files, not created as new parts:
-
-- **Klimp clamps** - Import STEP file once, reuse instances
-- **Lag screws** - Import STEP file once, reuse instances
+Enable tutorial mode by opening the app with `?tutorial=1`:
+- Example: http://localhost:3000/?tutorial=1
 
 ---
 
-## Assembly Tutorial Mode - Assembly Part Files
+## File Creation Order
 
-When following the assembly tutorial, you create assembly files that group related components. Create files in this order:
+Create files in this order:
 
 ### 1. Template File
 
@@ -179,23 +94,104 @@ Top-level assembly containing the base components.
 
 ---
 
+## Individual Part Details
+
+### Base Components
+
+#### Skid
+- **skid** (base skid block, then patterned)
+  - Patterned using `pattern_count` and `pattern_spacing` expressions
+  - Creates multiple skid instances along X direction
+
+#### Floorboards
+- **floorboard_1** through **floorboard_40** (up to 40 floorboards)
+  - Each floorboard is a separate part file
+  - Some may be suppressed based on crate size
+  - Uses expressions: `FLOORBOARD_n_X1/Y1/Z1/X2/Y2/Z2` and `FLOORBOARD_n_SUPPRESSED`
+
+### Panel Plywood Pieces
+
+Each panel can have up to 6 plywood pieces. All 6 are always defined (some may be suppressed):
+
+#### Front Panel
+- **front_end_panel_ply_1**
+- **front_end_panel_ply_2**
+- **front_end_panel_ply_3**
+- **front_end_panel_ply_4**
+- **front_end_panel_ply_5**
+- **front_end_panel_ply_6**
+
+#### Back Panel
+- **back_end_panel_ply_1**
+- **back_end_panel_ply_2**
+- **back_end_panel_ply_3**
+- **back_end_panel_ply_4**
+- **back_end_panel_ply_5**
+- **back_end_panel_ply_6**
+
+#### Left End Panel
+- **left_side_panel_ply_1**
+- **left_side_panel_ply_2**
+- **left_side_panel_ply_3**
+- **left_side_panel_ply_4**
+- **left_side_panel_ply_5**
+- **left_side_panel_ply_6**
+
+#### Right End Panel
+- **right_side_panel_ply_1**
+- **right_side_panel_ply_2**
+- **right_side_panel_ply_3**
+- **right_side_panel_ply_4**
+- **right_side_panel_ply_5**
+- **right_side_panel_ply_6**
+
+#### Top Panel
+- **top_panel_ply_1**
+- **top_panel_ply_2**
+- **top_panel_ply_3**
+- **top_panel_ply_4**
+- **top_panel_ply_5**
+- **top_panel_ply_6**
+
+**Total Plywood Pieces**: Up to 30 pieces (5 panels × 6 pieces each)
+
+### Cleats
+
+Cleats are generated dynamically based on panel layout. Each cleat is a separate part file. Cleat names follow patterns like:
+
+- **{panel}_cleat_{n}** (e.g., `front_end_panel_cleat_1`, `front_end_panel_cleat_2`, etc.)
+- Cleats can be:
+  - Vertical cleats
+  - Horizontal cleats
+  - Splice cleats
+  - Horizontal splice cleats (cleat_h_inter)
+
+**Note**: The exact number of cleats varies by panel size and configuration. Check the tutorial expressions for the specific cleat names for your crate.
+
+### Hardware (Guidance Only)
+
+Hardware parts are imported from STEP files, not created as new parts:
+
+- **Klimp clamps** - Import STEP file once, reuse instances
+- **Lag screws** - Import STEP file once, reuse instances
+
+---
+
 ## Summary
 
-### Full Tutorial Mode
-- **Total Part Files**: Variable, depends on crate size
+### Total Files
+- **Assembly Files**: 10-12 files
+  - 1 template file (_TEMPLATE)
+  - 4 top-level assemblies (CRATE_CAP, SHIPPING_BASE, STENCILS, KLIMP_FASTENERS)
+  - 6-7 sub-assemblies under CRATE_CAP
+  - 2 sub-assemblies under SHIPPING_BASE (SKID_ASSEMBLY, FLOORBOARD_ASSEMBLY)
+
+- **Individual Part Files**: Variable, depends on crate size
   - 1 skid (base, then patterned)
   - Up to 40 floorboards
   - Up to 30 plywood pieces (5 panels × 6 pieces)
   - Variable number of cleats (depends on panel configuration)
   - Hardware imported from STEP files
-
-### Assembly Tutorial Mode
-- **Total Assembly Files**: 10-12 files
-  - 1 template file (_TEMPLATE)
-  - 4 top-level assemblies (CRATE_CAP, SHIPPING_BASE, STENCILS, KLIMP_FASTENERS)
-  - 6-7 sub-assemblies under CRATE_CAP
-  - 2 sub-assemblies under SHIPPING_BASE (SKID_ASSEMBLY, FLOORBOARD_ASSEMBLY)
-  - Individual parts within assemblies (skids, floorboards, plywood pieces, cleats)
 
 ---
 
@@ -211,11 +207,12 @@ Top-level assembly containing the base components.
 
 5. **Naming Convention**: Individual part file names should be lowercase (e.g., `floorboard_1`, `front_end_panel_ply_1`, `back_end_panel_ply_1`, `left_side_panel_ply_1`, `right_side_panel_ply_1`, `skid`, etc.). Assembly file names are uppercase (e.g., `CRATE_CAP`, `SHIPPING_BASE`, `FRONT_PANEL_ASSEMBLY`, etc.).
 
+6. **Assembly Structure**: Assemblies contain parts. Create the assembly file first, then add the individual parts as components within that assembly. Use expressions to position and constrain parts within assemblies.
+
 ---
 
 ## Related Documentation
 
 - [NX Template Tutorial](./NX_TEMPLATE_TUTORIAL.md) - Build order and tips
 - [Architecture Documentation](./ARCHITECTURE.md) - System design details
-- Tutorial Mode: Enable with `?tutorial=1` or `?tutorial=assemblies` in the app URL
-
+- Tutorial Mode: Enable with `?tutorial=1` in the app URL
