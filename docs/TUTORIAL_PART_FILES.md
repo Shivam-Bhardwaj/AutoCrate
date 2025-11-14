@@ -33,12 +33,12 @@ When following the full tutorial, you create one part file per component. The tu
 Each panel can have up to 6 plywood pieces. All 6 are always defined (some may be suppressed):
 
 #### Front Panel
-- **front_panel_ply_1**
-- **front_panel_ply_2**
-- **front_panel_ply_3**
-- **front_panel_ply_4**
-- **front_panel_ply_5**
-- **front_panel_ply_6**
+- **front_end_panel_ply_1**
+- **front_end_panel_ply_2**
+- **front_end_panel_ply_3**
+- **front_end_panel_ply_4**
+- **front_end_panel_ply_5**
+- **front_end_panel_ply_6**
 
 #### Back Panel
 - **back_panel_ply_1**
@@ -57,12 +57,12 @@ Each panel can have up to 6 plywood pieces. All 6 are always defined (some may b
 - **left_end_panel_ply_6**
 
 #### Right End Panel
-- **right_end_panel_ply_1**
-- **right_end_panel_ply_2**
-- **right_end_panel_ply_3**
-- **right_end_panel_ply_4**
-- **right_end_panel_ply_5**
-- **right_end_panel_ply_6**
+- **right_side_panel_ply_1**
+- **right_side_panel_ply_2**
+- **right_side_panel_ply_3**
+- **right_side_panel_ply_4**
+- **right_side_panel_ply_5**
+- **right_side_panel_ply_6**
 
 #### Top Panel
 - **top_panel_ply_1**
@@ -78,7 +78,7 @@ Each panel can have up to 6 plywood pieces. All 6 are always defined (some may b
 
 Cleats are generated dynamically based on panel layout. Each cleat is a separate part file. Cleat names follow patterns like:
 
-- **{panel}_cleat_{n}** (e.g., `front_panel_cleat_1`, `front_panel_cleat_2`, etc.)
+- **{panel}_cleat_{n}** (e.g., `front_end_panel_cleat_1`, `front_end_panel_cleat_2`, etc.)
 - Cleats can be:
   - Vertical cleats
   - Horizontal cleats
@@ -116,8 +116,8 @@ Top-level assembly containing all cap components.
 ##### FRONT_PANEL_ASSEMBLY
 - Contains all front panel components
 - Individual parts:
-  - front_panel_ply_1 through front_panel_ply_6
-  - front_panel cleats (all cleats for front panel)
+  - front_end_panel_ply_1 through front_end_panel_ply_6
+  - front_end_panel cleats (all cleats for front panel)
 
 ##### BACK_PANEL_ASSEMBLY
 - Contains all back panel components
@@ -134,8 +134,8 @@ Top-level assembly containing all cap components.
 ##### RIGHT_PANEL_ASSEMBLY
 - Contains all right end panel components
 - Individual parts:
-  - right_end_panel_ply_1 through right_end_panel_ply_6
-  - right_end_panel cleats (all cleats for right end panel)
+  - right_side_panel_ply_1 through right_side_panel_ply_6
+  - right_side_panel cleats (all cleats for right end panel)
 
 ##### TOP_PANEL_ASSEMBLY
 - Contains all top panel components
@@ -209,7 +209,7 @@ Top-level assembly containing the base components.
 
 4. **Dynamic Components**: The exact number of cleats and which floorboards/plywood pieces are active depends on the crate configuration. Always check the tutorial expressions for your specific crate.
 
-5. **Naming Convention**: Individual part file names should be lowercase (e.g., `floorboard_1`, `front_panel_ply_1`, `skid`, etc.). Assembly file names are uppercase (e.g., `CRATE_CAP`, `SHIPPING_BASE`, `FRONT_PANEL_ASSEMBLY`, etc.).
+5. **Naming Convention**: Individual part file names should be lowercase (e.g., `floorboard_1`, `front_end_panel_ply_1`, `right_side_panel_ply_1`, `skid`, etc.). Assembly file names are uppercase (e.g., `CRATE_CAP`, `SHIPPING_BASE`, `FRONT_PANEL_ASSEMBLY`, etc.).
 
 ---
 
