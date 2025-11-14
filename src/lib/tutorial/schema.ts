@@ -14,6 +14,7 @@ export type TutorialStep = {
   expressions?: string[]
   expressionValues?: Record<string, number>
   tips?: string[]
+  partNames?: string[] // For listing all part names to create
 }
 
 export function buildBasicTutorial(generator: NXGenerator, boxes: NXBox[]): TutorialStep[] {
@@ -75,8 +76,64 @@ export function buildBasicTutorial(generator: NXGenerator, boxes: NXBox[]): Tuto
 
 // Extended builder: floorboards, panels (plywood 7-params), cleats, hardware guidance
 export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): TutorialStep[] {
+  const steps: TutorialStep[] = []
+  
+  // Step 0: List all part names that need to be created
+  const allPartNames = new Set<string>()
+  
+  // Always include skid
+  allPartNames.add('skid')
+  
+  // Always include all floorboards (1-40) - some may be suppressed but all need part files
+  for (let i = 1; i <= 40; i++) {
+    allPartNames.add(`floorboard_${i}`)
+  }
+  
+  // Always include all plywood pieces (1-6 for each panel) - some may be suppressed but all need part files
+  const allPanelNames = ['FRONT_PANEL', 'BACK_PANEL', 'LEFT_END_PANEL', 'RIGHT_END_PANEL', 'TOP_PANEL']
+  const panelNameMap: Record<string, string> = {
+    'FRONT_PANEL': 'front_end_panel',
+    'BACK_PANEL': 'back_end_panel',
+    'LEFT_END_PANEL': 'left_side_panel',
+    'RIGHT_END_PANEL': 'right_side_panel',
+    'TOP_PANEL': 'top_panel'
+  }
+  for (const panel of allPanelNames) {
+    const panelSnake = panelNameMap[panel] || panel.toLowerCase()
+    for (let i = 1; i <= 6; i++) {
+      allPartNames.add(`${panelSnake}_ply_${i}`)
+    }
+  }
+  
+  // Collect cleat names from boxes (cleats are dynamic, so only include ones that exist)
+  boxes.forEach(box => {
+    if (box.type === 'cleat') {
+      const name = box.name.toLowerCase()
+      allPartNames.add(name)
+    }
+  })
+  
+  // Note: klimp and hardware are imported from STEP files, not created as parts
+  
+  // Sort part names for better organization
+  const sortedPartNames = Array.from(allPartNames).sort()
+  
+  // Add the "create all parts" step as the first step
+  steps.push({
+    id: 'create-all-parts',
+    title: 'Create All Part Files',
+    description: 'Before starting the template generator, create all the part files listed below. Click on any part name to copy it to your clipboard, then paste it when creating a new part file in NX.',
+    partNames: sortedPartNames,
+    tips: [
+      'Create these part files first before proceeding with the template generator steps.',
+      'Click any part name to copy it to your clipboard.',
+      'Use File → New → Part in NX to create each part file.',
+      'Part names are lowercase (e.g., floorboard_1, front_end_panel_ply_1).',
+    ],
+  })
+  
   const base = buildBasicTutorial(generator, boxes)
-  const steps: TutorialStep[] = [...base]
+  steps.push(...base)
   const exprMap = generator.getExpressions()
   const boxesByName = new Map<string, NXBox>()
   boxes.forEach(box => boxesByName.set(box.name, box))

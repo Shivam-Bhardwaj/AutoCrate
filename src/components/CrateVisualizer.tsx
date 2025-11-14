@@ -1330,6 +1330,9 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
               )
             })}
           </div>
+          <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-[10px] text-gray-500 dark:text-gray-400" role="note" aria-label="Interaction hints">
+            Click faces to measure • Right-click to hide component • Esc to reset view
+          </div>
         </div>
 
         {hiddenComponents.size > 0 && (
@@ -1411,10 +1414,6 @@ export default function CrateVisualizer({ boxes, showGrid = true, showLabels = t
         </div>
       )}
 
-      {/* Instructions - Hidden on mobile */}
-      <div className="hidden lg:block absolute bottom-2 left-2 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded px-2 py-1" role="note" aria-label="Keyboard shortcuts">
-        Click faces to measure • Right-click to hide component • Esc to reset view
-      </div>
     </div>
   )
 }
