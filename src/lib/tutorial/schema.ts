@@ -362,20 +362,22 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
     cleatsByPanel.set(key, arr)
   })
   for (const [panel, arr] of cleatsByPanel.entries()) {
-    const cleatSuffixes = ['X', 'Y', 'Z', 'WIDTH', 'LENGTH', 'HEIGHT', 'THICKNESS']
+    // Cleats use 8 parameters: SUPPRESSED, X1/Y1/Z1, X2/Y2/Z2 (two diagonal points)
+    const cleatSuffixes = ['SUPPRESSED', 'X1', 'Y1', 'Z1', 'X2', 'Y2', 'Z2']
     const cleatExpressions = Array.from(new Set(
       arr.flatMap(box => cleatSuffixes.map(suffix => `${box.name}_${suffix}`))
     ))
-    const thicknessLabel = arr[0] ? `${arr[0].name}_THICKNESS` : 'CLEAT_THICKNESS'
     const step: TutorialStep = {
       id: `cleats-${panel.toLowerCase()}`,
-      title: `${panel} Cleats (7 Parameters)`,
-      description: 'Create cleat solids using the same 7-parameter set as plywood; thickness is 0.750 for 1x4.',
+      title: `${panel} Cleats (8 Parameters)`,
+      description: 'Create cleat blocks using Opposite Corners method with 8 parameters: SUPPRESSED, X1/Y1/Z1 (corner 1), X2/Y2/Z2 (corner 2). Same format as plywood panels.',
       target: { boxNames: arr.map(b => b.name) },
       expressions: cleatExpressions,
       tips: [
-        `Use ${thicknessLabel} = 0.750 for 1x4 cleats.`,
-        'Respect edge clearances and spacing rules defined by the expressions.',
+        'Use Insert → Design Feature → Block → Type: Opposite Corners.',
+        'Bind Corner 1 to X1/Y1/Z1 expressions and Corner 2 to X2/Y2/Z2 expressions.',
+        'Suppress cleats where SUPPRESSED = 0.',
+        'Cleat thickness is standard 0.750" for 1x4 lumber (calculated from dimensions).',
       ],
     }
     attachExpressionValues(step)

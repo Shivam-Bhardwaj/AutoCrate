@@ -90,12 +90,19 @@ describe('Tutorial schema (browserless)', () => {
     const cleatStep = steps.find(s => s.id === 'cleats-front_panel')
     expect(cleatStep).toBeTruthy()
     expect(cleatStep?.expressions).toEqual(expect.arrayContaining([
-      expect.stringMatching(/FRONT_PANEL_CLEAT_/)
+      expect.stringMatching(/FRONT_PANEL_CLEAT_.*_SUPPRESSED/),
+      expect.stringMatching(/FRONT_PANEL_CLEAT_.*_X1/),
+      expect.stringMatching(/FRONT_PANEL_CLEAT_.*_Y1/),
+      expect.stringMatching(/FRONT_PANEL_CLEAT_.*_Z1/),
+      expect.stringMatching(/FRONT_PANEL_CLEAT_.*_X2/),
+      expect.stringMatching(/FRONT_PANEL_CLEAT_.*_Y2/),
+      expect.stringMatching(/FRONT_PANEL_CLEAT_.*_Z2/)
     ]))
     expect(cleatStep?.expressionValues).toBeTruthy()
-    const cleatThicknessKey = Object.keys(cleatStep?.expressionValues || {}).find(key => key.endsWith('_THICKNESS'))
-    expect(cleatThicknessKey).toBeTruthy()
-    expect(cleatStep?.expressionValues?.[cleatThicknessKey!]).toBeGreaterThan(0)
+    // Verify cleat uses 8-parameter format (SUPPRESSED + X1/Y1/Z1 + X2/Y2/Z2)
+    const cleatX1Key = Object.keys(cleatStep?.expressionValues || {}).find(key => key.includes('CLEAT') && key.endsWith('_X1'))
+    expect(cleatX1Key).toBeTruthy()
+    expect(cleatStep?.expressionValues?.[cleatX1Key!]).toBeDefined()
   })
 
   it('lists individual floorboard expressions with values for copy/paste', () => {

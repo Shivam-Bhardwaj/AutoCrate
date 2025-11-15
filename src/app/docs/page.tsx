@@ -265,7 +265,7 @@ function NXInstructionsDoc() {
       <ul>
         <li><strong>Generic boxes</strong> (e.g., <code>SKID</code>, <code>FLOORBOARD_1</code>): bind the corner coordinates for the specific name, such as <code>SKID_X1</code>/<code>SKID_X2</code>, <code>FLOORBOARD_1_X1</code>/<code>FLOORBOARD_1_X2</code> (repeat for Y and Z).</li>
         <li><strong>Plywood panels</strong>: expressions follow <code>{'{PANEL}_PLY_{N}_*'}</code>. Example: <code>FRONT_PANEL_PLY_1_X</code>, <code>FRONT_PANEL_PLY_1_Y</code>, <code>FRONT_PANEL_PLY_1_WIDTH</code>, <code>FRONT_PANEL_PLY_1_LENGTH</code>, <code>FRONT_PANEL_PLY_1_HEIGHT</code>, <code>FRONT_PANEL_PLY_1_THICKNESS</code>.</li>
-        <li><strong>Cleats</strong>: expressions follow <code>{'{PANEL}_CLEAT_{N}_*'}</code>, e.g., <code>FRONT_PANEL_CLEAT_1_X</code> … <code>FRONT_PANEL_CLEAT_1_THICKNESS</code> (value exported as 0.750 for 1×4).</li>
+        <li><strong>Cleats</strong>: expressions follow <code>{'{PANEL}_CLEAT_{N}_*'}</code>, using 8 parameters (same as plywood): <code>FRONT_PANEL_CLEAT_BOTTOM_SUPPRESSED</code>, <code>FRONT_PANEL_CLEAT_BOTTOM_X1/Y1/Z1</code>, <code>FRONT_PANEL_CLEAT_BOTTOM_X2/Y2/Z2</code>. Use Opposite Corners method with two diagonal points.</li>
       </ul>
 
       <h3>Recommended Block Setup (Example)</h3>
