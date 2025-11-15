@@ -38,7 +38,7 @@ export class CleatCalculator {
   private static readonly CLEAT_THICKNESS = CLEAT_STANDARDS.DEFAULT_DIMENSIONS.thickness // 1x4 actual thickness
   private static readonly MAX_CLEAT_SPACING = CLEAT_STANDARDS.MAX_VERTICAL_SPACING // Maximum 24" between cleats
   private static readonly MIN_EDGE_DISTANCE = 2  // Minimum 2" from edge for intermediate cleats
-  private static readonly MIN_HORIZONTAL_CLEAT_LENGTH = 6  // Minimum 6" length for horizontal intermediate cleats (skip very small segments)
+  private static readonly MIN_HORIZONTAL_CLEAT_LENGTH = 3  // Minimum 3" length for horizontal intermediate cleats (skip very small segments, but keep meaningful ones)
 
   /**
    * Calculate cleat layout for a panel
