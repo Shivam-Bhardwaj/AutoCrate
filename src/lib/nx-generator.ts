@@ -1918,6 +1918,7 @@ export class NXGenerator {
           const plywoodThickness = this.expressions.get('plywood_thickness') ?? PLYWOOD_STANDARDS.DEFAULT_THICKNESS
           push(formatComment(`${box.name}_THICKNESS = ${formatValue(plywoodThickness)} (standard plywood thickness)`))
         } else if (box.type === 'cleat') {
+          // Cleats use 8 parameters: SUPPRESSED, X1/Y1/Z1, X2/Y2/Z2 (two diagonal points)
           push(formatBoolean(`${box.name}_SUPPRESSED`, !box.suppressed)) // NX: 0=suppressed, 1=not suppressed
           push(formatExpression(`${box.name}_X1`, box.point1.x))
           push(formatExpression(`${box.name}_Y1`, box.point1.y))
@@ -1925,9 +1926,6 @@ export class NXGenerator {
           push(formatExpression(`${box.name}_X2`, box.point2.x))
           push(formatExpression(`${box.name}_Y2`, box.point2.y))
           push(formatExpression(`${box.name}_Z2`, box.point2.z))
-          push(formatExpression(`${box.name}_X`, box.point1.x))
-          push(formatExpression(`${box.name}_Y`, box.point1.y))
-          push(formatExpression(`${box.name}_Z`, box.point1.z))
           // Dimensions can be calculated from corner coordinates: WIDTH = X2 - X1, LENGTH = Y2 - Y1, HEIGHT = Z2 - Z1
           push(formatComment(`${box.name}_WIDTH = ${formatValue(Math.max(MIN_DIMENSION, Math.abs(box.point2.x - box.point1.x)))} (calculated from X1/X2)`))
           push(formatComment(`${box.name}_LENGTH = ${formatValue(Math.max(MIN_DIMENSION, Math.abs(box.point2.y - box.point1.y)))} (calculated from Y1/Y2)`))
