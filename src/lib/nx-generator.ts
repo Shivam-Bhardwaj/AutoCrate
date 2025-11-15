@@ -173,8 +173,15 @@ export class NXGenerator {
   // To add more expressions, add them to this Set (e.g., 'some_other_expression')
   private static readonly EXCLUDED_EXPRESSIONS = new Set<string>([
     'skid_width',
-    'skid_height'
-    // Add more template-defined expressions here as needed
+    'skid_height',
+    // Material usage/statistical expressions - not needed for NX build, only for comments/guidance
+    'plywood_efficiency',
+    'plywood_waste_area',
+    'cleat_linear_feet',
+    'cleat_1x4_count',
+    'klimp_packages',
+    'total_plywood_sheets',
+    'total_cleats'
   ])
 
   constructor(private config: CrateConfig) {
