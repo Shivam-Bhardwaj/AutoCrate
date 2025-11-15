@@ -442,7 +442,7 @@ export default function TutorialOverlay({
           {groupedExpressions.length > 0 && (
             <div className="mb-4 flex flex-col">
               <div className="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Expressions</div>
-              <div className="space-y-1.5 pb-2">
+              <div className="space-y-1.5 pb-2 max-h-[400px] overflow-y-auto pr-1">
                 {groupedExpressions.map(group => {
                   const isExpanded = expandedGroupId === group.id
                   const isGeneral = group.id === 'general'
@@ -464,8 +464,8 @@ export default function TutorialOverlay({
                         <div
                           className={
                             isGeneral
-                              ? 'px-2 pb-2 flex flex-col gap-1'
-                              : 'px-2 pb-2 grid grid-cols-1 sm:grid-cols-2 gap-1 items-stretch'
+                              ? 'px-2 pb-2 flex flex-col gap-1 max-h-[300px] overflow-y-auto'
+                              : 'px-2 pb-2 grid grid-cols-1 sm:grid-cols-2 gap-1 items-stretch max-h-[300px] overflow-y-auto'
                           }
                         >
                           {group.items.map(item => (

@@ -38,6 +38,7 @@ export class CleatCalculator {
   private static readonly CLEAT_THICKNESS = CLEAT_STANDARDS.DEFAULT_DIMENSIONS.thickness // 1x4 actual thickness
   private static readonly MAX_CLEAT_SPACING = CLEAT_STANDARDS.MAX_VERTICAL_SPACING // Maximum 24" between cleats
   private static readonly MIN_EDGE_DISTANCE = 2  // Minimum 2" from edge for intermediate cleats
+  private static readonly MIN_HORIZONTAL_CLEAT_LENGTH = 6  // Minimum 6" length for horizontal intermediate cleats (skip very small segments)
 
   /**
    * Calculate cleat layout for a panel
@@ -281,8 +282,8 @@ export class CleatCalculator {
           thickness: this.CLEAT_THICKNESS
         })
       } else {
-        // Add cleat before first vertical if there's space
-        if (sortedVerticals[0].x > 0.5) {
+        // Add cleat before first vertical if there's meaningful space (minimum length threshold)
+        if (sortedVerticals[0].x >= this.MIN_HORIZONTAL_CLEAT_LENGTH) {
           cleats.push({
             id: `${panelName}_CLEAT_H_INTER_${rowIndex}_${cleatIndex++}`,
             type: 'intermediate',
@@ -296,13 +297,14 @@ export class CleatCalculator {
           })
         }
 
-        // Add cleats between each pair of verticals
+        // Add cleats between each pair of verticals (only if gap is meaningful)
         for (let i = 0; i < sortedVerticals.length - 1; i++) {
           const startX = sortedVerticals[i].x + this.CLEAT_WIDTH
           const endX = sortedVerticals[i + 1].x
           const length = endX - startX
 
-          if (length > 0.5) { // Only add if there's meaningful space
+          // Only add if gap is at least MIN_HORIZONTAL_CLEAT_LENGTH (skip very small segments)
+          if (length >= this.MIN_HORIZONTAL_CLEAT_LENGTH) {
             cleats.push({
               id: `${panelName}_CLEAT_H_INTER_${rowIndex}_${cleatIndex++}`,
               type: 'intermediate',
@@ -317,12 +319,13 @@ export class CleatCalculator {
           }
         }
 
-        // Add right edge cleat if there's space after last vertical
+        // Add right edge cleat if there's meaningful space after last vertical
         const lastVertical = sortedVerticals[sortedVerticals.length - 1]
         const startX = lastVertical.x + this.CLEAT_WIDTH
         const remainingLength = panelWidth - startX
 
-        if (remainingLength > 0.5) {
+        // Only add if remaining space is at least MIN_HORIZONTAL_CLEAT_LENGTH
+        if (remainingLength >= this.MIN_HORIZONTAL_CLEAT_LENGTH) {
           cleats.push({
             id: `${panelName}_CLEAT_H_INTER_${rowIndex}_${cleatIndex++}`,
             type: 'intermediate',

@@ -362,15 +362,20 @@ export function buildFullTutorial(generator: NXGenerator, boxes: NXBox[]): Tutor
     cleatsByPanel.set(key, arr)
   })
   for (const [panel, arr] of cleatsByPanel.entries()) {
-    // Cleats use 8 parameters: SUPPRESSED, X1/Y1/Z1, X2/Y2/Z2 (two diagonal points)
+    // Cleats use 8 parameters: NAME (implicit), SUPPRESSED, X1/Y1/Z1, X2/Y2/Z2 (two diagonal points)
+    // Include cleat name as first parameter for reference
+    const cleatNames = arr.map(box => box.name)
     const cleatSuffixes = ['SUPPRESSED', 'X1', 'Y1', 'Z1', 'X2', 'Y2', 'Z2']
-    const cleatExpressions = Array.from(new Set(
-      arr.flatMap(box => cleatSuffixes.map(suffix => `${box.name}_${suffix}`))
-    ))
+    const cleatExpressions = Array.from(new Set([
+      // Add cleat names as first "parameter" (for reference)
+      ...cleatNames,
+      // Then add all expression suffixes for each cleat
+      ...arr.flatMap(box => cleatSuffixes.map(suffix => `${box.name}_${suffix}`))
+    ]))
     const step: TutorialStep = {
       id: `cleats-${panel.toLowerCase()}`,
       title: `${panel} Cleats (8 Parameters)`,
-      description: 'Create cleat blocks using Opposite Corners method with 8 parameters: SUPPRESSED, X1/Y1/Z1 (corner 1), X2/Y2/Z2 (corner 2). Same format as plywood panels.',
+      description: 'Create cleat blocks using Opposite Corners method with 8 parameters: NAME (cleat identifier), SUPPRESSED (suppression state), X1/Y1/Z1 (corner 1), X2/Y2/Z2 (corner 2). Same format as plywood panels.',
       target: { boxNames: arr.map(b => b.name) },
       expressions: cleatExpressions,
       tips: [
