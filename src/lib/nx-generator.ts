@@ -1879,8 +1879,9 @@ export class NXGenerator {
         layout.sheets.forEach(section => {
           push(`[Inch]${section.id}_X = ${formatValue(section.x)}`)
           push(`[Inch]${section.id}_Y = ${formatValue(section.y)}`)
-          push(`[Inch]${section.id}_WIDTH = ${formatValue(section.width)}`)
-          push(`[Inch]${section.id}_HEIGHT = ${formatValue(section.height)}`)
+          // Dimensions can be calculated from panel layout: WIDTH and HEIGHT are informational only
+          push(formatComment(`${section.id}_WIDTH = ${formatValue(section.width)} (informational - calculated from layout)`))
+          push(formatComment(`${section.id}_HEIGHT = ${formatValue(section.height)} (informational - calculated from layout)`))
         })
       }
     }
@@ -1910,11 +1911,12 @@ export class NXGenerator {
           push(formatExpression(`${box.name}_X`, box.point1.x))
           push(formatExpression(`${box.name}_Y`, box.point1.y))
           push(formatExpression(`${box.name}_Z`, box.point1.z))
-          push(formatExpression(`${box.name}_WIDTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.x - box.point1.x))))
-          push(formatExpression(`${box.name}_LENGTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.y - box.point1.y))))
-          push(formatExpression(`${box.name}_HEIGHT`, Math.max(MIN_DIMENSION, Math.abs(box.point2.z - box.point1.z))))
+          // Dimensions can be calculated from corner coordinates: WIDTH = X2 - X1, LENGTH = Y2 - Y1, HEIGHT = Z2 - Z1
+          push(formatComment(`${box.name}_WIDTH = ${formatValue(Math.max(MIN_DIMENSION, Math.abs(box.point2.x - box.point1.x)))} (calculated from X1/X2)`))
+          push(formatComment(`${box.name}_LENGTH = ${formatValue(Math.max(MIN_DIMENSION, Math.abs(box.point2.y - box.point1.y)))} (calculated from Y1/Y2)`))
+          push(formatComment(`${box.name}_HEIGHT = ${formatValue(Math.max(MIN_DIMENSION, Math.abs(box.point2.z - box.point1.z)))} (calculated from Z1/Z2)`))
           const plywoodThickness = this.expressions.get('plywood_thickness') ?? PLYWOOD_STANDARDS.DEFAULT_THICKNESS
-          push(formatExpression(`${box.name}_THICKNESS`, plywoodThickness))
+          push(formatComment(`${box.name}_THICKNESS = ${formatValue(plywoodThickness)} (standard plywood thickness)`))
         } else if (box.type === 'cleat') {
           push(formatBoolean(`${box.name}_SUPPRESSED`, !box.suppressed)) // NX: 0=suppressed, 1=not suppressed
           push(formatExpression(`${box.name}_X1`, box.point1.x))
@@ -1926,10 +1928,11 @@ export class NXGenerator {
           push(formatExpression(`${box.name}_X`, box.point1.x))
           push(formatExpression(`${box.name}_Y`, box.point1.y))
           push(formatExpression(`${box.name}_Z`, box.point1.z))
-          push(formatExpression(`${box.name}_WIDTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.x - box.point1.x))))
-          push(formatExpression(`${box.name}_LENGTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.y - box.point1.y))))
-          push(formatExpression(`${box.name}_HEIGHT`, Math.max(MIN_DIMENSION, Math.abs(box.point2.z - box.point1.z))))
-          push(formatExpression(`${box.name}_THICKNESS`, 0.75))
+          // Dimensions can be calculated from corner coordinates: WIDTH = X2 - X1, LENGTH = Y2 - Y1, HEIGHT = Z2 - Z1
+          push(formatComment(`${box.name}_WIDTH = ${formatValue(Math.max(MIN_DIMENSION, Math.abs(box.point2.x - box.point1.x)))} (calculated from X1/X2)`))
+          push(formatComment(`${box.name}_LENGTH = ${formatValue(Math.max(MIN_DIMENSION, Math.abs(box.point2.y - box.point1.y)))} (calculated from Y1/Y2)`))
+          push(formatComment(`${box.name}_HEIGHT = ${formatValue(Math.max(MIN_DIMENSION, Math.abs(box.point2.z - box.point1.z)))} (calculated from Z1/Z2)`))
+          push(formatComment(`${box.name}_THICKNESS = ${formatValue(0.75)} (standard 1x4 cleat thickness)`))
         } else if (box.type === 'klimp') {
           const instanceIndex = parseInt(box.name.split('_').pop() || '0', 10) - 1
           const instance = this.klimpInstances[instanceIndex]
@@ -1957,9 +1960,10 @@ export class NXGenerator {
           push(formatExpression(`${box.name}_X`, box.point1.x))
           push(formatExpression(`${box.name}_Y`, box.point1.y))
           push(formatExpression(`${box.name}_Z`, box.point1.z))
-          push(formatExpression(`${box.name}_WIDTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.x - box.point1.x))))
-          push(formatExpression(`${box.name}_LENGTH`, Math.max(MIN_DIMENSION, Math.abs(box.point2.y - box.point1.y))))
-          push(formatExpression(`${box.name}_HEIGHT`, Math.max(MIN_DIMENSION, Math.abs(box.point2.z - box.point1.z))))
+          // Dimensions can be calculated from corner coordinates: WIDTH = X2 - X1, LENGTH = Y2 - Y1, HEIGHT = Z2 - Z1
+          push(formatComment(`${box.name}_WIDTH = ${formatValue(Math.max(MIN_DIMENSION, Math.abs(box.point2.x - box.point1.x)))} (calculated from X1/X2)`))
+          push(formatComment(`${box.name}_LENGTH = ${formatValue(Math.max(MIN_DIMENSION, Math.abs(box.point2.y - box.point1.y)))} (calculated from Y1/Y2)`))
+          push(formatComment(`${box.name}_HEIGHT = ${formatValue(Math.max(MIN_DIMENSION, Math.abs(box.point2.z - box.point1.z)))} (calculated from Z1/Z2)`))
         }
       }
     }
